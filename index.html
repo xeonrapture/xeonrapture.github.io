@@ -1,67 +1,111 @@
+<!doctype html>
+<html lang="en">
 <head>
-
-  <link rel="stylesheet" href="https://xeonrapture.github.io/site.css">
+  <meta charset="utf-8">
   <title>Xeon Rapture Tools</title>
-
+  <link rel="stylesheet" href="https://xeonrapture.github.io/site.css">
 </head>
+
 <body>
+  <div id="nav"></div>
 
-<div id="nav"></div>
-<script>
-  const nav = host.querySelector(".xr-nav");
-const btn = host.querySelector(".xr-nav-toggle");
-if (nav && btn) {
-  btn.addEventListener("click", () => {
-    const open = nav.classList.toggle("xr-open");
-    btn.setAttribute("aria-expanded", open ? "true" : "false");
-  });
-}
-</script>
+  <main>
+    <h1>Xeon Rapture Tools</h1>
+    <p>Welcome in! This page is for various tools and utilities relating to the Xeon Rapture Universe, a work of sci-fantasy collaborative storytelling.</p>
 
-<main>
-  <h1>Xeon Rapture Tools</h1>
-  <p>Welcome in! This page is for various tools and utilities relating to the Xeon Rapture Universe, a work of sci-fantasy collaborative storytelling.</p>
+    <h2>All Tools</h2>
+    <div id="tools-list">Loading…</div>
 
-  <h2>All Tools</h2>
-  <ul id="tools-list"></ul>
+    <h2>The Main Site</h2>
+    <ul class="tools-list">
+      <li><a href="https://publish.obsidian.md/xeonrapture/xr/Xeon+Rapture">Xeon Rapture Home Page</a></li>
+      <li><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules">XRRPG Rules</a></li>
+      <li><a href="https://forms.gle/Ptyf1a82r9AZLhgR7">Give Feedback/Report Bugs</a></li>
+    </ul>
+  </main>
 
-  <h2>The Main Site</h2>
-  <ul class="tools-list">
-    <li><a href="https://publish.obsidian.md/xeonrapture/xr/Xeon+Rapture">Xeon Rapture Home Page</a></li>
-    <li><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules">XRRPG Rules</a></li>
-    <li><a href="https://forms.gle/Ptyf1a82r9AZLhgR7">Give Feedback/Report Bugs</a></li>
-  </ul>
-</main>
+  <script>
+  (async () => {
+    const navHost = document.getElementById("nav");
+    const listHost = document.getElementById("tools-list");
 
-<script>
-const groups = temp.querySelectorAll(".xr-nav-group");
-listHost.innerHTML = "";
+    try {
+      // 1) Fetch nav.html
+      const res = await fetch("https://xeonrapture.github.io/nav.html");
+      const html = await res.text();
 
-for (const g of groups) {
-  const title = g.querySelector(".xr-nav-title")?.textContent?.trim() || "Links";
-  const h = document.createElement("h3");
-  h.textContent = title;
-  listHost.appendChild(h);
+      // 2) Inject nav into page
+      navHost.innerHTML = html;
 
-  const ul = document.createElement("ul");
-  ul.className = "tools-list";
+      // 3) Wire up dropdown toggle (if present)
+      const nav = navHost.querySelector(".xr-nav");
+      const btn = navHost.querySelector(".xr-nav-toggle");
+      if (nav && btn) {
+        btn.addEventListener("click", () => {
+          const open = nav.classList.toggle("xr-open");
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+      }
 
-  const links = g.querySelectorAll("a");
-  for (const a of links) {
-    if (a.classList.contains("xr-brand")) continue;
+      // 4) Build grouped appendix from the same nav HTML
+      const temp = document.createElement("div");
+      temp.innerHTML = html;
 
-    const li = document.createElement("li");
-    const link = document.createElement("a");
-    link.href = a.href;
-    link.textContent = a.textContent;
-    li.appendChild(link);
-    ul.appendChild(li);
-  }
+      const groups = temp.querySelectorAll(".xr-nav-group");
 
-  listHost.appendChild(ul);
-}
+      listHost.innerHTML = ""; // clear "Loading…"
 
-</script>
+      // If you *don't* have groups yet, fall back to flat list
+      if (!groups.length) {
+        const ul = document.createElement("ul");
+        ul.className = "tools-list";
 
-  
+        const links = temp.querySelectorAll("a");
+        for (const a of links) {
+          if (a.classList.contains("xr-brand")) continue;
+          const li = document.createElement("li");
+          const link = document.createElement("a");
+          link.href = a.href;
+          link.textContent = a.textContent;
+          li.appendChild(link);
+          ul.appendChild(li);
+        }
+
+        listHost.appendChild(ul);
+        return;
+      }
+
+      // Grouped mode
+      for (const g of groups) {
+        const title = g.querySelector(".xr-nav-title")?.textContent?.trim() || "Links";
+
+        const h = document.createElement("h3");
+        h.textContent = title;
+        listHost.appendChild(h);
+
+        const ul = document.createElement("ul");
+        ul.className = "tools-list";
+
+        const links = g.querySelectorAll("a");
+        for (const a of links) {
+          if (a.classList.contains("xr-brand")) continue;
+
+          const li = document.createElement("li");
+          const link = document.createElement("a");
+          link.href = a.href;
+          link.textContent = a.textContent;
+          li.appendChild(link);
+          ul.appendChild(li);
+        }
+
+        listHost.appendChild(ul);
+      }
+
+    } catch (e) {
+      console.error(e);
+      listHost.innerHTML = "<p>Failed to load tools list.</p>";
+    }
+  })();
+  </script>
 </body>
+</html>
