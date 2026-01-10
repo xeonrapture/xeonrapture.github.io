@@ -6,11 +6,43 @@
 <body>
 <div id="nav"></div>
 
+<div id="nav"></div>
+
+<main>
+  <h1>XR Tools</h1>
+  <p>A collection of tools for Xeon Rapture.</p>
+
+  <h2>All Tools</h2>
+  <ul id="tools-list"></ul>
+</main>
+
 <script>
-  fetch("https://xeonrapture.github.io/nav.html")
-    .then(r => r.text())
-    .then(html => document.getElementById("nav").innerHTML = html)
-    .catch(() => {});
+(async () => {
+  const navHost = document.getElementById("nav");
+  const listHost = document.getElementById("tools-list");
+
+  const res = await fetch("https://xeonrapture.github.io/nav.html");
+  const html = await res.text();
+
+  // Inject nav normally
+  navHost.innerHTML = html;
+
+  // Parse nav links
+  const temp = document.createElement("div");
+  temp.innerHTML = html;
+
+  const links = temp.querySelectorAll("a");
+
+  // Build list from nav links
+  for (const a of links) {
+    const li = document.createElement("li");
+    const link = document.createElement("a");
+    link.href = a.href;
+    link.textContent = a.textContent;
+    li.appendChild(link);
+    listHost.appendChild(li);
+  }
+})();
 </script>
 
   
