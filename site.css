@@ -24,6 +24,10 @@ body {
   padding: 20px;
 }
 
+a:link {
+  color: #6fd7e3;
+}
+
 /* ===== Shared Nav ===== */
 .xr-nav {
   display: flex;
@@ -68,7 +72,7 @@ body {
 
 .xr-nav-a {
   text-decoration: none;
-  color: #9c76de;
+  color: #e3dd6f
 }
 
 /* Mobile dropdown */
