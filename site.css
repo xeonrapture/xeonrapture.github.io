@@ -28,6 +28,10 @@ a:link {
   color: #6fd7e3;
 }
 
+a:visited {
+  color: #926fe3;
+}
+
 /* ===== Shared Nav ===== */
 .xr-nav {
   display: flex;
