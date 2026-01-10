@@ -1,5 +1,7 @@
 /* ===== Global XR Tools Theme ===== */
 
+@import url("https://fonts.googleapis.com/css2?family=Goudy+Bookletter+1911&family=MedievalSharp&family=Orbitron:wght@400..900&display=swap&family=Share+Tech&display=swap");
+
 :root {
   --bg: #0e0f13;
   --panel: #161821;
