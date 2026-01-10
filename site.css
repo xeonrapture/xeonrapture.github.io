@@ -39,7 +39,7 @@ body {
   font-weight: 700; 
   font-size: 1.1rem;
   text-decoration: none;
-  color: #63b87a;
+  color: #76de91
 }
 
 .xr-nav-toggle {
@@ -64,6 +64,10 @@ body {
   opacity: 0.7;
   font-weight: 600;
   margin-right: 6px;
+}
+
+.xr-nav-a {
+  color: #9c76de;
 }
 
 /* Mobile dropdown */
