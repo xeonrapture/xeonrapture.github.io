@@ -24,32 +24,33 @@
 </main>
 
 <script>
-(async () => {
-  const navHost = document.getElementById("nav");
-  const listHost = document.getElementById("tools-list");
+const groups = temp.querySelectorAll(".xr-nav-group");
+listHost.innerHTML = "";
 
-  const res = await fetch("https://xeonrapture.github.io/nav.html");
-  const html = await res.text();
+for (const g of groups) {
+  const title = g.querySelector(".xr-nav-title")?.textContent?.trim() || "Links";
+  const h = document.createElement("h3");
+  h.textContent = title;
+  listHost.appendChild(h);
 
-  // Inject nav normally
-  navHost.innerHTML = html;
+  const ul = document.createElement("ul");
+  ul.className = "tools-list";
 
-  // Parse nav links
-  const temp = document.createElement("div");
-  temp.innerHTML = html;
-
-  const links = temp.querySelectorAll("a");
-
-  // Build list from nav links
+  const links = g.querySelectorAll("a");
   for (const a of links) {
+    if (a.classList.contains("xr-brand")) continue;
+
     const li = document.createElement("li");
     const link = document.createElement("a");
     link.href = a.href;
     link.textContent = a.textContent;
     li.appendChild(link);
-    listHost.appendChild(li);
+    ul.appendChild(li);
   }
-})();
+
+  listHost.appendChild(ul);
+}
+
 </script>
 
   
