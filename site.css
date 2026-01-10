@@ -35,7 +35,11 @@ body {
   position: relative;
 }
 
-.xr-brand { font-weight: 700; }
+.xr-brand { 
+  font-weight: 700; 
+  font-size: 1.1rem;
+  text-decoration: none;
+}
 
 .xr-nav-toggle {
   margin-left: auto;
