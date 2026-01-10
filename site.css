@@ -70,3 +70,23 @@ button:hover {
   border-color: var(--accent);
   cursor: pointer;
 }
+
+#tools-list {
+  list-style: none;
+  padding: 0;
+}
+
+#tools-list li {
+  margin: 0.5rem 0;
+}
+
+#tools-list a {
+  font-size: 1.1rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+#tools-list a:hover {
+  text-decoration: underline;
+}
+
