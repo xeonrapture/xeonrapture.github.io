@@ -184,4 +184,42 @@ button:hover {
   text-decoration: underline;
 }
 
+/* ===== FORCE DROPDOWN NAV ALWAYS ===== */
+
+.xr-nav-toggle {
+  display: inline-block !important;
+  margin-left: auto;
+}
+
+.xr-nav-groups {
+  display: none !important;
+  position: absolute;
+  top: 56px;
+  left: 12px;
+  right: 12px;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  z-index: 9999;
+}
+
+.xr-nav.xr-open .xr-nav-groups {
+  display: flex !important;
+}
+
+.xr-nav-group {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.xr-nav-title {
+  margin: 0 0 4px 0;
+  opacity: 0.85;
+}
+
+
 
