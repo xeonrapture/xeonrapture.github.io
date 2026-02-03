@@ -41,7 +41,6 @@ a:visited {
   background: var(--panel);
   border-bottom: 1px solid var(--border);
   position: relative;
-  max-width: 520px;
 }
 
 .xr-brand, .xr-brand:visited { 
@@ -54,6 +53,7 @@ a:visited {
 .xr-nav-toggle {
   margin-left: auto;
   display: none;
+  max-width: 520px;
 }
 
 .xr-nav-groups {
