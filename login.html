@@ -58,7 +58,7 @@
 </main>
 
 <script>
-  const supabase = window.supabaseClient;
+  const sb = window.supabaseClient;
 
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
@@ -72,11 +72,11 @@
   }
 
   (async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await sb.auth.getSession();
     if (session) location.href = "/dashboard.html";
   })();
 
-  supabase.auth.onAuthStateChange((_event, session) => {
+  sb.auth.onAuthStateChange((_event, session) => {
     if (session) location.href = "/dashboard.html";
   });
 
