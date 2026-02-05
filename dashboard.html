@@ -65,8 +65,9 @@
       console.error(profileError);
     }
 
-    const currentUser = user;
-    const currentProfile = profile;
+    currentUser = user;
+    currentProfile = profile;
+
 
     const username = profile?.username ?? "(no username)";
     const displayName =
@@ -75,13 +76,14 @@
       "(no display name)";
 
     userInfo.innerHTML = `
-      Username: ${username} 
-      <div style="margin-top:0.75rem;">
-        <button id="editUsernameBtn">Edit</button>
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <span>Username: <strong id="usernameValue">${username}</strong></span>
+        <button id="editUsernameBtn" type="button">Edit</button>
       </div>
-      Email: ${user.email}<br>
-      Name: ${displayName}
+      <div style="margin-top:0.5rem;">Email: ${user.email}</div>
+      <div>Name: ${displayName}</div>
     `;
+
   }
 
   initDashboard();
@@ -97,7 +99,6 @@
     window.location.href = "/login.html";
   };
 
-  const editBtn = document.getElementById("editUsernameBtn");
   const modal = document.getElementById("usernameModal");
   const saveBtn = document.getElementById("saveUsernameBtn");
   const cancelBtn = document.getElementById("cancelUsernameBtn");
@@ -119,7 +120,9 @@
   }
 
   // Open modal
+  const editBtn = document.getElementById("editUsernameBtn");
   editBtn.onclick = () => showModal(true);
+
 
   // Close modal
   cancelBtn.onclick = () => showModal(false);
@@ -167,11 +170,8 @@
 
     // Update local state + UI
     currentProfile.username = username;
-    document.getElementById("userInfo").innerHTML =
-      document.getElementById("userInfo").innerHTML.replace(
-        /Username:.*?<br>/,
-        `Username: ${username}<br>`
-      );
+    document.getElementById("usernameValue").textContent = username;
+
 
     showModal(false);
   };
