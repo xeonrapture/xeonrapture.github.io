@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>XR Dashboard</title>
+
+  <link rel="stylesheet" href="https://xeonrapture.github.io/site.css">
+</head>
+
+<body>
+  <!-- NAV -->
+  <div id="nav"></div>
+  <script>
+    fetch("https://xeonrapture.github.io/nav.html")
+      .then(r => r.text())
+      .then(html => {
+        const host = document.getElementById("nav");
+        host.innerHTML = html;
+
+        const nav = host.querySelector(".xr-nav");
+        const btn = host.querySelector(".xr-nav-toggle");
+        
+        if (nav && btn) {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation(); // IMPORTANT
+            const open = nav.classList.toggle("xr-open");
+            btn.setAttribute("aria-expanded", open ? "true" : "false");
+          });
+        
+          document.addEventListener("click", (e) => {
+            if (!nav.classList.contains("xr-open")) return;
+        
+            const clickedInsideNav = nav.contains(e.target);
+            const clickedToggle = btn.contains(e.target);
+        
+            if (!clickedInsideNav && !clickedToggle) {
+              nav.classList.remove("xr-open");
+              btn.setAttribute("aria-expanded", "false");
+            }
+          });
+        }
+
+      })
+      .catch(() => {});
+  </script>
+
+  <!-- CONTENT -->
+  <main class="wrap">
+    <h1>Dashboard</h1>
+
+    <p class="muted">Welcome back.</p>
+
+    <div class="card">
+      <h2>User</h2>
+      <div id="userInfo" class="mono muted">Loading user…</div>
+
+      <div style="margin-top:1rem;">
+        <button id="logoutBtn">Log out</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1rem;">
+      <h2>Next steps</h2>
+      <ul class="muted">
+        <li>Character management</li>
+        <li>Inventory & gear</li>
+        <li>Webrunning tools</li>
+      </ul>
+    </div>
+  </main>
+
+  <!-- AUTH LOGIC -->
+  <script type="module">
+    import { supabase } from "./auth.js";
+
+    const userInfo = document.getElementById("userInfo");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const { data, error } = await supabase.auth.getUser();
+
+    if (error || !data.user) {
+      // Not logged in → bounce
+      window.location.href = "/login.html";
+    } else {
+      const user = data.user;
+
+      const name =
+        user.user_metadata?.username ||
+        user.user_metadata?.name ||
+        "(no display name)";
+
+      userInfo.innerHTML = `
+Email: ${user.email}
+User ID: ${user.id}
+Name: ${name}
+`;
+    }
+
+    logoutBtn.onclick = async () => {
+      await supabase.auth.signOut();
+      window.location.href = "/login.html";
+    };
+  </script>
+</body>
+</html>
