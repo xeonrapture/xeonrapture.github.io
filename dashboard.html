@@ -70,9 +70,12 @@
     </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+
   <!-- AUTH LOGIC -->
   <script type="module">
-    import { supabase } from "./auth.js";
+    const sb = window.supabaseClient;
 
     const userInfo = document.getElementById("userInfo");
     const logoutBtn = document.getElementById("logoutBtn");
@@ -100,11 +103,11 @@
         "(no display name)";
 
       userInfo.innerHTML = `
-Email: ${user.email}
-User ID: ${user.id}
-Name: ${name}
-`;
-    })();
+      Email: ${user.email}
+      User ID: ${user.id}
+      Name: ${name}
+      `;
+          })();
 
     // 3️⃣ Listen for auth state changes (e.g., sign out in another tab)
     supabase.auth.onAuthStateChange((_event, session) => {
