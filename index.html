@@ -32,7 +32,10 @@
   (async () => {
     const listHost = document.getElementById("tools-list");
 
-    try {      
+    try {   
+      const res = await fetch("/shared/nav.html");
+      const html = await res.text();   
+
       // 4) Build grouped appendix from the same nav HTML
       const temp = document.createElement("div");
       temp.innerHTML = html;
