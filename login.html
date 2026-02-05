@@ -57,8 +57,8 @@
   <div id="msg" class="muted mono" style="margin-top:1rem;">&nbsp;</div>
 </main>
 
-<script type="module">
-  import { signIn, signUp, supabase } from "./auth.js";
+<script>
+  const supabase = window.supabaseClient;
 
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
@@ -71,7 +71,6 @@
     msg.style.color = isError ? "red" : "green";
   }
 
-  // Redirect if already logged in
   (async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) location.href = "/dashboard.html";
@@ -81,23 +80,24 @@
     if (session) location.href = "/dashboard.html";
   });
 
-  // Validate inputs
   function validateInputs() {
     const email = emailInput.value.trim();
     const password = passwordInput.value;
+
     if (!email || !password) {
       showMessage("Email and password cannot be empty.", true);
       return null;
     }
+
     return { email, password };
   }
 
-  // Login
   loginBtn.onclick = async () => {
     const credentials = validateInputs();
     if (!credentials) return;
 
     showMessage("Logging in...");
+
     try {
       await signIn(credentials.email, credentials.password);
       location.href = "/dashboard.html";
@@ -106,19 +106,20 @@
     }
   };
 
-  // Sign Up
   signupBtn.onclick = async () => {
     const credentials = validateInputs();
     if (!credentials) return;
 
     showMessage("Signing up...");
+
     try {
       await signUp(credentials.email, credentials.password);
-      showMessage("Check your email to confirm.", false);
+      showMessage("Check your email to confirm.");
     } catch (e) {
       showMessage(e.message || JSON.stringify(e), true);
     }
   };
 </script>
+
 </body>
 </html>
