@@ -1,37 +1,40 @@
-export const supabase = window.supabase.createClient(
+window.supabaseClient = window.supabase.createClient(
   "https://tustchcydbvipwcxeqfq.supabase.co",
   "sb_publishable_ce_C2Te3RZZKszXfn91OSA_kpUalPnB"
 );
 
-export async function signIn(email, password) {
-  const { error } = await supabase.auth.signInWithPassword({
+async function signIn(email, password) {
+  const { error } = await window.supabaseClient.auth.signInWithPassword({
     email,
     password
   });
   if (error) throw error;
 }
 
-export async function signUp(email, password) {
-  const { error } = await supabase.auth.signUp({
+async function signUp(email, password) {
+  const { error } = await window.supabaseClient.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: window.location.origin + '/dashboard.html' }
+    options: {
+      emailRedirectTo: window.location.origin + "/dashboard.html"
+    }
   });
   if (error) throw error;
 }
 
-export async function signOut() {
-  await supabase.auth.signOut();
+async function signOut() {
+  await window.supabaseClient.auth.signOut();
 }
 
-export async function getUser() {
-  // 1️⃣ Check if there's a session
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return null; // no session → no user
+async function getUser() {
+  const { data: { session } } =
+    await window.supabaseClient.auth.getSession();
 
-  // 2️⃣ Get user info
-  const { data: { user }, error } = await supabase.auth.getUser();
+  if (!session) return null;
+
+  const { data: { user }, error } =
+    await window.supabaseClient.auth.getUser();
+
   if (error) throw error;
   return user;
 }
-
