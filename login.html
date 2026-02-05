@@ -54,6 +54,11 @@
     <button id="signup">Sign Up</button>
   </div>
 
+  <div style="margin-top:1rem;">
+  <button id="googleLogin">Continue with Google</button>
+  </div>
+
+
   <div id="msg" class="muted mono" style="margin-top:1rem;">&nbsp;</div>
 </main>
 
@@ -117,6 +122,24 @@
       showMessage("Check your email to confirm.");
     } catch (e) {
       showMessage(e.message || JSON.stringify(e), true);
+    }
+  };
+
+  const googleBtn = document.getElementById("googleLogin");
+
+  googleBtn.onclick = async () => {
+    showMessage("Redirecting to Google…");
+
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: "https://xeonrapture.github.io/dashboard.html"
+      }
+    });
+
+    if (error) {
+      console.error(error);
+      showMessage(error.message, true);
     }
   };
 </script>
