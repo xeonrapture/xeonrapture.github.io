@@ -3,7 +3,7 @@
   if (!host) return;
 
   // Load nav HTML
-  const res = await fetch("nav.html");
+  const res = await fetch("https://app.xeonrapture.com/nav.html");
   const html = await res.text();
   host.innerHTML = html;
 
@@ -46,7 +46,7 @@
     if (logoutBtn) {
       logoutBtn.onclick = async () => {
         await sb.auth.signOut();
-        window.location.href = "login.html";
+        window.location.href = "https://app.xeonrapture.com/login.html";
       };
     }
   }
