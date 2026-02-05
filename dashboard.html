@@ -37,6 +37,29 @@
     </div>
   </main>
 
+  <div id="usernameModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+
+    <div class="xr-modal-card">
+      <h2>Change username</h2>
+
+      <input
+        id="newUsername"
+        type="text"
+        maxlength="24"
+        placeholder="New username"
+        autocomplete="off"
+      />
+
+      <div class="xr-modal-actions">
+        <button id="saveUsernameBtn">Save</button>
+        <button id="cancelUsernameBtn">Cancel</button>
+      </div>
+
+      <div id="usernameModalMsg" class="mono muted">&nbsp;</div>
+    </div>
+  </div>
+
   <!-- AUTH LOGIC -->
   <script>
   const sb = window.supabaseClient;
@@ -180,28 +203,7 @@
 
 </script>
 
-<div id="usernameModal" class="xr-modal hidden">
-  <div class="xr-modal-backdrop"></div>
 
-  <div class="xr-modal-card">
-    <h2>Change username</h2>
-
-    <input
-      id="newUsername"
-      type="text"
-      maxlength="24"
-      placeholder="New username"
-      autocomplete="off"
-    />
-
-    <div class="xr-modal-actions">
-      <button id="saveUsernameBtn">Save</button>
-      <button id="cancelUsernameBtn">Cancel</button>
-    </div>
-
-    <div id="usernameModalMsg" class="mono muted">&nbsp;</div>
-  </div>
-</div>
 
 
 </body>
