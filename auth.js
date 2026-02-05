@@ -1,4 +1,3 @@
-<script type="module">
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 export const supabase = createClient(
@@ -30,4 +29,3 @@ export async function getUser() {
   const { data } = await supabase.auth.getUser();
   return data.user;
 }
-</script>
