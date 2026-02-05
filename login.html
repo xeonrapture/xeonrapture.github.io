@@ -1,86 +1,74 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>XR Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XR Login / Sign Up</title>
   <link rel="stylesheet" href="https://xeonrapture.github.io/site.css" />
 </head>
 <body>
 <div id="nav"></div>
 
 <!-- Nav injection + dropdown toggle -->
-  <script>
-    fetch("https://xeonrapture.github.io/nav.html")
-      .then(r => r.text())
-      .then(html => {
-        const host = document.getElementById("nav");
-        host.innerHTML = html;
+<script>
+  fetch("https://xeonrapture.github.io/nav.html")
+    .then(r => r.text())
+    .then(html => {
+      const host = document.getElementById("nav");
+      host.innerHTML = html;
 
-        const nav = host.querySelector(".xr-nav");
-        const btn = host.querySelector(".xr-nav-toggle");
-        
-        if (nav && btn) {
-          btn.addEventListener("click", (e) => {
-            e.stopPropagation(); // IMPORTANT
-            const open = nav.classList.toggle("xr-open");
-            btn.setAttribute("aria-expanded", open ? "true" : "false");
-          });
-        
-          document.addEventListener("click", (e) => {
-            if (!nav.classList.contains("xr-open")) return;
-        
-            const clickedInsideNav = nav.contains(e.target);
-            const clickedToggle = btn.contains(e.target);
-        
-            if (!clickedInsideNav && !clickedToggle) {
-              nav.classList.remove("xr-open");
-              btn.setAttribute("aria-expanded", "false");
-            }
-          });
-        }
+      const nav = host.querySelector(".xr-nav");
+      const btn = host.querySelector(".xr-nav-toggle");
 
-      })
-      .catch(() => {});
-  </script>
+      if (nav && btn) {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const open = nav.classList.toggle("xr-open");
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
 
-<h1>Login / Sign Up</h1>
+        document.addEventListener("click", (e) => {
+          if (!nav.classList.contains("xr-open")) return;
 
-<input id="email" type="email" placeholder="email">
-<input id="password" type="password" placeholder="password">
+          if (!nav.contains(e.target) && !btn.contains(e.target)) {
+            nav.classList.remove("xr-open");
+            btn.setAttribute("aria-expanded", "false");
+          }
+        });
+      }
+    })
+    .catch(() => {});
+</script>
 
-<button id="login">Login</button>
-<button id="signup">Sign Up</button>
+<main class="wrap">
+  <h1>Login / Sign Up</h1>
 
-<div id="msg"></div>
+  <input id="email" type="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password" />
+
+  <div style="margin-top:1rem;">
+    <button id="login">Login</button>
+    <button id="signup">Sign Up</button>
+  </div>
+
+  <div id="msg" class="muted mono" style="margin-top:1rem;">&nbsp;</div>
+</main>
 
 <script type="module">
   import { signIn, signUp, supabase } from "./auth.js";
 
-  const msg = document.getElementById("msg");
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
+  const msg = document.getElementById("msg");
+  const loginBtn = document.getElementById("login");
+  const signupBtn = document.getElementById("signup");
 
-  // login
-  document.getElementById("login").onclick = async () => {
-    try {
-      await signIn(emailInput.value, passwordInput.value);
-      location.href = "/dashboard.html";
-    } catch (e) {
-      msg.textContent = e.message || JSON.stringify(e);
-    }
-  };
+  function showMessage(text, isError = false) {
+    msg.textContent = text;
+    msg.style.color = isError ? "red" : "green";
+  }
 
-  // signup
-  document.getElementById("signup").onclick = async () => {
-    try {
-      await signUp(emailInput.value, passwordInput.value);
-      msg.textContent = "Check your email to confirm.";
-    } catch (e) {
-      msg.textContent = e.message || JSON.stringify(e);
-    }
-  };
-
-  // auto-redirect if already logged in
+  // Redirect if already logged in
   (async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) location.href = "/dashboard.html";
@@ -89,8 +77,45 @@
   supabase.auth.onAuthStateChange((_event, session) => {
     if (session) location.href = "/dashboard.html";
   });
+
+  // Validate inputs
+  function validateInputs() {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    if (!email || !password) {
+      showMessage("Email and password cannot be empty.", true);
+      return null;
+    }
+    return { email, password };
+  }
+
+  // Login
+  loginBtn.onclick = async () => {
+    const credentials = validateInputs();
+    if (!credentials) return;
+
+    showMessage("Logging in...");
+    try {
+      await signIn(credentials.email, credentials.password);
+      location.href = "/dashboard.html";
+    } catch (e) {
+      showMessage(e.message || JSON.stringify(e), true);
+    }
+  };
+
+  // Sign Up
+  signupBtn.onclick = async () => {
+    const credentials = validateInputs();
+    if (!credentials) return;
+
+    showMessage("Signing up...");
+    try {
+      await signUp(credentials.email, credentials.password);
+      showMessage("Check your email to confirm.", false);
+    } catch (e) {
+      showMessage(e.message || JSON.stringify(e), true);
+    }
+  };
 </script>
-
-
 </body>
 </html>
