@@ -1,0 +1,227 @@
+/* ===== Global XR Tools Theme ===== */
+
+@import url("https://fonts.googleapis.com/css2?family=Goudy+Bookletter+1911&family=MedievalSharp&family=Orbitron:wght@400..900&display=swap&family=Share+Tech&display=swap&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
+
+:root {
+  --bg: #0e0f13;
+  --panel: #161821;
+  --text: #e6e6eb;
+  --muted: #9aa0b2;
+  --accent: #7aa2ff;
+  --border: #2a2d3a;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 20px;
+}
+
+a:link {
+  color: #6fd7e3;
+}
+
+a:visited {
+  color: #a78aeb;
+}
+
+/* ===== Shared Nav ===== */
+.xr-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.75rem 1rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.xr-brand, .xr-brand:visited { 
+  font-weight: 700; 
+  font-size: 1.1rem;
+  text-decoration: none;
+  color: #76de91
+}
+
+.xr-nav-toggle {
+  margin-left: auto;
+  display: none;
+  max-width: 520px;
+}
+
+.xr-nav-groups {
+  display: flex;
+  gap: 18px;
+  margin-left: auto;
+  align-items: flex-start;
+  max-width: 520px;
+}
+
+.xr-nav-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.xr-nav-title {
+  opacity: 0.7;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.xr-nav-a, .xr-nav-a:visited {
+  text-decoration: none;
+  color: #e3dd6f
+}
+
+/* Mobile dropdown */
+@media (max-width: 900px) {
+  .xr-nav-toggle { display: inline-block; }
+
+  .xr-nav-groups {
+    display: none;
+    position: absolute;
+    top: 56px;
+    left: 12px;
+    right: 12px;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--panel);
+    z-index: 9999;
+  }
+
+  .xr-nav.xr-open .xr-nav-groups { display: flex; }
+
+  .xr-nav-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .xr-nav-title {
+    margin: 0 0 4px 0;
+    opacity: 0.85;
+  }
+}
+
+
+/* ===== Page Layout ===== */
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* ===== Output blocks ===== */
+.xr-output {
+  background: #111;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  white-space: pre-wrap;
+}
+
+/* ===== Buttons / Inputs ===== */
+button, input, select {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin: 0.25rem;
+}
+
+button:hover {
+  border-color: var(--accent);
+  cursor: pointer;
+}
+
+#tools-list {
+  list-style: none;
+  padding: 0;
+}
+
+#tools-list li {
+  margin: 0.5rem 0;
+}
+
+#tools-list a {
+  font-size: 1.1rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+#tools-list a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Tool / Appendix Lists ===== */
+.tools-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tools-list li {
+  margin: 0.5rem 0;
+}
+
+.tools-list a {
+  font-size: 1.1rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.tools-list a:hover {
+  text-decoration: underline;
+}
+
+/* ===== FORCE DROPDOWN NAV ALWAYS ===== */
+
+.xr-nav-toggle {
+  display: inline-block !important;
+  margin-left: auto;
+}
+
+.xr-nav-groups {
+  display: none !important;
+  position: absolute;
+  top: 56px;
+  left: 12px;
+  right: 12px;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  z-index: 9999;
+}
+
+.xr-nav.xr-open .xr-nav-groups {
+  display: flex !important;
+}
+
+.xr-nav-group {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.xr-nav-title {
+  margin: 0 0 4px 0;
+  opacity: 0.85;
+}
+
+
+
