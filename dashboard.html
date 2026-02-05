@@ -84,6 +84,9 @@
       <div>Name: ${displayName}</div>
     `;
 
+    const editBtn = document.getElementById("editUsernameBtn");
+    editBtn.onclick = () => showModal(true);
+
   }
 
   initDashboard();
@@ -99,6 +102,7 @@
     window.location.href = "/login.html";
   };
 
+  
   const modal = document.getElementById("usernameModal");
   const saveBtn = document.getElementById("saveUsernameBtn");
   const cancelBtn = document.getElementById("cancelUsernameBtn");
@@ -119,9 +123,7 @@
     modalMsg.style.color = error ? "red" : "inherit";
   }
 
-  // Open modal
-  const editBtn = document.getElementById("editUsernameBtn");
-  editBtn.onclick = () => showModal(true);
+
 
 
   // Close modal
