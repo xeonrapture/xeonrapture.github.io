@@ -56,8 +56,10 @@
     if (session) location.href = "/dashboard.html";
   })();
 
-  sb.auth.onAuthStateChange((_event, session) => {
-    if (session) location.href = "/dashboard.html";
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_IN" && session) {
+      location.href = "/dashboard.html";
+    }
   });
 
   // function validateInputs() {

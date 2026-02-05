@@ -49,5 +49,19 @@
         window.location.href = "/login.html";
       };
     }
+
+    if (loggedIn) {
+      const { data: profile } = await sb
+        .from("profiles")
+        .select("username")
+        .eq("id", data.session.user.id)
+        .single();
+
+      const nameEl = host.querySelector("#nav-username");
+      if (nameEl && profile?.username) {
+        nameEl.textContent = profile.username;
+      }
+    }
+
   }
 })();
