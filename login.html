@@ -60,45 +60,45 @@
     if (session) location.href = "/dashboard.html";
   });
 
-  function validateInputs() {
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
+  // function validateInputs() {
+  //   const email = emailInput.value.trim();
+  //   const password = passwordInput.value;
 
-    if (!email || !password) {
-      showMessage("Email and password cannot be empty.", true);
-      return null;
-    }
+  //   if (!email || !password) {
+  //     showMessage("Email and password cannot be empty.", true);
+  //     return null;
+  //   }
 
-    return { email, password };
-  }
+  //   return { email, password };
+  // }
 
-  loginBtn.onclick = async () => {
-    const credentials = validateInputs();
-    if (!credentials) return;
+  // loginBtn.onclick = async () => {
+  //   const credentials = validateInputs();
+  //   if (!credentials) return;
 
-    showMessage("Logging in...");
+  //   showMessage("Logging in...");
 
-    try {
-      await signIn(credentials.email, credentials.password);
-      location.href = "/dashboard.html";
-    } catch (e) {
-      showMessage(e.message || JSON.stringify(e), true);
-    }
-  };
+  //   try {
+  //     await signIn(credentials.email, credentials.password);
+  //     location.href = "/dashboard.html";
+  //   } catch (e) {
+  //     showMessage(e.message || JSON.stringify(e), true);
+  //   }
+  // };
 
-  signupBtn.onclick = async () => {
-    const credentials = validateInputs();
-    if (!credentials) return;
+  // signupBtn.onclick = async () => {
+  //   const credentials = validateInputs();
+  //   if (!credentials) return;
 
-    showMessage("Signing up...");
+  //   showMessage("Signing up...");
 
-    try {
-      await signUp(credentials.email, credentials.password);
-      showMessage("Check your email to confirm.");
-    } catch (e) {
-      showMessage(e.message || JSON.stringify(e), true);
-    }
-  };
+  //   try {
+  //     await signUp(credentials.email, credentials.password);
+  //     showMessage("Check your email to confirm.");
+  //   } catch (e) {
+  //     showMessage(e.message || JSON.stringify(e), true);
+  //   }
+  // };
 
   const googleBtn = document.getElementById("googleLogin");
 
