@@ -46,7 +46,7 @@
     if (logoutBtn) {
       logoutBtn.onclick = async () => {
         await sb.auth.signOut();
-        window.location.href = "/shared/login.html";
+        window.location.href = "/login.html";
       };
     }
   }
