@@ -23,7 +23,7 @@
         
         if (nav && btn) {
           btn.addEventListener("click", (e) => {
-            e.stopPropagation(); // IMPORTANT
+            e.stopPropagation();
             const open = nav.classList.toggle("xr-open");
             btn.setAttribute("aria-expanded", open ? "true" : "false");
           });
@@ -77,13 +77,22 @@
     const userInfo = document.getElementById("userInfo");
     const logoutBtn = document.getElementById("logoutBtn");
 
-    const { data, error } = await supabase.auth.getUser();
+    // 1️⃣ Check session on load
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
 
-    if (error || !data.user) {
-      // Not logged in → bounce
-      window.location.href = "/login.html";
-    } else {
-      const user = data.user;
+      if (!session) {
+        // Not logged in → redirect to login
+        window.location.href = "/login.html";
+        return;
+      }
+
+      // 2️⃣ Get user info
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
+        window.location.href = "/login.html";
+        return;
+      }
 
       const name =
         user.user_metadata?.username ||
@@ -95,8 +104,16 @@ Email: ${user.email}
 User ID: ${user.id}
 Name: ${name}
 `;
-    }
+    })();
 
+    // 3️⃣ Listen for auth state changes (e.g., sign out in another tab)
+    supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        window.location.href = "/login.html";
+      }
+    });
+
+    // 4️⃣ Log out button
     logoutBtn.onclick = async () => {
       await supabase.auth.signOut();
       window.location.href = "/login.html";
