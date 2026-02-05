@@ -11,6 +11,7 @@ async function signIn(email, password) {
   if (error) throw error;
 }
 
+/*
 async function signUp(email, password) {
   const { error } = await window.supabaseClient.auth.signUp({
     email,
@@ -20,7 +21,22 @@ async function signUp(email, password) {
     }
   });
   if (error) throw error;
+}*/
+
+async function signUp(email, password) {
+  const { data, error } = await window.supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: "https://xeonrapture.github.io/dashboard.html"
+    }
+  });
+
+  console.log("Signup response:", data, error);
+
+  if (error) throw error;
 }
+
 
 async function signOut() {
   await window.supabaseClient.auth.signOut();
