@@ -54,33 +54,44 @@
 <div id="msg"></div>
 
 <script type="module">
-  import { signIn, signUp, supabase } from "./auth.js";
+import { signIn, signUp, supabase } from "./auth.js";
 
-  const msg = document.getElementById("msg");
+const msg = document.getElementById("msg");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
 
-  document.getElementById("login").onclick = async () => {
-    try {
-      await signIn(email.value, password.value);
-      location.href = "/dashboard.html";
-    } catch (e) {
-      msg.textContent = e.message;
-    }
-  };
+// redirect if already logged in
+(async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) location.href = "/dashboard.html";
+})();
 
-  document.getElementById("signup").onclick = async () => {
-    try {
-      await signUp(email.value, password.value);
-      msg.textContent = "Check your email to confirm.";
-    } catch (e) {
-      msg.textContent = e.message;
-    }
-  };
+// login
+document.getElementById("login").onclick = async () => {
+  try {
+    await signIn(emailInput.value, passwordInput.value);
+    location.href = "/dashboard.html";
+  } catch (e) {
+    msg.textContent = e.message || JSON.stringify(e);
+  }
+};
 
-  // auto-redirect if already logged in
-  supabase.auth.onAuthStateChange((_, session) => {
-    if (session) location.href = "/dashboard.html";
-  });
+// signup
+document.getElementById("signup").onclick = async () => {
+  try {
+    await signUp(emailInput.value, passwordInput.value);
+    msg.textContent = "Check your email to confirm.";
+  } catch (e) {
+    msg.textContent = e.message || JSON.stringify(e);
+  }
+};
+
+// auto-redirect if auth state changes
+supabase.auth.onAuthStateChange((_event, session) => {
+  if (session) location.href = "/dashboard.html";
+});
 </script>
+
 
 </body>
 </html>
