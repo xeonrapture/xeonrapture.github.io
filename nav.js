@@ -1,0 +1,53 @@
+(async function () {
+  const host = document.getElementById("nav");
+  if (!host) return;
+
+  // Load nav HTML
+  const res = await fetch("nav.html");
+  const html = await res.text();
+  host.innerHTML = html;
+
+  const nav = host.querySelector(".xr-nav");
+  const btn = host.querySelector(".xr-nav-toggle");
+
+  // Mobile toggle
+  if (nav && btn) {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = nav.classList.toggle("xr-open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!nav.classList.contains("xr-open")) return;
+      if (!nav.contains(e.target) && !btn.contains(e.target)) {
+        nav.classList.remove("xr-open");
+        btn.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
+  // 🔐 Auth-aware nav
+  const sb = window.supabaseClient;
+  if (sb) {
+    const { data } = await sb.auth.getSession();
+    const loggedIn = !!data.session;
+
+    host.querySelectorAll("[data-auth='in']").forEach(el => {
+      el.style.display = loggedIn ? "" : "none";
+    });
+
+    host.querySelectorAll("[data-auth='out']").forEach(el => {
+      el.style.display = loggedIn ? "none" : "";
+    });
+
+    // 🚪 Logout
+    const logoutBtn = host.querySelector("#logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.onclick = async () => {
+        await sb.auth.signOut();
+        window.location.href = "login.html";
+      };
+    }
+  }
+})();
