@@ -11,21 +11,36 @@
 <!-- Nav injection + dropdown toggle -->
   <script>
     fetch("https://xeonrapture.github.io/nav.html")
-      .then((r) => r.text())
-      .then((html) => {
+      .then(r => r.text())
+      .then(html => {
         const host = document.getElementById("nav");
         host.innerHTML = html;
 
         const nav = host.querySelector(".xr-nav");
         const btn = host.querySelector(".xr-nav-toggle");
+        
         if (nav && btn) {
-          btn.addEventListener("click", () => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation(); // IMPORTANT
             const open = nav.classList.toggle("xr-open");
             btn.setAttribute("aria-expanded", open ? "true" : "false");
           });
+        
+          document.addEventListener("click", (e) => {
+            if (!nav.classList.contains("xr-open")) return;
+        
+            const clickedInsideNav = nav.contains(e.target);
+            const clickedToggle = btn.contains(e.target);
+        
+            if (!clickedInsideNav && !clickedToggle) {
+              nav.classList.remove("xr-open");
+              btn.setAttribute("aria-expanded", "false");
+            }
+          });
         }
+
       })
-      .catch(console.error);
+      .catch(() => {});
   </script>
 
 <h1>Login / Sign Up</h1>
