@@ -1,4 +1,4 @@
-const supabase = window.supabase.createClient(
+export const supabase = window.supabase.createClient(
   "https://tustchcydbvipwcxeqfq.supabase.co",
   "sb_publishable_ce_C2Te3RZZKszXfn91OSA_kpUalPnB"
 );
