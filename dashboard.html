@@ -74,53 +74,47 @@
   <script src="auth.js"></script>
 
   <!-- AUTH LOGIC -->
-  <script type="module">
-    const sb = window.supabaseClient;
+  <script>
+  const sb = window.supabaseClient;
 
-    const userInfo = document.getElementById("userInfo");
-    const logoutBtn = document.getElementById("logoutBtn");
+  const userInfo = document.getElementById("userInfo");
+  const logoutBtn = document.getElementById("logoutBtn");
 
-    // 1️⃣ Check session on load
-    (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+  async function initDashboard() {
+    const { data, error } = await sb.auth.getSession();
 
-      if (!session) {
-        // Not logged in → redirect to login
-        window.location.href = "/login.html";
-        return;
-      }
-
-      // 2️⃣ Get user info
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) {
-        window.location.href = "/login.html";
-        return;
-      }
-
-      const name =
-        user.user_metadata?.username ||
-        user.user_metadata?.name ||
-        "(no display name)";
-
-      userInfo.innerHTML = `
-      Email: ${user.email}
-      User ID: ${user.id}
-      Name: ${name}
-      `;
-          })();
-
-    // 3️⃣ Listen for auth state changes (e.g., sign out in another tab)
-    supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        window.location.href = "/login.html";
-      }
-    });
-
-    // 4️⃣ Log out button
-    logoutBtn.onclick = async () => {
-      await supabase.auth.signOut();
+    if (error || !data.session) {
       window.location.href = "/login.html";
-    };
-  </script>
+      return;
+    }
+
+    const user = data.session.user;
+
+    const name =
+      user.user_metadata?.username ||
+      user.user_metadata?.name ||
+      "(no display name)";
+
+    userInfo.innerHTML = `
+      Email: ${user.email}<br>
+      User ID: ${user.id}<br>
+      Name: ${name}
+    `;
+  }
+
+  initDashboard();
+
+  sb.auth.onAuthStateChange((_event, session) => {
+    if (!session) {
+      window.location.href = "/login.html";
+    }
+  });
+
+  logoutBtn.onclick = async () => {
+    await sb.auth.signOut();
+    window.location.href = "/login.html";
+  };
+</script>
+
 </body>
 </html>
