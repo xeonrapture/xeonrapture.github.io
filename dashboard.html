@@ -65,6 +65,9 @@
       console.error(profileError);
     }
 
+    const currentUser = user;
+    const currentProfile = profile;
+
     const username = profile?.username ?? "(no username)";
     const displayName =
       user.user_metadata?.name ||
@@ -72,9 +75,11 @@
       "(no display name)";
 
     userInfo.innerHTML = `
-      Username: ${username}<br>
+      Username: ${username} 
+      <div style="margin-top:0.75rem;">
+        <button id="editUsernameBtn">Edit</button>
+      </div>
       Email: ${user.email}<br>
-      User ID: ${user.id}<br>
       Name: ${displayName}
     `;
   }
@@ -91,7 +96,110 @@
     await sb.auth.signOut();
     window.location.href = "/login.html";
   };
+
+  const editBtn = document.getElementById("editUsernameBtn");
+  const modal = document.getElementById("usernameModal");
+  const saveBtn = document.getElementById("saveUsernameBtn");
+  const cancelBtn = document.getElementById("cancelUsernameBtn");
+  const input = document.getElementById("newUsername");
+  const modalMsg = document.getElementById("usernameModalMsg");
+
+  let currentUser;
+  let currentProfile;
+
+  function showModal(show) {
+    modal.classList.toggle("hidden", !show);
+    modalMsg.textContent = " ";
+    input.value = currentProfile?.username || "";
+  }
+
+  function showModalMsg(text, error = false) {
+    modalMsg.textContent = text;
+    modalMsg.style.color = error ? "red" : "inherit";
+  }
+
+  // Open modal
+  editBtn.onclick = () => showModal(true);
+
+  // Close modal
+  cancelBtn.onclick = () => showModal(false);
+  modal.querySelector(".xr-modal-backdrop").onclick = () => showModal(false);
+
+  // Save username
+  saveBtn.onclick = async () => {
+    const username = input.value.trim();
+
+    if (!username) {
+      showModalMsg("Username cannot be empty.", true);
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      showModalMsg("Only letters, numbers, and underscores allowed.", true);
+      return;
+    }
+
+    showModalMsg("Checking availability…");
+
+    const { data: existing } = await sb
+      .from("profiles")
+      .select("id")
+      .eq("username", username)
+      .neq("id", currentUser.id)
+      .maybeSingle();
+
+    if (existing) {
+      showModalMsg("That username is already taken.", true);
+      return;
+    }
+
+    showModalMsg("Saving…");
+
+    const { error } = await sb
+      .from("profiles")
+      .update({ username })
+      .eq("id", currentUser.id);
+
+    if (error) {
+      showModalMsg(error.message, true);
+      return;
+    }
+
+    // Update local state + UI
+    currentProfile.username = username;
+    document.getElementById("userInfo").innerHTML =
+      document.getElementById("userInfo").innerHTML.replace(
+        /Username:.*?<br>/,
+        `Username: ${username}<br>`
+      );
+
+    showModal(false);
+  };
+
 </script>
+
+<div id="usernameModal" class="xr-modal hidden">
+  <div class="xr-modal-backdrop"></div>
+
+  <div class="xr-modal-card">
+    <h2>Change username</h2>
+
+    <input
+      id="newUsername"
+      type="text"
+      maxlength="24"
+      placeholder="New username"
+      autocomplete="off"
+    />
+
+    <div class="xr-modal-actions">
+      <button id="saveUsernameBtn">Save</button>
+      <button id="cancelUsernameBtn">Cancel</button>
+    </div>
+
+    <div id="usernameModalMsg" class="mono muted">&nbsp;</div>
+  </div>
+</div>
 
 
 </body>

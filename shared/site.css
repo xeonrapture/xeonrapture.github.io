@@ -223,5 +223,37 @@ button:hover {
   opacity: 0.85;
 }
 
+/* ===== modal styles ===== */
+.xr-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.xr-modal.hidden {
+  display: none;
+}
+
+.xr-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+}
+
+.xr-modal-card {
+  position: relative;
+  max-width: 420px;
+  margin: 10vh auto;
+  background: var(--panel, #161821);
+  border: 1px solid var(--border, #333);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.xr-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
 
 
