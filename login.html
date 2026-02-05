@@ -7,6 +7,26 @@
 </head>
 <body>
 
+<!-- Nav injection + dropdown toggle -->
+  <script>
+    fetch("https://xeonrapture.github.io/nav.html")
+      .then((r) => r.text())
+      .then((html) => {
+        const host = document.getElementById("nav");
+        host.innerHTML = html;
+
+        const nav = host.querySelector(".xr-nav");
+        const btn = host.querySelector(".xr-nav-toggle");
+        if (nav && btn) {
+          btn.addEventListener("click", () => {
+            const open = nav.classList.toggle("xr-open");
+            btn.setAttribute("aria-expanded", open ? "true" : "false");
+          });
+        }
+      })
+      .catch(console.error);
+  </script>
+
 <h1>Login / Sign Up</h1>
 
 <input id="email" type="email" placeholder="email">
