@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>XR Login</title>
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+<h1>Login / Sign Up</h1>
+
+<input id="email" type="email" placeholder="email">
+<input id="password" type="password" placeholder="password">
+
+<button id="login">Login</button>
+<button id="signup">Sign Up</button>
+
+<div id="msg"></div>
+
+<script type="module">
+  import { signIn, signUp, supabase } from "./auth.js";
+
+  const msg = document.getElementById("msg");
+
+  document.getElementById("login").onclick = async () => {
+    try {
+      await signIn(email.value, password.value);
+      location.href = "/dashboard.html";
+    } catch (e) {
+      msg.textContent = e.message;
+    }
+  };
+
+  document.getElementById("signup").onclick = async () => {
+    try {
+      await signUp(email.value, password.value);
+      msg.textContent = "Check your email to confirm.";
+    } catch (e) {
+      msg.textContent = e.message;
+    }
+  };
+
+  // auto-redirect if already logged in
+  supabase.auth.onAuthStateChange((_, session) => {
+    if (session) location.href = "/dashboard.html";
+  });
+</script>
+
+</body>
+</html>
