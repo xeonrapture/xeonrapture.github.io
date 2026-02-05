@@ -19,11 +19,7 @@
   <!-- CONTENT -->
   <main class="wrap">
     <h1>Dashboard</h1>
-
-    <p class="muted">Welcome back.</p>
-
     <div class="card">
-      <h2>User</h2>
       <div id="userInfo" class="mono muted">Loading user…</div>
 
       <div style="margin-top:1rem;">
@@ -58,15 +54,28 @@
 
     const user = data.session.user;
 
-    const name =
-      user.user_metadata?.username ||
+    // fetch profile
+    const { data: profile, error: profileError } = await sb
+      .from("profiles")
+      .select("username")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError) {
+      console.error(profileError);
+    }
+
+    const username = profile?.username ?? "(no username)";
+    const displayName =
       user.user_metadata?.name ||
+      user.user_metadata?.full_name ||
       "(no display name)";
 
     userInfo.innerHTML = `
+      Username: ${username}<br>
       Email: ${user.email}<br>
       User ID: ${user.id}<br>
-      Name: ${name}
+      Name: ${displayName}
     `;
   }
 
@@ -83,6 +92,7 @@
     window.location.href = "/login.html";
   };
 </script>
+
 
 </body>
 </html>
