@@ -24,52 +24,15 @@
     </ul>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script src="nav.js"></script>
+
     <script>
   (async () => {
-    const navHost = document.getElementById("nav");
     const listHost = document.getElementById("tools-list");
 
-    try {
-      // 1) Fetch nav.html
-      const res = await fetch("nav.html");
-      const html = await res.text();
-
-      // 2) Inject nav into page
-      navHost.innerHTML = html;
-
-      // 3) Wire up dropdown toggle (if present)
-      const nav = navHost.querySelector(".xr-nav");
-      const btn = navHost.querySelector(".xr-nav-toggle");
-      if (nav && btn) {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation(); // critical
-          const open = nav.classList.toggle("xr-open");
-          btn.setAttribute("aria-expanded", open ? "true" : "false");
-        });
-      
-        // click anywhere else closes menu
-        document.addEventListener("click", (e) => {
-          if (!nav.classList.contains("xr-open")) return;
-      
-          const clickedNav = nav.contains(e.target);
-          const clickedBtn = btn.contains(e.target);
-      
-          if (!clickedNav && !clickedBtn) {
-            nav.classList.remove("xr-open");
-            btn.setAttribute("aria-expanded", "false");
-          }
-        });
-      
-        // optional: clicking a link closes menu
-        nav.addEventListener("click", (e) => {
-          if (e.target.tagName === "A") {
-            nav.classList.remove("xr-open");
-            btn.setAttribute("aria-expanded", "false");
-          }
-        });
-      }
-
-
+    try {      
       // 4) Build grouped appendix from the same nav HTML
       const temp = document.createElement("div");
       temp.innerHTML = html;
