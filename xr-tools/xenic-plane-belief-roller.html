@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>XR Belief Roller (d8)</title>
+
+  <link rel="stylesheet" href="https://app.xeonrapture.com/site.css">
+
+  <style>
+    .wrap { max-width: 760px; margin: 2rem auto; padding: 1rem; }
+    .card {
+      border: 1px solid var(--border, #333);
+      border-radius: 12px;
+      background: var(--panel, #161821);
+      padding: 1rem;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 0.75rem;
+      align-items: center;
+      margin: 0.25rem 0;
+    }
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+    input {
+      width: 100%;
+      min-width: 0;
+    }
+    button {
+      padding: 0.45rem 0.75rem;
+      border-radius: 10px;
+      border: 1px solid var(--border, #333);
+      background: #111;
+      color: var(--text, #eee);
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent, #7aa2ff); }
+
+    table {
+      width: 100%;
+      margin-top: 0.75rem;
+      overflow: hidden;
+      border-radius: 12px;
+      min-width: 520px;
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed; /* IMPORTANT */
+    }
+    .table-wrap {
+      width: 100%;
+      overflow: visible;
+    }
+    th, td {
+      border-bottom: 1px solid var(--border, #333);
+      padding: 0.5rem 0.6rem;
+      text-align: left;
+      word-break: break-word;
+      white-space: normal;
+    }
+    th { opacity: 0.85; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .muted { opacity: 0.75; }
+
+    .bad { color: #ff6b6b; }
+    @media (max-width: 600px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+    
+      label {
+        font-size: 0.9rem;
+        opacity: 0.85;
+      }
+    
+      input {
+        width: 100%;
+        min-width: 0;
+      }
+      table {
+        font-size: 0.85rem;
+        min-width: 0;
+      }
+      th, td {
+        padding: 0.35rem 0.4rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="nav"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://app.xeonrapture.com/auth.js"></script>
+<script src="https://app.xeonrapture.com/nav.js"></script>
+
+
+
+  <main class="wrap">
+    <h1>Belief Roller (d8)</h1>
+    <p class="muted">Roll Nd8. Outputs: <b>Belief</b> (with Doubt subtracted) and <b>Experience</b> (same, but Doubt does not subtract).</p>
+
+    <div class="card">
+      <div class="row">
+        <label for="dice">Dice to roll</label>
+        <input id="dice" type="number" min="1" step="1" value="10" />
+      </div>
+
+      <div class="row">
+        <label for="belief">Resulting Belief</label>
+        <input id="belief" class="mono" type="text" readonly value="—" />
+      </div>
+
+      <div class="row">
+        <label for="xp">Experience Output</label>
+        <input id="xp" class="mono" type="text" readonly value="—" />
+      </div>
+
+      <div class="actions">
+        <button id="rollBtn">Roll</button>
+        <button id="clearBtn">Clear</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <colgroup>
+            <col style="width: 13%">
+            <col style="min-width: 90px; width: 25%">
+            <col style="width: 20%">
+            <col style="width: 20%">
+            <col style="width: 20%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Roll</th>
+              <th>Meaning</th>
+              <th>Belief</th>
+              <th>Count</th>
+              <th>Results</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">1</td>
+              <td>Doubt</td>
+              <td class="mono bad">-1</td>
+              <td class="mono" id="c1">0</td>
+              <td class="mono" id="resc1">0</td>
+            </tr>
+            <tr>
+              <td class="mono">2–4</td>
+              <td>Expectation</td>
+              <td class="mono">0</td>
+              <td class="mono" id="c25">0</td>
+              <td class="mono" id="resc25">0</td>
+            </tr>
+            <tr>
+              <td class="mono">5–7</td>
+              <td>Hope</td>
+              <td class="mono">+1</td>
+              <td class="mono" id="c67">0</td>
+              <td class="mono" id="resc67">0</td>
+            </tr>
+            <tr>
+              <td class="mono">8</td>
+              <td>Confidence</td>
+              <td class="mono">+2</td>
+              <td class="mono" id="c8">0</td>
+              <td class="mono" id="resc8">0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <details style="margin-top:0.75rem;">
+        <summary>Show individual rolls</summary>
+        <div class="mono muted" id="rollList" style="margin-top:0.5rem;">—</div>
+      </details>
+
+      <hr style="margin:1rem 0; border-color: var(--border, #333);">
+
+      <h3>Recent Rolls</h3>
+      <div id="history" class="mono muted">
+        <div class="muted">No rolls yet.</div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const el = (id) => document.getElementById(id);
+
+    const history = [];
+    const MAX_HISTORY = 10;
+    
+    function addToHistory(res) {
+      history.unshift(res);
+      if (history.length > MAX_HISTORY) history.pop();
+      renderHistory();
+    }
+    
+    function renderHistory() {
+      const host = el("history");
+      host.innerHTML = "";
+    
+      if (history.length === 0) {
+        host.innerHTML = `<div class="muted">No rolls yet.</div>`;
+        return;
+      }
+    
+      history.forEach((h, idx) => {
+        const div = document.createElement("div");
+        div.className = "inline";
+        div.style.marginBottom = "0.25rem";
+    
+        div.innerHTML = `
+          <span>${h.n}d8 → <b>${h.belief}</b> (XP ${h.xp})</span>
+          <button data-i="${idx}">Reroll</button>
+        `;
+    
+        div.querySelector("button").addEventListener("click", () => {
+          const r = rollOnce(h.n);
+          renderSingle(r);
+          addToHistory(r);
+        });
+    
+        host.appendChild(div);
+      });
+    }
+
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Belief includes Doubt subtraction
+    function beliefDelta(r) {
+      if (r === 1) return -1;
+      if (r >= 2 && r <= 4) return 0;
+      if (r === 5 || r === 7) return 1;
+      return 2; // 8
+    }
+
+    // XP ignores Doubt subtraction (Doubt contributes 0)
+    function xpDelta(r) {
+      if (r === 1) return 0;
+      if (r >= 2 && r <= 4) return 0;
+      if (r === 5 || r === 7) return 1;
+      return 2; // 8
+    }
+
+    function rollOnce(n) {
+      n = Number(n);
+      if (!Number.isFinite(n) || n < 1) throw new Error("Dice must be 1 or more.");
+
+      let belief = 0;
+      let xp = 0;
+
+      let c1 = 0, c25 = 0, c67 = 0, c8 = 0;
+      const rolls = [];
+
+      for (let i = 0; i < n; i++) {
+        const r = randInt(1, 8);
+        rolls.push(r);
+
+        belief += beliefDelta(r);
+        xp += xpDelta(r);
+
+        if (r === 1) c1++;
+        else if (r >= 2 && r <= 4) c25++;
+        else if (r === 5 || r === 7) c67++;
+        else c8++;
+      }
+
+      return { n, belief, xp, c1, c25, c67, c8, rolls };
+    }
+
+    function renderCounts(c1, c25, c67, c8) {
+      el("c1").textContent = c1;
+      el("c25").textContent = c25;
+      el("c67").textContent = c67;
+      el("c8").textContent = c8;
+    }
+
+    function renderResults(resc1, resc25, resc67, resc8) {
+      el("resc1").textContent = resc1;
+      el("resc25").textContent = resc25;
+      el("resc67").textContent = resc67;
+      el("resc8").textContent = resc8;
+    }
+
+    function renderSingle(res) {
+      el("belief").value = String(res.belief);
+      el("xp").value = String(res.xp);
+      const resc1 = "-" + res.c1
+      const resc25 = res.c25 * 0
+      const resc67 = "+" + res.c67
+      const resc8 = "+" + (res.c8 * 2)
+      renderCounts(res.c1, res.c25, res.c67, res.c8);
+      renderResults(resc1, resc25, resc67, resc8);
+      el("rollList").textContent = res.rolls.join(", ");
+    }
+
+    function renderAverage(n, trials, avgBelief, avgXP, avgC1, avgC25, avgC67, avgC8) {
+      el("belief").value = avgBelief.toFixed(2);
+      el("xp").value = avgXP.toFixed(2);
+      const resc1 = "-" + avgC1
+      const resc25 = avgC25 * 0
+      const resc67 = "+" + avgC67
+      const resc8 = "+" + (avgC8 * 2)
+      renderCounts(avgC1.toFixed(2), avgC25.toFixed(2), avgC67.toFixed(2), avgC8.toFixed(2));
+      renderResults(resc1, resc25, resc67, resc8);
+      el("rollList").textContent = `Averaged over ${trials} trials (no single roll list).`;
+    }
+
+    function clearAll() {
+      el("belief").value = "—";
+      el("xp").value = "—";
+      renderCounts("0","0","0","0");
+      renderResults("0","0","0","0");
+      el("rollList").textContent = "—";
+    }
+
+
+    el("rollBtn").addEventListener("click", () => {
+      try {
+        const res = rollOnce(el("dice").value);
+        renderSingle(res);
+        addToHistory(res);
+      } catch (e) {
+        el("belief").value = "ERR";
+        el("xp").value = "ERR";
+        el("rollList").textContent = `Error: ${e.message || String(e)}`;
+      }
+    });
+
+
+    el("clearBtn").addEventListener("click", clearAll);
+
+    el("dice").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") el("rollBtn").click();
+    });
+  </script>
+</body>
+</html>

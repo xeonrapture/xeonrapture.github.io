@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>XR Dice Roller</title>
+
+  <link rel="stylesheet" href="https://app.xeonrapture.com/site.css">
+
+  <style>
+    .wrap { max-width: 760px; margin: 2rem auto; padding: 1rem; }
+    .card {
+      border: 1px solid var(--border, #333);
+      border-radius: 12px;
+      background: var(--panel, #161821);
+      padding: 1rem;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 0.75rem;
+      align-items: center;
+      margin: 0.5rem 0;
+    }
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+    button {
+      padding: 0.45rem 0.75rem;
+      border-radius: 10px;
+      border: 1px solid var(--border, #333);
+      background: #111;
+      color: var(--text, #eee);
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent, #7aa2ff); }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .muted { opacity: 0.75; }
+    .inline { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+    input[type="number"], select, input[type="text"] { width: 100%; }
+    .resultGrid {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 0.75rem;
+      align-items: center;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border, #333);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="nav"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://app.xeonrapture.com/auth.js"></script>
+<script src="https://app.xeonrapture.com/nav.js"></script>
+
+
+  <main class="wrap">
+    <h1>Dice Roller</h1>
+    <p class="muted">Pick dice count + die size + modifier. Optionally view individual rolls.</p>
+
+    <div class="card">
+      <div class="row">
+        <label for="count1">Dice amount 1</label>
+        <input id="count1" type="number" min="1" step="1" value="2">
+      </div>
+
+      <div class="row">
+        <label for="die1">Dice type 1</label>
+        <select id="die1">
+          <option value="2">d2</option>
+          <option value="4">d4</option>
+          <option value="6" selected>d6</option>
+          <option value="8">d8</option>
+          <option value="10">d10</option>
+          <option value="12">d12</option>
+          <option value="20">d20</option>
+          <option value="50">d50</option>
+          <option value="100">d100</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label for="count2">Dice amount 2</label>
+        <input id="count2" type="number" min="1" step="1" value="0">
+      </div>
+
+      <div class="row">
+        <label for="die2">Dice type 2</label>
+        <select id="die2">
+          <option value="2">d2</option>
+          <option value="4">d4</option>
+          <option value="6">d6</option>
+          <option value="8" selected>d8</option>
+          <option value="10">d10</option>
+          <option value="12">d12</option>
+          <option value="20">d20</option>
+          <option value="50">d50</option>
+          <option value="100">d100</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label>Modifier</label>
+        <div class="inline">
+          <select id="modSign" style="max-width: 110px;">
+            <option value="+">+</option>
+            <option value="-">−</option>
+          </select>
+          <input id="modValue" type="number" step="1" value="0" style="max-width: 140px;">
+          <span class="muted">e.g. +2 or −1</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="rollBtn">Roll</button>
+        <button id="roll10Btn">Roll ×10 (avg)</button>
+        <button id="clearBtn">Clear</button>
+      </div>
+
+      <div class="resultGrid">
+        <div class="muted">Total</div>
+        <input id="total" class="mono" type="text" readonly value="—">
+
+        <div class="muted">Sum of dice</div>
+        <input id="sumDice" class="mono" type="text" readonly value="—">
+
+        <div class="muted">Modifier applied</div>
+        <input id="modApplied" class="mono" type="text" readonly value="—">
+      </div>
+
+      <details style="margin-top:0.75rem;">
+        <summary>Show individual rolls</summary>
+        <div class="mono muted" id="rollList" style="margin-top:0.5rem;">—</div>
+      </details>
+
+      <hr style="margin:1rem 0; border-color: var(--border, #333);">
+
+      <h3>Recent Rolls</h3>
+      <div id="history" class="mono muted">
+        <div class="muted">No rolls yet.</div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const el = (id) => document.getElementById(id);
+
+    const history = [];
+    const MAX_HISTORY = 10;
+    
+    function addToHistory(res) {
+      history.unshift(res);
+      if (history.length > MAX_HISTORY) history.pop();
+      renderHistory();
+    }
+    
+    function renderHistory() {
+      const host = el("history");
+      host.innerHTML = "";
+    
+      if (history.length === 0) {
+        host.innerHTML = `<div class="muted">No rolls yet.</div>`;
+        return;
+      }
+    
+      history.forEach((h, idx) => {
+        const div = document.createElement("div");
+        div.className = "inline";
+        div.style.marginBottom = "0.25rem";
+    
+        div.innerHTML = `
+          <span>
+            ${h.count1}d${h.sides1}
+            ${h.count2 > 0 ? ` + ${h.count2}d${h.sides2}` : ""}
+            ${h.mod > 0 ? "+" : ""}${h.mod != 0 ? h.mod : ""}
+            → <b>${h.total}</b>
+          </span>
+
+          <button data-i="${idx}">Reroll</button>
+        `;
+    
+        div.querySelector("button").addEventListener("click", () => {
+          const r = rollOnce(
+            h.count1,
+            h.sides1,
+            h.count2,
+            h.sides2,
+            h.mod
+          );
+
+          renderSingle(r);
+          addToHistory(r);
+        });
+    
+        host.appendChild(div);
+      });
+    }
+
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function parseInputs() {
+      const count1 = Number(el("count1").value);
+      const sides1 = Number(el("die1").value);
+      const count2 = Number(el("count2").value);
+      const sides2 = Number(el("die2").value);
+      const sign = el("modSign").value;
+      const modVal = Number(el("modValue").value);
+
+      if (!Number.isFinite(count1) || count1 < 1) throw new Error("Dice amount must be 1 or more.");
+      if (!Number.isFinite(sides1) || sides1 < 2) throw new Error("Die size must be 2 or more.");
+      if (!Number.isFinite(count2) || count2 < 0) throw new Error("Dice amount must be 1 or more.");
+      if (!Number.isFinite(sides2) || sides2 < 2) throw new Error("Die size must be 2 or more.");
+      if (!Number.isFinite(modVal)) throw new Error("Modifier must be a number.");
+
+      const mod = (sign === "-") ? -Math.abs(modVal) : Math.abs(modVal);
+      return { count1, sides1, count2, sides2, mod };
+    }
+
+    function rollOnce(count1, sides1, count2, sides2, mod) {
+      const rolls = [];
+      let sum = 0;
+
+      for (let i = 0; i < count1; i++) {
+        const r = randInt(1, sides1);
+        rolls.push(r);
+        sum += r;
+      }
+
+      for (let i = 0; i < count2; i++) {
+        const r = randInt(1, sides2);
+        rolls.push(r);
+        sum += r;
+      }
+
+      return {
+        count1,
+        sides1,
+        count2,
+        sides2,
+        rolls,
+        sum,
+        mod,
+        total: sum + mod
+      };
+    }
+
+    function renderSingle(res) {
+      el("sumDice").value = String(res.sum);
+      el("modApplied").value = (res.mod >= 0 ? `+${res.mod}` : `${res.mod}`);
+      el("total").value = String(res.total);
+      el("rollList").textContent = res.rolls.join(", ");
+    }
+
+    function renderAvg(count1, sides1, count2, sides2, mod, trials, avgSum, avgTotal) {
+      el("sumDice").value = avgSum.toFixed(2);
+      el("modApplied").value = (mod >= 0 ? `+${mod}` : `${mod}`);
+      el("total").value = avgTotal.toFixed(2);
+      el("rollList").textContent = `Averaged over ${trials} trials (no single roll list).`;
+    }
+
+    function clearAll() {
+      el("sumDice").value = "—";
+      el("modApplied").value = "—";
+      el("total").value = "—";
+      el("rollList").textContent = "—";
+    }
+
+    el("rollBtn").addEventListener("click", () => {
+      try {
+        const { count1, sides1, count2, sides2, mod } = parseInputs();
+        const res = rollOnce(count1, sides1, count2, sides2, mod);
+        renderSingle(res);
+        addToHistory(res);
+
+      } catch (e) {
+        el("total").value = "ERR";
+        el("rollList").textContent = `Error: ${e.message || String(e)}`;
+      }
+    });
+
+    el("roll10Btn").addEventListener("click", () => {
+      try {
+        const { count1, sides1, count2, sides2, mod } = parseInputs();
+        const trials = 10;
+
+        let sumS = 0;
+        let sumT = 0;
+
+        for (let i = 0; i < trials; i++) {
+          const r = rollOnce(count1, sides1, count2, sides2, mod);
+          sumS += r.sum;
+          sumT += r.total;
+        }
+
+        renderAvg(count1, sides1, count2, sides2, mod, trials, sumS / trials, sumT / trials);
+      } catch (e) {
+        el("total").value = "ERR";
+        el("rollList").textContent = `Error: ${e.message || String(e)}`;
+      }
+    });
+
+    el("clearBtn").addEventListener("click", clearAll);
+
+    // Enter key rolls
+    ["count1", "count2", "modValue"].forEach(id => {
+      el(id).addEventListener("keydown", (e) => {
+        if (e.key === "Enter") el("rollBtn").click();
+      });
+    });
+  </script>
+</body>
+</html>

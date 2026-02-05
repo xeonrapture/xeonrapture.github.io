@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>XR Clock</title>
+
+  <link rel="stylesheet" href="https://app.xeonrapture.com/site.css">
+  
+
+  <style>
+    .clock {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      background: var(--panel, #161821);
+      border: 1px solid var(--border, #333);
+      border-radius: 12px;
+      text-align: center;
+      font-family: "Ubuntu", sans-serif;
+    }
+
+    .real {
+      font-size: 1rem;
+      opacity: 0.75;
+      margin-bottom: 0.75rem;
+    }
+
+    .xeon {
+      font-size: 1.6rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .season {
+      margin-top: 0.4rem;
+      opacity: 0.75;
+    }
+
+    .time {
+      font-size: 1.25rem;
+      letter-spacing: 0.05em;
+      margin-top: 0.4rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="nav"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://app.xeonrapture.com/auth.js"></script>
+<script src="https://app.xeonrapture.com/nav.js"></script>
+
+
+
+  <main>
+    <div class="clock">
+      <div class="real" id="realDate">Loading…</div>
+
+      <div class="xeon" id="xeonDate">Loading…</div>
+      <div class="time" id="xeonTime"></div>
+      <div class="season" id="xeonSeason"></div>
+    </div>
+  </main>
+
+  <script>
+    // === Xeonic Calendar Data ===
+    const xeonMonths = [
+      "Uthalanai","Ulaganai","Zolanai",
+      "Reinanai","Iaianai","Vorashanai",
+      "Xozanai","Qolanai","Dodatanai",
+      "Ethinanai","Valkanai","Karoshanai"
+    ];
+    const xeonWeeks = ["Tenorah","Olinah","Bathah","Unah","Opothaiah"];
+    const xeonDays  = ["Boff","Corel","Estr","Frad","Othel","Nytr"];
+    const abaiahDays = ["Mona","Yoia","Goya","Olo","Baia","Vaia"];
+    const seasons = ["Spring","Summer","Fall","Winter"];
+
+    const EPOCH_OFFSET = 2025 - 1665;
+    const startOfXeonicYear = (y) => new Date(y, 2, 1); // March 1
+
+    function toXeonic(realDate) {
+      const year = realDate.getFullYear();
+      const start = startOfXeonicYear(year);
+      let dayOfYear = Math.floor((realDate - start) / 86400000) + 1;
+
+      let xeonYear = year - EPOCH_OFFSET;
+      if (dayOfYear <= 0) {
+        xeonYear -= 1;
+        const prevStart = startOfXeonicYear(year - 1);
+        dayOfYear = Math.floor((realDate - prevStart) / 86400000) + 1;
+      }
+
+      if (dayOfYear > 360) {
+        const idx = dayOfYear - 361;
+        return {
+          year: xeonYear,
+          month: "Abaiah",
+          day: abaiahDays[idx] || "Unknown",
+          season: "Festival"
+        };
+      }
+
+      const mIdx = Math.floor((dayOfYear - 1) / 30);
+      const dMonth = ((dayOfYear - 1) % 30) + 1;
+      const wIdx = Math.floor((dMonth - 1) / 6);
+      const dWeek = (dMonth - 1) % 6;
+
+      return {
+        year: xeonYear,
+        month: xeonMonths[mIdx],
+        day: dMonth,
+        week: xeonWeeks[wIdx],
+        weekday: xeonDays[dWeek],
+        season: seasons[Math.floor(mIdx / 3)]
+      };
+    }
+
+    function pad(n) {
+      return String(n).padStart(2, "0");
+    }
+
+    function updateClock() {
+      const now = new Date();
+      const x = toXeonic(now);
+
+      // Real date only
+      document.getElementById("realDate").textContent =
+        `Real Date: ${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+
+      // XR / Xeonic date
+      if (x.month === "Abaiah") {
+        document.getElementById("xeonDate").textContent =
+          `${x.day} of Abaiah — Year ${x.year}`;
+      } else {
+        document.getElementById("xeonDate").textContent =
+          `${x.day} ${x.week}, ${x.month} — Year ${x.year}`;
+      }
+
+      // Military time (24h) as XR time
+      document.getElementById("xeonTime").textContent =
+        `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+      document.getElementById("xeonSeason").textContent =
+        `${x.weekday ? x.weekday + " · " : ""}${x.season}`;
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>

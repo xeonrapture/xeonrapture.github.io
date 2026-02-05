@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Xeonic Calendar Converter</title>
+
+  <link rel="stylesheet" href="https://app.xeonrapture.com/site.css">
+
+  <style>
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .card { border: 1px solid var(--border, #333); border-radius: 10px; background: var(--panel, #161821); padding: 1rem; }
+    .row { display: grid; grid-template-columns: 160px 1fr; gap: 0.75rem; align-items: center; margin: 0.5rem 0; }
+    input, select { width: 100%; }
+    .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+    .out { background: #111; border: 1px solid var(--border, #333); border-radius: 10px; padding: 1rem; white-space: pre-wrap; min-height: 120px; }
+    .muted { opacity: 0.75; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+
+<body>
+  <div id="nav"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://app.xeonrapture.com/auth.js"></script>
+<script src="https://app.xeonrapture.com/nav.js"></script>
+
+
+
+  <main>
+    <h1>Xeonic Calendar Converter</h1>
+    <p class="muted">Year starts March 1.<br> 12 months × 30 days + Abaiah festival week.</p>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Real → Xeonic</h2>
+        <div class="row">
+          <label for="realDate">Gregorian date</label>
+          <input id="realDate" type="date" value="2025-10-28">
+        </div>
+        <div class="actions">
+          <button id="convertReal">Convert</button>
+          <button id="clearReal">Clear</button>
+        </div>
+        <div class="out" id="outReal">Ready.</div>
+      </div>
+
+      <div class="card">
+        <h2>Xeonic → Real</h2>
+
+        <div class="row">
+          <label for="xYear">Xeonic year</label>
+          <input id="xYear" type="number" step="1" value="1665">
+        </div>
+
+        <div class="row">
+          <label for="xMonth">Month</label>
+          <select id="xMonth">
+            <option value="1">1 — Uthalanai</option>
+            <option value="2">2 — Ulaganai</option>
+            <option value="3">3 — Zolanai</option>
+            <option value="4">4 — Reinanai</option>
+            <option value="5">5 — Iaianai</option>
+            <option value="6">6 — Vorashanai</option>
+            <option value="7">7 — Xozanai</option>
+            <option value="8">8 — Qolanai</option>
+            <option value="9">9 — Dodatanai</option>
+            <option value="10">10 — Ethinanai</option>
+            <option value="11">11 — Valkanai</option>
+            <option value="12">12 — Karoshanai</option>
+            <option value="Abaiah">Abaiah (Festival Week)</option>
+          </select>
+        </div>
+
+        <div class="row" id="dayNumberRow">
+          <label for="xDayNumber">Day (1–30)</label>
+          <input id="xDayNumber" type="number" min="1" max="30" step="1" value="9">
+        </div>
+
+        <div class="row" id="dayFestivalRow" style="display:none;">
+          <label for="xDayFestival">Festival day</label>
+          <select id="xDayFestival">
+            <option value="Mona">Mona</option>
+            <option value="Yoia">Yoia</option>
+            <option value="Goya">Goya</option>
+            <option value="Olo">Olo</option>
+            <option value="Baia">Baia</option>
+            <option value="Vaia">Vaia</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button id="convertXeon">Convert</button>
+          <button id="clearXeon">Clear</button>
+        </div>
+
+        <div class="out" id="outXeon">Ready.</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ===== Data =====
+    const xeonMonths = [
+      "Uthalanai","Ulaganai","Zolanai",
+      "Reinanai","Iaianai","Vorashanai",
+      "Xozanai","Qolanai","Dodatanai",
+      "Ethinanai","Valkanai","Karoshanai"
+    ];
+    const xeonWeeks = ["Tenorah","Olinah","Bathah","Unah","Opothaiah"];
+    const xeonDays  = ["Boff","Corel","Estr","Frad","Othel","Nytr"];
+    const abaiahDays = ["Mona","Yoia","Goya","Olo","Baia","Vaia"];
+    const seasons = ["Spring","Summer","Fall","Winter"];
+
+    // Epoch offset: 2025 (Gregorian) ↔ 1665 (Xeonic)
+    const EPOCH_OFFSET = 2025 - 1665;
+
+    const el = (id) => document.getElementById(id);
+
+    // ===== Helpers =====
+    function fmtDate(d) {
+      // local date -> YYYY-MM-DD without timezone surprises
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    const isLeapYear = y => (y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0));
+    const startOfXeonicYear = y => new Date(y, 2, 1); // Mar 1
+
+    // ===== REAL → XEONIC =====
+    function toXeonic(realDate) {
+      const gYear = realDate.getFullYear();
+      const start = startOfXeonicYear(gYear);
+      const leap = isLeapYear(gYear); // (kept for parity, not used in your current logic)
+
+      let dayOfYear = Math.floor((realDate - start) / (1000 * 60 * 60 * 24)) + 1;
+      let xYear = gYear - EPOCH_OFFSET;
+
+      if (dayOfYear <= 0) {
+        xYear -= 1;
+        const prevStart = startOfXeonicYear(gYear - 1);
+        dayOfYear = Math.floor((realDate - prevStart) / (1000 * 60 * 60 * 24)) + 1;
+      }
+
+      if (dayOfYear > 360) {
+        const idx = dayOfYear - 361;
+        return { year: xYear, month: "Abaiah", day: abaiahDays[idx] || "Unknown", season: "Festival" };
+      }
+
+      const mIdx = Math.floor((dayOfYear - 1) / 30);
+      const dMonth = ((dayOfYear - 1) % 30) + 1;
+      const wIdx = Math.floor((dMonth - 1) / 6);
+      const dWeek = (dMonth - 1) % 6;
+
+      return {
+        year: xYear,
+        month: xeonMonths[mIdx],
+        day: dMonth,
+        week: xeonWeeks[wIdx],
+        weekday: xeonDays[dWeek],
+        season: seasons[Math.floor(mIdx / 3)]
+      };
+    }
+
+    // ===== XEONIC → REAL =====
+    function toReal(xYear, xMonth, xDay) {
+      const gYear = xYear + EPOCH_OFFSET;
+      const start = startOfXeonicYear(gYear);
+
+      let offset = 0;
+
+      if (xMonth === "Abaiah") {
+        const idx = abaiahDays.indexOf(xDay);
+        if (idx === -1) throw new Error("Abaiah day must be one of: " + abaiahDays.join(", "));
+        offset = 360 + (idx + 1);
+      } else {
+        const mIdx = Number(xMonth) - 1; // numeric month input (1–12)
+        if (mIdx < 0 || mIdx > 11) throw new Error("Xeonic month must be 1–12 or 'Abaiah'.");
+        const dayNum = Number(xDay);
+        if (!(dayNum >= 1 && dayNum <= 30)) throw new Error("Xeonic day must be 1–30 for normal months.");
+        offset = mIdx * 30 + (dayNum - 1);
+      }
+
+      const result = new Date(start);
+      result.setDate(start.getDate() + offset);
+      return result;
+    }
+
+    // ===== UI logic =====
+    function syncDayInputs() {
+      const isFestival = el("xMonth").value === "Abaiah";
+      el("dayNumberRow").style.display = isFestival ? "none" : "";
+      el("dayFestivalRow").style.display = isFestival ? "" : "none";
+    }
+
+    function convertReal() {
+      const v = el("realDate").value;
+      if (!v) {
+        el("outReal").textContent = "Enter a Gregorian date.";
+        return;
+      }
+      // date input gives YYYY-MM-DD; treat as local date
+      const [yy, mm, dd] = v.split("-").map(Number);
+      const real = new Date(yy, mm - 1, dd);
+
+      const x = toXeonic(real);
+      const line1 = `${fmtDate(real)} →`;
+
+      if (x.month === "Abaiah") {
+        el("outReal").textContent = `${line1} ${x.day} Abaiah, ${x.year} (${x.season})`;
+      } else {
+        el("outReal").textContent =
+          `${line1} ${x.day} ${x.week} ${x.month}, ${x.year} (${x.weekday}, ${x.season})`;
+      }
+    }
+
+    function convertXeon() {
+      try {
+        const year = Number(el("xYear").value);
+        const month = el("xMonth").value;
+
+        let day;
+        if (month === "Abaiah") day = el("xDayFestival").value;
+        else day = Number(el("xDayNumber").value);
+
+        const real = toReal(year, month, day);
+
+        const monthLabel = month === "Abaiah" ? "Abaiah" : `${month} — ${xeonMonths[Number(month) - 1]}`;
+        el("outXeon").textContent =
+          `${day} ${monthLabel}, ${year} → ${fmtDate(real)}`;
+      } catch (e) {
+        el("outXeon").textContent = `Error: ${e.message || String(e)}`;
+      }
+    }
+
+    function clearReal() {
+      el("realDate").value = "";
+      el("outReal").textContent = "Ready.";
+    }
+
+    function clearXeon() {
+      el("xYear").value = "";
+      el("xMonth").value = "1";
+      el("xDayNumber").value = "1";
+      el("xDayFestival").value = "Mona";
+      syncDayInputs();
+      el("outXeon").textContent = "Ready.";
+    }
+
+    // events
+    el("xMonth").addEventListener("change", syncDayInputs);
+    el("convertReal").addEventListener("click", convertReal);
+    el("convertXeon").addEventListener("click", convertXeon);
+    el("clearReal").addEventListener("click", clearReal);
+    el("clearXeon").addEventListener("click", clearXeon);
+
+    // auto-update on input
+    ["realDate","xYear","xMonth","xDayNumber","xDayFestival"].forEach(id => {
+      el(id).addEventListener("input", () => {
+        if (id === "realDate") convertReal();
+        else convertXeon();
+      });
+    });
+
+    // init
+    syncDayInputs();
+    convertReal();
+    convertXeon();
+  </script>
+</body>
+</html>

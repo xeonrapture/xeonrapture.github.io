@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>XR Current Distance Calculator</title>
+
+  <link rel="stylesheet" href="https://app.xeonrapture.com/site.css">
+
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .card {
+      border: 1px solid var(--border, #333);
+      border-radius: 10px;
+      background: var(--panel, #161821);
+      padding: 0rem 1rem;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 0.75rem;
+      align-items: center;
+      margin: 0.5rem 0;
+    }
+
+    label { opacity: 0.9; }
+    input { width: 100%; }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+
+    .out {
+      background: #111;
+      border: 1px solid var(--border, #333);
+      border-radius: 10px;
+      padding: 1rem;
+      white-space: pre-wrap;
+      min-height: 80px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="nav"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://app.xeonrapture.com/auth.js"></script>
+<script src="https://app.xeonrapture.com/nav.js"></script>
+
+
+
+  <main>
+    <h1>Current Distance Calculator</h1>
+    <p>Finds the distance between two points in a current: <code>(a=angle around the current, o=distance from core of current, dc=distance from the center)</code>.</p>
+    <p>All distance in AU (Amethyst Units), which is how much distance one can travel with one Amethyst Energy (an arbitrary amount of amethyst-colored xeon). One AU equals 1,000 Light Years.</p>
+    <div class="grid">
+      <div class="card">
+        <h2>Location 1</h2>
+        <div class="row">
+          <label for="a1">a1 (degrees)</label>
+          <input id="a1" type="number" step="any" value="-77">
+        </div>
+        <div class="row">
+          <label for="o1">o1 (AU)</label>
+          <input id="o1" type="number" step="any" value="1648">
+        </div>
+        <div class="row">
+          <label for="dc1">dc1 (AU)</label>
+          <input id="dc1" type="number" step="any" value="1736000">
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Location 2</h2>
+        <div class="row">
+          <label for="a2">a2 (degrees)</label>
+          <input id="a2" type="number" step="any" value="112">
+        </div>
+        <div class="row">
+          <label for="o2">o2 (AU)</label>
+          <input id="o2" type="number" step="any" value="50">
+        </div>
+        <div class="row">
+          <label for="dc2">dc2 (AU)</label>
+          <input id="dc2" type="number" step="any" value="1734000">
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="calc">Calculate</button>
+      <button id="swap">Swap points</button>
+      <button id="reset">Reset defaults</button>
+    </div>
+
+    <h2>Output</h2>
+    <div class="out" id="out">Ready.</div>
+  </main>
+
+  <script>
+    const defaults = {
+      a1: 170, o1: 10054, dc1: 605440,
+      a2: -30, o2: 46500,   dc2: 35383
+    };
+
+    const el = (id) => document.getElementById(id);
+
+    function normalizeAngleDeg(a) {
+      // Your original intent: if negative, wrap into 0..360.
+      // Correct wrap is: a = 360 + a (e.g., -77 => 283)
+      // We'll also support values beyond range.
+      a = Number(a);
+      a = ((a % 360) + 360) % 360;
+      return a;
+    }
+
+    function cylindricalDistance(p1, p2) {
+      // p = [r, thetaRadians, z]
+      const [r1, theta1, z1] = p1;
+      const [r2, theta2, z2] = p2;
+
+      const x1 = r1 * Math.cos(theta1);
+      const y1 = r1 * Math.sin(theta1);
+      const x2 = r2 * Math.cos(theta2);
+      const y2 = r2 * Math.sin(theta2);
+
+      return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2);
+    }
+
+    function calculate() {
+      const a1 = normalizeAngleDeg(el("a1").value);
+      const o1 = Number(el("o1").value);
+      const dc1 = Number(el("dc1").value);
+
+      const a2 = normalizeAngleDeg(el("a2").value);
+      const o2 = Number(el("o2").value);
+      const dc2 = Number(el("dc2").value);
+
+      const p1 = [o1, (a1 * Math.PI) / 180, dc1];
+      const p2 = [o2, (a2 * Math.PI) / 180, dc2];
+
+      const dist = cylindricalDistance(p1, p2);
+
+      el("out").textContent =
+        `Distance (AU): ${dist.toFixed(4)}\n`
+    }
+
+    function resetDefaults() {
+      for (const k of Object.keys(defaults)) el(k).value = defaults[k];
+      calculate();
+    }
+
+    function swapPoints() {
+      const a1 = el("a1").value, o1 = el("o1").value, dc1 = el("dc1").value;
+      el("a1").value = el("a2").value;
+      el("o1").value = el("o2").value;
+      el("dc1").value = el("dc2").value;
+
+      el("a2").value = a1;
+      el("o2").value = o1;
+      el("dc2").value = dc1;
+
+      calculate();
+    }
+
+    el("calc").onclick = calculate;
+    el("reset").onclick = resetDefaults;
+    el("swap").onclick = swapPoints;
+
+    // Auto-calc on input changes
+    ["a1","o1","dc1","a2","o2","dc2"].forEach(id => {
+      el(id).addEventListener("input", () => calculate());
+    });
+
+    // Initial calculation
+    calculate();
+  </script>
+</body>
+</html>
