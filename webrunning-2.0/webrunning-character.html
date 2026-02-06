@@ -41,8 +41,10 @@
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     }
     .core-info dl {
-      grid-template-columns: minmax(140px, 1fr) minmax(160px, 1fr);
-      row-gap: 0.5rem;
+      grid-template-columns: minmax(120px, 1fr) minmax(180px, 1fr);
+      row-gap: 0.35rem;
+      column-gap: 0.5rem;
+      align-items: center;
     }
     .core-info dd {
       display: flex;
@@ -175,6 +177,95 @@
     .xr-modal-card {
       max-height: 80vh;
       overflow-y: auto;
+    }
+    .gear-grid {
+      display: grid;
+      gap: 0.75rem;
+    }
+    .gear-item {
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 0.65rem;
+      background: var(--panel, #111);
+      display: grid;
+      gap: 0.5rem;
+    }
+    .gear-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .gear-meta {
+      display: grid;
+      gap: 0.15rem;
+      font-size: 0.9rem;
+    }
+    .gear-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .gear-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+    }
+    .gear-tag {
+      padding: 0.2rem 0.4rem;
+      border-radius: 999px;
+      border: 1px solid var(--border, #333);
+      background: rgba(255,255,255,0.03);
+    }
+    .gear-generator-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+    .gear-details-list {
+      display: grid;
+      gap: 0.4rem;
+    }
+    .gear-details-list ul {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+    .gear-modal-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .gear-modal-actions .right-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .paste-area {
+      display: grid;
+      gap: 0.5rem;
+    }
+    .paste-area textarea {
+      width: 100%;
+      min-height: 120px;
+      font-family: ui-monospace, monospace;
+    }
+    .ability-section {
+      display: grid;
+      gap: 1rem;
+    }
+    .ability-group {
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 0.75rem;
+      background: var(--panel, #111);
+    }
+    .ability-group h3 {
+      margin-top: 0;
     }
   </style>
 </head>
@@ -324,38 +415,22 @@
       </div>
     </section>
 
+    <section class="card">
+      <h2>Gear Generator</h2>
+      <p class="muted">Generate gear with your current luck plus a bonus and add it to your inventory or equip it.</p>
+      <div class="gear-generator-actions">
+        <button id="openGearGenerator" type="button">Generate Gear</button>
+        <span id="gearGeneratorStatus" class="mono muted"></span>
+      </div>
+    </section>
+
     <section class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Gear Slots</h2>
         <button class="collapse-toggle" type="button">Hide</button>
       </div>
       <div class="collapsible-body">
-        <div class="stats-grid">
-          <dl>
-            <dt>Weapon 1:</dt>
-            <dd></dd>
-            <dt>Weapon 2:</dt>
-            <dd></dd>
-            <dt>Head:</dt>
-            <dd></dd>
-            <dt>Torso:</dt>
-            <dd></dd>
-            <dt>Hands:</dt>
-            <dd></dd>
-            <dt>Legs:</dt>
-            <dd></dd>
-            <dt>Feet:</dt>
-            <dd></dd>
-            <dt>Ring 1:</dt>
-            <dd></dd>
-            <dt>Ring 2:</dt>
-            <dd></dd>
-            <dt>Neck:</dt>
-            <dd></dd>
-            <dt>Kernel 1:</dt>
-            <dd></dd>
-          </dl>
-        </div>
+        <div id="equippedSlots" class="gear-grid"></div>
       </div>
     </section>
 
@@ -365,30 +440,7 @@
         <button class="collapse-toggle" type="button">Hide</button>
       </div>
       <div class="collapsible-body">
-        <div class="stats-grid">
-          <dl>
-            <dt>1:</dt>
-            <dd></dd>
-            <dt>2:</dt>
-            <dd></dd>
-            <dt>3:</dt>
-            <dd></dd>
-            <dt>4:</dt>
-            <dd></dd>
-            <dt>5:</dt>
-            <dd></dd>
-            <dt>6:</dt>
-            <dd></dd>
-            <dt>7:</dt>
-            <dd></dd>
-            <dt>8:</dt>
-            <dd></dd>
-            <dt>9:</dt>
-            <dd></dd>
-            <dt>10:</dt>
-            <dd></dd>
-          </dl>
-        </div>
+        <div id="inventorySlots" class="gear-grid"></div>
       </div>
     </section>
 
@@ -399,18 +451,13 @@
       </div>
       <div class="collapsible-body">
         <p class="muted">Stored and can only be accessed in your local node.</p>
-        <div id="localNodeSlots" class="slot-grid"></div>
+        <div id="localNodeSlots" class="gear-grid"></div>
       </div>
     </section>
 
     <section class="card">
       <h2>Abilities</h2>
-      <div class="placeholder">Copy your abilities here.</div>
-    </section>
-
-    <section class="card">
-      <h2>Gear</h2>
-      <div class="placeholder">Use this section to paste your gear stat blocks.</div>
+      <div id="abilitiesList" class="ability-section"></div>
     </section>
 
     <section class="card">
@@ -487,6 +534,113 @@
     </div>
   </div>
 
+  <div id="gearGeneratorModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Generate Gear</h2>
+      <div class="modal-grid">
+        <label>
+          Bonus Luck
+          <input id="gearBonusLuck" type="number" min="0" value="0" />
+        </label>
+        <label>
+          Pieces
+          <input id="gearAmount" type="number" min="1" value="1" />
+        </label>
+        <label>
+          Gear Type
+          <select id="gearTypeNumber">
+            <option value="0">Random (None)</option>
+            <option value="1">One-Handed Weapon</option>
+            <option value="2">Two-Handed Weapon</option>
+            <option value="3">Head</option>
+            <option value="4">Torso</option>
+            <option value="5">Hands</option>
+            <option value="6">Legs</option>
+            <option value="7">Feet</option>
+            <option value="8">Ring</option>
+            <option value="9">Neck</option>
+            <option value="10">Kernel</option>
+            <option value="12">Bauble</option>
+          </select>
+        </label>
+        <label>
+          Rarity
+          <select id="gearRarity">
+            <option value="">Random (None)</option>
+            <option value="Common">Common</option>
+            <option value="Uncommon">Uncommon</option>
+            <option value="Rare">Rare</option>
+            <option value="Epic">Epic</option>
+            <option value="Legendary">Legendary</option>
+          </select>
+        </label>
+        <label>
+          Color
+          <select id="gearColor">
+            <option value="">Random (None)</option>
+            <option value="Neutral">Neutral</option>
+            <option value="Red">Red</option>
+            <option value="Blue">Blue</option>
+            <option value="Green">Green</option>
+            <option value="Gray">Gray</option>
+          </select>
+        </label>
+        <label>
+          Color 2
+          <select id="gearColor2">
+            <option value="">None</option>
+            <option value="Neutral">Neutral</option>
+            <option value="Red">Red</option>
+            <option value="Blue">Blue</option>
+            <option value="Green">Green</option>
+            <option value="Gray">Gray</option>
+          </select>
+        </label>
+        <div class="muted">Total luck used: <span id="gearTotalLuck">0</span></div>
+      </div>
+      <div class="xr-modal-actions">
+        <button id="generateGear" type="button">Generate</button>
+        <button id="closeGearGenerator" type="button">Close</button>
+      </div>
+      <div class="gear-details-list" style="margin-top:1rem;">
+        <strong>Generated Gear</strong>
+        <div id="generatedGearList" class="gear-grid"></div>
+      </div>
+      <div class="paste-area" style="margin-top:1rem;">
+        <strong>Paste Gear JSON</strong>
+        <textarea id="gearPasteInput" placeholder="Paste gear JSON here"></textarea>
+        <div class="gear-generator-actions">
+          <button id="addPastedGear" type="button">Add Pasted Gear</button>
+          <span id="pasteStatus" class="mono muted"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="gearDetailModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2 id="gearDetailTitle">Gear Details</h2>
+      <div class="modal-grid">
+        <label>
+          Gear Name
+          <input id="gearNameInput" type="text" maxlength="60" />
+        </label>
+        <div id="gearDetailBody" class="gear-details-list"></div>
+      </div>
+      <div class="gear-modal-actions">
+        <button id="closeGearDetail" type="button">Close</button>
+        <div class="right-actions">
+          <button id="copyGearJson" type="button">Copy JSON</button>
+          <button id="saveGearName" type="button">Save Name</button>
+          <button id="deleteGear" type="button">Delete Gear</button>
+        </div>
+      </div>
+      <div id="gearDetailStatus" class="mono muted"></div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/shared/auth.js"></script>
   <script src="/shared/nav.js"></script>
@@ -530,6 +684,11 @@
     let isDirty = false;
     let isSaving = false;
     let autosaveTimer = null;
+    let characterGear = [];
+    let generatedGear = [];
+    let activeGearRow = null;
+    let pyodideClient = null;
+    let pyodideReady = false;
 
     const elements = {
       nameInput: document.getElementById("characterName"),
@@ -563,7 +722,12 @@
       displayHacking: document.getElementById("displayHacking"),
       displayInventorySlots: document.getElementById("displayInventorySlots"),
       displayKernelSlots: document.getElementById("displayKernelSlots"),
-      localNodeSlots: document.getElementById("localNodeSlots")
+      equippedSlots: document.getElementById("equippedSlots"),
+      inventorySlots: document.getElementById("inventorySlots"),
+      localNodeSlots: document.getElementById("localNodeSlots"),
+      abilitiesList: document.getElementById("abilitiesList"),
+      openGearGenerator: document.getElementById("openGearGenerator"),
+      gearGeneratorStatus: document.getElementById("gearGeneratorStatus")
     };
 
     const modal = document.getElementById("levelupModal");
@@ -580,12 +744,97 @@
     const toggleButton = document.getElementById("toggleLevelups");
     const levelupPanel = document.getElementById("levelupPanel");
 
+    const gearGeneratorModal = document.getElementById("gearGeneratorModal");
+    const gearGeneratorBackdrop = gearGeneratorModal.querySelector(".xr-modal-backdrop");
+    const gearBonusLuck = document.getElementById("gearBonusLuck");
+    const gearAmount = document.getElementById("gearAmount");
+    const gearTypeNumber = document.getElementById("gearTypeNumber");
+    const gearRarity = document.getElementById("gearRarity");
+    const gearColor = document.getElementById("gearColor");
+    const gearColor2 = document.getElementById("gearColor2");
+    const gearTotalLuck = document.getElementById("gearTotalLuck");
+    const generateGearButton = document.getElementById("generateGear");
+    const closeGearGenerator = document.getElementById("closeGearGenerator");
+    const generatedGearList = document.getElementById("generatedGearList");
+    const gearPasteInput = document.getElementById("gearPasteInput");
+    const addPastedGear = document.getElementById("addPastedGear");
+    const pasteStatus = document.getElementById("pasteStatus");
+
+    const gearDetailModal = document.getElementById("gearDetailModal");
+    const gearDetailBackdrop = gearDetailModal.querySelector(".xr-modal-backdrop");
+    const gearDetailTitle = document.getElementById("gearDetailTitle");
+    const gearNameInput = document.getElementById("gearNameInput");
+    const gearDetailBody = document.getElementById("gearDetailBody");
+    const closeGearDetail = document.getElementById("closeGearDetail");
+    const copyGearJson = document.getElementById("copyGearJson");
+    const saveGearName = document.getElementById("saveGearName");
+    const deleteGearButton = document.getElementById("deleteGear");
+    const gearDetailStatus = document.getElementById("gearDetailStatus");
+
     toggleButton.addEventListener("click", () => {
       const isHidden = levelupPanel.classList.toggle("hidden");
       toggleButton.textContent = isHidden
         ? "Show Level-Up Progression"
         : "Hide Level-Up Progression";
     });
+
+    const gearSlotLabels = {
+      weapon_1: "Weapon 1",
+      weapon_2: "Weapon 2",
+      head: "Head",
+      torso: "Torso",
+      hands: "Hands",
+      legs: "Legs",
+      feet: "Feet",
+      ring_1: "Ring 1",
+      ring_2: "Ring 2",
+      neck: "Neck",
+      kernel_1: "Kernel 1",
+      kernel_2: "Kernel 2",
+      kernel_3: "Kernel 3",
+      kernel_4: "Kernel 4",
+      kernel_5: "Kernel 5"
+    };
+
+    const gearTypeToSlots = {
+      "One-Handed Weapon": ["weapon_1", "weapon_2"],
+      "Two-Handed Weapon": ["weapon_1", "weapon_2"],
+      "Head": ["head"],
+      "Torso": ["torso"],
+      "Hands": ["hands"],
+      "Legs": ["legs"],
+      "Feet": ["feet"],
+      "Ring": ["ring_1", "ring_2"],
+      "Neck": ["neck"],
+      "Kernel": ["kernel_1", "kernel_2", "kernel_3", "kernel_4", "kernel_5"]
+    };
+
+    const statKeyMap = {
+      Luck: "luck",
+      "Inventory Slots": "inventory_slots",
+      "Energy Cap": "energy_cap",
+      "Kernel Slots": "kernel_slots",
+      HP: "hp",
+      Power: "power",
+      Defense: "defense",
+      Speed: "speed",
+      Intelligence: "intelligence",
+      "Attack Plus": "attackPlus",
+      "Damage Plus": "damagePlus",
+      "Defense DC": "defenseDc",
+      Armor: "armor",
+      Initiative: "initiative",
+      "Movement Speed": "movementSpeed",
+      Range: "range",
+      Perception: "perception",
+      "AOE Range": "aoeRange",
+      Hacking: "hacking",
+      "Group XP Gain": "group_xp_gain",
+      "HP Regen": "hp_regen",
+      "Energy Conversion": "energy_conversion",
+      "Energy Generation": "energy_generation",
+      "Resell Value": "resell_value"
+    };
 
     function deriveSecondaryStats(stats) {
       const power = stats.power || 0;
@@ -625,63 +874,867 @@
       return normalizeStats(activeCharacter.base_stats || {});
     }
 
-    function updateDerived() {
-      const stats = currentStats();
-      const derived = deriveSecondaryStats(stats);
-
-      elements.displayAttackPlus.textContent = derived.attackPlus;
-      elements.displayDamagePlus.textContent = derived.damagePlus;
-      elements.displayDefenseDc.textContent = derived.defenseDc;
-      elements.displayArmor.textContent = derived.armor;
-      elements.displayInitiative.textContent = derived.initiative;
-      elements.displayMovementSpeed.textContent = derived.movementSpeed;
-      elements.displayRange.textContent = derived.range;
-      elements.displayPerception.textContent = derived.perception;
-      elements.displayAoeRange.textContent = derived.aoeRange;
-      elements.displayHacking.textContent = derived.hacking;
+    function calculateFormulaValue(formula, luck, statName) {
+      if (formula == null) return 0;
+      if (typeof formula === "number") return formula;
+      const trimmed = String(formula).trim();
+      if (!trimmed) return 0;
+      if (trimmed.startsWith("x")) {
+        return 0;
+      }
+      if (trimmed === "D") {
+        return String(luck).length;
+      }
+      if (trimmed === "D+1") {
+        return String(luck).length + 1;
+      }
+      const normalized = trimmed.replace("G", "L");
+      if (/^\d+(\.\d+)?$/.test(normalized)) {
+        return Number(normalized);
+      }
+      const match = normalized.match(/^L([x÷])([\d.]+)$/);
+      if (!match) return 0;
+      const [, op, raw] = match;
+      const value = Number(raw);
+      let result = 0;
+      if (op === "x") {
+        result = Math.floor(luck * value);
+      } else {
+        result = Math.floor(luck / value);
+      }
+      if (statName === "Kernel Slots") {
+        return Math.min(3, Math.max(1, result));
+      }
+      return Math.max(1, result);
     }
 
-    function renderLocalNodeSlots(inventorySlots) {
-      const container = elements.localNodeSlots;
-      if (!container) return;
-      const totalSlots = Math.max(Number(inventorySlots) || 0, 0) * 3;
+    function createEmptyBonus() {
+      return {
+        base: {
+          luck: 0,
+          inventory_slots: 0,
+          energy_cap: 0,
+          kernel_slots: 0,
+          hp: 0,
+          power: 0,
+          defense: 0,
+          speed: 0,
+          intelligence: 0
+        },
+        derived: {
+          attackPlus: 0,
+          damagePlus: 0,
+          defenseDc: 0,
+          armor: 0,
+          initiative: 0,
+          movementSpeed: 0,
+          range: 0,
+          perception: 0,
+          aoeRange: 0,
+          hacking: 0
+        },
+        misc: {
+          group_xp_gain: 0,
+          hp_regen: 0,
+          energy_conversion: 0,
+          energy_generation: 0,
+          resell_value: 0
+        }
+      };
+    }
+
+    function applyStatBonus(target, statName, value) {
+      const key = statKeyMap[statName];
+      if (!key || !value) return;
+      if (Object.prototype.hasOwnProperty.call(target.derived, key)) {
+        target.derived[key] += value;
+      } else if (Object.prototype.hasOwnProperty.call(target.misc, key)) {
+        target.misc[key] += value;
+      } else if (Object.prototype.hasOwnProperty.call(target.base, key)) {
+        target.base[key] += value;
+      }
+    }
+
+    function calculateGearBonuses(baseStats) {
+      const bonus = createEmptyBonus();
+      const baseLuck = baseStats.luck || 0;
+
+      characterGear.forEach(entry => {
+        if (!entry.gear) return;
+        const gear = entry.gear;
+        const gearType = gear.gear_type || gear.gearType;
+        const isBauble = gearType === "Bauble";
+        const isEquipped = entry.equipped;
+        const isInventory = entry.gear_slot === "inventory";
+
+        if (isBauble && !isInventory) return;
+        if (!isBauble && !isEquipped) return;
+
+        const stats = isBauble ? (gear.stat_modifiers || []) : (gear.stats || []);
+        stats.forEach(stat => {
+          const statName = stat.name || stat.stat || stat.label;
+          if (!statName) return;
+          const formula = stat.formula;
+          const value = stat.value ?? stat.calc ?? calculateFormulaValue(formula, baseLuck, statName);
+          if (typeof value !== "number") return;
+          applyStatBonus(bonus, statName, value);
+        });
+      });
+
+      return bonus;
+    }
+
+    function applyGearBonuses(baseStats, gearBonus) {
+      const combined = { ...baseStats };
+      Object.keys(gearBonus.base).forEach(key => {
+        combined[key] = (combined[key] || 0) + (gearBonus.base[key] || 0);
+      });
+      combined.current_hp = Math.min(combined.current_hp ?? combined.hp, combined.hp);
+      return combined;
+    }
+
+    function updateGearGeneratorLuck(stats) {
+      const baseLuck = stats.luck || 0;
+      const bonus = Number(gearBonusLuck.value) || 0;
+      gearTotalLuck.textContent = baseLuck + bonus;
+    }
+
+    function getKernelSlots(stats) {
+      const count = Math.max(Number(stats.kernel_slots) || 0, 0);
+      return Array.from({ length: Math.min(count, 5) }, (_, i) => `kernel_${i + 1}`);
+    }
+
+    function getEquippedSlotList(stats) {
+      return [
+        "weapon_1",
+        "weapon_2",
+        "head",
+        "torso",
+        "hands",
+        "legs",
+        "feet",
+        "ring_1",
+        "ring_2",
+        "neck",
+        ...getKernelSlots(stats)
+      ];
+    }
+
+    function formatSlotLabel(slot) {
+      return gearSlotLabels[slot] || slot;
+    }
+
+    function formatGearName(gear) {
+      if (!gear) return "Unknown Gear";
+      if (gear.name && gear.name.trim()) return gear.name.trim();
+      const colors = [gear.color, gear.color2].filter(Boolean).join("/");
+      const colorLabel = colors ? `${colors} ` : "";
+      return `${gear.rarity || ""} ${colorLabel}${gear.item_type || gear.itemType || gear.gear_type || gear.gearType || "Gear"}`.trim();
+    }
+
+    function availableSlotsForGear(gear, stats) {
+      const gearType = gear?.gear_type || gear?.gearType;
+      if (!gear || gearType === "Bauble") return [];
+      const slots = gearTypeToSlots[gearType] || [];
+      const kernelSlots = getKernelSlots(stats);
+      const filteredSlots = slots.filter(slot => slot.startsWith("kernel_") ? kernelSlots.includes(slot) : true);
+      return filteredSlots.filter(slot => !characterGear.some(entry => entry.equipped && entry.gear_slot === slot));
+    }
+
+    function renderGearStatsList(stats, statModifiers, luck) {
+      const rows = [];
+      (stats || []).forEach(stat => {
+        const statName = stat.label || stat.name;
+        if (!statName) return;
+        rows.push(`<li>${statName}: ${stat.value ?? "?"} <span class="muted">(${stat.formula || "?"})</span></li>`);
+      });
+      (statModifiers || []).forEach(stat => {
+        const statName = stat.label || stat.name;
+        if (!statName) return;
+        const value = calculateFormulaValue(stat.formula, luck, stat.name || statName);
+        rows.push(`<li>${statName}: ${value} <span class="muted">(${stat.formula || "?"})</span></li>`);
+      });
+      return rows.length ? `<ul>${rows.join("")}</ul>` : `<p class="muted">No stat changes.</p>`;
+    }
+
+    function renderAbilityDetails(abilities) {
+      if (!abilities || !abilities.length) {
+        return `<p class="muted">No abilities.</p>`;
+      }
+      return abilities
+        .map(ability => {
+          const tiers = ability.tierDetails || {};
+          const tierEntries = Object.entries(tiers);
+          const tierList = tierEntries.length
+            ? `<ul>${tierEntries.map(([tier, detail]) => `<li><strong>${tier}:</strong> ${detail}</li>`).join("")}</ul>`
+            : `<p class="muted">No tier details.</p>`;
+          return `
+            <div>
+              <strong><a href="${ability.link}" target="_blank" rel="noopener">${ability.name}</a></strong>
+              <div class="muted">Tiers available: ${tierEntries.length}</div>
+              ${tierList}
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function renderGearSections(stats) {
+      renderEquippedSlots(stats);
+      renderInventory(stats);
+      renderLocalNode(stats);
+    }
+
+    function renderEquippedSlots(stats) {
+      const container = elements.equippedSlots;
       container.innerHTML = "";
-      if (!totalSlots) {
-        container.innerHTML = `<span class="muted">No slots yet.</span>`;
+      const slots = getEquippedSlotList(stats);
+      if (!slots.length) {
+        container.innerHTML = `<span class="muted">No gear slots yet.</span>`;
         return;
       }
-      for (let i = 1; i <= totalSlots; i += 1) {
-        const slot = document.createElement("dl");
-        slot.className = "slot-item";
-        slot.innerHTML = `<dt>${i}:</dt><dd></dd>`;
-        container.appendChild(slot);
+      slots.forEach(slot => {
+        const entry = characterGear.find(item => item.equipped && item.gear_slot === slot);
+        const card = document.createElement("div");
+        card.className = "gear-item";
+        if (!entry) {
+          card.innerHTML = `
+            <div class="gear-summary">
+              <div class="gear-meta">
+                <strong>${formatSlotLabel(slot)}</strong>
+                <span class="muted">Empty</span>
+              </div>
+            </div>
+          `;
+        } else {
+          const gear = entry.gear;
+          const gearType = gear.gear_type || gear.gearType;
+          card.innerHTML = `
+            <div class="gear-summary">
+              <div class="gear-meta">
+                <strong>${formatGearName(gear)}</strong>
+                <span class="muted">${formatSlotLabel(slot)}</span>
+                <div class="gear-tags">
+                  <span class="gear-tag">${gearType}</span>
+                  <span class="gear-tag">${gear.rarity}</span>
+                  <span class="gear-tag">${[gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral"}</span>
+                </div>
+              </div>
+              <div class="gear-actions">
+                <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
+                <button type="button" data-action="unequip" data-gear="${entry.gear_id}">Move to Inventory</button>
+                <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
+              </div>
+            </div>
+          `;
+        }
+        container.appendChild(card);
+      });
+    }
+
+    function renderInventory(stats) {
+      const container = elements.inventorySlots;
+      container.innerHTML = "";
+      const inventoryItems = characterGear.filter(item => item.gear_slot === "inventory");
+      if (!inventoryItems.length) {
+        container.innerHTML = `<span class="muted">No gear in inventory.</span>`;
+        return;
       }
+      inventoryItems.forEach(entry => {
+        const gear = entry.gear;
+        const gearType = gear.gear_type || gear.gearType;
+        const availableSlots = availableSlotsForGear(gear, stats);
+        const slotHint = gearType === "Bauble"
+          ? "Baubles cannot be equipped."
+          : (availableSlots.length ? availableSlots.map(formatSlotLabel).join(", ") : "No slots open");
+        const card = document.createElement("div");
+        card.className = "gear-item";
+        card.innerHTML = `
+          <div class="gear-summary">
+            <div class="gear-meta">
+              <strong>${formatGearName(gear)}</strong>
+              <div class="gear-tags">
+                <span class="gear-tag">${gearType}</span>
+                <span class="gear-tag">${gear.rarity}</span>
+                <span class="gear-tag">${[gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral"}</span>
+              </div>
+              <span class="muted">Equip Slots: ${slotHint}</span>
+            </div>
+            <div class="gear-actions">
+              <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
+              ${gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-gear="${entry.gear_id}">Equip</button>`}
+              <button type="button" data-action="local" data-gear="${entry.gear_id}">Move to Local Node</button>
+              <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderLocalNode(stats) {
+      const container = elements.localNodeSlots;
+      container.innerHTML = "";
+      const localItems = characterGear.filter(item => item.gear_slot === "local_node");
+      if (!localItems.length) {
+        container.innerHTML = `<span class="muted">No gear in local node storage.</span>`;
+        return;
+      }
+      localItems.forEach(entry => {
+        const gear = entry.gear;
+        const gearType = gear.gear_type || gear.gearType;
+        const card = document.createElement("div");
+        card.className = "gear-item";
+        card.innerHTML = `
+          <div class="gear-summary">
+            <div class="gear-meta">
+              <strong>${formatGearName(gear)}</strong>
+              <div class="gear-tags">
+                <span class="gear-tag">${gearType}</span>
+                <span class="gear-tag">${gear.rarity}</span>
+                <span class="gear-tag">${[gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral"}</span>
+              </div>
+              <span class="muted">Stored in Local Node</span>
+            </div>
+            <div class="gear-actions">
+              <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
+              <button type="button" data-action="inventory" data-gear="${entry.gear_id}">Move to Inventory</button>
+              <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderAbilities() {
+      const container = elements.abilitiesList;
+      if (!container) return;
+      const actives = [];
+      const passives = [];
+      const effects = [];
+
+      characterGear.forEach(entry => {
+        if (!entry.gear) return;
+        const gear = entry.gear;
+        const gearType = gear.gear_type || gear.gearType;
+        if (gearType === "Bauble" && entry.gear_slot === "inventory") {
+          (gear.abilities || []).forEach(ability => effects.push(ability));
+          return;
+        }
+        if (!entry.equipped) return;
+        if (gearType === "Kernel") {
+          (gear.abilities || []).forEach(ability => passives.push(ability));
+        } else {
+          (gear.abilities || []).forEach(ability => actives.push(ability));
+        }
+      });
+
+      const renderAbilityGroup = (title, list) => `
+        <div class="ability-group">
+          <h3>${title}</h3>
+          ${list.length ? `<ul>${list.map(ability => `<li><a href="${ability.link}" target="_blank" rel="noopener">${ability.name}</a></li>`).join("")}</ul>` : `<p class="muted">None.</p>`}
+        </div>
+      `;
+
+      container.innerHTML = `
+        ${renderAbilityGroup("Actives", actives)}
+        ${renderAbilityGroup("Passives", passives)}
+        ${renderAbilityGroup("Effects", effects)}
+      `;
+    }
+
+    function inventoryCapacity(stats) {
+      return Math.max(Number(stats.inventory_slots) || 0, 0);
+    }
+
+    function localNodeCapacity(stats) {
+      return inventoryCapacity(stats) * 3;
+    }
+
+    function inventoryCount() {
+      return characterGear.filter(entry => entry.gear_slot === "inventory").length;
+    }
+
+    function localNodeCount() {
+      return characterGear.filter(entry => entry.gear_slot === "local_node").length;
+    }
+
+    function findGearEntry(gearId) {
+      return characterGear.find(entry => String(entry.gear_id) === String(gearId));
+    }
+
+    async function ensurePyodide() {
+      if (pyodideReady) return pyodideClient;
+      elements.gearGeneratorStatus.textContent = "Loading gear generator…";
+      try {
+        const { loadPyodide } = await import("https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.mjs");
+        pyodideClient = await loadPyodide();
+
+        const pyFiles = [
+          "abilityCatalog.py",
+          "ability.py",
+          "statbuff.py",
+          "miscFunc.py",
+          "gear.py",
+          "helperFunc.py"
+        ];
+
+        for (const name of pyFiles) {
+          const resp = await fetch(name);
+          if (!resp.ok) throw new Error(`Failed to fetch ${name}: ${resp.status}`);
+          const code = await resp.text();
+          pyodideClient.FS.writeFile(name, code);
+        }
+
+        pyodideClient.runPython(`
+          import json, random
+          from gear import Gear
+          from helperFunc import gearTypeMap
+
+          def _serialize_ability(ability):
+              details = ability.tierDetails
+              if isinstance(details, str):
+                  details = { "Detail": details }
+              return {
+                  "name": ability.name,
+                  "link": ability.link,
+                  "tierDetails": details
+              }
+
+          def _serialize_gear(gear):
+              stats = []
+              for buff in gear.basicStatBuffs + gear.colorStatBuffs:
+                  stats.append({
+                      "name": buff.normalName,
+                      "label": buff.name,
+                      "formula": buff.formula,
+                      "value": buff.calc
+                  })
+              abilities = [_serialize_ability(ab) for ab in gear.abilities]
+              aesthetic = getattr(gear, "aesthetic", None) or getattr(gear, "baubleAesthetic", None)
+              payload = {
+                  "rarity": gear.rarity,
+                  "color": gear.color,
+                  "color2": gear.color2,
+                  "gear_type": gear.gearType,
+                  "item_type": gear.specificItem,
+                  "aesthetic": aesthetic,
+                  "essence_value": gear.essenceValue,
+                  "credit_value": gear.creditValue,
+                  "abilities": abilities,
+                  "stats": stats,
+                  "stat_modifiers": []
+              }
+              if gear.gearType == "Bauble":
+                  payload["stat_modifiers"] = [
+                      {
+                          "name": buff.normalName,
+                          "label": buff.name,
+                          "formula": buff.formula
+                      }
+                      for buff in gear.colorStatBuffs
+                  ]
+                  payload["stats"] = []
+              return payload
+
+          def generate_gear_json(luck:int, amount:int, gearTypeNumber:int, rarity, color, color2):
+              rarity = rarity if rarity else None
+              color = color if color else None
+              color2 = color2 if color2 else None
+              output = []
+              for _ in range(amount):
+                  gearType = gearTypeMap.get(gearTypeNumber)
+                  if gearType is None:
+                      gearType = random.choice([v for v in gearTypeMap.values() if v])
+                  gear = Gear(luck, gearType, rarity, color, color2)
+                  output.append(_serialize_gear(gear))
+              return json.dumps(output)
+        `);
+
+        pyodideReady = true;
+        elements.gearGeneratorStatus.textContent = "Ready.";
+        return pyodideClient;
+      } catch (error) {
+        console.error(error);
+        elements.gearGeneratorStatus.textContent = "Failed to load gear generator.";
+        throw error;
+      }
+    }
+
+    async function openGearGeneratorModal() {
+      const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      updateGearGeneratorLuck(stats);
+      gearGeneratorModal.classList.remove("hidden");
+      await ensurePyodide();
+    }
+
+    function closeGearGeneratorModal() {
+      gearGeneratorModal.classList.add("hidden");
+    }
+
+    function renderGeneratedGear(stats) {
+      generatedGearList.innerHTML = "";
+      if (!generatedGear.length) {
+        generatedGearList.innerHTML = `<span class="muted">No gear generated yet.</span>`;
+        return;
+      }
+      generatedGear.forEach((gear, index) => {
+        const card = document.createElement("div");
+        card.className = "gear-item";
+        const gearType = gear.gear_type || gear.gearType;
+        const statList = renderGearStatsList(gear.stats, gear.stat_modifiers, stats.luck);
+        card.innerHTML = `
+          <div class="gear-summary">
+            <div class="gear-meta">
+              <strong>${formatGearName(gear)}</strong>
+              <div class="gear-tags">
+                <span class="gear-tag">${gearType}</span>
+                <span class="gear-tag">${gear.rarity}</span>
+                <span class="gear-tag">${[gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral"}</span>
+              </div>
+            </div>
+            <div class="gear-actions">
+              <button type="button" data-action="add" data-index="${index}">Add to Inventory</button>
+              ${gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-index="${index}">Equip</button>`}
+            </div>
+          </div>
+          <div class="gear-details-list">
+            <strong>Stats</strong>
+            ${statList}
+            <strong>Abilities</strong>
+            ${renderAbilityDetails(gear.abilities)}
+          </div>
+        `;
+        generatedGearList.appendChild(card);
+      });
+    }
+
+    async function handleGenerateGear() {
+      const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      const totalLuck = (Number(stats.luck) || 0) + (Number(gearBonusLuck.value) || 0);
+      const amount = Math.max(Number(gearAmount.value) || 1, 1);
+      const gearTypeValue = parseInt(gearTypeNumber.value, 10);
+      const rarity = gearRarity.value;
+      const color = gearColor.value;
+      const color2 = gearColor2.value;
+
+      try {
+        await ensurePyodide();
+        const result = pyodideClient.runPython(
+          `generate_gear_json(${totalLuck}, ${amount}, ${gearTypeValue}, ${JSON.stringify(rarity)}, ${JSON.stringify(color)}, ${JSON.stringify(color2)})`
+        );
+        generatedGear = JSON.parse(result);
+        generatedGear.forEach(gear => {
+          if (!gear.name) {
+            gear.name = formatGearName(gear);
+          }
+        });
+        renderGeneratedGear(stats);
+      } catch (error) {
+        console.error(error);
+        elements.gearGeneratorStatus.textContent = "Failed to generate gear.";
+      }
+    }
+
+    function buildGearInsertPayload(gear) {
+      return {
+        name: gear.name || formatGearName(gear),
+        rarity: gear.rarity,
+        color: gear.color,
+        color2: gear.color2 || null,
+        gear_type: gear.gear_type || gear.gearType,
+        aesthetic: gear.aesthetic || null,
+        item_type: gear.item_type || gear.itemType || null,
+        stats: gear.stats || [],
+        essence_value: gear.essence_value || gear.essenceValue || 0,
+        credit_value: gear.credit_value || gear.creditValue || 0,
+        abilities: gear.abilities || [],
+        stat_modifiers: gear.stat_modifiers || gear.statModifiers || []
+      };
+    }
+
+    async function insertGearToInventory(gear, options = {}) {
+      if (!activeCharacter?.id) {
+        elements.gearGeneratorStatus.textContent = "Save the character before adding gear.";
+        return null;
+      }
+      const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      const slot = options.slot || "inventory";
+      if (slot === "inventory" && inventoryCount() >= inventoryCapacity(stats)) {
+        elements.gearGeneratorStatus.textContent = "No inventory slots available.";
+        return null;
+      }
+      const payload = buildGearInsertPayload(gear);
+      const { data, error } = await sb
+        .from("webrunning_gear")
+        .insert(payload)
+        .select("*")
+        .maybeSingle();
+      if (error) throw error;
+
+      const linkPayload = {
+        character_id: activeCharacter.id,
+        gear_id: data.id,
+        equipped: slot !== "inventory" && slot !== "local_node",
+        gear_slot: slot
+      };
+      const { error: linkError } = await sb
+        .from("webrunning_character_gear")
+        .insert(linkPayload);
+      if (linkError) throw linkError;
+
+      characterGear.push({
+        gear_id: data.id,
+        equipped: linkPayload.equipped,
+        gear_slot: slot,
+        gear: data
+      });
+      render();
+      return data;
+    }
+
+    async function addGeneratedGear(index, action) {
+      const gear = generatedGear[index];
+      if (!gear) return;
+      if (action === "equip") {
+        const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+        const slots = availableSlotsForGear(gear, stats);
+        if (!slots.length) {
+          elements.gearGeneratorStatus.textContent = "No open slots for that gear.";
+          return;
+        }
+        await insertGearToInventory(gear, { slot: slots[0] });
+      } else {
+        await insertGearToInventory(gear);
+      }
+      elements.gearGeneratorStatus.textContent = "Gear added.";
+    }
+
+    async function addPastedGearFromJson() {
+      pasteStatus.textContent = "";
+      try {
+        const parsed = JSON.parse(gearPasteInput.value.trim());
+        const gearItems = Array.isArray(parsed) ? parsed : [parsed];
+        for (const gear of gearItems) {
+          await insertGearToInventory(gear);
+        }
+        gearPasteInput.value = "";
+        pasteStatus.textContent = "Pasted gear added.";
+      } catch (error) {
+        console.error(error);
+        pasteStatus.textContent = "Invalid JSON.";
+      }
+    }
+
+    function openGearDetailModal(entry) {
+      if (!entry) return;
+      activeGearRow = entry;
+      const gear = entry.gear;
+      const gearType = gear.gear_type || gear.gearType;
+      gearDetailTitle.textContent = formatGearName(gear);
+      gearNameInput.value = gear.name || formatGearName(gear);
+      const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      const statList = renderGearStatsList(gear.stats, gear.stat_modifiers, stats.luck);
+      gearDetailBody.innerHTML = `
+        <div>
+          <strong>Summary</strong>
+          <ul>
+            <li>Type: ${gearType}</li>
+            <li>Rarity: ${gear.rarity}</li>
+            <li>Color: ${[gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral"}</li>
+            <li>Item: ${gear.item_type || "Unknown"}</li>
+            <li>Essence Value: ${gear.essence_value}</li>
+          </ul>
+        </div>
+        <div>
+          <strong>Stats</strong>
+          ${statList}
+        </div>
+        <div>
+          <strong>Abilities</strong>
+          ${renderAbilityDetails(gear.abilities)}
+        </div>
+      `;
+      gearDetailStatus.textContent = "";
+      gearDetailModal.classList.remove("hidden");
+    }
+
+    function closeGearDetailModal() {
+      gearDetailModal.classList.add("hidden");
+    }
+
+    async function saveGearNameUpdate() {
+      if (!activeGearRow) return;
+      const newName = gearNameInput.value.trim();
+      if (!newName) {
+        gearDetailStatus.textContent = "Name cannot be empty.";
+        return;
+      }
+      const { error } = await sb
+        .from("webrunning_gear")
+        .update({ name: newName })
+        .eq("id", activeGearRow.gear_id);
+      if (error) {
+        gearDetailStatus.textContent = error.message;
+        return;
+      }
+      activeGearRow.gear.name = newName;
+      gearDetailTitle.textContent = newName;
+      gearDetailStatus.textContent = "Name saved.";
+      render();
+    }
+
+    async function copyGearJsonToClipboard() {
+      if (!activeGearRow) return;
+      const gear = activeGearRow.gear;
+      const payload = {
+        name: gear.name,
+        rarity: gear.rarity,
+        color: gear.color,
+        color2: gear.color2,
+        gear_type: gear.gear_type,
+        aesthetic: gear.aesthetic,
+        item_type: gear.item_type,
+        stats: gear.stats,
+        essence_value: gear.essence_value,
+        credit_value: gear.credit_value,
+        abilities: gear.abilities,
+        stat_modifiers: gear.stat_modifiers
+      };
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+        gearDetailStatus.textContent = "Copied to clipboard.";
+      } catch (error) {
+        console.error(error);
+        gearDetailStatus.textContent = "Copy failed.";
+      }
+    }
+
+    async function deleteGear() {
+      if (!activeGearRow) return;
+      const gear = activeGearRow.gear;
+      try {
+        const updatedEssence = (activeCharacter.base_stats?.essence || 0) + (gear.essence_value || 0);
+        const { error: characterError } = await sb
+          .from("webrunning_characters")
+          .update({ base_stats: { ...activeCharacter.base_stats, essence: updatedEssence } })
+          .eq("id", activeCharacter.id)
+          .eq("user_id", currentUser.id);
+        if (characterError) throw characterError;
+
+        const { error: linkError } = await sb
+          .from("webrunning_character_gear")
+          .delete()
+          .eq("character_id", activeCharacter.id)
+          .eq("gear_id", activeGearRow.gear_id);
+        if (linkError) throw linkError;
+
+        const { error: gearError } = await sb
+          .from("webrunning_gear")
+          .delete()
+          .eq("id", activeGearRow.gear_id);
+        if (gearError) throw gearError;
+
+        activeCharacter.base_stats.essence = updatedEssence;
+        characterGear = characterGear.filter(entry => entry.gear_id !== activeGearRow.gear_id);
+        closeGearDetailModal();
+        render();
+      } catch (error) {
+        console.error(error);
+        gearDetailStatus.textContent = "Failed to delete gear.";
+      }
+    }
+
+    async function updateGearSlot(entry, slot) {
+      const equipped = slot !== "inventory" && slot !== "local_node";
+      const { error } = await sb
+        .from("webrunning_character_gear")
+        .update({ gear_slot: slot, equipped })
+        .eq("character_id", activeCharacter.id)
+        .eq("gear_id", entry.gear_id);
+      if (error) throw error;
+      entry.gear_slot = slot;
+      entry.equipped = equipped;
+      render();
+    }
+
+    async function equipGear(entry) {
+      if (!entry) return;
+      const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      const availableSlots = availableSlotsForGear(entry.gear, stats);
+      if (!availableSlots.length) {
+        elements.gearGeneratorStatus.textContent = "No open slots for that gear.";
+        return;
+      }
+      await updateGearSlot(entry, availableSlots[0]);
+    }
+
+    async function moveGearToInventory(entry) {
+      if (!entry) return;
+      const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      if (inventoryCount() >= inventoryCapacity(stats)) {
+        elements.gearGeneratorStatus.textContent = "No inventory slots available.";
+        return;
+      }
+      await updateGearSlot(entry, "inventory");
+    }
+
+    async function moveGearToLocalNode(entry) {
+      if (!entry) return;
+      const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      if (localNodeCount() >= localNodeCapacity(stats)) {
+        elements.gearGeneratorStatus.textContent = "No local node slots available.";
+        return;
+      }
+      await updateGearSlot(entry, "local_node");
+    }
+
+    function updateDerived(stats, gearBonus) {
+      const derived = deriveSecondaryStats(stats);
+      const derivedBonus = gearBonus?.derived || {};
+
+      elements.displayAttackPlus.textContent = derived.attackPlus + (derivedBonus.attackPlus || 0);
+      elements.displayDamagePlus.textContent = derived.damagePlus + (derivedBonus.damagePlus || 0);
+      elements.displayDefenseDc.textContent = derived.defenseDc + (derivedBonus.defenseDc || 0);
+      elements.displayArmor.textContent = derived.armor + (derivedBonus.armor || 0);
+      elements.displayInitiative.textContent = derived.initiative + (derivedBonus.initiative || 0);
+      elements.displayMovementSpeed.textContent = derived.movementSpeed + (derivedBonus.movementSpeed || 0);
+      elements.displayRange.textContent = derived.range + (derivedBonus.range || 0);
+      elements.displayPerception.textContent = derived.perception + (derivedBonus.perception || 0);
+      elements.displayAoeRange.textContent = derived.aoeRange + (derivedBonus.aoeRange || 0);
+      elements.displayHacking.textContent = derived.hacking + (derivedBonus.hacking || 0);
     }
 
     function render() {
-      const stats = currentStats();
+      const baseStats = currentStats();
+      const gearBonus = calculateGearBonuses(baseStats);
+      const stats = applyGearBonuses(baseStats, gearBonus);
+
       elements.displayName.textContent = activeCharacter?.name || "";
       elements.displayLevel.textContent = stats.level;
-      elements.inputXp.value = stats.xp;
+      elements.inputXp.value = baseStats.xp;
       elements.displayLuck.textContent = stats.luck;
       elements.displayHp.textContent = stats.hp;
       elements.displayEnergyCap.textContent = stats.energy_cap;
-      elements.inputEssence.value = stats.essence;
-      elements.inputCurrentHp.value = stats.current_hp;
-      elements.inputEnergyRed.value = stats.energy_red;
-      elements.inputEnergyBlue.value = stats.energy_blue;
-      elements.inputEnergyGray.value = stats.energy_gray;
-      elements.inputEnergyGreen.value = stats.energy_green;
+      elements.inputEssence.value = baseStats.essence;
+      elements.inputCurrentHp.value = baseStats.current_hp;
+      elements.inputEnergyRed.value = baseStats.energy_red;
+      elements.inputEnergyBlue.value = baseStats.energy_blue;
+      elements.inputEnergyGray.value = baseStats.energy_gray;
+      elements.inputEnergyGreen.value = baseStats.energy_green;
       elements.displayInventorySlots.textContent = stats.inventory_slots;
       elements.displayKernelSlots.textContent = stats.kernel_slots;
 
-      elements.inputPower.value = stats.power;
-      elements.inputDefense.value = stats.defense;
-      elements.inputSpeed.value = stats.speed;
-      elements.inputIntelligence.value = stats.intelligence;
+      elements.inputPower.value = baseStats.power;
+      elements.inputDefense.value = baseStats.defense;
+      elements.inputSpeed.value = baseStats.speed;
+      elements.inputIntelligence.value = baseStats.intelligence;
 
-      updateDerived();
-      renderLocalNodeSlots(stats.inventory_slots);
+      updateDerived(stats, gearBonus);
+      renderGearSections(stats);
+      renderAbilities();
+      updateGearGeneratorLuck(stats);
     }
 
     async function requireUser() {
@@ -750,9 +1803,33 @@
 
         elements.nameInput.value = activeCharacter.name || "";
         render();
+        if (activeCharacter.id) {
+          await loadCharacterGear();
+        }
       } catch (e) {
         console.error(e);
         elements.saveStatus.textContent = "Failed to load character.";
+      }
+    }
+
+    async function loadCharacterGear() {
+      if (!activeCharacter?.id) return;
+      try {
+        const { data, error } = await sb
+          .from("webrunning_character_gear")
+          .select("gear_id, equipped, gear_slot, gear:webrunning_gear(*)")
+          .eq("character_id", activeCharacter.id);
+        if (error) throw error;
+        characterGear = (data || []).map(row => ({
+          gear_id: row.gear_id,
+          equipped: row.equipped,
+          gear_slot: row.gear_slot,
+          gear: row.gear
+        }));
+        render();
+      } catch (error) {
+        console.error(error);
+        elements.saveStatus.textContent = "Failed to load gear.";
       }
     }
 
@@ -1023,6 +2100,60 @@
     modalBackdrop.addEventListener("click", closeLevelModal);
     elements.saveButton.addEventListener("click", saveCharacter);
     elements.nameInput.addEventListener("input", markDirty);
+
+    elements.openGearGenerator.addEventListener("click", openGearGeneratorModal);
+    closeGearGenerator.addEventListener("click", closeGearGeneratorModal);
+    gearGeneratorBackdrop.addEventListener("click", closeGearGeneratorModal);
+    generateGearButton.addEventListener("click", handleGenerateGear);
+    gearBonusLuck.addEventListener("input", () => {
+      const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      updateGearGeneratorLuck(stats);
+    });
+    addPastedGear.addEventListener("click", addPastedGearFromJson);
+
+    generatedGearList.addEventListener("click", event => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      const action = button.dataset.action;
+      const index = Number(button.dataset.index);
+      if (action === "add") {
+        addGeneratedGear(index, "add");
+      } else if (action === "equip") {
+        addGeneratedGear(index, "equip");
+      }
+    });
+
+    function handleGearListClick(event) {
+      const button = event.target.closest("button");
+      if (!button) return;
+      const action = button.dataset.action;
+      const gearId = button.dataset.gear;
+      if (!action || !gearId) return;
+      const entry = findGearEntry(gearId);
+      if (!entry) return;
+      if (action === "view") {
+        openGearDetailModal(entry);
+      } else if (action === "equip") {
+        equipGear(entry);
+      } else if (action === "unequip" || action === "inventory") {
+        moveGearToInventory(entry);
+      } else if (action === "local") {
+        moveGearToLocalNode(entry);
+      } else if (action === "delete") {
+        activeGearRow = entry;
+        deleteGear();
+      }
+    }
+
+    elements.equippedSlots.addEventListener("click", handleGearListClick);
+    elements.inventorySlots.addEventListener("click", handleGearListClick);
+    elements.localNodeSlots.addEventListener("click", handleGearListClick);
+
+    closeGearDetail.addEventListener("click", closeGearDetailModal);
+    gearDetailBackdrop.addEventListener("click", closeGearDetailModal);
+    saveGearName.addEventListener("click", saveGearNameUpdate);
+    copyGearJson.addEventListener("click", copyGearJsonToClipboard);
+    deleteGearButton.addEventListener("click", deleteGear);
 
     window.addEventListener("DOMContentLoaded", () => {
       loadCharacter();
