@@ -147,7 +147,7 @@
           <td>${s(c,"intelligence")}</td>
           <td>${s(c,"inventory_slots")}</td>
           <td class="actions">
-            <a href="/webrunning-character.html?id=${c.id}" title="Edit">✏️</a>
+            <button onclick="openRenameModal('${c.id}')">✏️</button>
             <button onclick="deleteChar('${c.id}')">🗑️</button>
           </td>
         `;
