@@ -180,7 +180,7 @@
           <td>${s(c,"inventory_slots")}</td>
           <td class="actions">
             <a class="action-btn" href="/webrunning-2.0/webrunning-character.html?id=${c.id}" title="Edit">✏️</a>
-            <button class="action-btn" onclick="deleteChar('${c.id}')">🗑️</button>
+            <button class="action-btn" onclick="openDeleteModal('${c.id}')">🗑️</button>
           </td>
         `;
         table.appendChild(row);
