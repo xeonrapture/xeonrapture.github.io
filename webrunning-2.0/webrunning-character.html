@@ -647,6 +647,7 @@
 
     function parseAbilityLines(ability) {
       if (!ability) return [];
+      if (typeof ability === "string") return [ability];
       const details = ability.tierDetails;
       if (!details) return [];
       if (typeof details === "string") {
@@ -754,15 +755,59 @@
       };
     }
 
-    function applyStatBonus(target, statName, value) {
+    function createEmptyBonusSources() {
+      return {
+        base: {
+          luck: [],
+          inventory_slots: [],
+          energy_cap: [],
+          kernel_slots: [],
+          hp: [],
+          power: [],
+          defense: [],
+          speed: [],
+          intelligence: []
+        },
+        derived: {
+          attackPlus: [],
+          damagePlus: [],
+          defenseDc: [],
+          armor: [],
+          initiative: [],
+          movementSpeed: [],
+          range: [],
+          perception: [],
+          aoeRange: [],
+          hacking: []
+        },
+        misc: {
+          group_xp_gain: [],
+          hp_regen: [],
+          energy_conversion: [],
+          energy_generation: [],
+          resell_value: []
+        }
+      };
+    }
+
+    function applyStatBonus(target, statName, value, sourceLabel, sources) {
       const key = statKeyMap[statName];
       if (!key || !value) return;
       if (Object.prototype.hasOwnProperty.call(target.derived, key)) {
         target.derived[key] += value;
+        if (sources && sourceLabel) {
+          sources.derived[key].push({ value, label: sourceLabel });
+        }
       } else if (Object.prototype.hasOwnProperty.call(target.misc, key)) {
         target.misc[key] += value;
+        if (sources && sourceLabel) {
+          sources.misc[key].push({ value, label: sourceLabel });
+        }
       } else if (Object.prototype.hasOwnProperty.call(target.base, key)) {
         target.base[key] += value;
+        if (sources && sourceLabel) {
+          sources.base[key].push({ value, label: sourceLabel });
+        }
       }
     }
 
@@ -772,6 +817,7 @@
       const nonBaubleBonus = createEmptyBonus();
       const abilityBonus = createEmptyBonus();
       const baubleBonus = createEmptyBonus();
+      const sources = createEmptyBonusSources();
 
       characterGear.forEach(entry => {
         if (!entry.gear) return;
@@ -787,7 +833,7 @@
             if (!statName) return;
             const value = stat.value ?? stat.calc ?? calculateFormulaValue(stat.formula, baseLuck, statName);
             if (typeof value !== "number") return;
-            applyStatBonus(nonBaubleBonus, statName, value);
+            applyStatBonus(nonBaubleBonus, statName, value, gearType, sources);
           });
         }
       });
@@ -818,7 +864,7 @@
             if (!parsed) return;
             const value = parsed.value ?? calculateFormulaValue(parsed.formula, interimLuck, parsed.statName, { g: gValue });
             if (typeof value !== "number") return;
-            applyStatBonus(abilityBonus, parsed.statName, value);
+            applyStatBonus(abilityBonus, parsed.statName, value, "Kernel Ability", sources);
           });
         });
       });
@@ -840,11 +886,13 @@
           if (!statName) return;
           const value = calculateFormulaValue(stat.formula, updatedLuck, statName, { g: gValue });
           if (typeof value !== "number") return;
-          applyStatBonus(baubleBonus, statName, value);
+          applyStatBonus(baubleBonus, statName, value, "Bauble", sources);
         });
       });
 
-      return mergeBonuses(mergeBonuses(nonBaubleBonus, abilityBonus), baubleBonus);
+      const combined = mergeBonuses(mergeBonuses(nonBaubleBonus, abilityBonus), baubleBonus);
+      combined.sources = sources;
+      return combined;
     }
 
     function applyGearBonuses(baseStats, gearBonus) {
@@ -891,6 +939,48 @@
       return gearSlotLabels[slot] || slot;
     }
 
+    function formatSignedValue(value) {
+      const rounded = Number.isFinite(value) ? value : 0;
+      return `${rounded >= 0 ? "+" : ""}${rounded}`;
+    }
+
+    function summarizeSources(sourceList = []) {
+      if (!sourceList.length) return "";
+      const totals = sourceList.reduce((acc, item) => {
+        if (!item || !item.label || !item.value) return acc;
+        acc[item.label] = (acc[item.label] || 0) + item.value;
+        return acc;
+      }, {});
+      const parts = Object.entries(totals)
+        .filter(([, value]) => value)
+        .map(([label, value]) => `${formatSignedValue(value)} ${label}`);
+      return parts.length ? parts.join(", ") : "";
+    }
+
+    function scaleSourceList(list = [], factor = 1) {
+      return list.map(item => ({
+        label: item.label,
+        value: item.value * factor
+      }));
+    }
+
+    function combineSourceLists(...lists) {
+      return lists.flat().filter(Boolean);
+    }
+
+    function setStatDisplay(element, value, summary) {
+      if (!element) return;
+      element.textContent = "";
+      element.append(String(value));
+      if (summary) {
+        const summarySpan = document.createElement("span");
+        summarySpan.className = "muted";
+        summarySpan.style.marginLeft = "0.4rem";
+        summarySpan.textContent = `(${summary})`;
+        element.appendChild(summarySpan);
+      }
+    }
+
     function formatGearName(gear) {
       if (!gear) return "Unknown Gear";
       if (gear.name && gear.name.trim()) return gear.name.trim();
@@ -924,12 +1014,39 @@
       return rows.length ? `<ul>${rows.join("")}</ul>` : `<p class="muted">No stat changes.</p>`;
     }
 
+    function buildGearStatSummary(gear, luck, context = {}) {
+      const parts = [];
+      (gear.stats || []).forEach(stat => {
+        const statName = stat.label || stat.name;
+        if (!statName) return;
+        const value = stat.value ?? stat.calc;
+        if (typeof value !== "number" || value === 0) return;
+        parts.push(`${formatSignedValue(value)} ${statName}`);
+      });
+      (gear.stat_modifiers || []).forEach(stat => {
+        const statName = stat.label || stat.name;
+        if (!statName) return;
+        const value = calculateFormulaValue(stat.formula, luck, stat.name || statName, context);
+        if (typeof value !== "number" || value === 0) return;
+        parts.push(`${formatSignedValue(value)} ${statName}`);
+      });
+      return parts.length ? parts.join(", ") : "No stat modifiers";
+    }
+
     function renderAbilityDetails(abilities) {
       if (!abilities || !abilities.length) {
         return `<p class="muted">No abilities.</p>`;
       }
       return abilities
         .map(ability => {
+          if (typeof ability === "string") {
+            return `
+              <div>
+                <strong>${ability}</strong>
+                <div class="muted">No tier details.</div>
+              </div>
+            `;
+          }
           const tiers = ability.tierDetails || {};
           const tierEntries = Object.entries(tiers);
           const tierList = tierEntries.length
@@ -944,6 +1061,19 @@
           `;
         })
         .join("");
+    }
+
+    function extractTierNumbers(ability) {
+      if (!ability || typeof ability === "string") return [];
+      const details = ability.tierDetails;
+      if (!details || typeof details === "string") return [];
+      return Object.keys(details)
+        .map(key => {
+          const match = String(key).match(/(\d+)/);
+          return match ? Number(match[1]) : null;
+        })
+        .filter(value => Number.isFinite(value))
+        .sort((a, b) => a - b);
     }
 
     function renderGearSections(stats) {
@@ -976,6 +1106,7 @@
         } else {
           const gear = entry.gear;
           const gearType = gear.gear_type || gear.gearType;
+          const statSummary = buildGearStatSummary(gear, stats.luck);
           card.innerHTML = `
             <div class="gear-summary">
               <div class="gear-meta">
@@ -986,10 +1117,12 @@
                   <span class="gear-tag">${gear.rarity}</span>
                   <span class="gear-tag">${[gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral"}</span>
                 </div>
+                <span class="muted">Stats: ${statSummary}</span>
               </div>
               <div class="gear-actions">
                 <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
                 <button type="button" data-action="unequip" data-gear="${entry.gear_id}">Move to Inventory</button>
+                <button type="button" data-action="dissolve" data-gear="${entry.gear_id}">Dissolve</button>
                 <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
               </div>
             </div>
@@ -1017,6 +1150,9 @@
         const slotHint = gearType === "Bauble"
           ? "Baubles cannot be equipped."
           : (availableSlots.length ? availableSlots.map(formatSlotLabel).join(", ") : "No slots open");
+        const colorCounts = getEquippedColorCounts();
+        const gValue = gearType === "Bauble" && gear.color ? (colorCounts[gear.color] || 0) : 0;
+        const statSummary = buildGearStatSummary(gear, stats.luck, { g: gValue });
         const card = document.createElement("div");
         card.className = "gear-item";
         card.innerHTML = `
@@ -1029,11 +1165,13 @@
                 <span class="gear-tag">${[gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral"}</span>
               </div>
               <span class="muted">Equip Slots: ${slotHint}</span>
+              <span class="muted">Stats: ${statSummary}</span>
             </div>
             <div class="gear-actions">
               <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
               ${gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-gear="${entry.gear_id}">Equip</button>`}
               <button type="button" data-action="local" data-gear="${entry.gear_id}">Move to Local Node Storage</button>
+              <button type="button" data-action="dissolve" data-gear="${entry.gear_id}">Dissolve</button>
               <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
             </div>
           </div>
@@ -1056,6 +1194,9 @@
       localItems.forEach(entry => {
         const gear = entry.gear;
         const gearType = gear.gear_type || gear.gearType;
+        const colorCounts = getEquippedColorCounts();
+        const gValue = gearType === "Bauble" && gear.color ? (colorCounts[gear.color] || 0) : 0;
+        const statSummary = buildGearStatSummary(gear, stats.luck, { g: gValue });
         const card = document.createElement("div");
         card.className = "gear-item";
         card.innerHTML = `
@@ -1068,10 +1209,12 @@
                 <span class="gear-tag">${[gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral"}</span>
               </div>
               <span class="muted">Stored in Local Node</span>
+              <span class="muted">Stats: ${statSummary}</span>
             </div>
             <div class="gear-actions">
               <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
               <button type="button" data-action="inventory" data-gear="${entry.gear_id}">Move to Inventory</button>
+              <button type="button" data-action="dissolve" data-gear="${entry.gear_id}">Dissolve</button>
               <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
             </div>
           </div>
@@ -1103,22 +1246,31 @@
         }
       });
 
-      const renderAbilityDropdowns = list => {
+      const renderAbilityDropdowns = (list, { showTierEnergy = false } = {}) => {
         if (!list.length) {
           return `<p class="muted">None.</p>`;
         }
         return list
           .map(ability => {
+            const abilityName = typeof ability === "string" ? ability : ability.name;
+            const abilityLink = typeof ability === "string" ? "" : ability.link;
             const lines = parseAbilityLines(ability).filter(Boolean);
             const detailsList = lines.length
               ? `<ul>${lines.map(line => `<li>${line}</li>`).join("")}</ul>`
               : `<p class="muted">No details.</p>`;
+            const tiers = showTierEnergy ? extractTierNumbers(ability) : [];
+            const tierSummary = showTierEnergy
+              ? (tiers.length
+                ? `<div class="muted">Tiers: ${tiers.map(tier => `Tier ${tier} (Energy ${tier})`).join(", ")}</div>`
+                : `<div class="muted">Tier info unavailable.</div>`)
+              : "";
             return `
               <details class="ability-dropdown">
-                <summary>${ability.name}</summary>
+                <summary>${abilityName}</summary>
                 <div class="ability-details">
                   ${detailsList}
-                  <a href="${ability.link}" target="_blank" rel="noopener">View full ability details</a>
+                  ${tierSummary}
+                  ${abilityLink ? `<a href="${abilityLink}" target="_blank" rel="noopener">View full ability details</a>` : ""}
                 </div>
               </details>
             `;
@@ -1126,15 +1278,15 @@
           .join("");
       };
 
-      const renderAbilityGroup = (title, list) => `
+      const renderAbilityGroup = (title, list, options = {}) => `
         <div class="ability-group">
           <h3>${title}</h3>
-          ${renderAbilityDropdowns(list)}
+          ${renderAbilityDropdowns(list, options)}
         </div>
       `;
 
       container.innerHTML = `
-        ${renderAbilityGroup("Actives", actives)}
+        ${renderAbilityGroup("Actives", actives, { showTierEnergy: true })}
         ${renderAbilityGroup("Passives", passives)}
         ${renderAbilityGroup("Effects", effects)}
       `;
@@ -1190,6 +1342,12 @@
           from helperFunc import gearTypeMap
 
           def _serialize_ability(ability):
+              if isinstance(ability, str):
+                  return {
+                      "name": ability,
+                      "link": "",
+                      "tierDetails": "No tier details."
+                  }
               details = ability.tierDetails
               if isinstance(details, str):
                   details = { "Detail": details }
@@ -1722,20 +1880,72 @@
     function updateDerived(stats, gearBonus) {
       const derived = deriveSecondaryStats(stats);
       const derivedBonus = gearBonus?.derived || {};
+      const sources = gearBonus?.sources || createEmptyBonusSources();
       const totalPerception = derived.perception + (derivedBonus.perception || 0);
       const aoeMultiplier = getAoeBuffMultiplier();
       const aoeRange = (totalPerception * aoeMultiplier) + (derivedBonus.aoeRange || 0);
 
-      elements.displayAttackPlus.textContent = derived.attackPlus + (derivedBonus.attackPlus || 0);
-      elements.displayDamagePlus.textContent = derived.damagePlus + (derivedBonus.damagePlus || 0);
-      elements.displayDefenseDc.textContent = derived.defenseDc + (derivedBonus.defenseDc || 0);
-      elements.displayArmor.textContent = derived.armor + (derivedBonus.armor || 0);
-      elements.displayInitiative.textContent = derived.initiative + (derivedBonus.initiative || 0);
-      elements.displayMovementSpeed.textContent = derived.movementSpeed + (derivedBonus.movementSpeed || 0);
-      elements.displayRange.textContent = derived.range + (derivedBonus.range || 0);
-      elements.displayPerception.textContent = totalPerception;
-      elements.displayAoeRange.textContent = aoeRange;
-      elements.displayHacking.textContent = derived.hacking + (derivedBonus.hacking || 0);
+      const attackSources = combineSourceLists(sources.derived.attackPlus, sources.base.power);
+      const damageSources = combineSourceLists(sources.derived.damagePlus, sources.base.power);
+      const defenseDcSources = combineSourceLists(sources.derived.defenseDc, sources.base.defense);
+      const armorSources = combineSourceLists(sources.derived.armor, sources.base.defense);
+      const initiativeSources = combineSourceLists(sources.derived.initiative, sources.base.speed);
+      const movementSources = combineSourceLists(sources.derived.movementSpeed, scaleSourceList(sources.base.speed, 2));
+      const rangeSources = combineSourceLists(sources.derived.range, sources.base.speed);
+      const perceptionSources = combineSourceLists(sources.derived.perception, scaleSourceList(sources.base.intelligence, 2));
+      const aoeRangeSources = combineSourceLists(sources.derived.aoeRange, scaleSourceList(sources.base.intelligence, 2 * aoeMultiplier));
+      const hackingSources = combineSourceLists(sources.derived.hacking, sources.base.intelligence);
+
+      setStatDisplay(
+        elements.displayAttackPlus,
+        derived.attackPlus + (derivedBonus.attackPlus || 0),
+        summarizeSources(attackSources)
+      );
+      setStatDisplay(
+        elements.displayDamagePlus,
+        derived.damagePlus + (derivedBonus.damagePlus || 0),
+        summarizeSources(damageSources)
+      );
+      setStatDisplay(
+        elements.displayDefenseDc,
+        derived.defenseDc + (derivedBonus.defenseDc || 0),
+        summarizeSources(defenseDcSources)
+      );
+      setStatDisplay(
+        elements.displayArmor,
+        derived.armor + (derivedBonus.armor || 0),
+        summarizeSources(armorSources)
+      );
+      setStatDisplay(
+        elements.displayInitiative,
+        derived.initiative + (derivedBonus.initiative || 0),
+        summarizeSources(initiativeSources)
+      );
+      setStatDisplay(
+        elements.displayMovementSpeed,
+        derived.movementSpeed + (derivedBonus.movementSpeed || 0),
+        summarizeSources(movementSources)
+      );
+      setStatDisplay(
+        elements.displayRange,
+        derived.range + (derivedBonus.range || 0),
+        summarizeSources(rangeSources)
+      );
+      setStatDisplay(
+        elements.displayPerception,
+        totalPerception,
+        summarizeSources(perceptionSources)
+      );
+      setStatDisplay(
+        elements.displayAoeRange,
+        aoeRange,
+        summarizeSources(aoeRangeSources)
+      );
+      setStatDisplay(
+        elements.displayHacking,
+        derived.hacking + (derivedBonus.hacking || 0),
+        summarizeSources(hackingSources)
+      );
     }
 
     function render() {
@@ -1746,17 +1956,18 @@
       elements.displayName.textContent = activeCharacter?.name || "";
       elements.displayLevel.textContent = stats.level;
       elements.inputXp.value = baseStats.xp;
-      elements.displayLuck.textContent = stats.luck;
-      elements.displayHp.textContent = stats.hp;
-      elements.displayEnergyCap.textContent = stats.energy_cap;
+      const sources = gearBonus?.sources || createEmptyBonusSources();
+      setStatDisplay(elements.displayLuck, stats.luck, summarizeSources(sources.base.luck));
+      setStatDisplay(elements.displayHp, stats.hp, summarizeSources(sources.base.hp));
+      setStatDisplay(elements.displayEnergyCap, stats.energy_cap, summarizeSources(sources.base.energy_cap));
       elements.inputEssence.value = baseStats.essence;
       elements.inputCurrentHp.value = baseStats.current_hp;
       elements.inputEnergyRed.value = baseStats.energy_red;
       elements.inputEnergyBlue.value = baseStats.energy_blue;
       elements.inputEnergyGray.value = baseStats.energy_gray;
       elements.inputEnergyGreen.value = baseStats.energy_green;
-      elements.displayInventorySlots.textContent = stats.inventory_slots;
-      elements.displayKernelSlots.textContent = stats.kernel_slots;
+      setStatDisplay(elements.displayInventorySlots, stats.inventory_slots, summarizeSources(sources.base.inventory_slots));
+      setStatDisplay(elements.displayKernelSlots, stats.kernel_slots, summarizeSources(sources.base.kernel_slots));
 
       elements.inputPower.value = baseStats.power;
       elements.inputDefense.value = baseStats.defense;
@@ -2172,6 +2383,9 @@
         moveGearToInventory(entry);
       } else if (action === "local") {
         moveGearToLocalNode(entry);
+      } else if (action === "dissolve") {
+        activeGearRow = entry;
+        deleteGear({ mode: "dissolve" });
       } else if (action === "delete") {
         activeGearRow = entry;
         deleteGear({ mode: "delete" });
@@ -2185,6 +2399,8 @@
     closeGearDetail.addEventListener("click", closeGearDetailModal);
     gearDetailBackdrop.addEventListener("click", closeGearDetailModal);
     saveGearName.addEventListener("click", saveGearNameUpdate);
+    gearNameInput.addEventListener("change", saveGearNameUpdate);
+    gearNameInput.addEventListener("blur", saveGearNameUpdate);
     copyGearJson.addEventListener("click", copyGearJsonToClipboard);
     deleteGearButton.addEventListener("click", () => deleteGear({ mode: "delete" }));
     dissolveGearButton.addEventListener("click", () => deleteGear({ mode: "dissolve" }));
