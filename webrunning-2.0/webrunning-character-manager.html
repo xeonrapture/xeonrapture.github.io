@@ -55,7 +55,7 @@
     </table>
   </main>
 
-  <!-- Rename modal -->
+  <!-- Create / Rename modal -->
   <div id="charModal" class="xr-modal hidden">
     <div class="xr-modal-backdrop"></div>
 
@@ -76,6 +76,23 @@
       </div>
 
       <div id="charModalMsg" class="mono muted">&nbsp;</div>
+    </div>
+  </div>
+
+  <!-- Delete modal -->
+  <div id="deleteModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+
+    <div class="xr-modal-card">
+      <h2>Delete Character</h2>
+      <p id="deletePrompt" class="muted"></p>
+
+      <div class="xr-modal-actions">
+        <button id="confirmDeleteBtn">Delete</button>
+        <button id="cancelDeleteBtn">Cancel</button>
+      </div>
+
+      <div id="deleteModalMsg" class="mono muted">&nbsp;</div>
     </div>
   </div>
 
@@ -148,7 +165,7 @@
           <td>${s(c,"inventory_slots")}</td>
           <td class="actions">
             <button onclick="openRenameModal('${c.id}')">✏️</button>
-            <button onclick="deleteChar('${c.id}')">🗑️</button>
+            <button onclick="openDeleteModal('${c.id}')">🗑️</button>
           </td>
         `;
         table.appendChild(row);
@@ -246,10 +263,31 @@
       }
     };
 
-    async function deleteChar(id) {
-      if (!confirm("Delete this character?")) {
-        return;
-      }
+    const deleteModal = document.getElementById("deleteModal");
+    const deletePrompt = document.getElementById("deletePrompt");
+    const deleteModalMsg = document.getElementById("deleteModalMsg");
+    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+    const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+    let deleteTargetId = null;
+
+    function openDeleteModal(id) {
+      deleteTargetId = id;
+      const c = characters.find(x => x.id === id);
+      deletePrompt.textContent = `Delete ${c?.name ?? "this character"}? This cannot be undone.`;
+      deleteModalMsg.textContent = "";
+      deleteModal.classList.remove("hidden");
+    }
+
+    function closeDeleteModal() {
+      deleteModal.classList.add("hidden");
+      deleteTargetId = null;
+    }
+
+    deleteModal.querySelector(".xr-modal-backdrop").onclick = closeDeleteModal;
+    cancelDeleteBtn.onclick = closeDeleteModal;
+
+    confirmDeleteBtn.onclick = async () => {
+      if (!deleteTargetId) return;
 
       try {
         if (!currentUser) {
@@ -259,18 +297,19 @@
         const { error } = await sb
           .from("webrunning_characters")
           .delete()
-          .eq("id", id)
+          .eq("id", deleteTargetId)
           .eq("user_id", currentUser.id);
 
         if (error) throw error;
 
-        characters = characters.filter(c => c.id !== id);
+        characters = characters.filter(c => c.id !== deleteTargetId);
         render();
+        closeDeleteModal();
       } catch (e) {
         console.error(e);
-        alert(`Failed to delete: ${e.message}`);
+        deleteModalMsg.textContent = `Failed to delete: ${e.message}`;
       }
-    }
+    };
 
 
     document.getElementById("newCharacterBtn").onclick = openCreateModal;
