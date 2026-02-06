@@ -18,6 +18,21 @@
     }
     th { opacity: 0.8; }
     .actions { display: flex; gap: 0.25rem; }
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border, #333);
+      background: var(--panel, #111);
+      color: var(--text, #e6e6eb);
+      border-radius: 6px;
+      padding: 0.3rem 0.5rem;
+      text-decoration: none;
+      line-height: 1;
+    }
+    .action-btn:hover {
+      border-color: var(--accent, #7aa2ff);
+    }
     .mono { font-family: ui-monospace, monospace; }
   </style>
 </head>
@@ -164,8 +179,8 @@
           <td>${s(c,"intelligence")}</td>
           <td>${s(c,"inventory_slots")}</td>
           <td class="actions">
-            <a href="/webrunning-character.html?id=${c.id}" title="Edit">✏️</a>
-            <button onclick="deleteChar('${c.id}')">🗑️</button>
+            <a class="action-btn" href="/webrunning-2.0/webrunning-character.html?id=${c.id}" title="Edit">✏️</a>
+            <button class="action-btn" onclick="deleteChar('${c.id}')">🗑️</button>
           </td>
         `;
         table.appendChild(row);
@@ -228,20 +243,25 @@
             .insert({
               user_id: currentUser.id,
               name,
-              base_stats: {
-                hp: 5,
-                level: 1,
-                xp: 0,
-                luck: 1,
-                essence: 0,
-                power: 0,
-                defense: 0,
-                speed: 0,
-                intelligence: 0,
-                inventory_slots: 5,
-                kernel_slots: 1,
-                energy_cap: 5
-              }
+                base_stats: {
+                  hp: 5,
+                  current_hp: 5,
+                  level: 1,
+                  xp: 0,
+                  luck: 1,
+                  essence: 0,
+                  power: 0,
+                  defense: 0,
+                  speed: 0,
+                  intelligence: 0,
+                  inventory_slots: 5,
+                  kernel_slots: 1,
+                  energy_cap: 5,
+                  energy_red: 0,
+                  energy_blue: 0,
+                  energy_gray: 0,
+                  energy_green: 0
+                }
             });
 
           if (error) throw error;
