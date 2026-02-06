@@ -5,21 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Xeonic Calendar Converter</title>
 
-  <link rel="stylesheet" href="/shared/site.css">
-
-  <style>
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .card { border: 1px solid var(--border, #333); border-radius: 10px; background: var(--panel, #161821); padding: 1rem; }
-    .row { display: grid; grid-template-columns: 160px 1fr; gap: 0.75rem; align-items: center; margin: 0.5rem 0; }
-    input, select { width: 100%; }
-    .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
-    .out { background: #111; border: 1px solid var(--border, #333); border-radius: 10px; padding: 1rem; white-space: pre-wrap; min-height: 120px; }
-    .muted { opacity: 0.75; }
-    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
-  </style>
+  <link rel="stylesheet" href="/shared/style.css">
 </head>
 
-<body>
+<body class="tools-scope">
   <div id="nav"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -32,10 +21,10 @@
     <h1>Xeonic Calendar Converter</h1>
     <p class="muted">Year starts March 1.<br> 12 months × 30 days + Abaiah festival week.</p>
 
-    <div class="grid">
+    <div class="grid calendar-grid">
       <div class="card">
         <h2>Real → Xeonic</h2>
-        <div class="row">
+        <div class="row calendar-row">
           <label for="realDate">Gregorian date</label>
           <input id="realDate" type="date" value="2025-10-28">
         </div>
@@ -43,18 +32,18 @@
           <button id="convertReal">Convert</button>
           <button id="clearReal">Clear</button>
         </div>
-        <div class="out" id="outReal">Ready.</div>
+        <div class="out calendar-out" id="outReal">Ready.</div>
       </div>
 
       <div class="card">
         <h2>Xeonic → Real</h2>
 
-        <div class="row">
+        <div class="row calendar-row">
           <label for="xYear">Xeonic year</label>
           <input id="xYear" type="number" step="1" value="1665">
         </div>
 
-        <div class="row">
+        <div class="row calendar-row">
           <label for="xMonth">Month</label>
           <select id="xMonth">
             <option value="1">1 — Uthalanai</option>
@@ -73,12 +62,12 @@
           </select>
         </div>
 
-        <div class="row" id="dayNumberRow">
+        <div class="row calendar-row" id="dayNumberRow">
           <label for="xDayNumber">Day (1–30)</label>
           <input id="xDayNumber" type="number" min="1" max="30" step="1" value="9">
         </div>
 
-        <div class="row" id="dayFestivalRow" style="display:none;">
+        <div class="row calendar-row is-hidden" id="dayFestivalRow">
           <label for="xDayFestival">Festival day</label>
           <select id="xDayFestival">
             <option value="Mona">Mona</option>
@@ -95,7 +84,7 @@
           <button id="clearXeon">Clear</button>
         </div>
 
-        <div class="out" id="outXeon">Ready.</div>
+        <div class="out calendar-out" id="outXeon">Ready.</div>
       </div>
     </div>
   </main>
@@ -192,8 +181,8 @@
     // ===== UI logic =====
     function syncDayInputs() {
       const isFestival = el("xMonth").value === "Abaiah";
-      el("dayNumberRow").style.display = isFestival ? "none" : "";
-      el("dayFestivalRow").style.display = isFestival ? "" : "none";
+      el("dayNumberRow").classList.toggle("is-hidden", isFestival);
+      el("dayFestivalRow").classList.toggle("is-hidden", !isFestival);
     }
 
     function convertReal() {

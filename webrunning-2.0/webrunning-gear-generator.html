@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>XR Gear Generator</title>
+    <link rel="stylesheet" href="/shared/style.css" />
+  </head>
+
+  <body class="wr-scope">
+    <div id="nav"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/shared/auth.js"></script>
+<script src="/shared/nav.js"></script>
+
+
+    <main>
+      <h1>XR Gear Generator</h1>
+      <p class="small">
+        Input Luck and Amount, then press Generate to generate as many pieces of
+        gear as you'd like.<br />Input Gear Type, Rarity, Color, and Color 2 if
+        you want, otherwise they'll randomize.
+      </p>
+
+      <div class="row">
+        <div>
+          <label for="luck">Luck </label>
+          <input id="luck" type="number" value="8" min="1" />
+        </div>
+
+        <div>
+          <label for="amount">Amount </label>
+          <input id="amount" type="number" value="5" min="1" />
+        </div>
+
+        <div>
+          <label for="gearTypeNumber">Gear Type </label>
+          <select id="gearTypeNumber">
+            <option value="0">Random (None)</option>
+            <option value="1">One-Handed Weapon</option>
+            <option value="2">Two-Handed Weapon</option>
+            <option value="3">Head</option>
+            <option value="4">Torso</option>
+            <option value="5">Hands</option>
+            <option value="6">Legs</option>
+            <option value="7">Feet</option>
+            <option value="8">Ring</option>
+            <option value="9">Neck</option>
+            <option value="10">Kernel</option>
+            <option value="11">Consumable</option>
+            <option value="12">Bauble</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="rarity">Rarity </label>
+          <select id="rarity">
+            <option value="">Random (None)</option>
+            <option value="Common">Common</option>
+            <option value="Uncommon">Uncommon</option>
+            <option value="Rare">Rare</option>
+            <option value="Epic">Epic</option>
+            <option value="Legendary">Legendary</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="color">Color </label>
+          <select id="color">
+            <option value="">Random (None)</option>
+            <option value="Neutral">Neutral</option>
+            <option value="Red">Red</option>
+            <option value="Blue">Blue</option>
+            <option value="Green">Green</option>
+            <option value="Gray">Gray</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="color2">Color 2 </label>
+          <select id="color2">
+            <option value="">None</option>
+            <option value="Neutral">Neutral</option>
+            <option value="Red">Red</option>
+            <option value="Blue">Blue</option>
+            <option value="Green">Green</option>
+            <option value="Gray">Gray</option>
+          </select>
+        </div>
+
+        <div class="gear-actions">
+          <button id="run" disabled>Loading Python…</button>
+          <button id="run2" disabled>Loading Python…</button>
+        </div>
+      </div>
+
+      <h2>Output</h2>
+      <pre id="out">Starting…</pre>
+
+      <h2>History</h2>
+      <div id="history" class="gear-history"></div>
+      
+    </main>
+
+    <script type="module">
+      const historyEl = document.getElementById("history");
+
+      function summarizeGear(output, luck, amount) {
+        const lines = output.trim().split("\n");
+      
+        let currentRarity = null;
+        let currentType = null;
+        const pieces = [];
+      
+        for (const line of lines) {
+          if (line.includes("Rarity:")) {
+            currentRarity = line.split(":")[1].trim();
+          }
+      
+          if (line.includes("Gear:")) {
+            currentType = line.split(":")[1].trim();
+          }
+      
+          // once we have both, record a piece and reset
+          if (currentRarity && currentType) {
+            pieces.push(`${currentRarity} ${currentType}`);
+            currentRarity = null;
+            currentType = null;
+          }
+        }
+      
+        const list = pieces.length
+          ? pieces.join(", ")
+          : "Unknown Gear";
+      
+        return `Gear x${amount} with ${luck} Luck (${list})`;
+      }
+      
+      function addToHistory(summary, fullText) {
+        const entry = document.createElement("details");
+        entry.className = "gear-entry";
+        entry.open = false;
+      
+        entry.innerHTML = `
+          <summary>${summary}</summary>
+          <div class="gear-details"><br>${fullText}</div>
+        `;
+      
+        historyEl.prepend(entry);
+      }
+      
+            
+      import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.mjs";
+
+      const out = document.getElementById("out");
+      const btn = document.getElementById("run");
+      const btn2 = document.getElementById("run2");
+
+      function val(id) {
+        return document.getElementById(id).value;
+      }
+
+      // Load pyodide
+      out.textContent = "Loading Python runtime…";
+      const pyodide = await loadPyodide();
+
+      // Fetch your repo python files (must be in same folder as this page on GitHub Pages)
+      const pyFiles = [
+        "abilityCatalog.py",
+        "ability.py",
+        "statbuff.py",
+        "miscFunc.py",
+        "gear.py",
+        "helperFunc.py",
+        "main.py",
+      ];
+
+      out.textContent = "Loading Python files…";
+      for (const name of pyFiles) {
+        const resp = await fetch(name);
+        if (!resp.ok) throw new Error(`Failed to fetch ${name}: ${resp.status}`);
+        const code = await resp.text();
+        pyodide.FS.writeFile(name, code);
+      }
+
+      // Define wrappers that capture stdout
+      // FIXES INCLUDED:
+      // - Correct Python indentation (both defs at column 0)
+      // - No nested def errors
+      pyodide.runPython(`
+        import io, sys
+        import helperFunc
+        
+        gearTypeMap = helperFunc.gearTypeMap
+        
+        def run_generator(luck:int, amount:int, gearTypeNumber:int, rarity, color, color2):
+            gearType = gearTypeMap.get(gearTypeNumber)
+            rarity = rarity if rarity else None
+            color = color if color else None
+            color2 = color2 if color2 else None
+        
+            buf = io.StringIO()
+            old = sys.stdout
+            sys.stdout = buf
+            try:
+                helperFunc.printGear(luck, amount, gearType, rarity, color, color2)
+            finally:
+                sys.stdout = old
+            return buf.getvalue()
+        
+        def run_generator2(luck:int, amount:int, gearTypeNumber:int, rarity, color, color2):
+            gearType = gearTypeMap.get(gearTypeNumber)
+            rarity = rarity if rarity else None
+            color = color if color else None
+            color2 = color2 if color2 else None
+        
+            buf = io.StringIO()
+            old = sys.stdout
+            sys.stdout = buf
+            try:
+                helperFunc.printCalcs(luck, amount, gearType, rarity, color, color2)
+            finally:
+                sys.stdout = old
+            return buf.getvalue()
+              `);
+
+      function setGlobals(luck, amount, gearTypeNumber, rarity, color, color2) {
+        pyodide.globals.set("luck_js", luck);
+        pyodide.globals.set("amount_js", amount);
+        pyodide.globals.set("gearTypeNumber_js", gearTypeNumber);
+        pyodide.globals.set("rarity_js", rarity);
+        pyodide.globals.set("color_js", color);
+        pyodide.globals.set("color2_js", color2);
+      }
+
+      function readInputs() {
+        const luck = parseInt(val("luck"), 10);
+        const amount = parseInt(val("amount"), 10);
+        const gearTypeNumber = parseInt(val("gearTypeNumber"), 10);
+        const rarity = val("rarity");
+        const color = val("color");
+        const color2 = val("color2");
+
+        // convert empty strings -> None (done in python too, but keep inputs clean)
+        return {
+          luck,
+          amount,
+          gearTypeNumber,
+          rarity,
+          color,
+          color2,
+        };
+      }
+
+      // Enable buttons
+      btn.disabled = false;
+      btn.textContent = "Generate Gear";
+
+      btn2.disabled = false;
+      btn2.textContent = "Generate Luck-Calculated Gear";
+
+      btn.onclick = () => {
+        out.textContent = "Running…";
+        const { luck, amount, gearTypeNumber, rarity, color, color2 } = readInputs();
+        if (isNaN(luck)) {
+          out.innerHTML = "(luck is required)";
+        }
+        else {
+          setGlobals(luck, amount, gearTypeNumber, rarity, color, color2);
+  
+          const result = pyodide.runPython(
+            "run_generator(luck_js, amount_js, gearTypeNumber_js, rarity_js, color_js, color2_js)"
+          );
+  
+          out.innerHTML = result || "(no output)";
+  
+          const summary = summarizeGear(result, luck, amount);
+          addToHistory(summary, result);
+        }
+
+
+      };
+
+      btn2.onclick = () => {
+        out.textContent = "Running…";
+        const { luck, amount, gearTypeNumber, rarity, color, color2 } = readInputs();
+        if (isNaN(luck)) {
+          out.innerHTML = "(luck is required)";
+        }
+        else {
+          setGlobals(luck, amount, gearTypeNumber, rarity, color, color2);
+  
+          const result = pyodide.runPython(
+            "run_generator2(luck_js, amount_js, gearTypeNumber_js, rarity_js, color_js, color2_js)"
+          );
+  
+          out.innerHTML = result || "(no output)";
+  
+          const summary = summarizeGear(result, luck, amount);
+          addToHistory(summary, result);
+        }
+
+      };
+
+      out.textContent = "Ready.";
+    </script>
+  </body>
+</html>
