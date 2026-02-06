@@ -3,360 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <title>Webrunning Character Sheet</title>
-  <link rel="stylesheet" href="/shared/site.css">
-  <style>
-    .sheet {
-      display: grid;
-      gap: 1.5rem;
-    }
-    .card {
-      border: 1px solid var(--border, #333);
-      border-radius: 8px;
-      padding: 1rem;
-      background: var(--panel, #111);
-    }
-    .card h2 {
-      margin-top: 0;
-    }
-    .collapsible-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-    .collapse-toggle {
-      font-size: 0.85rem;
-      padding: 0.35rem 0.6rem;
-      margin: 0;
-    }
-    .collapsible-body {
-      margin-top: 0.75rem;
-    }
-    .collapsible.collapsed .collapsible-body {
-      display: none;
-    }
-    .stats-grid {
-      display: grid;
-      gap: 0.5rem 2rem;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    }
-    .core-info dl {
-      grid-template-columns: minmax(120px, 1fr) minmax(180px, 1fr);
-      row-gap: 0.35rem;
-      column-gap: 0.5rem;
-      align-items: center;
-    }
-    .core-info dd {
-      display: flex;
-      align-items: center;
-      min-height: 2rem;
-    }
-    .core-info dd input {
-      width: 100%;
-    }
-    dl {
-      margin: 0;
-      display: grid;
-      grid-template-columns: max-content 1fr;
-      gap: 0.25rem 0.75rem;
-    }
-    dt {
-      font-weight: 600;
-    }
-    dd {
-      margin: 0;
-      color: var(--muted, #b6b6b6);
-    }
-    .levelup-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    .levelup-table th,
-    .levelup-table td {
-      padding: 0.5rem;
-      border-bottom: 1px solid var(--border, #333);
-      text-align: left;
-      font-size: 0.9rem;
-    }
-    .levelup-table th {
-      opacity: 0.8;
-    }
-    .hidden {
-      display: none;
-    }
-    .placeholder {
-      min-height: 2rem;
-      border: 1px dashed var(--border, #333);
-      border-radius: 6px;
-      padding: 0.75rem;
-      color: var(--muted, #b6b6b6);
-    }
-    .sheet-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      align-items: center;
-    }
-    .sheet-actions input {
-      max-width: 240px;
-    }
-    .stat-inputs {
-      display: grid;
-      gap: 0.5rem 1rem;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    }
-    .stat-inputs label {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      font-size: 0.9rem;
-    }
-    .stat-inputs input[type="number"] {
-      width: 100%;
-    }
-    .xr-modal-actions {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: flex-end;
-      margin-top: 1rem;
-    }
-    .xr-modal-card h2 {
-      margin-top: 0;
-    }
-    .modal-grid {
-      display: grid;
-      gap: 1rem;
-    }
-    .level-preview {
-      border: 1px solid var(--border, #333);
-      border-radius: 6px;
-      padding: 0.75rem;
-      background: var(--panel, #111);
-    }
-    .level-preview ul {
-      margin: 0;
-      padding-left: 1.25rem;
-    }
-    .energy-inputs {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-      gap: 0.5rem;
-    }
-    .energy-inputs label {
-      display: flex;
-      flex-direction: column;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      gap: 0.2rem;
-    }
-    .energy-inputs input {
-      width: 100%;
-    }
-    .slot-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-      gap: 0.5rem 1rem;
-    }
-    .slot-item {
-      display: flex;
-      gap: 0.35rem;
-      align-items: baseline;
-    }
-    .slot-item dt {
-      font-weight: 600;
-    }
-    .slot-item dd {
-      margin: 0;
-      color: var(--muted, #b6b6b6);
-    }
-    .mono {
-      font-family: ui-monospace, monospace;
-    }
-    .xr-modal-card {
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    .gear-grid {
-      display: grid;
-      gap: 0.75rem;
-    }
-    .gear-item {
-      border: 1px solid var(--border, #333);
-      border-radius: 8px;
-      padding: 0.65rem;
-      background: var(--panel, #111);
-      display: grid;
-      gap: 0.5rem;
-    }
-    .gear-summary {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem 1rem;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .gear-meta {
-      display: grid;
-      gap: 0.15rem;
-      font-size: 0.9rem;
-    }
-    .gear-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-    .gear-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      font-size: 0.85rem;
-    }
-    .gear-tag {
-      padding: 0.2rem 0.4rem;
-      border-radius: 999px;
-      border: 1px solid var(--border, #333);
-      background: rgba(255,255,255,0.03);
-    }
-    .gear-generator-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      align-items: center;
-    }
-    .gear-details-list {
-      display: grid;
-      gap: 0.4rem;
-    }
-    .gear-details-list ul {
-      margin: 0;
-      padding-left: 1.25rem;
-    }
-    .gear-modal-actions {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      margin-top: 1rem;
-    }
-    .gear-modal-actions .right-actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-    .slot-count {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-size: 0.85rem;
-      color: var(--muted, #b6b6b6);
-    }
-    .paste-area {
-      display: grid;
-      gap: 0.5rem;
-    }
-    .paste-area textarea {
-      width: 100%;
-      min-height: 120px;
-      font-family: ui-monospace, monospace;
-    }
-    .ability-section {
-      display: grid;
-      gap: 1rem;
-    }
-    .ability-group {
-      border: 1px solid var(--border, #333);
-      border-radius: 8px;
-      padding: 0.75rem;
-      background: var(--panel, #111);
-    }
-    .ability-group h3 {
-      margin-top: 0;
-    }
-    .ability-dropdown {
-      border-top: 1px solid var(--border, #333);
-      padding-top: 0.5rem;
-    }
-    .ability-dropdown summary {
-      cursor: pointer;
-      font-weight: 600;
-      list-style: none;
-    }
-    .ability-dropdown summary::-webkit-details-marker {
-      display: none;
-    }
-    .ability-dropdown summary::before {
-      content: "▸";
-      display: inline-block;
-      margin-right: 0.4rem;
-      transition: transform 0.2s ease;
-    }
-    .ability-dropdown[open] summary::before {
-      transform: rotate(90deg);
-    }
-    .ability-dropdown .ability-details {
-      margin-top: 0.5rem;
-      display: grid;
-      gap: 0.5rem;
-    }
-    .status-popup {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      z-index: 2000;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      max-width: min(360px, 90vw);
-      pointer-events: none;
-    }
-    .status-toast {
-      background: rgba(18, 18, 18, 0.95);
-      border: 1px solid var(--border, #333);
-      border-radius: 8px;
-      padding: 0.6rem 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      pointer-events: auto;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-    }
-    .status-toast button {
-      font-size: 0.8rem;
-      padding: 0.25rem 0.5rem;
-    }
-    .status-toast.success {
-      border-color: rgba(76, 175, 80, 0.6);
-    }
-    .status-toast.error {
-      border-color: rgba(244, 67, 54, 0.6);
-    }
-    .status-toast.warning {
-      border-color: rgba(255, 193, 7, 0.6);
-    }
-    .status-toast .status-message {
-      flex: 1;
-    }
-    .deletion-history {
-      display: grid;
-      gap: 0.5rem;
-    }
-    .deletion-history-item {
-      border: 1px solid var(--border, #333);
-      border-radius: 6px;
-      padding: 0.6rem;
-      background: var(--panel, #111);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-  </style>
+  <link rel="stylesheet" href="/shared/style.css">
 </head>
-<body>
+<body class="wr-scope">
   <div id="nav"></div>
 
   <main class="wrap sheet">
@@ -900,6 +549,7 @@
       const defense = stats.defense || 0;
       const speed = stats.speed || 0;
       const intelligence = stats.intelligence || 0;
+      const perception = intelligence * 2;
 
       return {
         attackPlus: power,
@@ -909,8 +559,8 @@
         initiative: speed,
         movementSpeed: (speed * 2) + 10,
         range: speed + 5,
-        perception: intelligence * 2,
-        aoeRange: intelligence * 2,
+        perception,
+        aoeRange: perception,
         hacking: intelligence
       };
     }
@@ -1017,6 +667,28 @@
         return { statName, value: Number(rawValue.replace(/^\+/, "")) };
       }
       return { statName, formula: rawValue.replace(/^\+/, "") };
+    }
+
+    function getAoeBuffMultiplier() {
+      let multiplier = 1;
+      characterGear.forEach(entry => {
+        if (!entry.equipped || !entry.gear) return;
+        const gearType = entry.gear.gear_type || entry.gear.gearType;
+        if (gearType !== "Kernel") return;
+        (entry.gear.abilities || []).forEach(ability => {
+          if (!ability || ability.name !== "AOE Buff") return;
+          parseAbilityLines(ability).forEach(line => {
+            const match = String(line).match(/AOE Radius now = Perception x([\d.]+)/i);
+            if (match) {
+              const value = Number(match[1]);
+              if (!Number.isNaN(value)) {
+                multiplier = Math.max(multiplier, value);
+              }
+            }
+          });
+        });
+      });
+      return multiplier;
     }
 
     function mergeBonuses(target, source) {
@@ -2050,6 +1722,9 @@
     function updateDerived(stats, gearBonus) {
       const derived = deriveSecondaryStats(stats);
       const derivedBonus = gearBonus?.derived || {};
+      const totalPerception = derived.perception + (derivedBonus.perception || 0);
+      const aoeMultiplier = getAoeBuffMultiplier();
+      const aoeRange = (totalPerception * aoeMultiplier) + (derivedBonus.aoeRange || 0);
 
       elements.displayAttackPlus.textContent = derived.attackPlus + (derivedBonus.attackPlus || 0);
       elements.displayDamagePlus.textContent = derived.damagePlus + (derivedBonus.damagePlus || 0);
@@ -2058,8 +1733,8 @@
       elements.displayInitiative.textContent = derived.initiative + (derivedBonus.initiative || 0);
       elements.displayMovementSpeed.textContent = derived.movementSpeed + (derivedBonus.movementSpeed || 0);
       elements.displayRange.textContent = derived.range + (derivedBonus.range || 0);
-      elements.displayPerception.textContent = derived.perception + (derivedBonus.perception || 0);
-      elements.displayAoeRange.textContent = derived.aoeRange + (derivedBonus.aoeRange || 0);
+      elements.displayPerception.textContent = totalPerception;
+      elements.displayAoeRange.textContent = aoeRange;
       elements.displayHacking.textContent = derived.hacking + (derivedBonus.hacking || 0);
     }
 
@@ -2534,4 +2209,3 @@
   </script>
 </body>
 </html>
-
