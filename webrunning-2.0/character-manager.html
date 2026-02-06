@@ -56,18 +56,29 @@
   </main>
 
   <!-- Rename modal -->
-  <div id="nameModal" class="xr-modal hidden">
+  <div id="charModal" class="xr-modal hidden">
     <div class="xr-modal-backdrop"></div>
+
     <div class="xr-modal-card">
-      <h2>Edit Character Name</h2>
-      <input id="charNameInput" />
+      <h2 id="charModalTitle">Character</h2>
+
+      <input
+        id="charNameInput"
+        type="text"
+        maxlength="32"
+        placeholder="Character name"
+        autocomplete="off"
+      />
+
       <div class="xr-modal-actions">
-        <button id="saveNameBtn">Save</button>
-        <button id="cancelNameBtn">Cancel</button>
+        <button id="charSaveBtn">Save</button>
+        <button id="charCancelBtn">Cancel</button>
       </div>
-      <div id="nameMsg" class="mono muted"></div>
+
+      <div id="charModalMsg" class="mono muted">&nbsp;</div>
     </div>
   </div>
+
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/shared/auth.js"></script>
@@ -136,7 +147,7 @@
           <td>${s(c,"intelligence")}</td>
           <td>${s(c,"inventory_slots")}</td>
           <td class="actions">
-            <button onclick="editName('${c.id}')">✏️</button>
+            <button onclick="openRenameModal('${c.id}')">✏️</button>
             <button onclick="deleteChar('${c.id}')">🗑️</button>
           </td>
         `;
@@ -144,96 +155,100 @@
       }
     }
 
-    // ===== Rename =====
-    const modal = document.getElementById("nameModal");
+    // ===== Unified Create / Rename modal =====
+    const modal = document.getElementById("charModal");
+    const modalTitle = document.getElementById("charModalTitle");
     const nameInput = document.getElementById("charNameInput");
-    const nameMsg = document.getElementById("nameMsg");
+    const modalMsg = document.getElementById("charModalMsg");
+    const saveBtn = document.getElementById("charSaveBtn");
+    const cancelBtn = document.getElementById("charCancelBtn");
 
-    window.editName = (id) => {
+    let modalMode = null; // "create" | "rename"
+
+    function openCreateModal() {
+      modalMode = "create";
+      modalTitle.textContent = "New Character";
+      nameInput.value = "";
+      modalMsg.textContent = "";
+      modal.classList.remove("hidden");
+    }
+
+    function openRenameModal(id) {
+      modalMode = "rename";
       activeCharId = id;
       const c = characters.find(x => x.id === id);
+      modalTitle.textContent = "Rename Character";
       nameInput.value = c.name;
+      modalMsg.textContent = "";
       modal.classList.remove("hidden");
-    };
+    }
 
-    document.getElementById("cancelNameBtn").onclick =
-      () => modal.classList.add("hidden");
-
-    document.getElementById("saveNameBtn").onclick = async () => {
-      const name = nameInput.value.trim();
-      if (!name) return;
-
-      const { error } = await sb
-        .from("webrunning_characters")
-        .update({ name })
-        .eq("id", activeCharId)
-        .eq("user_id", currentUser.id);
-
-      if (error) {
-        console.error(error);
-        nameMsg.textContent = error.message;
-        return;
-      }
-
+    function closeModal() {
       modal.classList.add("hidden");
-      loadCharacters();
-    };
+    }
 
-    // ===== Delete =====
-    window.deleteChar = async (id) => {
-      if (!confirm("Delete this character?")) return;
+    document.querySelector(".xr-modal-backdrop").onclick = closeModal;
+    cancelBtn.onclick = closeModal;
 
-      const { error } = await sb
-        .from("webrunning_characters")
-        .delete()
-        .eq("id", id)
-        .eq("user_id", currentUser.id);
+    // Save handler
+    saveBtn.onclick = async () => {
+      const name = nameInput.value.trim();
 
-      if (error) {
-        console.error(error);
+      if (!name) {
+        modalMsg.textContent = "Name cannot be empty.";
         return;
       }
 
-      loadCharacters();
-    };
-
-    // ===== Create =====
-    document.getElementById("newCharacterBtn").onclick = async () => {
-      const name = prompt("Character name?");
-      if (!name) return;
+      if (!/^[a-zA-Z0-9 _-]+$/.test(name)) {
+        modalMsg.textContent = "Invalid characters.";
+        return;
+      }
 
       try {
-        currentUser = await requireUser();
+        if (modalMode === "create") {
+          const { error } = await sb
+            .from("webrunning_characters")
+            .insert({
+              user_id: currentUser.id,
+              name,
+              base_stats: {
+                hp: 10,
+                level: 1,
+                xp: 0,
+                luck: 0,
+                essence: 0,
+                power: 0,
+                defense: 0,
+                speed: 0,
+                intelligence: 0,
+                inventory_slots: 5
+              }
+            });
 
-        const { error } = await sb
-          .from("webrunning_characters")
-          .insert({
-            user_id: currentUser.id,
-            name,
-            base_stats: {
-              hp: 10,
-              level: 1,
-              xp: 0,
-              luck: 0,
-              essence: 0,
-              power: 0,
-              defense: 0,
-              speed: 0,
-              intelligence: 0,
-              inventory_slots: 5
-            }
-          });
+          if (error) throw error;
+        }
 
-        if (error) throw error;
+        if (modalMode === "rename") {
+          const { error } = await sb
+            .from("webrunning_characters")
+            .update({ name })
+            .eq("id", activeCharId)
+            .eq("user_id", currentUser.id);
 
+          if (error) throw error;
+        }
+
+        closeModal();
         loadCharacters();
       } catch (e) {
-        console.error("Create failed:", e);
-        alert(e.message);
+        console.error(e);
+        modalMsg.textContent = e.message;
       }
     };
 
-    loadCharacters();
+
+    document.getElementById("newCharacterBtn").onclick = openCreateModal;
+
   </script>
 
 </body>
