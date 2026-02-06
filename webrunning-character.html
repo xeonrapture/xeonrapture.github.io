@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Webrunning Character Sheet</title>
+  <link rel="stylesheet" href="/shared/site.css">
+  <style>
+    .sheet {
+      display: grid;
+      gap: 1.5rem;
+    }
+    .card {
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 1rem;
+      background: var(--panel, #111);
+    }
+    .card h2 {
+      margin-top: 0;
+    }
+    .stats-grid {
+      display: grid;
+      gap: 0.5rem 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 0.25rem 0.75rem;
+    }
+    dt {
+      font-weight: 600;
+    }
+    dd {
+      margin: 0;
+      color: var(--muted, #b6b6b6);
+    }
+    .levelup-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    .levelup-table th,
+    .levelup-table td {
+      padding: 0.5rem;
+      border-bottom: 1px solid var(--border, #333);
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .levelup-table th {
+      opacity: 0.8;
+    }
+    .hidden {
+      display: none;
+    }
+    .placeholder {
+      min-height: 2rem;
+      border: 1px dashed var(--border, #333);
+      border-radius: 6px;
+      padding: 0.75rem;
+      color: var(--muted, #b6b6b6);
+    }
+    .sheet-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .sheet-actions input {
+      max-width: 240px;
+    }
+    .stat-inputs {
+      display: grid;
+      gap: 0.5rem 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+    .stat-inputs label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-size: 0.9rem;
+    }
+    .stat-inputs input[type="number"] {
+      width: 100%;
+    }
+    .xr-modal-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: 1rem;
+    }
+    .xr-modal-card h2 {
+      margin-top: 0;
+    }
+    .modal-grid {
+      display: grid;
+      gap: 1rem;
+    }
+    .level-preview {
+      border: 1px solid var(--border, #333);
+      border-radius: 6px;
+      padding: 0.75rem;
+      background: var(--panel, #111);
+    }
+    .level-preview ul {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+    .mono {
+      font-family: ui-monospace, monospace;
+    }
+  </style>
+</head>
+<body>
+  <div id="nav"></div>
+
+  <main class="wrap sheet">
+    <header>
+      <a href="/webrunning-2.0/character-manager.html" aria-label="Back to character manager">← Back to Character Manager</a>
+      <h1>Webrunning Character Sheet</h1>
+      <p>Use this page to track your character stats, gear, and progression.</p>
+    </header>
+
+    <section class="card">
+      <h2>Character</h2>
+      <div class="sheet-actions">
+        <label>
+          <span class="muted">Character Name</span>
+          <input id="characterName" type="text" maxlength="32" placeholder="Character name" />
+        </label>
+        <button id="saveCharacter" type="button">Save Character</button>
+        <button id="levelUpButton" type="button">Level Up</button>
+        <div id="saveStatus" class="mono muted"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Core Info</h2>
+      <div class="stats-grid">
+        <dl>
+          <dt>Name:</dt>
+          <dd id="displayName"></dd>
+          <dt>Level:</dt>
+          <dd id="displayLevel">1</dd>
+          <dt>XP:</dt>
+          <dd id="displayXp">0</dd>
+          <dt>Luck:</dt>
+          <dd id="displayLuck">1</dd>
+        </dl>
+        <dl>
+          <dt>HP:</dt>
+          <dd id="displayHp">10</dd>
+          <dt>Energy:</dt>
+          <dd id="displayEnergy"></dd>
+          <dt>Energy Cap:</dt>
+          <dd id="displayEnergyCap">5</dd>
+          <dt>Essence:</dt>
+          <dd id="displayEssence"></dd>
+        </dl>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Basic Stats</h2>
+      <div class="stat-inputs">
+        <label>Power
+          <input id="inputPower" type="number" min="0" value="0" />
+        </label>
+        <label>Defense
+          <input id="inputDefense" type="number" min="0" value="0" />
+        </label>
+        <label>Speed
+          <input id="inputSpeed" type="number" min="0" value="0" />
+        </label>
+        <label>Intelligence
+          <input id="inputIntelligence" type="number" min="0" value="0" />
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Secondary Stats</h2>
+      <p class="muted">Go up as their Basic Stats go up.</p>
+      <div class="stats-grid">
+        <dl>
+          <dt>Attack Plus:</dt>
+          <dd id="displayAttackPlus">0</dd>
+          <dt>Damage Plus:</dt>
+          <dd id="displayDamagePlus">0</dd>
+          <dt>Defense DC:</dt>
+          <dd id="displayDefenseDc">10</dd>
+          <dt>Armor:</dt>
+          <dd id="displayArmor">0</dd>
+          <dt>Initiative:</dt>
+          <dd id="displayInitiative">0</dd>
+          <dt>Movement Speed:</dt>
+          <dd id="displayMovementSpeed">10</dd>
+          <dt>Range:</dt>
+          <dd id="displayRange">5</dd>
+          <dt>Perception:</dt>
+          <dd id="displayPerception">0</dd>
+          <dt>AOE Range:</dt>
+          <dd id="displayAoeRange">0</dd>
+          <dt>Hacking:</dt>
+          <dd id="displayHacking">0</dd>
+        </dl>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Neutral Buffs</h2>
+      <div class="stats-grid">
+        <dl>
+          <dt>Inventory Slots:</dt>
+          <dd id="displayInventorySlots">10</dd>
+          <dt>Kernel Slots:</dt>
+          <dd id="displayKernelSlots">1</dd>
+        </dl>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Clothing-Specific Buffs</h2>
+      <div class="stats-grid">
+        <dl>
+          <dt>Energy Conversion:</dt>
+          <dd>0</dd>
+          <dt>Group XP Gain:</dt>
+          <dd>0</dd>
+          <dt>HP Regen:</dt>
+          <dd>0</dd>
+          <dt>Resell Value:</dt>
+          <dd>0</dd>
+        </dl>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Gear Slots</h2>
+      <p class="muted">At Level 1 you can grab the Basic Webrunning Gear.</p>
+      <div class="stats-grid">
+        <dl>
+          <dt>Weapon 1:</dt>
+          <dd></dd>
+          <dt>Weapon 2:</dt>
+          <dd></dd>
+          <dt>Head:</dt>
+          <dd></dd>
+          <dt>Torso:</dt>
+          <dd></dd>
+          <dt>Hands:</dt>
+          <dd></dd>
+          <dt>Legs:</dt>
+          <dd></dd>
+          <dt>Feet:</dt>
+          <dd></dd>
+          <dt>Ring 1:</dt>
+          <dd></dd>
+          <dt>Ring 2:</dt>
+          <dd></dd>
+          <dt>Neck:</dt>
+          <dd></dd>
+          <dt>Kernel 1:</dt>
+          <dd></dd>
+        </dl>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Inventory Slots</h2>
+      <div class="stats-grid">
+        <dl>
+          <dt>1:</dt>
+          <dd></dd>
+          <dt>2:</dt>
+          <dd></dd>
+          <dt>3:</dt>
+          <dd></dd>
+          <dt>4:</dt>
+          <dd></dd>
+          <dt>5:</dt>
+          <dd></dd>
+          <dt>6:</dt>
+          <dd></dd>
+          <dt>7:</dt>
+          <dd></dd>
+          <dt>8:</dt>
+          <dd></dd>
+          <dt>9:</dt>
+          <dd></dd>
+          <dt>10:</dt>
+          <dd></dd>
+        </dl>
+      </div>
+      <p><strong>Local Node Storage:</strong> Inventory Slots x3</p>
+    </section>
+
+    <section class="card">
+      <h2>Abilities</h2>
+      <div class="placeholder">Copy your abilities here.</div>
+    </section>
+
+    <section class="card">
+      <h2>Gear</h2>
+      <div class="placeholder">Use this section to paste your gear stat blocks.</div>
+    </section>
+
+    <section class="card">
+      <h2>Level Up Manager</h2>
+      <button id="toggleLevelups" type="button">Show Level-Up Progression</button>
+      <div id="levelupPanel" class="hidden">
+        <table class="levelup-table">
+          <thead>
+            <tr>
+              <th>Level</th>
+              <th>XP</th>
+              <th>Base HP</th>
+              <th>Stat Points</th>
+              <th>Energy Cap</th>
+              <th>Kernel Slots</th>
+              <th>Inventory Slots</th>
+              <th>Base Luck</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>0</td><td>5</td><td>+3</td><td>5</td><td>1</td><td>10</td><td>1</td></tr>
+            <tr><td>2</td><td>10</td><td>10</td><td></td><td>5</td><td>1</td><td>12</td><td>2</td></tr>
+            <tr><td>3</td><td>20</td><td>15</td><td>+1</td><td>6</td><td>2</td><td>14</td><td>3</td></tr>
+            <tr><td>4</td><td>35</td><td>20</td><td></td><td>6</td><td>2</td><td>16</td><td>4</td></tr>
+            <tr><td>5</td><td>55</td><td>25</td><td>+1</td><td>7</td><td>3</td><td>18</td><td>5</td></tr>
+            <tr><td>6</td><td>80</td><td>30</td><td></td><td>7</td><td>3</td><td>20</td><td>6</td></tr>
+            <tr><td>7</td><td>110</td><td>35</td><td>+1</td><td>8</td><td>4</td><td>22</td><td>7</td></tr>
+            <tr><td>8</td><td>150</td><td>40</td><td></td><td>8</td><td>4</td><td>24</td><td>8</td></tr>
+            <tr><td>9</td><td>200</td><td>45</td><td>+1</td><td>9</td><td>5</td><td>26</td><td>9</td></tr>
+            <tr><td>10</td><td>260</td><td>50</td><td></td><td>10</td><td>5</td><td>30</td><td>10</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="levelupModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Level Up</h2>
+      <div class="modal-grid">
+        <label>
+          Target Level
+          <select id="targetLevel"></select>
+        </label>
+        <div class="level-preview">
+          <strong>Preview</strong>
+          <ul id="levelPreview"></ul>
+        </div>
+        <div>
+          <strong>Allocate Stat Points</strong>
+          <div class="stat-inputs">
+            <label>Power
+              <input id="levelPower" type="number" min="0" value="0" />
+            </label>
+            <label>Defense
+              <input id="levelDefense" type="number" min="0" value="0" />
+            </label>
+            <label>Speed
+              <input id="levelSpeed" type="number" min="0" value="0" />
+            </label>
+            <label>Intelligence
+              <input id="levelIntelligence" type="number" min="0" value="0" />
+            </label>
+          </div>
+          <p class="muted">Points remaining: <span id="pointsRemaining">0</span></p>
+        </div>
+        <div id="levelError" class="mono muted"></div>
+      </div>
+      <div class="xr-modal-actions">
+        <button id="confirmLevelUp" type="button">Apply Level</button>
+        <button id="cancelLevelUp" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/shared/auth.js"></script>
+  <script src="/shared/nav.js"></script>
+  <script>
+    const sb = window.supabaseClient;
+    const levelTable = [
+      { level: 1, xp: 0, baseHp: 5, statPoints: 3, energyCap: 5, kernelSlots: 1, inventorySlots: 10, baseLuck: 1 },
+      { level: 2, xp: 10, baseHp: 10, statPoints: 0, energyCap: 5, kernelSlots: 1, inventorySlots: 12, baseLuck: 2 },
+      { level: 3, xp: 20, baseHp: 15, statPoints: 1, energyCap: 6, kernelSlots: 2, inventorySlots: 14, baseLuck: 3 },
+      { level: 4, xp: 35, baseHp: 20, statPoints: 0, energyCap: 6, kernelSlots: 2, inventorySlots: 16, baseLuck: 4 },
+      { level: 5, xp: 55, baseHp: 25, statPoints: 1, energyCap: 7, kernelSlots: 3, inventorySlots: 18, baseLuck: 5 },
+      { level: 6, xp: 80, baseHp: 30, statPoints: 0, energyCap: 7, kernelSlots: 3, inventorySlots: 20, baseLuck: 6 },
+      { level: 7, xp: 110, baseHp: 35, statPoints: 1, energyCap: 8, kernelSlots: 4, inventorySlots: 22, baseLuck: 7 },
+      { level: 8, xp: 150, baseHp: 40, statPoints: 0, energyCap: 8, kernelSlots: 4, inventorySlots: 24, baseLuck: 8 },
+      { level: 9, xp: 200, baseHp: 45, statPoints: 1, energyCap: 9, kernelSlots: 5, inventorySlots: 26, baseLuck: 9 },
+      { level: 10, xp: 260, baseHp: 50, statPoints: 0, energyCap: 10, kernelSlots: 5, inventorySlots: 30, baseLuck: 10 }
+    ];
+
+    const defaults = {
+      level: 1,
+      xp: 0,
+      luck: 1,
+      hp: 10,
+      essence: 0,
+      power: 0,
+      defense: 0,
+      speed: 0,
+      intelligence: 0,
+      inventory_slots: 10,
+      kernel_slots: 1,
+      energy_cap: 5
+    };
+
+    let currentUser = null;
+    let activeCharacter = null;
+
+    const elements = {
+      nameInput: document.getElementById("characterName"),
+      saveButton: document.getElementById("saveCharacter"),
+      saveStatus: document.getElementById("saveStatus"),
+      displayName: document.getElementById("displayName"),
+      displayLevel: document.getElementById("displayLevel"),
+      displayXp: document.getElementById("displayXp"),
+      displayLuck: document.getElementById("displayLuck"),
+      displayHp: document.getElementById("displayHp"),
+      displayEnergy: document.getElementById("displayEnergy"),
+      displayEnergyCap: document.getElementById("displayEnergyCap"),
+      displayEssence: document.getElementById("displayEssence"),
+      inputPower: document.getElementById("inputPower"),
+      inputDefense: document.getElementById("inputDefense"),
+      inputSpeed: document.getElementById("inputSpeed"),
+      inputIntelligence: document.getElementById("inputIntelligence"),
+      displayAttackPlus: document.getElementById("displayAttackPlus"),
+      displayDamagePlus: document.getElementById("displayDamagePlus"),
+      displayDefenseDc: document.getElementById("displayDefenseDc"),
+      displayArmor: document.getElementById("displayArmor"),
+      displayInitiative: document.getElementById("displayInitiative"),
+      displayMovementSpeed: document.getElementById("displayMovementSpeed"),
+      displayRange: document.getElementById("displayRange"),
+      displayPerception: document.getElementById("displayPerception"),
+      displayAoeRange: document.getElementById("displayAoeRange"),
+      displayHacking: document.getElementById("displayHacking"),
+      displayInventorySlots: document.getElementById("displayInventorySlots"),
+      displayKernelSlots: document.getElementById("displayKernelSlots")
+    };
+
+    const modal = document.getElementById("levelupModal");
+    const modalBackdrop = modal.querySelector(".xr-modal-backdrop");
+    const targetLevelSelect = document.getElementById("targetLevel");
+    const levelPreview = document.getElementById("levelPreview");
+    const levelPower = document.getElementById("levelPower");
+    const levelDefense = document.getElementById("levelDefense");
+    const levelSpeed = document.getElementById("levelSpeed");
+    const levelIntelligence = document.getElementById("levelIntelligence");
+    const pointsRemaining = document.getElementById("pointsRemaining");
+    const levelError = document.getElementById("levelError");
+
+    const toggleButton = document.getElementById("toggleLevelups");
+    const levelupPanel = document.getElementById("levelupPanel");
+
+    toggleButton.addEventListener("click", () => {
+      const isHidden = levelupPanel.classList.toggle("hidden");
+      toggleButton.textContent = isHidden
+        ? "Show Level-Up Progression"
+        : "Hide Level-Up Progression";
+    });
+
+    function deriveSecondaryStats(stats) {
+      const power = stats.power || 0;
+      const defense = stats.defense || 0;
+      const speed = stats.speed || 0;
+      const intelligence = stats.intelligence || 0;
+
+      return {
+        attackPlus: power,
+        damagePlus: power,
+        defenseDc: 10 + defense,
+        armor: defense,
+        initiative: speed,
+        movementSpeed: (speed * 2) + 10,
+        range: speed + 5,
+        perception: intelligence * 2,
+        aoeRange: intelligence * 2,
+        hacking: intelligence
+      };
+    }
+
+    function normalizeStats(stats) {
+      return {
+        ...defaults,
+        ...stats
+      };
+    }
+
+    function currentStats() {
+      if (!activeCharacter) {
+        return normalizeStats({});
+      }
+      return normalizeStats(activeCharacter.base_stats || {});
+    }
+
+    function updateDerived() {
+      const stats = currentStats();
+      const derived = deriveSecondaryStats(stats);
+
+      elements.displayAttackPlus.textContent = derived.attackPlus;
+      elements.displayDamagePlus.textContent = derived.damagePlus;
+      elements.displayDefenseDc.textContent = derived.defenseDc;
+      elements.displayArmor.textContent = derived.armor;
+      elements.displayInitiative.textContent = derived.initiative;
+      elements.displayMovementSpeed.textContent = derived.movementSpeed;
+      elements.displayRange.textContent = derived.range;
+      elements.displayPerception.textContent = derived.perception;
+      elements.displayAoeRange.textContent = derived.aoeRange;
+      elements.displayHacking.textContent = derived.hacking;
+    }
+
+    function render() {
+      const stats = currentStats();
+      elements.displayName.textContent = activeCharacter?.name || "";
+      elements.displayLevel.textContent = stats.level;
+      elements.displayXp.textContent = stats.xp;
+      elements.displayLuck.textContent = stats.luck;
+      elements.displayHp.textContent = stats.hp;
+      elements.displayEnergy.textContent = stats.energy ?? "";
+      elements.displayEnergyCap.textContent = stats.energy_cap;
+      elements.displayEssence.textContent = stats.essence;
+      elements.displayInventorySlots.textContent = stats.inventory_slots;
+      elements.displayKernelSlots.textContent = stats.kernel_slots;
+
+      elements.inputPower.value = stats.power;
+      elements.inputDefense.value = stats.defense;
+      elements.inputSpeed.value = stats.speed;
+      elements.inputIntelligence.value = stats.intelligence;
+
+      updateDerived();
+    }
+
+    async function requireUser() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) {
+        elements.saveStatus.textContent = "Not logged in.";
+        throw new Error("No user");
+      }
+      return user;
+    }
+
+    async function loadCharacter() {
+      try {
+        currentUser = await requireUser();
+        const params = new URLSearchParams(window.location.search);
+        const characterId = params.get("id");
+        let query = sb
+          .from("webrunning_characters")
+          .select("id, name, base_stats")
+          .eq("user_id", currentUser.id);
+
+        if (characterId) {
+          query = query.eq("id", characterId);
+        } else {
+          query = query.order("created_at", { ascending: true }).limit(1);
+        }
+
+        const { data, error } = await query.maybeSingle();
+
+        if (error) throw error;
+
+        activeCharacter = data || {
+          id: null,
+          name: "",
+          base_stats: { ...defaults }
+        };
+
+        elements.nameInput.value = activeCharacter.name || "";
+        render();
+      } catch (e) {
+        console.error(e);
+        elements.saveStatus.textContent = "Failed to load character.";
+      }
+    }
+
+    function readBaseStatsFromForm() {
+      const stats = currentStats();
+      stats.power = Number(elements.inputPower.value) || 0;
+      stats.defense = Number(elements.inputDefense.value) || 0;
+      stats.speed = Number(elements.inputSpeed.value) || 0;
+      stats.intelligence = Number(elements.inputIntelligence.value) || 0;
+      return stats;
+    }
+
+    async function saveCharacter() {
+      const name = elements.nameInput.value.trim();
+      if (!name) {
+        elements.saveStatus.textContent = "Name cannot be empty.";
+        return;
+      }
+
+      if (!/^[a-zA-Z0-9 _-]+$/.test(name)) {
+        elements.saveStatus.textContent = "Invalid characters.";
+        return;
+      }
+
+      try {
+        currentUser = await requireUser();
+        const baseStats = readBaseStatsFromForm();
+
+        if (activeCharacter?.id) {
+          const { error } = await sb
+            .from("webrunning_characters")
+            .update({
+              name,
+              base_stats: baseStats
+            })
+            .eq("id", activeCharacter.id)
+            .eq("user_id", currentUser.id);
+          if (error) throw error;
+        } else {
+          const { data, error } = await sb
+            .from("webrunning_characters")
+            .insert({
+              user_id: currentUser.id,
+              name,
+              base_stats: baseStats
+            })
+            .select("id, name, base_stats")
+            .maybeSingle();
+          if (error) throw error;
+          activeCharacter = data;
+        }
+
+        elements.saveStatus.textContent = "Saved.";
+        activeCharacter.name = name;
+        activeCharacter.base_stats = baseStats;
+        render();
+      } catch (e) {
+        console.error(e);
+        elements.saveStatus.textContent = e.message;
+      }
+    }
+
+    function populateLevelSelect() {
+      targetLevelSelect.innerHTML = "";
+      const stats = currentStats();
+      levelTable
+        .filter(entry => entry.level > stats.level)
+        .forEach(entry => {
+          const option = document.createElement("option");
+          option.value = entry.level;
+          option.textContent = `Level ${entry.level}`;
+          targetLevelSelect.appendChild(option);
+        });
+    }
+
+    function getLevelEntry(level) {
+      return levelTable.find(entry => entry.level === Number(level));
+    }
+
+    function calculateAvailablePoints(startLevel, targetLevel) {
+      return levelTable
+        .filter(entry => entry.level > startLevel && entry.level <= targetLevel)
+        .reduce((sum, entry) => sum + (entry.statPoints || 0), 0);
+    }
+
+    function updateLevelPreview() {
+      const stats = currentStats();
+      const targetLevel = Number(targetLevelSelect.value);
+      const entry = getLevelEntry(targetLevel);
+      if (!entry) {
+        levelPreview.innerHTML = "";
+        return;
+      }
+      const points = calculateAvailablePoints(stats.level, targetLevel);
+      levelPreview.innerHTML = `
+        <li>Level: ${stats.level} → ${entry.level}</li>
+        <li>XP: ${stats.xp} → ${entry.xp}</li>
+        <li>Base HP: ${stats.hp} → ${entry.baseHp}</li>
+        <li>Energy Cap: ${stats.energy_cap} → ${entry.energyCap}</li>
+        <li>Kernel Slots: ${stats.kernel_slots} → ${entry.kernelSlots}</li>
+        <li>Inventory Slots: ${stats.inventory_slots} → ${entry.inventorySlots}</li>
+        <li>Luck: ${stats.luck} → ${entry.baseLuck}</li>
+        <li>Stat Points to allocate: ${points}</li>
+      `;
+      updateRemainingPoints(points);
+    }
+
+    function updateRemainingPoints(availablePoints) {
+      const allocated =
+        (Number(levelPower.value) || 0) +
+        (Number(levelDefense.value) || 0) +
+        (Number(levelSpeed.value) || 0) +
+        (Number(levelIntelligence.value) || 0);
+      pointsRemaining.textContent = Math.max(availablePoints - allocated, 0);
+    }
+
+    function resetLevelInputs() {
+      levelPower.value = 0;
+      levelDefense.value = 0;
+      levelSpeed.value = 0;
+      levelIntelligence.value = 0;
+      levelError.textContent = "";
+    }
+
+    function openLevelModal() {
+      populateLevelSelect();
+      if (!targetLevelSelect.options.length) {
+        elements.saveStatus.textContent = "No higher levels available.";
+        return;
+      }
+      resetLevelInputs();
+      updateLevelPreview();
+      modal.classList.remove("hidden");
+    }
+
+    function closeLevelModal() {
+      modal.classList.add("hidden");
+    }
+
+    async function applyLevelUp() {
+      const stats = currentStats();
+      const targetLevel = Number(targetLevelSelect.value);
+      const entry = getLevelEntry(targetLevel);
+      if (!entry) return;
+
+      const availablePoints = calculateAvailablePoints(stats.level, targetLevel);
+      const powerPoints = Number(levelPower.value) || 0;
+      const defensePoints = Number(levelDefense.value) || 0;
+      const speedPoints = Number(levelSpeed.value) || 0;
+      const intelligencePoints = Number(levelIntelligence.value) || 0;
+      const totalAllocated = powerPoints + defensePoints + speedPoints + intelligencePoints;
+
+      if (totalAllocated !== availablePoints) {
+        levelError.textContent = "Allocate all available stat points before applying.";
+        return;
+      }
+
+      const updatedStats = {
+        ...stats,
+        level: entry.level,
+        xp: entry.xp,
+        hp: entry.baseHp,
+        energy_cap: entry.energyCap,
+        kernel_slots: entry.kernelSlots,
+        inventory_slots: entry.inventorySlots,
+        luck: entry.baseLuck,
+        power: stats.power + powerPoints,
+        defense: stats.defense + defensePoints,
+        speed: stats.speed + speedPoints,
+        intelligence: stats.intelligence + intelligencePoints
+      };
+
+      try {
+        currentUser = await requireUser();
+        if (!activeCharacter?.id) {
+          levelError.textContent = "Save the character before leveling up.";
+          return;
+        }
+        const { error } = await sb
+          .from("webrunning_characters")
+          .update({ base_stats: updatedStats })
+          .eq("id", activeCharacter.id)
+          .eq("user_id", currentUser.id);
+        if (error) throw error;
+
+        activeCharacter.base_stats = updatedStats;
+        render();
+        closeLevelModal();
+      } catch (e) {
+        console.error(e);
+        levelError.textContent = e.message;
+      }
+    }
+
+    [elements.inputPower, elements.inputDefense, elements.inputSpeed, elements.inputIntelligence]
+      .forEach(input => {
+        input.addEventListener("input", () => {
+          const stats = readBaseStatsFromForm();
+          if (activeCharacter) {
+            activeCharacter.base_stats = stats;
+          }
+          render();
+        });
+      });
+
+    [levelPower, levelDefense, levelSpeed, levelIntelligence].forEach(input => {
+      input.addEventListener("input", () => {
+        const stats = currentStats();
+        const targetLevel = Number(targetLevelSelect.value);
+        const availablePoints = calculateAvailablePoints(stats.level, targetLevel);
+        updateRemainingPoints(availablePoints);
+      });
+    });
+
+    targetLevelSelect.addEventListener("change", () => {
+      resetLevelInputs();
+      updateLevelPreview();
+    });
+
+    document.getElementById("levelUpButton").addEventListener("click", openLevelModal);
+    document.getElementById("confirmLevelUp").addEventListener("click", applyLevelUp);
+    document.getElementById("cancelLevelUp").addEventListener("click", closeLevelModal);
+    modalBackdrop.addEventListener("click", closeLevelModal);
+    elements.saveButton.addEventListener("click", saveCharacter);
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadCharacter();
+    });
+  </script>
+</body>
+</html>
