@@ -246,6 +246,32 @@
       }
     };
 
+    async function deleteChar(id) {
+      if (!confirm("Delete this character?")) {
+        return;
+      }
+
+      try {
+        if (!currentUser) {
+          currentUser = await requireUser();
+        }
+
+        const { error } = await sb
+          .from("webrunning_characters")
+          .delete()
+          .eq("id", id)
+          .eq("user_id", currentUser.id);
+
+        if (error) throw error;
+
+        characters = characters.filter(c => c.id !== id);
+        render();
+      } catch (e) {
+        console.error(e);
+        alert(`Failed to delete: ${e.message}`);
+      }
+    }
+
 
     document.getElementById("newCharacterBtn").onclick = openCreateModal;
     window.addEventListener("DOMContentLoaded", () => {
