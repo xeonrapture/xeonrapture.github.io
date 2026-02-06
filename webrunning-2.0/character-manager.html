@@ -79,20 +79,35 @@
 
     let characters = [];
     let activeCharId = null;
+    let currentUser = null;
+
+    async function requireUser() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) {
+        table.innerHTML = "<tr><td colspan='12'>Not logged in.</td></tr>";
+        throw new Error("No user");
+      }
+      return user;
+    }
 
     async function loadCharacters() {
-      const { data, error } = await sb
-        .from("webrunning.characters")
-        .select("id, name, base_stats")
-        .order("created_at", { ascending: true });
+      try {
+        currentUser = await requireUser();
 
-      if (error) {
+        const { data, error } = await sb
+          .from("webrunning.characters")
+          .select("id, name, base_stats")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: true });
+
+        if (error) throw error;
+
+        characters = data;
+        render();
+      } catch (e) {
+        console.error("Load failed:", e);
         table.innerHTML = "<tr><td colspan='12'>Failed to load.</td></tr>";
-        return;
       }
-
-      characters = data;
-      render();
     }
 
     function s(c, key) {
@@ -142,4 +157,84 @@
     };
 
     document.getElementById("cancelNameBtn").onclick =
-      () => modal.classList.add
+      () => modal.classList.add("hidden");
+
+    document.getElementById("saveNameBtn").onclick = async () => {
+      const name = nameInput.value.trim();
+      if (!name) return;
+
+      const { error } = await sb
+        .from("webrunning.characters")
+        .update({ name })
+        .eq("id", activeCharId)
+        .eq("user_id", currentUser.id);
+
+      if (error) {
+        console.error(error);
+        nameMsg.textContent = error.message;
+        return;
+      }
+
+      modal.classList.add("hidden");
+      loadCharacters();
+    };
+
+    // ===== Delete =====
+    window.deleteChar = async (id) => {
+      if (!confirm("Delete this character?")) return;
+
+      const { error } = await sb
+        .from("webrunning.characters")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", currentUser.id);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      loadCharacters();
+    };
+
+    // ===== Create =====
+    document.getElementById("newCharacterBtn").onclick = async () => {
+      const name = prompt("Character name?");
+      if (!name) return;
+
+      try {
+        currentUser = await requireUser();
+
+        const { error } = await sb
+          .from("webrunning.characters")
+          .insert({
+            user_id: currentUser.id,
+            name,
+            base_stats: {
+              hp: 10,
+              level: 1,
+              xp: 0,
+              luck: 0,
+              essence: 0,
+              power: 0,
+              defense: 0,
+              speed: 0,
+              intelligence: 0,
+              inventory_slots: 5
+            }
+          });
+
+        if (error) throw error;
+
+        loadCharacters();
+      } catch (e) {
+        console.error("Create failed:", e);
+        alert(e.message);
+      }
+    };
+
+    loadCharacters();
+  </script>
+
+</body>
+</html>
