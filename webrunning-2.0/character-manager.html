@@ -95,7 +95,7 @@
         currentUser = await requireUser();
 
         const { data, error } = await sb
-          .from("webrunning.characters")
+          .from("webrunning_characters")
           .select("id, name, base_stats")
           .eq("user_id", currentUser.id)
           .order("created_at", { ascending: true });
@@ -164,7 +164,7 @@
       if (!name) return;
 
       const { error } = await sb
-        .from("webrunning.characters")
+        .from("webrunning_characters")
         .update({ name })
         .eq("id", activeCharId)
         .eq("user_id", currentUser.id);
@@ -184,7 +184,7 @@
       if (!confirm("Delete this character?")) return;
 
       const { error } = await sb
-        .from("webrunning.characters")
+        .from("webrunning_characters")
         .delete()
         .eq("id", id)
         .eq("user_id", currentUser.id);
@@ -206,7 +206,7 @@
         currentUser = await requireUser();
 
         const { error } = await sb
-          .from("webrunning.characters")
+          .from("webrunning_characters")
           .insert({
             user_id: currentUser.id,
             name,
