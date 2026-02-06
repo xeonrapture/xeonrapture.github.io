@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Webrunning Characters</title>
+  <link rel="stylesheet" href="/shared/site.css">
+
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 0.5rem;
+      border-bottom: 1px solid var(--border, #333);
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    th { opacity: 0.8; }
+    .actions { display: flex; gap: 0.25rem; }
+    .mono { font-family: ui-monospace, monospace; }
+  </style>
+</head>
+
+<body>
+  <div id="nav"></div>
+
+  <main class="wrap">
+    <h1>Webrunning Characters</h1>
+
+    <div style="margin-bottom:1rem;">
+      <button id="newCharacterBtn">+ New Character</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Lvl</th>
+          <th>HP</th>
+          <th>XP</th>
+          <th>Luck</th>
+          <th>Ess</th>
+          <th>P</th>
+          <th>D</th>
+          <th>S</th>
+          <th>I</th>
+          <th>Slots</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="charTable">
+        <tr><td colspan="12">Loading…</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <!-- Rename modal -->
+  <div id="nameModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Edit Character Name</h2>
+      <input id="charNameInput" />
+      <div class="xr-modal-actions">
+        <button id="saveNameBtn">Save</button>
+        <button id="cancelNameBtn">Cancel</button>
+      </div>
+      <div id="nameMsg" class="mono muted"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/shared/auth.js"></script>
+  <script src="/shared/nav.js"></script>
+
+  <script>
+    const sb = window.supabaseClient;
+    const table = document.getElementById("charTable");
+
+    let characters = [];
+    let activeCharId = null;
+
+    async function loadCharacters() {
+      const { data, error } = await sb
+        .from("webrunning.characters")
+        .select("id, name, base_stats")
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        table.innerHTML = "<tr><td colspan='12'>Failed to load.</td></tr>";
+        return;
+      }
+
+      characters = data;
+      render();
+    }
+
+    function s(c, key) {
+      return c.base_stats?.[key] ?? 0;
+    }
+
+    function render() {
+      if (!characters.length) {
+        table.innerHTML = "<tr><td colspan='12'>No characters yet.</td></tr>";
+        return;
+      }
+
+      table.innerHTML = "";
+      for (const c of characters) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${c.name}</td>
+          <td>${s(c,"level")}</td>
+          <td>${s(c,"hp")}</td>
+          <td>${s(c,"xp")}</td>
+          <td>${s(c,"luck")}</td>
+          <td>${s(c,"essence")}</td>
+          <td>${s(c,"power")}</td>
+          <td>${s(c,"defense")}</td>
+          <td>${s(c,"speed")}</td>
+          <td>${s(c,"intelligence")}</td>
+          <td>${s(c,"inventory_slots")}</td>
+          <td class="actions">
+            <button onclick="editName('${c.id}')">✏️</button>
+            <button onclick="deleteChar('${c.id}')">🗑️</button>
+          </td>
+        `;
+        table.appendChild(row);
+      }
+    }
+
+    // ===== Rename =====
+    const modal = document.getElementById("nameModal");
+    const nameInput = document.getElementById("charNameInput");
+    const nameMsg = document.getElementById("nameMsg");
+
+    window.editName = (id) => {
+      activeCharId = id;
+      const c = characters.find(x => x.id === id);
+      nameInput.value = c.name;
+      modal.classList.remove("hidden");
+    };
+
+    document.getElementById("cancelNameBtn").onclick =
+      () => modal.classList.add
