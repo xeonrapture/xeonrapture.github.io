@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>XR Dashboard</title>
 
-  <link rel="stylesheet" href="/shared/site.css">
+  <link rel="stylesheet" href="/shared/style.css">
 </head>
 
-<body>
+<body class="wr-scope">
   <!-- NAV -->
   <div id="nav"></div>
 
@@ -22,12 +22,12 @@
     <div class="card">
       <div id="userInfo" class="mono muted">Loading user…</div>
 
-      <div style="margin-top:1rem;">
+      <div class="wr-mt-1">
         <button id="logoutBtn">Log out</button>
       </div>
     </div>
 
-    <div class="card" style="margin-top:1rem;">
+    <div class="card wr-mt-1">
       <h2>Next steps</h2>
       <ul class="muted">
         <a href="/webrunning-2.0/webrunning-character-manager.html">Webrunning Character Manager</a>
@@ -99,11 +99,11 @@
       "(no display name)";
 
     userInfo.innerHTML = `
-      <div style="display:flex; align-items:center; gap:0.5rem;">
+      <div class="wr-inline-flex">
         <span>Username: <strong id="usernameValue">${username}</strong></span>
         <button id="editUsernameBtn" type="button">Edit</button>
       </div>
-      <div style="margin-top:0.5rem;">Email: ${user.email}</div>
+      <div class="wr-mt-0-5">Email: ${user.email}</div>
       <div>Name: ${displayName}</div>
     `;
 

@@ -5,47 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>XR Clock</title>
 
-  <link rel="stylesheet" href="/shared/site.css">
-  
-
-  <style>
-    .clock {
-      max-width: 600px;
-      margin: 2rem auto;
-      padding: 1.5rem;
-      background: var(--panel, #161821);
-      border: 1px solid var(--border, #333);
-      border-radius: 12px;
-      text-align: center;
-      font-family: "Ubuntu", sans-serif;
-    }
-
-    .real {
-      font-size: 1rem;
-      opacity: 0.75;
-      margin-bottom: 0.75rem;
-    }
-
-    .xeon {
-      font-size: 1.6rem;
-      font-weight: 600;
-      line-height: 1.4;
-    }
-
-    .season {
-      margin-top: 0.4rem;
-      opacity: 0.75;
-    }
-
-    .time {
-      font-size: 1.25rem;
-      letter-spacing: 0.05em;
-      margin-top: 0.4rem;
-    }
-  </style>
+  <link rel="stylesheet" href="/shared/style.css">
 </head>
 
-<body>
+<body class="tools-scope">
   <div id="nav"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

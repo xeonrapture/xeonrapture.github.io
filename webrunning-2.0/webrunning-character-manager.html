@@ -3,51 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <title>Webrunning Characters</title>
-  <link rel="stylesheet" href="/shared/site.css">
-
-  <style>
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 0.5rem;
-      border-bottom: 1px solid var(--border, #333);
-      text-align: left;
-      font-size: 0.9rem;
-    }
-    th { opacity: 0.8; }
-    .actions { display: flex; gap: 0.25rem; }
-    .action-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid var(--border, #333);
-      background: var(--panel, #111);
-      color: var(--text, #e6e6eb);
-      border-radius: 6px;
-      padding: 0.3rem 0.5rem;
-      text-decoration: none;
-      line-height: 1;
-    }
-    .action-btn:hover {
-      border-color: var(--accent, #7aa2ff);
-    }
-    .mono { font-family: ui-monospace, monospace; }
-  </style>
+  <link rel="stylesheet" href="/shared/style.css">
 </head>
 
-<body>
+<body class="wr-scope">
   <div id="nav"></div>
 
   <main class="wrap">
     <h1>Webrunning Characters</h1>
 
-    <div style="margin-bottom:1rem;">
+    <div class="character-actions">
       <button id="newCharacterBtn">+ New Character</button>
     </div>
 
-    <table>
+    <table class="table-full">
       <thead>
         <tr>
           <th>Name</th>
