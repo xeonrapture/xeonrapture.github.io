@@ -40,6 +40,18 @@
       gap: 0.5rem 2rem;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     }
+    .core-info dl {
+      grid-template-columns: minmax(140px, 1fr) minmax(160px, 1fr);
+      row-gap: 0.5rem;
+    }
+    .core-info dd {
+      display: flex;
+      align-items: center;
+      min-height: 2rem;
+    }
+    .core-info dd input {
+      width: 100%;
+    }
     dl {
       margin: 0;
       display: grid;
@@ -191,7 +203,7 @@
 
     <section class="card">
       <h2>Core Info</h2>
-      <div class="stats-grid">
+      <div class="stats-grid core-info">
         <dl>
           <dt>Name:</dt>
           <dd id="displayName"></dd>
@@ -378,7 +390,16 @@
             <dd></dd>
           </dl>
         </div>
-        <h3>Local Node Storage</h3>
+      </div>
+    </section>
+
+    <section class="card collapsible collapsed" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Local Node Storage</h2>
+        <button class="collapse-toggle" type="button">Show</button>
+      </div>
+      <div class="collapsible-body">
+        <p class="muted">Stored locally outside of inventory slots.</p>
         <div id="localNodeSlots" class="slot-grid"></div>
       </div>
     </section>
@@ -507,6 +528,9 @@
 
     let currentUser = null;
     let activeCharacter = null;
+    let isDirty = false;
+    let isSaving = false;
+    let autosaveTimer = null;
 
     const elements = {
       nameInput: document.getElementById("characterName"),
@@ -670,6 +694,35 @@
       return user;
     }
 
+    function formatSaveTimestamp(date = new Date()) {
+      return date.toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function updateSaveStatus(label) {
+      elements.saveStatus.textContent = `${label} ${formatSaveTimestamp()}`;
+    }
+
+    function markDirty() {
+      isDirty = true;
+    }
+
+    async function autoSaveCharacter() {
+      if (!isDirty || isSaving) return;
+      await saveCharacter({ mode: "auto" });
+    }
+
+    function startAutosave() {
+      if (autosaveTimer) {
+        clearInterval(autosaveTimer);
+      }
+      autosaveTimer = setInterval(autoSaveCharacter, 45000);
+    }
+
     async function loadCharacter() {
       try {
         currentUser = await requireUser();
@@ -720,19 +773,25 @@
       return stats;
     }
 
-    async function saveCharacter() {
+    async function saveCharacter({ mode = "manual" } = {}) {
+      if (isSaving) return;
       const name = elements.nameInput.value.trim();
       if (!name) {
-        elements.saveStatus.textContent = "Name cannot be empty.";
+        if (mode === "manual") {
+          elements.saveStatus.textContent = "Name cannot be empty.";
+        }
         return;
       }
 
       if (!/^[a-zA-Z0-9 _-]+$/.test(name)) {
-        elements.saveStatus.textContent = "Invalid characters.";
+        if (mode === "manual") {
+          elements.saveStatus.textContent = "Invalid characters.";
+        }
         return;
       }
 
       try {
+        isSaving = true;
         currentUser = await requireUser();
         const baseStats = readBaseStatsFromForm();
 
@@ -760,13 +819,16 @@
           activeCharacter = data;
         }
 
-        elements.saveStatus.textContent = "Saved.";
+        isDirty = false;
         activeCharacter.name = name;
         activeCharacter.base_stats = baseStats;
         render();
+        updateSaveStatus(mode === "auto" ? "Autosaved:" : "Saved:");
       } catch (e) {
         console.error(e);
         elements.saveStatus.textContent = e.message;
+      } finally {
+        isSaving = false;
       }
     }
 
@@ -854,9 +916,11 @@
       document.querySelectorAll("[data-collapsible]").forEach(section => {
         const button = section.querySelector(".collapse-toggle");
         if (!button) return;
+        const isCollapsed = section.classList.contains("collapsed");
+        button.textContent = isCollapsed ? "Show" : "Hide";
         button.addEventListener("click", () => {
-          const isCollapsed = section.classList.toggle("collapsed");
-          button.textContent = isCollapsed ? "Show" : "Hide";
+          const nowCollapsed = section.classList.toggle("collapsed");
+          button.textContent = nowCollapsed ? "Show" : "Hide";
         });
       });
     }
@@ -931,6 +995,7 @@
     ]
       .forEach(input => {
         input.addEventListener("input", () => {
+          markDirty();
           const stats = readBaseStatsFromForm();
           if (activeCharacter) {
             activeCharacter.base_stats = stats;
@@ -958,10 +1023,12 @@
     document.getElementById("cancelLevelUp").addEventListener("click", closeLevelModal);
     modalBackdrop.addEventListener("click", closeLevelModal);
     elements.saveButton.addEventListener("click", saveCharacter);
+    elements.nameInput.addEventListener("input", markDirty);
 
     window.addEventListener("DOMContentLoaded", () => {
       loadCharacter();
       initCollapsibles();
+      startAutosave();
     });
   </script>
 </body>
