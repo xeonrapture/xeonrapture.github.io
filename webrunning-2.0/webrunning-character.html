@@ -18,6 +18,23 @@
     .card h2 {
       margin-top: 0;
     }
+    .collapsible-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .collapse-toggle {
+      font-size: 0.85rem;
+      padding: 0.35rem 0.6rem;
+      margin: 0;
+    }
+    .collapsible-body {
+      margin-top: 0.75rem;
+    }
+    .collapsible.collapsed .collapsible-body {
+      display: none;
+    }
     .stats-grid {
       display: grid;
       gap: 0.5rem 2rem;
@@ -107,8 +124,45 @@
       margin: 0;
       padding-left: 1.25rem;
     }
+    .energy-inputs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 0.5rem;
+    }
+    .energy-inputs label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      gap: 0.2rem;
+    }
+    .energy-inputs input {
+      width: 100%;
+    }
+    .slot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 0.5rem 1rem;
+    }
+    .slot-item {
+      display: flex;
+      gap: 0.35rem;
+      align-items: baseline;
+    }
+    .slot-item dt {
+      font-weight: 600;
+    }
+    .slot-item dd {
+      margin: 0;
+      color: var(--muted, #b6b6b6);
+    }
     .mono {
       font-family: ui-monospace, monospace;
+    }
+    .xr-modal-card {
+      max-height: 80vh;
+      overflow-y: auto;
     }
   </style>
 </head>
@@ -144,20 +198,40 @@
           <dt>Level:</dt>
           <dd id="displayLevel">1</dd>
           <dt>XP:</dt>
-          <dd id="displayXp">0</dd>
+          <dd>
+            <input id="inputXp" type="number" min="0" value="0" />
+          </dd>
           <dt>Luck:</dt>
           <dd id="displayLuck">1</dd>
         </dl>
         <dl>
-          <dt>HP:</dt>
+          <dt>Max HP:</dt>
           <dd id="displayHp">10</dd>
-          <dt>Energy:</dt>
-          <dd id="displayEnergy"></dd>
+          <dt>Current HP:</dt>
+          <dd>
+            <input id="inputCurrentHp" type="number" min="0" value="10" />
+          </dd>
           <dt>Energy Cap:</dt>
           <dd id="displayEnergyCap">5</dd>
           <dt>Essence:</dt>
-          <dd id="displayEssence"></dd>
+          <dd>
+            <input id="inputEssence" type="number" min="0" value="0" />
+          </dd>
         </dl>
+      </div>
+      <div class="stat-inputs" style="margin-top: 0.75rem;">
+        <label>Energy (Red)
+          <input id="inputEnergyRed" type="number" min="0" value="0" />
+        </label>
+        <label>Energy (Blue)
+          <input id="inputEnergyBlue" type="number" min="0" value="0" />
+        </label>
+        <label>Energy (Gray)
+          <input id="inputEnergyGray" type="number" min="0" value="0" />
+        </label>
+        <label>Energy (Green)
+          <input id="inputEnergyGreen" type="number" min="0" value="0" />
+        </label>
       </div>
     </section>
 
@@ -179,121 +253,134 @@
       </div>
     </section>
 
-    <section class="card">
-      <h2>Secondary Stats</h2>
-      <p class="muted">Go up as their Basic Stats go up.</p>
-      <div class="stats-grid">
-        <dl>
-          <dt>Attack Plus:</dt>
-          <dd id="displayAttackPlus">0</dd>
-          <dt>Damage Plus:</dt>
-          <dd id="displayDamagePlus">0</dd>
-          <dt>Defense DC:</dt>
-          <dd id="displayDefenseDc">10</dd>
-          <dt>Armor:</dt>
-          <dd id="displayArmor">0</dd>
-          <dt>Initiative:</dt>
-          <dd id="displayInitiative">0</dd>
-          <dt>Movement Speed:</dt>
-          <dd id="displayMovementSpeed">10</dd>
-          <dt>Range:</dt>
-          <dd id="displayRange">5</dd>
-          <dt>Perception:</dt>
-          <dd id="displayPerception">0</dd>
-          <dt>AOE Range:</dt>
-          <dd id="displayAoeRange">0</dd>
-          <dt>Hacking:</dt>
-          <dd id="displayHacking">0</dd>
-        </dl>
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Secondary Stats</h2>
+        <button class="collapse-toggle" type="button">Hide</button>
+      </div>
+      <div class="collapsible-body">
+        <p class="muted">Go up as their Basic Stats go up.</p>
+        <div class="stats-grid">
+          <dl>
+            <dt>Attack Plus:</dt>
+            <dd id="displayAttackPlus">0</dd>
+            <dt>Damage Plus:</dt>
+            <dd id="displayDamagePlus">0</dd>
+            <dt>Defense DC:</dt>
+            <dd id="displayDefenseDc">10</dd>
+            <dt>Armor:</dt>
+            <dd id="displayArmor">0</dd>
+            <dt>Initiative:</dt>
+            <dd id="displayInitiative">0</dd>
+            <dt>Movement Speed:</dt>
+            <dd id="displayMovementSpeed">10</dd>
+            <dt>Range:</dt>
+            <dd id="displayRange">5</dd>
+            <dt>Perception:</dt>
+            <dd id="displayPerception">0</dd>
+            <dt>AOE Range:</dt>
+            <dd id="displayAoeRange">0</dd>
+            <dt>Hacking:</dt>
+            <dd id="displayHacking">0</dd>
+          </dl>
+        </div>
       </div>
     </section>
 
-    <section class="card">
-      <h2>Neutral Buffs</h2>
-      <div class="stats-grid">
-        <dl>
-          <dt>Inventory Slots:</dt>
-          <dd id="displayInventorySlots">10</dd>
-          <dt>Kernel Slots:</dt>
-          <dd id="displayKernelSlots">1</dd>
-        </dl>
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Neutral Buffs</h2>
+        <button class="collapse-toggle" type="button">Hide</button>
+      </div>
+      <div class="collapsible-body">
+        <div class="stats-grid">
+          <dl>
+            <dt>Inventory Slots:</dt>
+            <dd id="displayInventorySlots">10</dd>
+            <dt>Kernel Slots:</dt>
+            <dd id="displayKernelSlots">1</dd>
+            <dt>Energy Conversion:</dt>
+            <dd>0</dd>
+            <dt>Group XP Gain:</dt>
+            <dd>0</dd>
+            <dt>HP Regen:</dt>
+            <dd>0</dd>
+            <dt>Resell Value:</dt>
+            <dd>0</dd>
+          </dl>
+        </div>
       </div>
     </section>
 
-    <section class="card">
-      <h2>Clothing-Specific Buffs</h2>
-      <div class="stats-grid">
-        <dl>
-          <dt>Energy Conversion:</dt>
-          <dd>0</dd>
-          <dt>Group XP Gain:</dt>
-          <dd>0</dd>
-          <dt>HP Regen:</dt>
-          <dd>0</dd>
-          <dt>Resell Value:</dt>
-          <dd>0</dd>
-        </dl>
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Gear Slots</h2>
+        <button class="collapse-toggle" type="button">Hide</button>
+      </div>
+      <div class="collapsible-body">
+        <p class="muted">At Level 1 you can grab the Basic Webrunning Gear.</p>
+        <div class="stats-grid">
+          <dl>
+            <dt>Weapon 1:</dt>
+            <dd></dd>
+            <dt>Weapon 2:</dt>
+            <dd></dd>
+            <dt>Head:</dt>
+            <dd></dd>
+            <dt>Torso:</dt>
+            <dd></dd>
+            <dt>Hands:</dt>
+            <dd></dd>
+            <dt>Legs:</dt>
+            <dd></dd>
+            <dt>Feet:</dt>
+            <dd></dd>
+            <dt>Ring 1:</dt>
+            <dd></dd>
+            <dt>Ring 2:</dt>
+            <dd></dd>
+            <dt>Neck:</dt>
+            <dd></dd>
+            <dt>Kernel 1:</dt>
+            <dd></dd>
+          </dl>
+        </div>
       </div>
     </section>
 
-    <section class="card">
-      <h2>Gear Slots</h2>
-      <p class="muted">At Level 1 you can grab the Basic Webrunning Gear.</p>
-      <div class="stats-grid">
-        <dl>
-          <dt>Weapon 1:</dt>
-          <dd></dd>
-          <dt>Weapon 2:</dt>
-          <dd></dd>
-          <dt>Head:</dt>
-          <dd></dd>
-          <dt>Torso:</dt>
-          <dd></dd>
-          <dt>Hands:</dt>
-          <dd></dd>
-          <dt>Legs:</dt>
-          <dd></dd>
-          <dt>Feet:</dt>
-          <dd></dd>
-          <dt>Ring 1:</dt>
-          <dd></dd>
-          <dt>Ring 2:</dt>
-          <dd></dd>
-          <dt>Neck:</dt>
-          <dd></dd>
-          <dt>Kernel 1:</dt>
-          <dd></dd>
-        </dl>
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Inventory Slots</h2>
+        <button class="collapse-toggle" type="button">Hide</button>
       </div>
-    </section>
-
-    <section class="card">
-      <h2>Inventory Slots</h2>
-      <div class="stats-grid">
-        <dl>
-          <dt>1:</dt>
-          <dd></dd>
-          <dt>2:</dt>
-          <dd></dd>
-          <dt>3:</dt>
-          <dd></dd>
-          <dt>4:</dt>
-          <dd></dd>
-          <dt>5:</dt>
-          <dd></dd>
-          <dt>6:</dt>
-          <dd></dd>
-          <dt>7:</dt>
-          <dd></dd>
-          <dt>8:</dt>
-          <dd></dd>
-          <dt>9:</dt>
-          <dd></dd>
-          <dt>10:</dt>
-          <dd></dd>
-        </dl>
+      <div class="collapsible-body">
+        <div class="stats-grid">
+          <dl>
+            <dt>1:</dt>
+            <dd></dd>
+            <dt>2:</dt>
+            <dd></dd>
+            <dt>3:</dt>
+            <dd></dd>
+            <dt>4:</dt>
+            <dd></dd>
+            <dt>5:</dt>
+            <dd></dd>
+            <dt>6:</dt>
+            <dd></dd>
+            <dt>7:</dt>
+            <dd></dd>
+            <dt>8:</dt>
+            <dd></dd>
+            <dt>9:</dt>
+            <dd></dd>
+            <dt>10:</dt>
+            <dd></dd>
+          </dl>
+        </div>
+        <h3>Local Node Storage</h3>
+        <div id="localNodeSlots" class="slot-grid"></div>
       </div>
-      <p><strong>Local Node Storage:</strong> Inventory Slots x3</p>
     </section>
 
     <section class="card">
@@ -403,6 +490,7 @@
       xp: 0,
       luck: 1,
       hp: 5,
+      current_hp: 5,
       essence: 0,
       power: 0,
       defense: 0,
@@ -410,7 +498,11 @@
       intelligence: 0,
       inventory_slots: 10,
       kernel_slots: 1,
-      energy_cap: 5
+      energy_cap: 5,
+      energy_red: 0,
+      energy_blue: 0,
+      energy_gray: 0,
+      energy_green: 0
     };
 
     let currentUser = null;
@@ -422,12 +514,16 @@
       saveStatus: document.getElementById("saveStatus"),
       displayName: document.getElementById("displayName"),
       displayLevel: document.getElementById("displayLevel"),
-      displayXp: document.getElementById("displayXp"),
       displayLuck: document.getElementById("displayLuck"),
       displayHp: document.getElementById("displayHp"),
-      displayEnergy: document.getElementById("displayEnergy"),
       displayEnergyCap: document.getElementById("displayEnergyCap"),
-      displayEssence: document.getElementById("displayEssence"),
+      inputXp: document.getElementById("inputXp"),
+      inputEssence: document.getElementById("inputEssence"),
+      inputCurrentHp: document.getElementById("inputCurrentHp"),
+      inputEnergyRed: document.getElementById("inputEnergyRed"),
+      inputEnergyBlue: document.getElementById("inputEnergyBlue"),
+      inputEnergyGray: document.getElementById("inputEnergyGray"),
+      inputEnergyGreen: document.getElementById("inputEnergyGreen"),
       inputPower: document.getElementById("inputPower"),
       inputDefense: document.getElementById("inputDefense"),
       inputSpeed: document.getElementById("inputSpeed"),
@@ -443,7 +539,8 @@
       displayAoeRange: document.getElementById("displayAoeRange"),
       displayHacking: document.getElementById("displayHacking"),
       displayInventorySlots: document.getElementById("displayInventorySlots"),
-      displayKernelSlots: document.getElementById("displayKernelSlots")
+      displayKernelSlots: document.getElementById("displayKernelSlots"),
+      localNodeSlots: document.getElementById("localNodeSlots")
     };
 
     const modal = document.getElementById("levelupModal");
@@ -488,10 +585,14 @@
     }
 
     function normalizeStats(stats) {
-      return {
+      const normalized = {
         ...defaults,
         ...stats
       };
+      if (normalized.current_hp == null) {
+        normalized.current_hp = normalized.hp;
+      }
+      return normalized;
     }
 
     function currentStats() {
@@ -517,16 +618,37 @@
       elements.displayHacking.textContent = derived.hacking;
     }
 
+    function renderLocalNodeSlots(inventorySlots) {
+      const container = elements.localNodeSlots;
+      if (!container) return;
+      const totalSlots = Math.max(Number(inventorySlots) || 0, 0) * 3;
+      container.innerHTML = "";
+      if (!totalSlots) {
+        container.innerHTML = `<span class="muted">No slots yet.</span>`;
+        return;
+      }
+      for (let i = 1; i <= totalSlots; i += 1) {
+        const slot = document.createElement("dl");
+        slot.className = "slot-item";
+        slot.innerHTML = `<dt>${i}:</dt><dd></dd>`;
+        container.appendChild(slot);
+      }
+    }
+
     function render() {
       const stats = currentStats();
       elements.displayName.textContent = activeCharacter?.name || "";
       elements.displayLevel.textContent = stats.level;
-      elements.displayXp.textContent = stats.xp;
+      elements.inputXp.value = stats.xp;
       elements.displayLuck.textContent = stats.luck;
       elements.displayHp.textContent = stats.hp;
-      elements.displayEnergy.textContent = stats.energy ?? "";
       elements.displayEnergyCap.textContent = stats.energy_cap;
-      elements.displayEssence.textContent = stats.essence;
+      elements.inputEssence.value = stats.essence;
+      elements.inputCurrentHp.value = stats.current_hp;
+      elements.inputEnergyRed.value = stats.energy_red;
+      elements.inputEnergyBlue.value = stats.energy_blue;
+      elements.inputEnergyGray.value = stats.energy_gray;
+      elements.inputEnergyGreen.value = stats.energy_green;
       elements.displayInventorySlots.textContent = stats.inventory_slots;
       elements.displayKernelSlots.textContent = stats.kernel_slots;
 
@@ -536,6 +658,7 @@
       elements.inputIntelligence.value = stats.intelligence;
 
       updateDerived();
+      renderLocalNodeSlots(stats.inventory_slots);
     }
 
     async function requireUser() {
@@ -583,6 +706,13 @@
 
     function readBaseStatsFromForm() {
       const stats = currentStats();
+      stats.xp = Number(elements.inputXp.value) || 0;
+      stats.essence = Number(elements.inputEssence.value) || 0;
+      stats.current_hp = Number(elements.inputCurrentHp.value) || 0;
+      stats.energy_red = Number(elements.inputEnergyRed.value) || 0;
+      stats.energy_blue = Number(elements.inputEnergyBlue.value) || 0;
+      stats.energy_gray = Number(elements.inputEnergyGray.value) || 0;
+      stats.energy_green = Number(elements.inputEnergyGreen.value) || 0;
       stats.power = Number(elements.inputPower.value) || 0;
       stats.defense = Number(elements.inputDefense.value) || 0;
       stats.speed = Number(elements.inputSpeed.value) || 0;
@@ -651,6 +781,9 @@
           option.textContent = `Level ${entry.level}`;
           targetLevelSelect.appendChild(option);
         });
+      if (targetLevelSelect.options.length) {
+        targetLevelSelect.selectedIndex = 0;
+      }
     }
 
     function getLevelEntry(level) {
@@ -674,7 +807,7 @@
       const points = calculateAvailablePoints(stats.level, targetLevel);
       levelPreview.innerHTML = `
         <li>Level: ${stats.level} → ${entry.level}</li>
-        <li>XP: ${stats.xp} → ${entry.xp}</li>
+        <li>XP: ${stats.xp} (manual)</li>
         <li>Base HP: ${stats.hp} → ${entry.baseHp}</li>
         <li>Energy Cap: ${stats.energy_cap} → ${entry.energyCap}</li>
         <li>Kernel Slots: ${stats.kernel_slots} → ${entry.kernelSlots}</li>
@@ -717,6 +850,17 @@
       modal.classList.add("hidden");
     }
 
+    function initCollapsibles() {
+      document.querySelectorAll("[data-collapsible]").forEach(section => {
+        const button = section.querySelector(".collapse-toggle");
+        if (!button) return;
+        button.addEventListener("click", () => {
+          const isCollapsed = section.classList.toggle("collapsed");
+          button.textContent = isCollapsed ? "Show" : "Hide";
+        });
+      });
+    }
+
     async function applyLevelUp() {
       const stats = currentStats();
       const targetLevel = Number(targetLevelSelect.value);
@@ -738,7 +882,6 @@
       const updatedStats = {
         ...stats,
         level: entry.level,
-        xp: entry.xp,
         hp: entry.baseHp,
         energy_cap: entry.energyCap,
         kernel_slots: entry.kernelSlots,
@@ -749,6 +892,7 @@
         speed: stats.speed + speedPoints,
         intelligence: stats.intelligence + intelligencePoints
       };
+      updatedStats.current_hp = Math.min(updatedStats.current_hp ?? updatedStats.hp, updatedStats.hp);
 
       try {
         currentUser = await requireUser();
@@ -772,7 +916,19 @@
       }
     }
 
-    [elements.inputPower, elements.inputDefense, elements.inputSpeed, elements.inputIntelligence]
+    [
+      elements.inputXp,
+      elements.inputEssence,
+      elements.inputCurrentHp,
+      elements.inputEnergyRed,
+      elements.inputEnergyBlue,
+      elements.inputEnergyGray,
+      elements.inputEnergyGreen,
+      elements.inputPower,
+      elements.inputDefense,
+      elements.inputSpeed,
+      elements.inputIntelligence
+    ]
       .forEach(input => {
         input.addEventListener("input", () => {
           const stats = readBaseStatsFromForm();
@@ -805,6 +961,7 @@
 
     window.addEventListener("DOMContentLoaded", () => {
       loadCharacter();
+      initCollapsibles();
     });
   </script>
 </body>
