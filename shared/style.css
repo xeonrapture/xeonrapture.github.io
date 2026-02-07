@@ -432,9 +432,9 @@ textarea:focus {
 }
 
 .wr-scope .core-info dl {
-  grid-template-columns: minmax(120px, 1fr) minmax(180px, 1fr);
+  grid-template-columns: max-content minmax(160px, 1fr);
   row-gap: 0.35rem;
-  column-gap: 0.5rem;
+  column-gap: 0.35rem;
   align-items: center;
 }
 
@@ -709,8 +709,25 @@ textarea:focus {
 .wr-scope .gear-tag {
   padding: 0.25rem 0.5rem;
   border-radius: 999px;
-  border: 1px solid var(--border, #333);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--tag-color, var(--border, #333));
+  background: var(--tag-bg, rgba(255, 255, 255, 0.04));
+  color: #f8fafc;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.wr-scope .gear-tag.dual {
+  background: linear-gradient(135deg, var(--tag-color), var(--tag-color-secondary));
+  border-color: var(--tag-color);
+  color: #0b0f1a;
+}
+
+.wr-scope .gear-stat--base {
+  color: #f1f5ff;
+}
+
+.wr-scope .gear-stat--bonus {
+  color: #9aa3b2;
 }
 
 .wr-scope .gear-generator-actions {
@@ -730,6 +747,24 @@ textarea:focus {
   padding-left: 1.25rem;
 }
 
+.wr-scope .gear-json-list {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.wr-scope .gear-json-entry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border, #333);
+  background: rgba(21, 26, 34, 0.7);
+}
+
 .wr-scope .gear-modal-actions {
   display: flex;
   gap: 0.6rem;
@@ -742,6 +777,69 @@ textarea:focus {
   display: flex;
   gap: 0.6rem;
   flex-wrap: wrap;
+}
+
+.wr-scope .gear-item--equipped {
+  position: relative;
+  padding-left: 3.25rem;
+  overflow: hidden;
+}
+
+.wr-scope .gear-item--equipped::before {
+  content: "";
+  position: absolute;
+  left: 0.6rem;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: 2.2rem;
+  border-radius: 14px;
+  background: rgba(31, 41, 55, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.wr-scope .gear-slot-badge {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(-180deg);
+  writing-mode: vertical-rl;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #cbd5f5;
+  z-index: 1;
+}
+
+.wr-scope .manual-gear-section {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 0.9rem;
+  border-radius: 14px;
+  border: 1px solid var(--border, #333);
+  background: rgba(21, 26, 34, 0.7);
+}
+
+.wr-scope .manual-gear-section summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.wr-scope .manual-gear-grid {
+  display: grid;
+  gap: 0.75rem 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.wr-scope .manual-gear-grid textarea {
+  min-height: 90px;
+}
+
+.wr-scope .manual-gear-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
 }
 
 .wr-scope .slot-count {

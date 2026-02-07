@@ -137,7 +137,27 @@
         return `Gear x${amount} with ${luck} Luck (${list})`;
       }
       
-      function addToHistory(summary, fullText) {
+      function renderGearJsonList(gearItems = []) {
+        if (!gearItems.length) return "";
+        return `
+          <div class="gear-json-list">
+            ${gearItems
+              .map((gear, index) => {
+                const name = gear.name || `${gear.rarity || ""} ${gear.item_type || gear.gear_type || "Gear"}`.trim();
+                const json = encodeURIComponent(JSON.stringify(gear, null, 2));
+                return `
+                  <div class="gear-json-entry">
+                    <span>${name || `Gear ${index + 1}`}</span>
+                    <button type="button" data-copy-gear="${json}">Copy JSON</button>
+                  </div>
+                `;
+              })
+              .join("")}
+          </div>
+        `;
+      }
+
+      function addToHistory(summary, fullText, gearItems = []) {
         const entry = document.createElement("details");
         entry.className = "gear-entry";
         entry.open = false;
@@ -145,6 +165,7 @@
         entry.innerHTML = `
           <summary>${summary}</summary>
           <div class="gear-details"><br>${fullText}</div>
+          ${renderGearJsonList(gearItems)}
         `;
       
         historyEl.prepend(entry);
@@ -190,9 +211,93 @@
       // - No nested def errors
       pyodide.runPython(`
         import io, sys
+        import json, random
+        from gear import Gear
         import helperFunc
         
         gearTypeMap = helperFunc.gearTypeMap
+
+        def _serialize_ability(ability):
+            if isinstance(ability, str):
+                return {
+                    "name": ability,
+                    "link": "",
+                    "tierDetails": "No tier details."
+                }
+            details = ability.tierDetails
+            if isinstance(details, str):
+                details = { "Detail": details }
+            return {
+                "name": ability.name,
+                "link": ability.link,
+                "tierDetails": details
+            }
+
+        def _serialize_gear(gear):
+            stats = []
+            for buff in gear.basicStatBuffs + gear.colorStatBuffs:
+                stats.append({
+                    "name": buff.normalName,
+                    "label": buff.name,
+                    "formula": buff.formula,
+                    "value": buff.calc
+                })
+            abilities = [_serialize_ability(ab) for ab in gear.abilities]
+            aesthetic = getattr(gear, "aesthetic", None) or getattr(gear, "baubleAesthetic", None)
+            payload = {
+                "name": None,
+                "rarity": gear.rarity,
+                "color": gear.color,
+                "color2": gear.color2,
+                "gear_type": gear.gearType,
+                "item_type": gear.specificItem,
+                "aesthetic": aesthetic,
+                "essence_value": gear.essenceValue,
+                "credit_value": gear.creditValue,
+                "abilities": abilities,
+                "stats": stats,
+                "stat_modifiers": []
+            }
+            if gear.gearType == "Bauble":
+                payload["stat_modifiers"] = [
+                    {
+                        "name": buff.normalName,
+                        "label": buff.name,
+                        "formula": buff.formula
+                    }
+                    for buff in gear.colorStatBuffs
+                ]
+                payload["stats"] = []
+            return payload
+
+        def _select_gear_type(gearTypeNumber):
+            gearType = gearTypeMap.get(gearTypeNumber)
+            if gearType is None:
+                gearType = gearTypeMap.get(random.randint(1, 12))
+            return gearType
+
+        def generate_gear_bundle(luck:int, amount:int, gearTypeNumber:int, rarity, color, color2, calc_mode=False):
+            gearTypeNumber = gearTypeNumber if gearTypeNumber else 0
+            rarity = rarity if rarity else None
+            color = color if color else None
+            color2 = color2 if color2 else None
+
+            buf = io.StringIO()
+            old = sys.stdout
+            sys.stdout = buf
+            output = []
+            try:
+                for _ in range(amount):
+                    gearType = _select_gear_type(gearTypeNumber)
+                    gear = Gear(luck, gearType, rarity, color, color2)
+                    if calc_mode:
+                        gear.printCalc()
+                    else:
+                        gear.printGear()
+                    output.append(_serialize_gear(gear))
+            finally:
+                sys.stdout = old
+            return json.dumps({ "text": buf.getvalue(), "gear": output })
         
         def run_generator(luck:int, amount:int, gearTypeNumber:int, rarity, color, color2):
             gearType = gearTypeMap.get(gearTypeNumber)
@@ -269,14 +374,14 @@
         else {
           setGlobals(luck, amount, gearTypeNumber, rarity, color, color2);
   
-          const result = pyodide.runPython(
-            "run_generator(luck_js, amount_js, gearTypeNumber_js, rarity_js, color_js, color2_js)"
-          );
+          const bundle = JSON.parse(pyodide.runPython(
+            "generate_gear_bundle(luck_js, amount_js, gearTypeNumber_js, rarity_js, color_js, color2_js, False)"
+          ));
   
-          out.innerHTML = result || "(no output)";
+          out.innerHTML = bundle.text || "(no output)";
   
-          const summary = summarizeGear(result, luck, amount);
-          addToHistory(summary, result);
+          const summary = summarizeGear(bundle.text, luck, amount);
+          addToHistory(summary, bundle.text, bundle.gear);
         }
 
 
@@ -291,17 +396,35 @@
         else {
           setGlobals(luck, amount, gearTypeNumber, rarity, color, color2);
   
-          const result = pyodide.runPython(
-            "run_generator2(luck_js, amount_js, gearTypeNumber_js, rarity_js, color_js, color2_js)"
-          );
+          const bundle = JSON.parse(pyodide.runPython(
+            "generate_gear_bundle(luck_js, amount_js, gearTypeNumber_js, rarity_js, color_js, color2_js, True)"
+          ));
   
-          out.innerHTML = result || "(no output)";
+          out.innerHTML = bundle.text || "(no output)";
   
-          const summary = summarizeGear(result, luck, amount);
-          addToHistory(summary, result);
+          const summary = summarizeGear(bundle.text, luck, amount);
+          addToHistory(summary, bundle.text, bundle.gear);
         }
 
       };
+
+      historyEl.addEventListener("click", async event => {
+        const button = event.target.closest("button[data-copy-gear]");
+        if (!button) return;
+        const encoded = button.dataset.copyGear;
+        if (!encoded) return;
+        try {
+          const text = decodeURIComponent(encoded);
+          await navigator.clipboard.writeText(text);
+          button.textContent = "Copied!";
+          setTimeout(() => {
+            button.textContent = "Copy JSON";
+          }, 1500);
+        } catch (error) {
+          console.error(error);
+          button.textContent = "Copy failed";
+        }
+      });
 
       out.textContent = "Ready.";
     </script>
