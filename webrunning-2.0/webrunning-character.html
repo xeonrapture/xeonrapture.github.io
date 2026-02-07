@@ -174,53 +174,60 @@
         <h2>Inventory Slots</h2>
         <button class="collapse-toggle" type="button">Hide</button>
       </div>
-      <div class="collapsible-body">
+        <div class="collapsible-body">
         <div class="gear-controls">
-          <div class="gear-controls-row">
-            <label>
-              Sort By
-              <select id="gearSortField">
-                <option value="rarity">Rarity</option>
-                <option value="type">Gear Type</option>
-                <option value="color">Color</option>
-                <option value="name">Name</option>
-              </select>
-            </label>
-            <label>
-              Direction
-              <select id="gearSortDirection">
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
-              </select>
-            </label>
-            <label>
-              Filter Rarity
-              <select id="gearFilterRarity">
-                <option value="">All</option>
-              </select>
-            </label>
+          <div class="gear-controls-section">
+            <div class="gear-controls-row">
+              <label>
+                Sort By
+                <select id="gearSortField">
+                  <option value="rarity">Rarity</option>
+                  <option value="type">Gear Type</option>
+                  <option value="color">Color</option>
+                  <option value="name">Name</option>
+                </select>
+              </label>
+              <label>
+                Direction
+                <select id="gearSortDirection">
+                  <option value="asc">Ascending</option>
+                  <option value="desc">Descending</option>
+                </select>
+              </label>
+            </div>
           </div>
-          <div class="gear-controls-row">
-            <label>
-              Filter Gear Type
-              <select id="gearFilterType">
-                <option value="">All</option>
-              </select>
-            </label>
-            <label>
-              Filter Color
-              <select id="gearFilterColor">
-                <option value="">All</option>
-              </select>
-            </label>
-            <label>
-              Filter Stat Modified
-              <select id="gearFilterStat">
-                <option value="">All</option>
-              </select>
-            </label>
+          <div class="gear-controls-divider" role="presentation"></div>
+          <div class="gear-controls-section">
+            <div class="gear-controls-row">
+              <label>
+                Filter Rarity
+                <select id="gearFilterRarity">
+                  <option value="">All</option>
+                </select>
+              </label>
+              <label>
+                Filter Gear Type
+                <select id="gearFilterType">
+                  <option value="">All</option>
+                </select>
+              </label>
+              <label>
+                Filter Color
+                <select id="gearFilterColor">
+                  <option value="">All</option>
+                </select>
+              </label>
+            </div>
+            <div class="gear-controls-row">
+              <label>
+                Filter Stat Modified
+                <select id="gearFilterStat">
+                  <option value="">All</option>
+                </select>
+              </label>
+            </div>
+            <span class="muted">Filters apply to inventory and local node storage.</span>
           </div>
-          <span class="muted">Filters apply to inventory and local node storage.</span>
         </div>
         <div class="slot-count">Slots used: <span id="inventorySlotCount">0/0</span></div>
         <div id="inventorySlots" class="gear-grid"></div>
@@ -1365,16 +1372,8 @@
         .filter(Boolean);
     }
 
-    function promptForSwapSlot(options) {
-      if (!options.length) return null;
-      const promptText = options
-        .map((option, index) => `${index + 1}: ${formatSlotLabel(option.slot)} (${formatGearName(option.entry.gear)})`)
-        .join("\n");
-      const choice = window.prompt(`No open slots. Enter the number of the gear to swap:\n${promptText}`);
-      if (!choice) return null;
-      const index = Number(choice) - 1;
-      if (!Number.isFinite(index) || index < 0 || index >= options.length) return null;
-      return options[index];
+    function selectSwapSlot(options) {
+      return options.length ? options[0] : null;
     }
 
     function renderGearStatsList(stats, statModifiers, luck, context = {}) {
@@ -1443,14 +1442,24 @@
     }
 
     function extractTierNumbers(ability) {
-      if (!ability || typeof ability === "string") return [];
-      const details = ability.tierDetails;
-      if (!details || typeof details === "string") return [];
-      return Object.keys(details)
-        .map(key => {
+      if (!ability) return [];
+      const tiers = new Set();
+      const details = typeof ability === "string" ? null : ability.tierDetails;
+      if (details && typeof details === "object") {
+        Object.keys(details).forEach(key => {
           const match = String(key).match(/(\d+)/);
-          return match ? Number(match[1]) : null;
-        })
+          if (match) {
+            tiers.add(Number(match[1]));
+          }
+        });
+      }
+      parseAbilityLines(ability).forEach(line => {
+        const match = String(line).match(/tier\s*(\d+)/i);
+        if (match) {
+          tiers.add(Number(match[1]));
+        }
+      });
+      return [...tiers]
         .filter(value => Number.isFinite(value))
         .sort((a, b) => a - b);
     }
@@ -1907,7 +1916,7 @@
             <div class="gear-actions">
               <button type="button" data-action="add" data-index="${index}" ${isAdded ? "disabled" : ""}>${isAdded ? "Added" : "Add to Inventory"}</button>
               ${gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-index="${index}" ${isAdded || !canEquip ? "disabled" : ""}>${isAdded ? "Added" : equipLabel}</button>`}
-              <button type="button" data-action="remove" data-index="${index}">Remove</button>
+              <button type="button" data-action="remove" data-index="${index}" ${!isAdded ? "disabled" : ""}>${isAdded ? "Remove from Character" : "Not Added"}</button>
             </div>
           </div>
           <div class="gear-details-list">
@@ -2257,8 +2266,11 @@
             pushStatus("No inventory slots available to swap gear.", { tone: "warning" });
             return;
           }
-          const selected = promptForSwapSlot(swapOptions);
-          if (!selected) return;
+          const selected = selectSwapSlot(swapOptions);
+          if (!selected) {
+            pushStatus("No swap targets available.", { tone: "warning" });
+            return;
+          }
           const inserted = await insertGearToInventory(gear, { slot: selected.slot });
           if (!inserted) return;
           await updateGearSlot(selected.entry, "inventory");
@@ -2272,6 +2284,22 @@
       }
       gear.__added = true;
       pushStatus("Gear added.", { tone: "success" });
+      renderGeneratedGear(applyGearBonuses(currentStats(), calculateGearBonuses(currentStats())));
+    }
+
+    async function removeGeneratedGearFromCharacter(gear) {
+      if (!gear) return;
+      const signature = gearSignature(gear);
+      const entry = characterGear.find(item => item.gear && gearSignature(item.gear) === signature);
+      if (!entry) {
+        pushStatus("That gear isn't on this character.", { tone: "warning" });
+        gear.__added = false;
+        renderGeneratedGear(applyGearBonuses(currentStats(), calculateGearBonuses(currentStats())));
+        return;
+      }
+      activeGearRow = entry;
+      await deleteGear({ mode: "delete" });
+      gear.__added = false;
       renderGeneratedGear(applyGearBonuses(currentStats(), calculateGearBonuses(currentStats())));
     }
 
@@ -2499,6 +2527,11 @@
 
         const deletedRecord = addDeletedGearHistory(activeGearRow, mode);
         characterGear = characterGear.filter(entry => entry.gear_id !== activeGearRow.gear_id);
+        generatedGear.forEach(item => {
+          if (item && gearSignature(item) === gearSignature(gear)) {
+            item.__added = false;
+          }
+        });
         closeGearDetailModal();
         render();
         pushStatus("Gear deleted.", {
@@ -2537,8 +2570,15 @@
           pushStatus("No open slots for that gear.", { tone: "warning" });
           return;
         }
-        const selected = promptForSwapSlot(swapOptions);
-        if (!selected) return;
+        if (inventoryCount() >= inventoryCapacity(stats)) {
+          pushStatus("No inventory slots available to swap gear.", { tone: "warning" });
+          return;
+        }
+        const selected = selectSwapSlot(swapOptions);
+        if (!selected) {
+          pushStatus("No swap targets available.", { tone: "warning" });
+          return;
+        }
         await updateGearSlot(entry, selected.slot);
         await updateGearSlot(selected.entry, "inventory");
         return;
@@ -3106,8 +3146,7 @@
         addGeneratedGear(index, "equip");
       } else if (action === "remove") {
         if (!Number.isFinite(index)) return;
-        generatedGear.splice(index, 1);
-        renderGeneratedGear(applyGearBonuses(currentStats(), calculateGearBonuses(currentStats())));
+        removeGeneratedGearFromCharacter(generatedGear[index]);
       }
     });
 

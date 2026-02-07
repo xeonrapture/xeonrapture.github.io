@@ -134,7 +134,7 @@ main {
 }
 
 /* ===== Buttons / Inputs ===== */
-button, input, select {
+button, input, select, textarea {
   background: rgba(21, 26, 34, 0.9);
   color: var(--text);
   border: 1px solid var(--border);
@@ -879,6 +879,17 @@ textarea:focus {
   display: grid;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
+}
+
+.wr-scope .gear-controls-section {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.wr-scope .gear-controls-divider {
+  height: 1px;
+  background: var(--border, #333);
+  border-radius: 999px;
 }
 
 .wr-scope .gear-controls-row {
