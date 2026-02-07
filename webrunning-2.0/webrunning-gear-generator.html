@@ -161,10 +161,13 @@
         const entry = document.createElement("details");
         entry.className = "gear-entry";
         entry.open = false;
+        const formattedText = String(fullText || "")
+          .trim()
+          .replace(/\n/g, "<br>");
       
         entry.innerHTML = `
           <summary>${summary}</summary>
-          <div class="gear-details"><br>${fullText}</div>
+          <div class="gear-details"><br>${formattedText}</div>
           ${renderGearJsonList(gearItems)}
         `;
       
