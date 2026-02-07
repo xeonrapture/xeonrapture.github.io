@@ -28,7 +28,7 @@ async function signUp(email, password) {
     email,
     password,
     options: {
-      emailRedirectTo: "https://xeonrapture.github.io/dashboard.html"
+      emailRedirectTo: "https://app.xeonrapture.com/dashboard.html"
     }
   });
 
