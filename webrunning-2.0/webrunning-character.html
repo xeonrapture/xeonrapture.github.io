@@ -91,6 +91,35 @@
       </div>
     </section>
 
+    <section class="card">
+      <h2>Status Effects</h2>
+      <div class="stat-inputs">
+        <label>Burn
+          <input id="inputStatusBurn" type="number" min="0" value="0" />
+        </label>
+        <label>Freeze
+          <input id="inputStatusFreeze" type="number" min="0" value="0" />
+        </label>
+        <label>Poison
+          <input id="inputStatusPoison" type="number" min="0" value="0" />
+        </label>
+      </div>
+      <div class="stats-grid">
+        <dl>
+          <dt>Damage Taken Modifier:</dt>
+          <dd id="displayDamageTaken">+0</dd>
+          <dt>Defense DC Modifier:</dt>
+          <dd id="displayStatusDefenseDc">+0</dd>
+          <dt>Armor Modifier:</dt>
+          <dd id="displayStatusArmor">+0</dd>
+          <dt>Attack Plus Modifier:</dt>
+          <dd id="displayStatusAttackPlus">+0</dd>
+          <dt>Damage Plus Modifier:</dt>
+          <dd id="displayStatusDamagePlus">+0</dd>
+        </dl>
+      </div>
+    </section>
+
     <section class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Secondary Stats</h2>
@@ -537,7 +566,16 @@
       energy_red: 0,
       energy_blue: 0,
       energy_gray: 0,
-      energy_green: 0
+      energy_green: 0,
+      status_burn: 0,
+      status_freeze: 0,
+      status_poison: 0
+    };
+
+    const statusEffectDefaults = {
+      burn: 0,
+      freeze: 0,
+      poison: 0
     };
 
     let currentUser = null;
@@ -570,10 +608,18 @@
       inputDefense: document.getElementById("inputDefense"),
       inputSpeed: document.getElementById("inputSpeed"),
       inputIntelligence: document.getElementById("inputIntelligence"),
+      inputStatusBurn: document.getElementById("inputStatusBurn"),
+      inputStatusFreeze: document.getElementById("inputStatusFreeze"),
+      inputStatusPoison: document.getElementById("inputStatusPoison"),
       displayAttackPlus: document.getElementById("displayAttackPlus"),
       displayDamagePlus: document.getElementById("displayDamagePlus"),
       displayDefenseDc: document.getElementById("displayDefenseDc"),
       displayArmor: document.getElementById("displayArmor"),
+      displayDamageTaken: document.getElementById("displayDamageTaken"),
+      displayStatusDefenseDc: document.getElementById("displayStatusDefenseDc"),
+      displayStatusArmor: document.getElementById("displayStatusArmor"),
+      displayStatusAttackPlus: document.getElementById("displayStatusAttackPlus"),
+      displayStatusDamagePlus: document.getElementById("displayStatusDamagePlus"),
       displayInitiative: document.getElementById("displayInitiative"),
       displayMovementSpeed: document.getElementById("displayMovementSpeed"),
       displayRange: document.getElementById("displayRange"),
@@ -818,6 +864,42 @@
       return normalizeStats(activeCharacter.base_stats || {});
     }
 
+    function getStatusStacks(stats) {
+      return {
+        burn: Math.max(0, Number(stats.status_burn) || 0),
+        freeze: Math.max(0, Number(stats.status_freeze) || 0),
+        poison: Math.max(0, Number(stats.status_poison) || 0)
+      };
+    }
+
+    function getStatusEffectsPayload(stats) {
+      const stacks = getStatusStacks(stats);
+      return {
+        burn: stacks.burn,
+        freeze: stacks.freeze,
+        poison: stacks.poison
+      };
+    }
+
+    function mergeStatusEffectsIntoStats(baseStats = {}, statusEffects) {
+      if (!statusEffects) return baseStats;
+      const merged = { ...baseStats };
+      merged.status_burn = Number(statusEffects.burn) || 0;
+      merged.status_freeze = Number(statusEffects.freeze) || 0;
+      merged.status_poison = Number(statusEffects.poison) || 0;
+      return merged;
+    }
+
+    function normalizeStatusEffects(statusEffects) {
+      const normalized = { ...statusEffectDefaults };
+      if (!statusEffects) return normalized;
+      return {
+        burn: Math.max(0, Number(statusEffects.burn) || 0),
+        freeze: Math.max(0, Number(statusEffects.freeze) || 0),
+        poison: Math.max(0, Number(statusEffects.poison) || 0)
+      };
+    }
+
     function pushStatus(message, { tone = "info", actionLabel, onAction, duration = 4500 } = {}) {
       if (!elements.statusPopup) return;
       const toast = document.createElement("div");
@@ -903,6 +985,28 @@
         return { statName, value: Number(rawValue.replace(/^\+/, "")) };
       }
       return { statName, formula: rawValue.replace(/^\+/, "") };
+    }
+
+    function parseStatusAbilityLine(line, statusStacks) {
+      const cleaned = String(line || "").trim().replace(/^[-•]\s*/, "");
+      if (!cleaned) return [];
+      const results = [];
+      const freezeDefenseMatch = cleaned.match(/freezing.*\+([\d.]+)\s+defense dc and armor/i);
+      if (freezeDefenseMatch && statusStacks.freeze > 0) {
+        const value = Number(freezeDefenseMatch[1]);
+        if (!Number.isNaN(value)) {
+          results.push({ statName: "Defense DC", value });
+          results.push({ statName: "Armor", value });
+        }
+      }
+      const freezeDamageMatch = cleaned.match(/deal\s*\+?([\d.]+)\s*points?\s*of damage for each stack of freeze/i);
+      if (freezeDamageMatch && statusStacks.freeze > 0) {
+        const perStack = Number(freezeDamageMatch[1]);
+        if (!Number.isNaN(perStack)) {
+          results.push({ statName: "Damage Plus", value: perStack * statusStacks.freeze });
+        }
+      }
+      return results;
     }
 
     function getAoeBuffMultiplier() {
@@ -1049,6 +1153,7 @@
     function calculateGearBonuses(baseStats) {
       const equippedColorCounts = getEquippedColorCounts();
       const baseLuck = baseStats.luck || 0;
+      const statusStacks = getStatusStacks(baseStats);
       const nonBaubleBonus = createEmptyBonus();
       const abilityBonus = createEmptyBonus();
       const baubleBonus = createEmptyBonus();
@@ -1084,6 +1189,7 @@
           const lines = parseAbilityLines(ability);
           const hasColorSpread = lines.some(line => line.toLowerCase().includes("each color equipped"));
           if (hasColorSpread && !hasAllCoreColorsEquipped()) return;
+          const abilityLabel = typeof ability === "string" ? "Kernel Ability" : ability.name || "Kernel Ability";
           const gLine = lines.find(line => line.includes("G ="));
           let gValue = 0;
           if (gLine) {
@@ -1096,10 +1202,16 @@
           lines.forEach(line => {
             if (line.includes("G =")) return;
             const parsed = parseAbilityStatLine(line);
-            if (!parsed) return;
-            const value = parsed.value ?? calculateFormulaValue(parsed.formula, interimLuck, parsed.statName, { g: gValue });
-            if (typeof value !== "number") return;
-            applyStatBonus(abilityBonus, parsed.statName, value, "Kernel Ability", sources);
+            if (parsed) {
+              const value = parsed.value ?? calculateFormulaValue(parsed.formula, interimLuck, parsed.statName, { g: gValue });
+              if (typeof value === "number") {
+                applyStatBonus(abilityBonus, parsed.statName, value, abilityLabel, sources);
+              }
+            }
+            const statusBonuses = parseStatusAbilityLine(line, statusStacks);
+            statusBonuses.forEach(statusBonus => {
+              applyStatBonus(abilityBonus, statusBonus.statName, statusBonus.value, abilityLabel, sources);
+            });
           });
         });
       });
@@ -2610,14 +2722,37 @@
       const derived = deriveSecondaryStats(stats);
       const derivedBonus = gearBonus?.derived || {};
       const sources = gearBonus?.sources || createEmptyBonusSources();
+      const statusStacks = getStatusStacks(stats);
+      const statusAdjustments = {
+        attackPlus: -statusStacks.poison,
+        damagePlus: -statusStacks.poison,
+        defenseDc: -statusStacks.freeze,
+        armor: -statusStacks.freeze
+      };
       const totalPerception = derived.perception + (derivedBonus.perception || 0);
       const aoeMultiplier = getAoeBuffMultiplier();
       const aoeRange = (totalPerception * aoeMultiplier) + (derivedBonus.aoeRange || 0);
 
-      const attackSources = combineSourceLists(sources.derived.attackPlus, sources.base.power);
-      const damageSources = combineSourceLists(sources.derived.damagePlus, sources.base.power);
-      const defenseDcSources = combineSourceLists(sources.derived.defenseDc, sources.base.defense);
-      const armorSources = combineSourceLists(sources.derived.armor, sources.base.defense);
+      const attackSources = combineSourceLists(
+        sources.derived.attackPlus,
+        sources.base.power,
+        statusStacks.poison ? [{ label: "Poison", value: statusAdjustments.attackPlus }] : []
+      );
+      const damageSources = combineSourceLists(
+        sources.derived.damagePlus,
+        sources.base.power,
+        statusStacks.poison ? [{ label: "Poison", value: statusAdjustments.damagePlus }] : []
+      );
+      const defenseDcSources = combineSourceLists(
+        sources.derived.defenseDc,
+        sources.base.defense,
+        statusStacks.freeze ? [{ label: "Freeze", value: statusAdjustments.defenseDc }] : []
+      );
+      const armorSources = combineSourceLists(
+        sources.derived.armor,
+        sources.base.defense,
+        statusStacks.freeze ? [{ label: "Freeze", value: statusAdjustments.armor }] : []
+      );
       const initiativeSources = combineSourceLists(sources.derived.initiative, sources.base.speed);
       const movementSources = combineSourceLists(sources.derived.movementSpeed, scaleSourceList(sources.base.speed, 2));
       const rangeSources = combineSourceLists(sources.derived.range, sources.base.speed);
@@ -2627,22 +2762,22 @@
 
       setStatDisplay(
         elements.displayAttackPlus,
-        derived.attackPlus + (derivedBonus.attackPlus || 0),
+        derived.attackPlus + (derivedBonus.attackPlus || 0) + statusAdjustments.attackPlus,
         summarizeSources(attackSources)
       );
       setStatDisplay(
         elements.displayDamagePlus,
-        derived.damagePlus + (derivedBonus.damagePlus || 0),
+        derived.damagePlus + (derivedBonus.damagePlus || 0) + statusAdjustments.damagePlus,
         summarizeSources(damageSources)
       );
       setStatDisplay(
         elements.displayDefenseDc,
-        derived.defenseDc + (derivedBonus.defenseDc || 0),
+        derived.defenseDc + (derivedBonus.defenseDc || 0) + statusAdjustments.defenseDc,
         summarizeSources(defenseDcSources)
       );
       setStatDisplay(
         elements.displayArmor,
-        derived.armor + (derivedBonus.armor || 0),
+        derived.armor + (derivedBonus.armor || 0) + statusAdjustments.armor,
         summarizeSources(armorSources)
       );
       setStatDisplay(
@@ -2675,6 +2810,22 @@
         derived.hacking + (derivedBonus.hacking || 0),
         summarizeSources(hackingSources)
       );
+
+      if (elements.displayDamageTaken) {
+        elements.displayDamageTaken.textContent = formatSignedValue(statusStacks.burn);
+      }
+      if (elements.displayStatusDefenseDc) {
+        elements.displayStatusDefenseDc.textContent = formatSignedValue(statusAdjustments.defenseDc);
+      }
+      if (elements.displayStatusArmor) {
+        elements.displayStatusArmor.textContent = formatSignedValue(statusAdjustments.armor);
+      }
+      if (elements.displayStatusAttackPlus) {
+        elements.displayStatusAttackPlus.textContent = formatSignedValue(statusAdjustments.attackPlus);
+      }
+      if (elements.displayStatusDamagePlus) {
+        elements.displayStatusDamagePlus.textContent = formatSignedValue(statusAdjustments.damagePlus);
+      }
     }
 
     function render() {
@@ -2702,6 +2853,9 @@
       elements.inputDefense.value = baseStats.defense;
       elements.inputSpeed.value = baseStats.speed;
       elements.inputIntelligence.value = baseStats.intelligence;
+      elements.inputStatusBurn.value = baseStats.status_burn;
+      elements.inputStatusFreeze.value = baseStats.status_freeze;
+      elements.inputStatusPoison.value = baseStats.status_poison;
 
       updateDerived(stats, gearBonus);
       renderGearSections(stats);
@@ -2755,7 +2909,7 @@
         const characterId = params.get("id");
         let query = sb
           .from("webrunning_characters")
-          .select("id, name, base_stats, notes")
+          .select("id, name, base_stats, status_effects, notes")
           .eq("user_id", currentUser.id);
 
         if (characterId) {
@@ -2771,8 +2925,19 @@
         activeCharacter = data || {
           id: null,
           name: "",
-          base_stats: { ...defaults }
+          base_stats: { ...defaults },
+          status_effects: null
         };
+
+        if (activeCharacter.status_effects) {
+          activeCharacter.status_effects = normalizeStatusEffects(activeCharacter.status_effects);
+        }
+        if (activeCharacter.base_stats) {
+          activeCharacter.base_stats = mergeStatusEffectsIntoStats(
+            activeCharacter.base_stats,
+            activeCharacter.status_effects
+          );
+        }
 
         elements.nameInput.value = activeCharacter.name || "";
         if (elements.notesInput) {
@@ -2822,6 +2987,9 @@
       stats.defense = Number(elements.inputDefense.value) || 0;
       stats.speed = Number(elements.inputSpeed.value) || 0;
       stats.intelligence = Number(elements.inputIntelligence.value) || 0;
+      stats.status_burn = Number(elements.inputStatusBurn.value) || 0;
+      stats.status_freeze = Number(elements.inputStatusFreeze.value) || 0;
+      stats.status_poison = Number(elements.inputStatusPoison.value) || 0;
       return stats;
     }
 
@@ -2854,6 +3022,7 @@
             .update({
               name,
               base_stats: baseStats,
+              status_effects: getStatusEffectsPayload(baseStats),
               notes
             })
             .eq("id", activeCharacter.id)
@@ -2866,17 +3035,26 @@
               user_id: currentUser.id,
               name,
               base_stats: baseStats,
+              status_effects: getStatusEffectsPayload(baseStats),
               notes
             })
-            .select("id, name, base_stats, notes")
+            .select("id, name, base_stats, status_effects, notes")
             .maybeSingle();
           if (error) throw error;
           activeCharacter = data;
+          if (activeCharacter?.status_effects) {
+            activeCharacter.status_effects = normalizeStatusEffects(activeCharacter.status_effects);
+            activeCharacter.base_stats = mergeStatusEffectsIntoStats(
+              activeCharacter.base_stats,
+              activeCharacter.status_effects
+            );
+          }
         }
 
         isDirty = false;
         activeCharacter.name = name;
         activeCharacter.base_stats = baseStats;
+        activeCharacter.status_effects = getStatusEffectsPayload(baseStats);
         activeCharacter.notes = notes;
         render();
         updateSaveStatus(mode === "auto" ? "Autosaved:" : "Saved:");
@@ -3069,7 +3247,10 @@
       elements.inputPower,
       elements.inputDefense,
       elements.inputSpeed,
-      elements.inputIntelligence
+      elements.inputIntelligence,
+      elements.inputStatusBurn,
+      elements.inputStatusFreeze,
+      elements.inputStatusPoison
     ]
       .forEach(input => {
         input.addEventListener("input", () => {
