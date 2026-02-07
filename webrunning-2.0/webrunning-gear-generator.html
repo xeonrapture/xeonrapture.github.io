@@ -136,6 +136,24 @@
       
         return `Gear x${amount} with ${luck} Luck (${list})`;
       }
+
+      function formatGearOutput(text) {
+        const lines = String(text || "").split("\n");
+        const formatted = [];
+        let hasGear = false;
+
+        for (const line of lines) {
+          if (line.trim().startsWith("Gear:")) {
+            if (hasGear) {
+              formatted.push("");
+            }
+            hasGear = true;
+          }
+          formatted.push(line);
+        }
+
+        return formatted.join("\n").trim();
+      }
       
       function renderGearJsonList(gearItems = []) {
         if (!gearItems.length) return "";
@@ -381,10 +399,11 @@
             "generate_gear_bundle(luck_js, amount_js, gearTypeNumber_js, rarity_js, color_js, color2_js, False)"
           ));
   
-          out.innerHTML = bundle.text || "(no output)";
+          const formattedOutput = formatGearOutput(bundle.text);
+          out.innerHTML = formattedOutput || "(no output)";
   
           const summary = summarizeGear(bundle.text, luck, amount);
-          addToHistory(summary, bundle.text, bundle.gear);
+          addToHistory(summary, formattedOutput, bundle.gear);
         }
 
 
@@ -403,10 +422,11 @@
             "generate_gear_bundle(luck_js, amount_js, gearTypeNumber_js, rarity_js, color_js, color2_js, True)"
           ));
   
-          out.innerHTML = bundle.text || "(no output)";
+          const formattedOutput = formatGearOutput(bundle.text);
+          out.innerHTML = formattedOutput || "(no output)";
   
           const summary = summarizeGear(bundle.text, luck, amount);
-          addToHistory(summary, bundle.text, bundle.gear);
+          addToHistory(summary, formattedOutput, bundle.gear);
         }
 
       };
