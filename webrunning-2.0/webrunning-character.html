@@ -64,11 +64,11 @@
         <label>Energy (Blue)
           <input id="inputEnergyBlue" type="number" min="0" value="0" />
         </label>
-        <label>Energy (Gray)
-          <input id="inputEnergyGray" type="number" min="0" value="0" />
-        </label>
         <label>Energy (Green)
           <input id="inputEnergyGreen" type="number" min="0" value="0" />
+        </label>
+        <label>Energy (Gray)
+          <input id="inputEnergyGray" type="number" min="0" value="0" />
         </label>
       </div>
     </section>
@@ -175,6 +175,53 @@
         <button class="collapse-toggle" type="button">Hide</button>
       </div>
       <div class="collapsible-body">
+        <div class="gear-controls">
+          <div class="gear-controls-row">
+            <label>
+              Sort By
+              <select id="gearSortField">
+                <option value="rarity">Rarity</option>
+                <option value="type">Gear Type</option>
+                <option value="color">Color</option>
+                <option value="name">Name</option>
+              </select>
+            </label>
+            <label>
+              Direction
+              <select id="gearSortDirection">
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+              </select>
+            </label>
+            <label>
+              Filter Rarity
+              <select id="gearFilterRarity">
+                <option value="">All</option>
+              </select>
+            </label>
+          </div>
+          <div class="gear-controls-row">
+            <label>
+              Filter Gear Type
+              <select id="gearFilterType">
+                <option value="">All</option>
+              </select>
+            </label>
+            <label>
+              Filter Color
+              <select id="gearFilterColor">
+                <option value="">All</option>
+              </select>
+            </label>
+            <label>
+              Filter Stat Modified
+              <select id="gearFilterStat">
+                <option value="">All</option>
+              </select>
+            </label>
+          </div>
+          <span class="muted">Filters apply to inventory and local node storage.</span>
+        </div>
         <div class="slot-count">Slots used: <span id="inventorySlotCount">0/0</span></div>
         <div id="inventorySlots" class="gear-grid"></div>
       </div>
@@ -200,6 +247,11 @@
     <section class="card">
       <h2>Deleted Gear History</h2>
       <div id="deletedGearHistory" class="deletion-history"></div>
+    </section>
+
+    <section class="card notes-area">
+      <h2>Character Notes</h2>
+      <textarea id="characterNotes" placeholder="Add notes about your character, gear, or story beats..."></textarea>
     </section>
   </main>
 
@@ -344,6 +396,7 @@
           <label>
             Rarity
             <select id="manualGearRarity">
+              <option value="Basic">Basic</option>
               <option value="Common">Common</option>
               <option value="Uncommon">Uncommon</option>
               <option value="Rare">Rare</option>
@@ -388,18 +441,16 @@
             Credit Value
             <input id="manualGearCredit" type="number" min="0" value="0" />
           </label>
-          <label>
-            Stats (JSON Array)
-            <textarea id="manualGearStats" placeholder='[{"name":"Attack Plus","label":"Attack Plus","formula":"+2","value":2}]'>[]</textarea>
-          </label>
-          <label>
-            Stat Modifiers (JSON Array)
-            <textarea id="manualGearStatModifiers" placeholder='[{"name":"Luck","label":"Luck","formula":"+1"}]'>[]</textarea>
-          </label>
-          <label>
-            Abilities (JSON Array)
-            <textarea id="manualGearAbilities" placeholder='[{"name":"Ability Name","link":"https://example.com","tierDetails":{"Tier I":"Detail"}}]'>[]</textarea>
-          </label>
+        </div>
+        <div>
+          <strong>Stat Modifiers</strong>
+          <div id="manualGearStatsList" class="manual-gear-list"></div>
+          <button id="addManualGearStat" type="button">+ Add Stat</button>
+        </div>
+        <div>
+          <strong>Abilities</strong>
+          <div id="manualGearAbilitiesList" class="manual-gear-list"></div>
+          <button id="addManualGearAbility" type="button">+ Add Ability</button>
         </div>
         <div class="manual-gear-actions">
           <button id="addManualGear" type="button">Add Manual Gear</button>
@@ -532,7 +583,8 @@
       openGearGenerator: document.getElementById("openGearGenerator"),
       gearGeneratorStatus: document.getElementById("gearGeneratorStatus"),
       statusPopup: document.getElementById("statusPopup"),
-      deletedGearHistory: document.getElementById("deletedGearHistory")
+      deletedGearHistory: document.getElementById("deletedGearHistory"),
+      notesInput: document.getElementById("characterNotes")
     };
 
     const modal = document.getElementById("levelupModal");
@@ -571,11 +623,18 @@
     const manualGearAesthetic = document.getElementById("manualGearAesthetic");
     const manualGearEssence = document.getElementById("manualGearEssence");
     const manualGearCredit = document.getElementById("manualGearCredit");
-    const manualGearStats = document.getElementById("manualGearStats");
-    const manualGearStatModifiers = document.getElementById("manualGearStatModifiers");
-    const manualGearAbilities = document.getElementById("manualGearAbilities");
+    const manualGearStatsList = document.getElementById("manualGearStatsList");
+    const addManualGearStat = document.getElementById("addManualGearStat");
+    const manualGearAbilitiesList = document.getElementById("manualGearAbilitiesList");
+    const addManualGearAbility = document.getElementById("addManualGearAbility");
     const addManualGearButton = document.getElementById("addManualGear");
     const manualGearStatus = document.getElementById("manualGearStatus");
+    const gearSortField = document.getElementById("gearSortField");
+    const gearSortDirection = document.getElementById("gearSortDirection");
+    const gearFilterRarity = document.getElementById("gearFilterRarity");
+    const gearFilterType = document.getElementById("gearFilterType");
+    const gearFilterColor = document.getElementById("gearFilterColor");
+    const gearFilterStat = document.getElementById("gearFilterStat");
 
     const gearDetailModal = document.getElementById("gearDetailModal");
     const gearDetailBackdrop = gearDetailModal.querySelector(".xr-modal-backdrop");
@@ -648,6 +707,69 @@
       "Energy Generation": "energy_generation",
       "Resell Value": "resell_value"
     };
+
+    const statOptions = [
+      "Power",
+      "Defense",
+      "Speed",
+      "Intelligence",
+      "Luck",
+      "HP",
+      "Attack Plus",
+      "Damage Plus",
+      "Defense DC",
+      "Armor",
+      "Initiative",
+      "Movement Speed",
+      "Range",
+      "Perception",
+      "AOE Range",
+      "Hacking",
+      "Inventory Slots",
+      "Kernel Slots",
+      "Energy Cap",
+      "Energy Conversion",
+      "Energy Generation",
+      "Group XP Gain",
+      "HP Regen",
+      "Resell Value"
+    ];
+
+    const baubleFormulaOptions = [
+      "G÷4",
+      "G÷3",
+      "G÷2",
+      "G",
+      "Gx1.25",
+      "Gx1.5",
+      "Gx1.75",
+      "Gx2.5",
+      "+1",
+      "+2",
+      "+3",
+      "+4",
+      "+5"
+    ];
+
+    const gearTypeSortOrder = [
+      "One-Handed Weapon",
+      "Two-Handed Weapon",
+      "Head",
+      "Torso",
+      "Hands",
+      "Legs",
+      "Feet",
+      "Ring",
+      "Neck",
+      "Kernel",
+      "Bauble",
+      "Consumable"
+    ];
+
+    const raritySortOrder = ["Basic", "Common", "Uncommon", "Rare", "Epic", "Legendary"];
+    const colorSortOrder = ["Neutral", "Red", "Blue", "Green", "Gray"];
+
+    let availableAbilities = [];
 
     function deriveSecondaryStats(stats) {
       const power = stats.power || 0;
@@ -1096,20 +1218,21 @@
 
     const gearTagPalette = {
       type: {
-        "One-Handed Weapon": "#f97316",
-        "Two-Handed Weapon": "#fb7185",
-        "Head": "#a78bfa",
-        "Torso": "#38bdf8",
-        "Hands": "#facc15",
-        "Legs": "#f472b6",
-        "Feet": "#34d399",
-        "Ring": "#f59e0b",
-        "Neck": "#22d3ee",
-        "Kernel": "#60a5fa",
-        "Consumable": "#fb923c",
-        "Bauble": "#c084fc"
+        "One-Handed Weapon": "#94a3b8",
+        "Two-Handed Weapon": "#94a3b8",
+        "Head": "#94a3b8",
+        "Torso": "#94a3b8",
+        "Hands": "#94a3b8",
+        "Legs": "#94a3b8",
+        "Feet": "#94a3b8",
+        "Ring": "#94a3b8",
+        "Neck": "#94a3b8",
+        "Kernel": "#94a3b8",
+        "Consumable": "#94a3b8",
+        "Bauble": "#94a3b8"
       },
       rarity: {
+        "Basic": "#cbd5f5",
         "Common": "#94a3b8",
         "Uncommon": "#22c55e",
         "Rare": "#38bdf8",
@@ -1148,8 +1271,74 @@
       ]
         .filter(Boolean)
         .join("; ");
-      const className = `gear-tag${secondary ? " dual" : ""}`;
+      const className = `gear-tag gear-tag--${group}${secondary ? " dual" : ""}`;
       return `<span class="${className}" style="${style}">${label}</span>`;
+    }
+
+    function normalizeLabel(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function getGearTypeLabel(gear) {
+      return gear?.gear_type || gear?.gearType || "";
+    }
+
+    function gearHasStat(gear, targetStat) {
+      if (!targetStat) return true;
+      const target = normalizeLabel(targetStat);
+      const allStats = [...(gear.stats || []), ...(gear.stat_modifiers || [])];
+      return allStats.some(stat => normalizeLabel(stat.label || stat.name) === target);
+    }
+
+    function matchesGearFilters(gear) {
+      if (!gear) return false;
+      const filterRarity = gearFilterRarity?.value || "";
+      const filterType = gearFilterType?.value || "";
+      const filterColor = gearFilterColor?.value || "";
+      const filterStat = gearFilterStat?.value || "";
+      const gearType = getGearTypeLabel(gear);
+      const gearColor = gear.color || "Neutral";
+      if (filterRarity && gear.rarity !== filterRarity) return false;
+      if (filterType && gearType !== filterType) return false;
+      if (filterColor && gearColor !== filterColor) return false;
+      if (filterStat && !gearHasStat(gear, filterStat)) return false;
+      return true;
+    }
+
+    function sortGearEntries(entries) {
+      const sortField = gearSortField?.value || "rarity";
+      const direction = gearSortDirection?.value === "desc" ? -1 : 1;
+      const rarityIndex = entry => raritySortOrder.indexOf(entry.gear.rarity);
+      const typeIndex = entry => gearTypeSortOrder.indexOf(getGearTypeLabel(entry.gear));
+      const colorIndex = entry => colorSortOrder.indexOf(entry.gear.color || "Neutral");
+
+      return [...entries].sort((a, b) => {
+        let aKey = "";
+        let bKey = "";
+        if (sortField === "rarity") {
+          aKey = rarityIndex(a);
+          bKey = rarityIndex(b);
+        } else if (sortField === "type") {
+          aKey = typeIndex(a);
+          bKey = typeIndex(b);
+        } else if (sortField === "color") {
+          aKey = colorIndex(a);
+          bKey = colorIndex(b);
+        } else {
+          aKey = formatGearName(a.gear);
+          bKey = formatGearName(b.gear);
+        }
+
+        if (aKey === bKey) {
+          return formatGearName(a.gear).localeCompare(formatGearName(b.gear)) * direction;
+        }
+        if (typeof aKey === "number" && typeof bKey === "number") {
+          const normalizedA = aKey === -1 ? Number.MAX_SAFE_INTEGER : aKey;
+          const normalizedB = bKey === -1 ? Number.MAX_SAFE_INTEGER : bKey;
+          return normalizedA > normalizedB ? direction : -direction;
+        }
+        return String(aKey).localeCompare(String(bKey)) * direction;
+      });
     }
 
     function availableSlotsForGear(gear, stats) {
@@ -1159,6 +1348,32 @@
       const kernelSlots = getKernelSlots(stats);
       const filteredSlots = slots.filter(slot => slot.startsWith("kernel_") ? kernelSlots.includes(slot) : true);
       return filteredSlots.filter(slot => !characterGear.some(entry => entry.equipped && entry.gear_slot === slot));
+    }
+
+    function getSwapOptionsForGear(gear, stats) {
+      const gearType = gear?.gear_type || gear?.gearType;
+      if (!gear || gearType === "Bauble") return [];
+      const slots = gearTypeToSlots[gearType] || [];
+      const kernelSlots = getKernelSlots(stats);
+      const filteredSlots = slots.filter(slot => slot.startsWith("kernel_") ? kernelSlots.includes(slot) : true);
+      return filteredSlots
+        .map(slot => {
+          const entry = characterGear.find(item => item.equipped && item.gear_slot === slot);
+          return entry ? { slot, entry } : null;
+        })
+        .filter(Boolean);
+    }
+
+    function promptForSwapSlot(options) {
+      if (!options.length) return null;
+      const promptText = options
+        .map((option, index) => `${index + 1}: ${formatSlotLabel(option.slot)} (${formatGearName(option.entry.gear)})`)
+        .join("\n");
+      const choice = window.prompt(`No open slots. Enter the number of the gear to swap:\n${promptText}`);
+      if (!choice) return null;
+      const index = Number(choice) - 1;
+      if (!Number.isFinite(index) || index < 0 || index >= options.length) return null;
+      return options[index];
     }
 
     function renderGearStatsList(stats, statModifiers, luck, context = {}) {
@@ -1308,14 +1523,24 @@
         container.innerHTML = `<span class="muted">No gear in inventory.</span>`;
         return;
       }
-      inventoryItems.forEach(entry => {
+      const filteredItems = sortGearEntries(inventoryItems.filter(entry => matchesGearFilters(entry.gear)));
+      if (!filteredItems.length) {
+        container.innerHTML = `<span class="muted">No inventory gear matches the selected filters.</span>`;
+        return;
+      }
+      filteredItems.forEach(entry => {
         const gear = entry.gear;
         const gearType = gear.gear_type || gear.gearType;
         const colorLabel = [gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral";
         const availableSlots = availableSlotsForGear(gear, stats);
+        const swapOptions = gearType === "Bauble" ? [] : getSwapOptionsForGear(gear, stats);
         const slotHint = gearType === "Bauble"
           ? "Baubles cannot be equipped."
-          : (availableSlots.length ? availableSlots.map(formatSlotLabel).join(", ") : "No slots open");
+          : (availableSlots.length
+            ? availableSlots.map(formatSlotLabel).join(", ")
+            : (swapOptions.length ? "No slots open (swap available)" : "No slots open"));
+        const canEquip = gearType !== "Bauble" && (availableSlots.length || swapOptions.length);
+        const equipLabel = availableSlots.length ? "Equip" : (swapOptions.length ? "Swap" : "Equip");
         const colorCounts = getEquippedColorCounts();
         const gValue = gearType === "Bauble" && gear.color ? (colorCounts[gear.color] || 0) : 0;
         const statSummary = buildGearStatSummary(gear, stats.luck, { g: gValue });
@@ -1335,7 +1560,7 @@
             </div>
             <div class="gear-actions">
               <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
-              ${gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-gear="${entry.gear_id}">Equip</button>`}
+              ${gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-gear="${entry.gear_id}" ${canEquip ? "" : "disabled"}>${equipLabel}</button>`}
               <button type="button" data-action="local" data-gear="${entry.gear_id}">Move to Local Node Storage</button>
               <button type="button" data-action="dissolve" data-gear="${entry.gear_id}">Dissolve</button>
               <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
@@ -1357,7 +1582,12 @@
         container.innerHTML = `<span class="muted">No gear in local node storage.</span>`;
         return;
       }
-      localItems.forEach(entry => {
+      const filteredItems = sortGearEntries(localItems.filter(entry => matchesGearFilters(entry.gear)));
+      if (!filteredItems.length) {
+        container.innerHTML = `<span class="muted">No local node gear matches the selected filters.</span>`;
+        return;
+      }
+      filteredItems.forEach(entry => {
         const gear = entry.gear;
         const gearType = gear.gear_type || gear.gearType;
         const colorLabel = [gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral";
@@ -1572,9 +1802,48 @@
                   gear = Gear(luck, gearType, rarity, color, color2)
                   output.append(_serialize_gear(gear))
               return json.dumps(output)
+
+          def list_abilities_json():
+              import abilityCatalog
+              abilities = set()
+              colors = ["Neutral", "Red", "Blue", "Green", "Gray"]
+              color2_options = [None, "Neutral", "Red", "Blue", "Green", "Gray"]
+
+              for name, cls in abilityCatalog.__dict__.items():
+                  if not isinstance(cls, type):
+                      continue
+                  if not issubclass(cls, abilityCatalog.AbilityCatalog):
+                      continue
+                  if cls is abilityCatalog.AbilityCatalog:
+                      continue
+                  for color in colors:
+                      for color2 in color2_options:
+                          try:
+                              instance = cls(color, color2)
+                          except TypeError:
+                              try:
+                                  instance = cls(color)
+                              except Exception:
+                                  continue
+                          except Exception:
+                              continue
+                          if isinstance(instance.abilities, dict):
+                              abilities.update(instance.abilities.keys())
+                          elif isinstance(instance.abilities, list):
+                              abilities.update(instance.abilities)
+              return json.dumps(sorted(list(abilities)))
         `);
 
         pyodideReady = true;
+        if (!availableAbilities.length) {
+          try {
+            const abilityJson = pyodideClient.runPython("list_abilities_json()");
+            availableAbilities = JSON.parse(abilityJson) || [];
+            refreshAbilitySelectOptions();
+          } catch (abilityError) {
+            console.warn("Failed to load ability list", abilityError);
+          }
+        }
         elements.gearGeneratorStatus.textContent = "";
         elements.openGearGenerator.classList.remove("hidden");
         pushStatus("Gear generator ready.", { tone: "success", duration: 2500 });
@@ -1620,6 +1889,10 @@
         const gValue = gearType === "Bauble" && gear.color ? (colorCounts[gear.color] || 0) : 0;
         const statList = renderGearStatsList(gear.stats, gear.stat_modifiers, totalLuck, { g: gValue });
         const isAdded = gear.__added;
+        const availableSlots = availableSlotsForGear(gear, stats);
+        const swapOptions = gearType === "Bauble" ? [] : getSwapOptionsForGear(gear, stats);
+        const canEquip = gearType !== "Bauble" && (availableSlots.length || swapOptions.length);
+        const equipLabel = availableSlots.length ? "Equip" : (swapOptions.length ? "Swap" : "Equip");
         card.innerHTML = `
           <div class="gear-summary">
             <div class="gear-meta">
@@ -1632,7 +1905,7 @@
             </div>
             <div class="gear-actions">
               <button type="button" data-action="add" data-index="${index}" ${isAdded ? "disabled" : ""}>${isAdded ? "Added" : "Add to Inventory"}</button>
-              ${gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-index="${index}" ${isAdded ? "disabled" : ""}>${isAdded ? "Added" : "Equip"}</button>`}
+              ${gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-index="${index}" ${isAdded || !canEquip ? "disabled" : ""}>${isAdded ? "Added" : equipLabel}</button>`}
               <button type="button" data-action="remove" data-index="${index}">Remove</button>
             </div>
           </div>
@@ -1674,16 +1947,133 @@
       }
     }
 
-    function parseManualJsonField(value, fallback = []) {
-      if (!value || !value.trim()) return fallback;
-      const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [parsed];
+    function buildStatOptionList(selectedValue = "") {
+      return statOptions
+        .map(stat => `<option value="${stat}" ${stat === selectedValue ? "selected" : ""}>${stat}</option>`)
+        .join("");
+    }
+
+    function buildFormulaOptionList(selectedValue = "") {
+      return baubleFormulaOptions
+        .map(formula => `<option value="${formula}" ${formula === selectedValue ? "selected" : ""}>${formula}</option>`)
+        .join("");
+    }
+
+    function buildAbilityOptionList(selectedValue = "") {
+      const list = availableAbilities.length ? [...availableAbilities] : ["Custom Ability"];
+      if (selectedValue && !list.includes(selectedValue)) {
+        list.unshift(selectedValue);
+      }
+      return list
+        .map(ability => `<option value="${ability}" ${ability === selectedValue ? "selected" : ""}>${ability}</option>`)
+        .join("");
+    }
+
+    function createManualStatRow({ statName = "", value = 0, formula = "" } = {}) {
+      const row = document.createElement("div");
+      row.className = "manual-gear-row";
+      row.innerHTML = `
+        <select class="manual-gear-stat-name">
+          ${buildStatOptionList(statName || statOptions[0])}
+        </select>
+        <div class="manual-gear-stat-value"></div>
+        <button type="button" class="manual-gear-remove">Remove</button>
+      `;
+      const valueContainer = row.querySelector(".manual-gear-stat-value");
+      const removeButton = row.querySelector(".manual-gear-remove");
+      removeButton.addEventListener("click", () => {
+        row.remove();
+      });
+      const isBauble = manualGearType.value === "Bauble";
+      if (isBauble) {
+        valueContainer.innerHTML = `
+          <select class="manual-gear-formula">
+            ${buildFormulaOptionList(formula || baubleFormulaOptions[0])}
+          </select>
+        `;
+      } else {
+        valueContainer.innerHTML = `
+          <input class="manual-gear-value" type="number" value="${value}" />
+        `;
+      }
+      manualGearStatsList.appendChild(row);
+    }
+
+    function refreshManualStatRowsForType() {
+      const isBauble = manualGearType.value === "Bauble";
+      manualGearStatsList.querySelectorAll(".manual-gear-row").forEach(row => {
+        const valueContainer = row.querySelector(".manual-gear-stat-value");
+        if (!valueContainer) return;
+        if (isBauble) {
+          const currentFormula = row.querySelector(".manual-gear-formula")?.value || baubleFormulaOptions[0];
+          valueContainer.innerHTML = `
+            <select class="manual-gear-formula">
+              ${buildFormulaOptionList(currentFormula)}
+            </select>
+          `;
+        } else {
+          const currentValue = row.querySelector(".manual-gear-value")?.value || 0;
+          valueContainer.innerHTML = `<input class="manual-gear-value" type="number" value="${currentValue}" />`;
+        }
+      });
+    }
+
+    function createManualAbilityRow(selectedValue = "") {
+      const row = document.createElement("div");
+      row.className = "manual-gear-row";
+      row.innerHTML = `
+        <select class="manual-gear-ability">
+          ${buildAbilityOptionList(selectedValue)}
+        </select>
+        <div class="manual-gear-stat-value"></div>
+        <button type="button" class="manual-gear-remove">Remove</button>
+      `;
+      const removeButton = row.querySelector(".manual-gear-remove");
+      removeButton.addEventListener("click", () => {
+        row.remove();
+      });
+      manualGearAbilitiesList.appendChild(row);
+    }
+
+    function readManualStatRows() {
+      const isBauble = manualGearType.value === "Bauble";
+      const rows = Array.from(manualGearStatsList.querySelectorAll(".manual-gear-row"));
+      if (isBauble) {
+        return rows
+          .map(row => {
+            const statName = row.querySelector(".manual-gear-stat-name")?.value;
+            const formula = row.querySelector(".manual-gear-formula")?.value;
+            if (!statName || !formula) return null;
+            return { name: statName, label: statName, formula };
+          })
+          .filter(Boolean);
+      }
+      return rows
+        .map(row => {
+          const statName = row.querySelector(".manual-gear-stat-name")?.value;
+          const rawValue = Number(row.querySelector(".manual-gear-value")?.value || 0);
+          if (!statName) return null;
+          return {
+            name: statName,
+            label: statName,
+            formula: formatSignedValue(rawValue),
+            value: rawValue
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function readManualAbilities() {
+      return Array.from(manualGearAbilitiesList.querySelectorAll(".manual-gear-ability"))
+        .map(select => select.value)
+        .filter(Boolean);
     }
 
     function buildManualGearPayload() {
-      const stats = parseManualJsonField(manualGearStats.value, []);
-      const statModifiers = parseManualJsonField(manualGearStatModifiers.value, []);
-      const abilities = parseManualJsonField(manualGearAbilities.value, []);
+      const isBauble = manualGearType.value === "Bauble";
+      const stats = isBauble ? [] : readManualStatRows();
+      const statModifiers = isBauble ? readManualStatRows() : [];
+      const abilities = readManualAbilities();
       const payload = {
         name: manualGearName.value.trim() || null,
         rarity: manualGearRarity.value,
@@ -1704,6 +2094,36 @@
       return payload;
     }
 
+    function populateGearFilterSelects() {
+      const unique = list => Array.from(new Set(list));
+      const appendOptions = (select, options) => {
+        if (!select) return;
+        const current = select.value;
+        select.querySelectorAll("option:not([value=''])").forEach(option => option.remove());
+        options.forEach(option => {
+          const element = document.createElement("option");
+          element.value = option;
+          element.textContent = option;
+          select.appendChild(element);
+        });
+        if (options.includes(current)) {
+          select.value = current;
+        }
+      };
+
+      appendOptions(gearFilterRarity, unique(raritySortOrder));
+      appendOptions(gearFilterType, unique(gearTypeSortOrder));
+      appendOptions(gearFilterColor, unique(colorSortOrder));
+      appendOptions(gearFilterStat, unique(statOptions));
+    }
+
+    function refreshAbilitySelectOptions() {
+      manualGearAbilitiesList.querySelectorAll(".manual-gear-ability").forEach(select => {
+        const current = select.value;
+        select.innerHTML = buildAbilityOptionList(current);
+      });
+    }
+
     function resetManualGearStatus() {
       manualGearStatus.textContent = "";
     }
@@ -1717,7 +2137,7 @@
         manualGearStatus.textContent = "Manual gear added.";
       } catch (error) {
         console.error(error);
-        manualGearStatus.textContent = "Invalid JSON provided.";
+        manualGearStatus.textContent = "Failed to add manual gear.";
       }
     }
 
@@ -1827,11 +2247,24 @@
         const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
         const slots = availableSlotsForGear(gear, stats);
         if (!slots.length) {
-          pushStatus("No open slots for that gear.", { tone: "warning" });
-          return;
+          const swapOptions = getSwapOptionsForGear(gear, stats);
+          if (!swapOptions.length) {
+            pushStatus("No open slots for that gear.", { tone: "warning" });
+            return;
+          }
+          if (inventoryCount() >= inventoryCapacity(stats)) {
+            pushStatus("No inventory slots available to swap gear.", { tone: "warning" });
+            return;
+          }
+          const selected = promptForSwapSlot(swapOptions);
+          if (!selected) return;
+          const inserted = await insertGearToInventory(gear, { slot: selected.slot });
+          if (!inserted) return;
+          await updateGearSlot(selected.entry, "inventory");
+        } else {
+          const inserted = await insertGearToInventory(gear, { slot: slots[0] });
+          if (!inserted) return;
         }
-        const inserted = await insertGearToInventory(gear, { slot: slots[0] });
-        if (!inserted) return;
       } else {
         const inserted = await insertGearToInventory(gear);
         if (!inserted) return;
@@ -2098,7 +2531,15 @@
       const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
       const availableSlots = availableSlotsForGear(entry.gear, stats);
       if (!availableSlots.length) {
-        pushStatus("No open slots for that gear.", { tone: "warning" });
+        const swapOptions = getSwapOptionsForGear(entry.gear, stats);
+        if (!swapOptions.length) {
+          pushStatus("No open slots for that gear.", { tone: "warning" });
+          return;
+        }
+        const selected = promptForSwapSlot(swapOptions);
+        if (!selected) return;
+        await updateGearSlot(entry, selected.slot);
+        await updateGearSlot(selected.entry, "inventory");
         return;
       }
       await updateGearSlot(entry, availableSlots[0]);
@@ -2211,8 +2652,8 @@
       elements.inputCurrentHp.value = baseStats.current_hp;
       elements.inputEnergyRed.value = baseStats.energy_red;
       elements.inputEnergyBlue.value = baseStats.energy_blue;
-      elements.inputEnergyGray.value = baseStats.energy_gray;
       elements.inputEnergyGreen.value = baseStats.energy_green;
+      elements.inputEnergyGray.value = baseStats.energy_gray;
       setStatDisplay(elements.displayInventorySlots, stats.inventory_slots, summarizeSources(sources.base.inventory_slots));
       setStatDisplay(elements.displayKernelSlots, stats.kernel_slots, summarizeSources(sources.base.kernel_slots));
 
@@ -2273,7 +2714,7 @@
         const characterId = params.get("id");
         let query = sb
           .from("webrunning_characters")
-          .select("id, name, base_stats")
+          .select("id, name, base_stats, notes")
           .eq("user_id", currentUser.id);
 
         if (characterId) {
@@ -2293,6 +2734,9 @@
         };
 
         elements.nameInput.value = activeCharacter.name || "";
+        if (elements.notesInput) {
+          elements.notesInput.value = activeCharacter.notes || "";
+        }
         render();
         if (activeCharacter.id) {
           await loadCharacterGear();
@@ -2361,13 +2805,15 @@
         isSaving = true;
         currentUser = await requireUser();
         const baseStats = readBaseStatsFromForm();
+        const notes = elements.notesInput ? elements.notesInput.value.trim() : "";
 
         if (activeCharacter?.id) {
           const { error } = await sb
             .from("webrunning_characters")
             .update({
               name,
-              base_stats: baseStats
+              base_stats: baseStats,
+              notes
             })
             .eq("id", activeCharacter.id)
             .eq("user_id", currentUser.id);
@@ -2378,9 +2824,10 @@
             .insert({
               user_id: currentUser.id,
               name,
-              base_stats: baseStats
+              base_stats: baseStats,
+              notes
             })
-            .select("id, name, base_stats")
+            .select("id, name, base_stats, notes")
             .maybeSingle();
           if (error) throw error;
           activeCharacter = data;
@@ -2389,6 +2836,7 @@
         isDirty = false;
         activeCharacter.name = name;
         activeCharacter.base_stats = baseStats;
+        activeCharacter.notes = notes;
         render();
         updateSaveStatus(mode === "auto" ? "Autosaved:" : "Saved:");
       } catch (e) {
@@ -2402,17 +2850,13 @@
     function populateLevelSelect() {
       targetLevelSelect.innerHTML = "";
       const stats = currentStats();
-      levelTable
-        .filter(entry => entry.level !== stats.level)
-        .forEach(entry => {
-          const option = document.createElement("option");
-          option.value = entry.level;
-          option.textContent = `Level ${entry.level}`;
-          targetLevelSelect.appendChild(option);
-        });
-      if (targetLevelSelect.options.length) {
-        targetLevelSelect.selectedIndex = 0;
-      }
+      levelTable.forEach(entry => {
+        const option = document.createElement("option");
+        option.value = entry.level;
+        option.textContent = entry.level === stats.level ? `Level ${entry.level} (Current)` : `Level ${entry.level}`;
+        targetLevelSelect.appendChild(option);
+      });
+      targetLevelSelect.value = String(stats.level);
     }
 
     function getLevelEntry(level) {
@@ -2438,7 +2882,11 @@
         return;
       }
       const pointDelta = calculatePointDelta(stats.level, targetLevel);
-      const pointsLabel = pointDelta >= 0 ? "Stat Points to allocate" : "Stat Points to remove";
+      const pointsLabel = pointDelta > 0
+        ? "Stat Points to allocate"
+        : pointDelta < 0
+          ? "Stat Points to remove"
+          : "Stat Points";
       const pointsValue = Math.abs(pointDelta);
       levelPreview.innerHTML = `
         <li>Level: ${stats.level} → ${entry.level}</li>
@@ -2513,9 +2961,11 @@
       const totalAllocated = powerPoints + defensePoints + speedPoints + intelligencePoints;
 
       if (totalAllocated !== requiredPoints) {
-        levelError.textContent = pointDelta >= 0
+        levelError.textContent = pointDelta > 0
           ? "Allocate all available stat points before applying."
-          : "Remove all required stat points before applying.";
+          : pointDelta < 0
+            ? "Remove all required stat points before applying."
+            : "No stat points are required for this level.";
         return;
       }
 
@@ -2573,8 +3023,8 @@
       elements.inputCurrentHp,
       elements.inputEnergyRed,
       elements.inputEnergyBlue,
-      elements.inputEnergyGray,
       elements.inputEnergyGreen,
+      elements.inputEnergyGray,
       elements.inputPower,
       elements.inputDefense,
       elements.inputSpeed,
@@ -2611,6 +3061,14 @@
     modalBackdrop.addEventListener("click", closeLevelModal);
     elements.saveButton.addEventListener("click", saveCharacter);
     elements.nameInput.addEventListener("input", markDirty);
+    if (elements.notesInput) {
+      elements.notesInput.addEventListener("input", () => {
+        markDirty();
+        if (activeCharacter) {
+          activeCharacter.notes = elements.notesInput.value;
+        }
+      });
+    }
 
     elements.openGearGenerator.addEventListener("click", openGearGeneratorModal);
     closeGearGenerator.addEventListener("click", closeGearGeneratorModal);
@@ -2623,6 +3081,18 @@
     });
     addPastedGear.addEventListener("click", addPastedGearFromJson);
     addManualGearButton.addEventListener("click", handleManualGearAdd);
+    addManualGearStat.addEventListener("click", () => createManualStatRow());
+    addManualGearAbility.addEventListener("click", () => createManualAbilityRow());
+    manualGearType.addEventListener("change", refreshManualStatRowsForType);
+
+    [gearSortField, gearSortDirection, gearFilterRarity, gearFilterType, gearFilterColor, gearFilterStat]
+      .forEach(select => {
+        if (!select) return;
+        select.addEventListener("change", () => {
+          const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+          renderGearSections(stats);
+        });
+      });
 
     generatedGearList.addEventListener("click", event => {
       const button = event.target.closest("button");
@@ -2690,6 +3160,13 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
+      populateGearFilterSelects();
+      if (manualGearStatsList && !manualGearStatsList.children.length) {
+        createManualStatRow();
+      }
+      if (manualGearAbilitiesList && !manualGearAbilitiesList.children.length) {
+        createManualAbilityRow();
+      }
       loadCharacter();
       initCollapsibles();
       startAutosave();

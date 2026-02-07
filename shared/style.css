@@ -585,7 +585,7 @@ textarea:focus {
 
 .wr-scope .gear-grid {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .wr-scope .gear-row {
@@ -716,6 +716,18 @@ textarea:focus {
   letter-spacing: 0.01em;
 }
 
+.wr-scope .gear-tag--type {
+  border-style: dotted;
+}
+
+.wr-scope .gear-tag--rarity {
+  border-style: solid;
+}
+
+.wr-scope .gear-tag--color {
+  border-style: dashed;
+}
+
 .wr-scope .gear-tag.dual {
   background: linear-gradient(135deg, var(--tag-color), var(--tag-color-secondary));
   border-color: var(--tag-color);
@@ -842,6 +854,45 @@ textarea:focus {
   align-items: center;
 }
 
+.wr-scope .manual-gear-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.wr-scope .manual-gear-row {
+  display: grid;
+  grid-template-columns: 1fr 140px auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.wr-scope .manual-gear-row select,
+.wr-scope .manual-gear-row input {
+  width: 100%;
+}
+
+.wr-scope .manual-gear-row button {
+  justify-self: start;
+}
+
+.wr-scope .gear-controls {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.wr-scope .gear-controls-row {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  align-items: end;
+}
+
+.wr-scope .notes-area textarea {
+  min-height: 140px;
+  width: 100%;
+}
+
 .wr-scope .slot-count {
   display: inline-flex;
   align-items: center;
@@ -853,6 +904,17 @@ textarea:focus {
 .wr-scope .modal-grid {
   display: grid;
   gap: 1rem;
+}
+
+.wr-scope .modal-section {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.wr-scope .starting-gear-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .wr-scope .level-preview {

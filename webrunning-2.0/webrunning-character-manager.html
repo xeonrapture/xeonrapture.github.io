@@ -54,6 +54,47 @@
         autocomplete="off"
       />
 
+      <div class="modal-section">
+        <strong>Allocate 3 Basic Stat Points</strong>
+        <div class="stat-inputs">
+          <label>Power
+            <input id="startPower" type="number" min="0" value="0" />
+          </label>
+          <label>Defense
+            <input id="startDefense" type="number" min="0" value="0" />
+          </label>
+          <label>Speed
+            <input id="startSpeed" type="number" min="0" value="0" />
+          </label>
+          <label>Intelligence
+            <input id="startIntelligence" type="number" min="0" value="0" />
+          </label>
+        </div>
+        <p class="muted">Points remaining: <span id="startPointsRemaining">3</span></p>
+      </div>
+
+      <div class="modal-section">
+        <strong>Starting Gear Appearance</strong>
+        <div class="starting-gear-grid">
+          <label>Head Item
+            <select id="startHeadItem"></select>
+          </label>
+          <label>Torso Item
+            <select id="startTorsoItem"></select>
+          </label>
+          <label>Rings Item
+            <select id="startRingItem"></select>
+          </label>
+          <label>Legs Item
+            <select id="startLegsItem"></select>
+          </label>
+          <label>One-Handed Weapon
+            <select id="startWeaponItem"></select>
+          </label>
+        </div>
+        <p class="muted">These basics start equipped at level 1.</p>
+      </div>
+
       <div class="xr-modal-actions">
         <button id="charSaveBtn">Save</button>
         <button id="charCancelBtn">Cancel</button>
@@ -163,14 +204,119 @@
     const modalMsg = document.getElementById("charModalMsg");
     const saveBtn = document.getElementById("charSaveBtn");
     const cancelBtn = document.getElementById("charCancelBtn");
+    const startPower = document.getElementById("startPower");
+    const startDefense = document.getElementById("startDefense");
+    const startSpeed = document.getElementById("startSpeed");
+    const startIntelligence = document.getElementById("startIntelligence");
+    const startPointsRemaining = document.getElementById("startPointsRemaining");
+    const startHeadItem = document.getElementById("startHeadItem");
+    const startTorsoItem = document.getElementById("startTorsoItem");
+    const startRingItem = document.getElementById("startRingItem");
+    const startLegsItem = document.getElementById("startLegsItem");
+    const startWeaponItem = document.getElementById("startWeaponItem");
 
     let modalMode = null; // "create" | "rename"
+
+    const clothingGearTable = {
+      Head: ["Hat", "Helmet", "Headband", "Diadem", "Facemask", "Goggles", "Earrings or Other Piercings", "Glasses or Shades"],
+      Torso: ["Cloak + Tunic", "T-Shirt", "Longsleeve Shirt", "Hoodie", "Armor", "Shirt + Cape", "Dress", "Jumpsuit"],
+      Legs: ["Pants", "Shorts", "Greaves", "Baggy", "Skirt", "Kilt"],
+      Ring: ["Large Gem", "Small Band", "Thick Band", "Small Gem"]
+    };
+
+    const oneHandedWeaponOptions = [
+      "Dagger",
+      "Morningstar",
+      "Shortsword",
+      "Katar",
+      "Rapier",
+      "Scimitar",
+      "Katana",
+      "Machete",
+      "Handaxe",
+      "Flail",
+      "Pickaxe",
+      "Whip",
+      "Buckler Shield",
+      "Mace",
+      "Hammer",
+      "Club",
+      "Shillelagh",
+      "Gauntlet",
+      "Pistol",
+      "Crossbow",
+      "Boomerang",
+      "Snowball",
+      "Shuriken",
+      "Throwing Knife",
+      "Javelin",
+      "Rock",
+      "Uzi Gun",
+      "Coin",
+      "Sling",
+      "Atlatl",
+      "Wand",
+      "Orb",
+      "Totem",
+      "Crystal",
+      "Rod",
+      "Lantern",
+      "Ice Cube",
+      "Pineapple",
+      "Bomb",
+      "Lightning Javelin",
+      "Mirror",
+      "Bell"
+    ];
+
+    function populateSelectOptions(select, options) {
+      if (!select) return;
+      select.innerHTML = "";
+      options.forEach(option => {
+        const el = document.createElement("option");
+        el.value = option;
+        el.textContent = option;
+        select.appendChild(el);
+      });
+    }
+
+    function updateStartPointsRemaining() {
+      const allocated = (Number(startPower.value) || 0)
+        + (Number(startDefense.value) || 0)
+        + (Number(startSpeed.value) || 0)
+        + (Number(startIntelligence.value) || 0);
+      const remaining = Math.max(3 - allocated, 0);
+      if (startPointsRemaining) {
+        startPointsRemaining.textContent = String(remaining);
+      }
+    }
+
+    function populateStartingGearOptions() {
+      populateSelectOptions(startHeadItem, clothingGearTable.Head);
+      populateSelectOptions(startTorsoItem, clothingGearTable.Torso);
+      populateSelectOptions(startRingItem, clothingGearTable.Ring);
+      populateSelectOptions(startLegsItem, clothingGearTable.Legs);
+      populateSelectOptions(startWeaponItem, oneHandedWeaponOptions);
+    }
+
+    function toggleCreateOnlyFields(show) {
+      document.querySelectorAll(".modal-section").forEach(section => {
+        section.style.display = show ? "grid" : "none";
+      });
+    }
 
     function openCreateModal() {
       modalMode = "create";
       modalTitle.textContent = "New Character";
       nameInput.value = "";
       modalMsg.textContent = "";
+      toggleCreateOnlyFields(true);
+      startPower.value = 0;
+      startDefense.value = 0;
+      startSpeed.value = 0;
+      startIntelligence.value = 0;
+      updateStartPointsRemaining();
+      populateStartingGearOptions();
       modal.classList.remove("hidden");
       nameInput.focus();
     }
@@ -182,6 +328,7 @@
       modalTitle.textContent = "Rename Character";
       nameInput.value = c.name;
       modalMsg.textContent = "";
+      toggleCreateOnlyFields(false);
       modal.classList.remove("hidden");
     }
 
@@ -191,6 +338,103 @@
 
     document.querySelector(".xr-modal-backdrop").onclick = closeModal;
     cancelBtn.onclick = closeModal;
+    [startPower, startDefense, startSpeed, startIntelligence].forEach(input => {
+      input.addEventListener("input", updateStartPointsRemaining);
+    });
+
+    function formatSignedValue(value) {
+      return `${value >= 0 ? "+" : ""}${value}`;
+    }
+
+    function buildStat(name, value) {
+      return {
+        name,
+        label: name,
+        formula: formatSignedValue(value),
+        value
+      };
+    }
+
+    function formatStartingGearName({ rarity, color, color2, item_type, gear_type }) {
+      const colors = [color, color2].filter(Boolean).join("/");
+      const colorLabel = colors ? `${colors} ` : "";
+      return `${rarity} ${colorLabel}${item_type || gear_type}`.trim();
+    }
+
+    function buildStartingGearPayloads() {
+      const aesthetic = "Basic (just simple and plain)";
+      const basePayload = {
+        rarity: "Basic",
+        color2: null,
+        essence_value: 500,
+        credit_value: 50,
+        abilities: [],
+        stat_modifiers: [],
+        aesthetic
+      };
+      const payloads = [
+        {
+          ...basePayload,
+          gear_type: "Head",
+          color: "Gray",
+          item_type: startHeadItem.value,
+          stats: [buildStat("Perception", 1), buildStat("Hacking", 1)]
+        },
+        {
+          ...basePayload,
+          gear_type: "Torso",
+          color: "Blue",
+          item_type: startTorsoItem.value,
+          stats: [buildStat("Armor", 1), buildStat("Defense DC", 1)]
+        },
+        {
+          ...basePayload,
+          gear_type: "Ring",
+          color: "Neutral",
+          item_type: startRingItem.value,
+          stats: [buildStat("HP", 2), buildStat("Inventory Slots", 2)]
+        },
+        {
+          ...basePayload,
+          gear_type: "Legs",
+          color: "Green",
+          item_type: startLegsItem.value,
+          stats: [buildStat("Initiative", 1), buildStat("Movement Speed", 2)]
+        },
+        {
+          ...basePayload,
+          gear_type: "One-Handed Weapon",
+          color: "Neutral",
+          item_type: startWeaponItem.value,
+          stats: [buildStat("Attack Plus", 1), buildStat("Damage Plus", 1)]
+        }
+      ];
+      payloads.forEach(payload => {
+        payload.name = formatStartingGearName(payload);
+      });
+      return payloads;
+    }
+
+    async function createStartingGear(characterId) {
+      const payloads = buildStartingGearPayloads();
+      const { data: gearRows, error: gearError } = await sb
+        .from("webrunning_gear")
+        .insert(payloads)
+        .select("id");
+      if (gearError) throw gearError;
+      if (!gearRows || !gearRows.length) return;
+      const slots = ["head", "torso", "ring_1", "legs", "weapon_1"];
+      const linkPayload = gearRows.map((row, index) => ({
+        character_id: characterId,
+        gear_id: row.id,
+        equipped: true,
+        gear_slot: slots[index]
+      }));
+      const { error: linkError } = await sb
+        .from("webrunning_character_gear")
+        .insert(linkPayload);
+      if (linkError) throw linkError;
+    }
 
     // Save handler
     saveBtn.onclick = async () => {
@@ -208,7 +452,15 @@
 
       try {
         if (modalMode === "create") {
-          const { error } = await sb
+          const allocatedPoints = (Number(startPower.value) || 0)
+            + (Number(startDefense.value) || 0)
+            + (Number(startSpeed.value) || 0)
+            + (Number(startIntelligence.value) || 0);
+          if (allocatedPoints !== 3) {
+            modalMsg.textContent = "Allocate exactly 3 stat points before saving.";
+            return;
+          }
+          const { data, error } = await sb
             .from("webrunning_characters")
             .insert({
               user_id: currentUser.id,
@@ -220,11 +472,11 @@
                   xp: 0,
                   luck: 1,
                   essence: 0,
-                  power: 0,
-                  defense: 0,
-                  speed: 0,
-                  intelligence: 0,
-                  inventory_slots: 5,
+                  power: Number(startPower.value) || 0,
+                  defense: Number(startDefense.value) || 0,
+                  speed: Number(startSpeed.value) || 0,
+                  intelligence: Number(startIntelligence.value) || 0,
+                  inventory_slots: 10,
                   kernel_slots: 1,
                   energy_cap: 5,
                   energy_red: 0,
@@ -232,9 +484,14 @@
                   energy_gray: 0,
                   energy_green: 0
                 }
-            });
+            })
+            .select("id")
+            .maybeSingle();
 
           if (error) throw error;
+          if (data?.id) {
+            await createStartingGear(data.id);
+          }
         }
 
         if (modalMode === "rename") {
