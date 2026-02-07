@@ -2156,7 +2156,7 @@
       targetLevelSelect.innerHTML = "";
       const stats = currentStats();
       levelTable
-        .filter(entry => entry.level > stats.level)
+        .filter(entry => entry.level !== stats.level)
         .forEach(entry => {
           const option = document.createElement("option");
           option.value = entry.level;
@@ -2172,10 +2172,14 @@
       return levelTable.find(entry => entry.level === Number(level));
     }
 
-    function calculateAvailablePoints(startLevel, targetLevel) {
-      return levelTable
-        .filter(entry => entry.level > startLevel && entry.level <= targetLevel)
+    function calculatePointDelta(startLevel, targetLevel) {
+      if (targetLevel === startLevel) return 0;
+      const minLevel = Math.min(startLevel, targetLevel);
+      const maxLevel = Math.max(startLevel, targetLevel);
+      const points = levelTable
+        .filter(entry => entry.level > minLevel && entry.level <= maxLevel)
         .reduce((sum, entry) => sum + (entry.statPoints || 0), 0);
+      return targetLevel > startLevel ? points : -points;
     }
 
     function updateLevelPreview() {
@@ -2186,7 +2190,9 @@
         levelPreview.innerHTML = "";
         return;
       }
-      const points = calculateAvailablePoints(stats.level, targetLevel);
+      const pointDelta = calculatePointDelta(stats.level, targetLevel);
+      const pointsLabel = pointDelta >= 0 ? "Stat Points to allocate" : "Stat Points to remove";
+      const pointsValue = Math.abs(pointDelta);
       levelPreview.innerHTML = `
         <li>Level: ${stats.level} → ${entry.level}</li>
         <li>XP: ${stats.xp} (manual)</li>
@@ -2195,9 +2201,9 @@
         <li>Kernel Slots: ${stats.kernel_slots} → ${entry.kernelSlots}</li>
         <li>Inventory Slots: ${stats.inventory_slots} → ${entry.inventorySlots}</li>
         <li>Luck: ${stats.luck} → ${entry.baseLuck}</li>
-        <li>Stat Points to allocate: ${points}</li>
+        <li>${pointsLabel}: ${pointsValue}</li>
       `;
-      updateRemainingPoints(points);
+      updateRemainingPoints(pointsValue);
     }
 
     function updateRemainingPoints(availablePoints) {
@@ -2220,7 +2226,7 @@
     function openLevelModal() {
       populateLevelSelect();
       if (!targetLevelSelect.options.length) {
-        pushStatus("No higher levels available.", { tone: "warning" });
+        pushStatus("No other levels available.", { tone: "warning" });
         return;
       }
       resetLevelInputs();
@@ -2251,15 +2257,29 @@
       const entry = getLevelEntry(targetLevel);
       if (!entry) return;
 
-      const availablePoints = calculateAvailablePoints(stats.level, targetLevel);
+      const pointDelta = calculatePointDelta(stats.level, targetLevel);
+      const requiredPoints = Math.abs(pointDelta);
       const powerPoints = Number(levelPower.value) || 0;
       const defensePoints = Number(levelDefense.value) || 0;
       const speedPoints = Number(levelSpeed.value) || 0;
       const intelligencePoints = Number(levelIntelligence.value) || 0;
       const totalAllocated = powerPoints + defensePoints + speedPoints + intelligencePoints;
 
-      if (totalAllocated !== availablePoints) {
-        levelError.textContent = "Allocate all available stat points before applying.";
+      if (totalAllocated !== requiredPoints) {
+        levelError.textContent = pointDelta >= 0
+          ? "Allocate all available stat points before applying."
+          : "Remove all required stat points before applying.";
+        return;
+      }
+
+      if (
+        pointDelta < 0 &&
+        (stats.power - powerPoints < 0 ||
+          stats.defense - defensePoints < 0 ||
+          stats.speed - speedPoints < 0 ||
+          stats.intelligence - intelligencePoints < 0)
+      ) {
+        levelError.textContent = "Cannot remove more stat points than you currently have.";
         return;
       }
 
@@ -2271,10 +2291,10 @@
         kernel_slots: entry.kernelSlots,
         inventory_slots: entry.inventorySlots,
         luck: entry.baseLuck,
-        power: stats.power + powerPoints,
-        defense: stats.defense + defensePoints,
-        speed: stats.speed + speedPoints,
-        intelligence: stats.intelligence + intelligencePoints
+        power: stats.power + (pointDelta >= 0 ? powerPoints : -powerPoints),
+        defense: stats.defense + (pointDelta >= 0 ? defensePoints : -defensePoints),
+        speed: stats.speed + (pointDelta >= 0 ? speedPoints : -speedPoints),
+        intelligence: stats.intelligence + (pointDelta >= 0 ? intelligencePoints : -intelligencePoints)
       };
       updatedStats.current_hp = Math.min(updatedStats.current_hp ?? updatedStats.hp, updatedStats.hp);
 
@@ -2328,8 +2348,8 @@
       input.addEventListener("input", () => {
         const stats = currentStats();
         const targetLevel = Number(targetLevelSelect.value);
-        const availablePoints = calculateAvailablePoints(stats.level, targetLevel);
-        updateRemainingPoints(availablePoints);
+        const pointDelta = calculatePointDelta(stats.level, targetLevel);
+        updateRemainingPoints(Math.abs(pointDelta));
       });
     });
 
