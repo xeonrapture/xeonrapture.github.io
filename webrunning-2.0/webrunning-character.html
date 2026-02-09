@@ -1629,12 +1629,15 @@
           const tierEntries = showTierDetails ? Object.entries(tiers) : [];
           const tierLimit = getAbilityTierLimit(resolved.name, gearRarity);
           const lines = parseAbilityLines(resolved).filter(Boolean);
-          const tierList = tierEntries.length
-            ? `<ul>${tierEntries.map(([tier, detail]) => {
-              const tierNumber = getTierNumberFromLabel(tier);
-              const isLocked = tierLimit !== null && tierNumber && tierNumber > tierLimit;
-              return `<li class="ability-tier${isLocked ? " ability-tier--locked" : ""}"><strong>${formatTierLabel(tier)}:</strong> ${detail}</li>`;
-            }).join("")}</ul>`
+          const filteredTierEntries = tierEntries.filter(([tier]) => {
+            if (tierLimit === null) return true;
+            const tierNumber = getTierNumberFromLabel(tier);
+            return !tierNumber || tierNumber <= tierLimit;
+          });
+          const tierList = filteredTierEntries.length
+            ? `<ul>${filteredTierEntries.map(([tier, detail]) => (
+              `<li class="ability-tier"><strong>${formatTierLabel(tier)}:</strong> ${detail}</li>`
+            )).join("")}</ul>`
             : (lines.length
               ? `<ul>${lines.map(line => `<li>${line}</li>`).join("")}</ul>`
               : `<p class="muted">No details.</p>`);
@@ -1878,19 +1881,21 @@
             const tierEntries = showTierDetails && tierDetails && typeof tierDetails === "object" && !Array.isArray(tierDetails)
               ? Object.entries(tierDetails)
               : [];
-            const detailsList = tierEntries.length
-              ? `<ul>${tierEntries
-                .map(([tier, detail]) => {
-                  const tierNumber = getTierNumberFromLabel(tier);
-                  const tierLimit = getAbilityTierLimit(abilityName, abilityEntry.rarity);
-                  const isLocked = tierLimit !== null && tierNumber && tierNumber > tierLimit;
-                  return `<li class="ability-tier${isLocked ? " ability-tier--locked" : ""}"><strong>${formatTierLabel(tier)}:</strong> ${detail}</li>`;
-                })
+            const tierLimit = getAbilityTierLimit(abilityName, abilityEntry.rarity);
+            const filteredTierEntries = tierEntries.filter(([tier]) => {
+              if (tierLimit === null) return true;
+              const tierNumber = getTierNumberFromLabel(tier);
+              return !tierNumber || tierNumber <= tierLimit;
+            });
+            const detailsList = filteredTierEntries.length
+              ? `<ul>${filteredTierEntries
+                .map(([tier, detail]) => (
+                  `<li class="ability-tier"><strong>${formatTierLabel(tier)}:</strong> ${detail}</li>`
+                ))
                 .join("")}</ul>`
               : (lines.length
                 ? `<ul>${lines.map(line => `<li>${line}</li>`).join("")}</ul>`
                 : `<p class="muted">No details.</p>`);
-            const tierLimit = getAbilityTierLimit(abilityName, abilityEntry.rarity);
             return `
               <div class="ability-dropdown">
                 <button type="button" class="ability-summary" aria-expanded="false">
@@ -3567,7 +3572,8 @@
       };
 
       elements.abilitiesList.addEventListener("click", event => {
-        const button = event.target.closest(".ability-summary");
+        const target = event.target instanceof Element ? event.target : null;
+        const button = target ? target.closest(".ability-summary") : null;
         if (!button) return;
         const dropdown = button.closest(".ability-dropdown");
         if (!dropdown) return;
