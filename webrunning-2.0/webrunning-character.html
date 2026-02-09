@@ -831,6 +831,7 @@
     const colorSortOrder = ["Neutral", "Red", "Blue", "Green", "Gray"];
 
     let availableAbilities = [];
+    let abilityDetailMap = new Map();
 
     function deriveSecondaryStats(stats) {
       const power = stats.power || 0;
@@ -969,10 +970,16 @@
       return Math.max(1, result);
     }
 
+    function resolveAbilityDetails(ability) {
+      if (!ability || typeof ability !== "string") return ability;
+      return abilityDetailMap.get(ability) || ability;
+    }
+
     function parseAbilityLines(ability) {
-      if (!ability) return [];
-      if (typeof ability === "string") return [ability];
-      const details = ability.tierDetails;
+      const resolved = resolveAbilityDetails(ability);
+      if (!resolved) return [];
+      if (typeof resolved === "string") return [resolved];
+      const details = resolved.tierDetails;
       if (!details) return [];
       if (typeof details === "string") {
         return details.split("\n");
@@ -1560,17 +1567,18 @@
       }
       return abilities
         .map(ability => {
-          if (typeof ability === "string") {
+          const resolved = resolveAbilityDetails(ability);
+          if (typeof resolved === "string") {
             return `
               <div>
-                <strong>${ability}</strong>
+                <strong>${resolved}</strong>
                 ${showTierDetails ? `<div class="muted">No details.</div>` : ""}
               </div>
             `;
           }
-          const tiers = ability.tierDetails || {};
+          const tiers = resolved.tierDetails || {};
           const tierEntries = showTierDetails ? Object.entries(tiers) : [];
-          const lines = parseAbilityLines(ability).filter(Boolean);
+          const lines = parseAbilityLines(resolved).filter(Boolean);
           const tierList = tierEntries.length
             ? `<ul>${tierEntries.map(([tier, detail]) => `<li><strong>${formatTierLabel(tier)}:</strong> ${detail}</li>`).join("")}</ul>`
             : (lines.length
@@ -1578,7 +1586,7 @@
               : `<p class="muted">No details.</p>`);
           return `
             <div>
-              <strong><a href="${ability.link}" target="_blank" rel="noopener">${ability.name}</a></strong>
+              <strong><a href="${resolved.link}" target="_blank" rel="noopener">${resolved.name}</a></strong>
               ${showTierDetails ? `<div class="muted">Tiers available: ${tierEntries.length}</div>` : ""}
               ${tierList}
             </div>
@@ -1588,9 +1596,10 @@
     }
 
     function extractTierNumbers(ability) {
-      if (!ability) return [];
+      const resolved = resolveAbilityDetails(ability);
+      if (!resolved || typeof resolved === "string") return [];
       const tiers = new Set();
-      const details = typeof ability === "string" ? null : ability.tierDetails;
+      const details = resolved.tierDetails;
       if (details && typeof details === "object") {
         Object.keys(details).forEach(key => {
           const match = String(key).match(/(\d+)/);
@@ -1599,7 +1608,7 @@
           }
         });
       }
-      parseAbilityLines(ability).forEach(line => {
+      parseAbilityLines(resolved).forEach(line => {
         const match = String(line).match(/tier\s*(\d+)/i);
         if (match) {
           tiers.add(Number(match[1]));
@@ -1805,10 +1814,11 @@
         }
         return list
           .map(ability => {
-            const abilityName = typeof ability === "string" ? ability : ability.name;
-            const abilityLink = typeof ability === "string" ? "" : ability.link;
-            const lines = parseAbilityLines(ability).filter(Boolean);
-            const tierDetails = typeof ability === "string" ? null : ability.tierDetails;
+            const resolved = resolveAbilityDetails(ability);
+            const abilityName = typeof resolved === "string" ? resolved : resolved.name;
+            const abilityLink = typeof resolved === "string" ? "" : resolved.link;
+            const lines = parseAbilityLines(resolved).filter(Boolean);
+            const tierDetails = typeof resolved === "string" ? null : resolved.tierDetails;
             const tierEntries = showTierDetails && tierDetails && typeof tierDetails === "object" && !Array.isArray(tierDetails)
               ? Object.entries(tierDetails)
               : [];
@@ -1819,7 +1829,7 @@
               : (lines.length
                 ? `<ul>${lines.map(line => `<li>${line}</li>`).join("")}</ul>`
                 : `<p class="muted">No details.</p>`);
-            const tiers = showTierEnergy ? extractTierNumbers(ability) : [];
+            const tiers = showTierEnergy ? extractTierNumbers(resolved) : [];
             const tierSummary = showTierEnergy
               ? (tiers.length
                 ? `<div class="muted">Tiers: ${tiers.map(tier => `Tier ${tier} (Energy ${tier})`).join(", ")}</div>`
@@ -1996,6 +2006,67 @@
                           elif isinstance(instance.abilities, list):
                               abilities.update(instance.abilities)
               return json.dumps(sorted(list(abilities)))
+
+          def list_ability_details_json():
+              import abilityCatalog
+              colors = ["Neutral", "Red", "Blue", "Green", "Gray"]
+              color2_options = [None, "Neutral", "Red", "Blue", "Green", "Gray"]
+              link_suffixes = {
+                  abilityCatalog.WeaponActiveCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Gear+Actives#",
+                  abilityCatalog.ClothingActiveCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Gear+Actives#",
+                  abilityCatalog.PassiveCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Kernels#",
+                  abilityCatalog.ConsumableEffectCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Consumables#",
+                  abilityCatalog.BaubleEffectCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Baubles#"
+              }
+              ability_map = {}
+
+              def normalize_details(details):
+                  if isinstance(details, str):
+                      return { "Detail": details }
+                  if isinstance(details, list):
+                      return { f"Detail {index + 1}": detail for index, detail in enumerate(details) }
+                  if isinstance(details, dict):
+                      return details
+                  return { "Detail": str(details) }
+
+              for name, cls in abilityCatalog.__dict__.items():
+                  if not isinstance(cls, type):
+                      continue
+                  if not issubclass(cls, abilityCatalog.AbilityCatalog):
+                      continue
+                  if cls is abilityCatalog.AbilityCatalog:
+                      continue
+                  link_suffix = link_suffixes.get(cls, "")
+                  for color in colors:
+                      for color2 in color2_options:
+                          try:
+                              instance = cls(color, color2)
+                          except TypeError:
+                              try:
+                                  instance = cls(color)
+                              except Exception:
+                                  continue
+                          except Exception:
+                              continue
+                          if isinstance(instance.abilities, dict):
+                              for ability_name, details in instance.abilities.items():
+                                  if ability_name in ability_map:
+                                      continue
+                                  ability_map[ability_name] = {
+                                      "name": ability_name,
+                                      "link": f"{link_suffix}{ability_name.replace(' ', '+')}" if link_suffix else "",
+                                      "tierDetails": normalize_details(details)
+                                  }
+                          elif isinstance(instance.abilities, list):
+                              for ability_name in instance.abilities:
+                                  if ability_name in ability_map:
+                                      continue
+                                  ability_map[ability_name] = {
+                                      "name": ability_name,
+                                      "link": f"{link_suffix}{ability_name.replace(' ', '+')}" if link_suffix else "",
+                                      "tierDetails": { "Detail": "No tier details." }
+                                  }
+              return json.dumps(ability_map)
         `);
 
         pyodideReady = true;
@@ -2007,6 +2078,13 @@
           } catch (abilityError) {
             console.warn("Failed to load ability list", abilityError);
           }
+        }
+        try {
+          const abilityDetailJson = pyodideClient.runPython("list_ability_details_json()");
+          const abilityDetails = JSON.parse(abilityDetailJson) || {};
+          abilityDetailMap = new Map(Object.entries(abilityDetails));
+        } catch (detailError) {
+          console.warn("Failed to load ability details", detailError);
         }
         elements.gearGeneratorStatus.textContent = "";
         elements.openGearGenerator.classList.remove("hidden");
