@@ -1862,13 +1862,15 @@
                 : `<p class="muted">No details.</p>`);
             const tierLimit = getAbilityTierLimit(abilityName, abilityEntry.rarity);
             return `
-              <details class="ability-dropdown">
-                <summary>${abilityName}</summary>
-                <div class="ability-details">
+              <div class="ability-dropdown">
+                <button type="button" class="ability-summary" aria-expanded="false">
+                  ${abilityName}
+                </button>
+                <div class="ability-details" hidden>
                   ${detailsList}
                   ${abilityLink ? `<a href="${abilityLink}" target="_blank" rel="noopener">View full ability details</a>` : ""}
                 </div>
-              </details>
+              </div>
             `;
           })
           .join("");
@@ -3518,6 +3520,20 @@
     elements.equippedSlots.addEventListener("click", handleGearListClick);
     elements.inventorySlots.addEventListener("click", handleGearListClick);
     elements.localNodeSlots.addEventListener("click", handleGearListClick);
+    if (elements.abilitiesList) {
+      elements.abilitiesList.addEventListener("click", event => {
+        const button = event.target.closest(".ability-summary");
+        if (!button) return;
+        const dropdown = button.closest(".ability-dropdown");
+        if (!dropdown) return;
+        const details = dropdown.querySelector(".ability-details");
+        const isOpen = dropdown.classList.toggle("is-open");
+        button.setAttribute("aria-expanded", String(isOpen));
+        if (details) {
+          details.hidden = !isOpen;
+        }
+      });
+    }
 
     closeGearDetail.addEventListener("click", closeGearDetailModal);
     gearDetailBackdrop.addEventListener("click", closeGearDetailModal);
