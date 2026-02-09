@@ -985,6 +985,15 @@ textarea:focus {
   margin: 0;
 }
 
+.wr-scope .ability-tier--locked {
+  color: var(--muted, #b6b6b6);
+  opacity: 0.7;
+}
+
+.wr-scope .ability-tier--locked strong {
+  text-decoration: line-through;
+}
+
 .wr-scope .paste-area {
   display: grid;
   gap: 0.6rem;
