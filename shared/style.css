@@ -1026,24 +1026,29 @@ textarea:focus {
   padding-top: 0.5rem;
 }
 
-.wr-scope .ability-dropdown summary {
+.wr-scope .ability-summary {
   cursor: pointer;
   font-weight: 600;
   list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  width: 100%;
+  text-align: left;
 }
 
-.wr-scope .ability-dropdown summary::-webkit-details-marker {
-  display: none;
-}
-
-.wr-scope .ability-dropdown summary::before {
+.wr-scope .ability-summary::before {
   content: "▸";
   display: inline-block;
-  margin-right: 0.4rem;
   transition: transform 0.2s ease;
 }
 
-.wr-scope .ability-dropdown[open] summary::before {
+.wr-scope .ability-dropdown.is-open .ability-summary::before {
   transform: rotate(90deg);
 }
 
