@@ -1524,6 +1524,12 @@
       return parts.length ? parts.join(", ") : "No stat modifiers";
     }
 
+    function formatTierLabel(tier) {
+      const tierText = String(tier || "").trim();
+      if (!tierText) return "Tier";
+      return /tier/i.test(tierText) ? tierText : `Tier ${tierText}`;
+    }
+
     function renderAbilityDetails(abilities) {
       if (!abilities || !abilities.length) {
         return `<p class="muted">No abilities.</p>`;
@@ -1541,7 +1547,7 @@
           const tiers = ability.tierDetails || {};
           const tierEntries = Object.entries(tiers);
           const tierList = tierEntries.length
-            ? `<ul>${tierEntries.map(([tier, detail]) => `<li><strong>${tier}:</strong> ${detail}</li>`).join("")}</ul>`
+            ? `<ul>${tierEntries.map(([tier, detail]) => `<li><strong>${formatTierLabel(tier)}:</strong> ${detail}</li>`).join("")}</ul>`
             : `<p class="muted">No tier details.</p>`;
           return `
             <div>
@@ -1775,9 +1781,17 @@
             const abilityName = typeof ability === "string" ? ability : ability.name;
             const abilityLink = typeof ability === "string" ? "" : ability.link;
             const lines = parseAbilityLines(ability).filter(Boolean);
-            const detailsList = lines.length
-              ? `<ul>${lines.map(line => `<li>${line}</li>`).join("")}</ul>`
-              : `<p class="muted">No details.</p>`;
+            const tierDetails = typeof ability === "string" ? null : ability.tierDetails;
+            const tierEntries = tierDetails && typeof tierDetails === "object" && !Array.isArray(tierDetails)
+              ? Object.entries(tierDetails)
+              : [];
+            const detailsList = tierEntries.length
+              ? `<ul>${tierEntries
+                .map(([tier, detail]) => `<li><strong>${formatTierLabel(tier)}:</strong> ${detail}</li>`)
+                .join("")}</ul>`
+              : (lines.length
+                ? `<ul>${lines.map(line => `<li>${line}</li>`).join("")}</ul>`
+                : `<p class="muted">No details.</p>`);
             const tiers = showTierEnergy ? extractTierNumbers(ability) : [];
             const tierSummary = showTierEnergy
               ? (tiers.length
