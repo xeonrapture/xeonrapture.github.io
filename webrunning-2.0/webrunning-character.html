@@ -1561,7 +1561,39 @@
       return /tier/i.test(tierText) ? tierText : `Tier ${tierText}`;
     }
 
-    function renderAbilityDetails(abilities, { showTierDetails = true } = {}) {
+    const abilityTierLimits = {
+      Common: 0,
+      Uncommon: 1,
+      Rare: 2,
+      Epic: 3,
+      Legendary: 4
+    };
+
+    function getTierNumberFromLabel(label) {
+      const match = String(label || "").match(/(\d+)/);
+      return match ? Number(match[1]) : null;
+    }
+
+    function getAbilityTierLimit(abilityName, rarity) {
+      if (!rarity) return null;
+      if (abilityName === "Cleanse") return 4;
+      return abilityTierLimits[rarity] ?? 0;
+    }
+
+    function getUnlockedTierNumbers(ability, rarity) {
+      if (!ability || typeof ability === "string") return [];
+      const limit = getAbilityTierLimit(ability.name, rarity);
+      if (limit === null) return [];
+      return extractTierNumbers(ability).filter(tier => tier <= limit);
+    }
+
+    function formatUnlockedTierSummary(tiers, { includeEnergy = false } = {}) {
+      if (!tiers.length) return "Unlocked tiers: None";
+      const details = tiers.map(tier => includeEnergy ? `Tier ${tier} (Energy ${tier})` : `Tier ${tier}`);
+      return `Unlocked tiers: ${details.join(", ")}`;
+    }
+
+    function renderAbilityDetails(abilities, { showTierDetails = true, gearRarity = null } = {}) {
       if (!abilities || !abilities.length) {
         return `<p class="muted">No abilities.</p>`;
       }
@@ -1578,16 +1610,22 @@
           }
           const tiers = resolved.tierDetails || {};
           const tierEntries = showTierDetails ? Object.entries(tiers) : [];
+          const unlockedTiers = showTierDetails ? getUnlockedTierNumbers(resolved, gearRarity) : [];
+          const tierLimit = getAbilityTierLimit(resolved.name, gearRarity);
           const lines = parseAbilityLines(resolved).filter(Boolean);
           const tierList = tierEntries.length
-            ? `<ul>${tierEntries.map(([tier, detail]) => `<li><strong>${formatTierLabel(tier)}:</strong> ${detail}</li>`).join("")}</ul>`
+            ? `<ul>${tierEntries.map(([tier, detail]) => {
+              const tierNumber = getTierNumberFromLabel(tier);
+              const isLocked = tierLimit !== null && tierNumber && tierNumber > tierLimit;
+              return `<li class="ability-tier${isLocked ? " ability-tier--locked" : ""}"><strong>${formatTierLabel(tier)}:</strong> ${detail}</li>`;
+            }).join("")}</ul>`
             : (lines.length
               ? `<ul>${lines.map(line => `<li>${line}</li>`).join("")}</ul>`
               : `<p class="muted">No details.</p>`);
           return `
             <div>
               <strong><a href="${resolved.link}" target="_blank" rel="noopener">${resolved.name}</a></strong>
-              ${showTierDetails ? `<div class="muted">Tiers available: ${tierEntries.length}</div>` : ""}
+              ${showTierDetails && tierLimit !== null ? `<div class="muted">${formatUnlockedTierSummary(unlockedTiers)}</div>` : ""}
               ${tierList}
             </div>
           `;
@@ -1804,7 +1842,7 @@
         if (gearType === "Kernel") {
           (gear.abilities || []).forEach(ability => passives.push(ability));
         } else {
-          (gear.abilities || []).forEach(ability => actives.push(ability));
+          (gear.abilities || []).forEach(ability => actives.push({ ability, rarity: gear.rarity }));
         }
       });
 
@@ -1814,7 +1852,10 @@
         }
         return list
           .map(ability => {
-            const resolved = resolveAbilityDetails(ability);
+            const abilityEntry = ability && typeof ability === "object" && "ability" in ability
+              ? ability
+              : { ability, rarity: null };
+            const resolved = resolveAbilityDetails(abilityEntry.ability);
             const abilityName = typeof resolved === "string" ? resolved : resolved.name;
             const abilityLink = typeof resolved === "string" ? "" : resolved.link;
             const lines = parseAbilityLines(resolved).filter(Boolean);
@@ -1824,16 +1865,22 @@
               : [];
             const detailsList = tierEntries.length
               ? `<ul>${tierEntries
-                .map(([tier, detail]) => `<li><strong>${formatTierLabel(tier)}:</strong> ${detail}</li>`)
+                .map(([tier, detail]) => {
+                  const tierNumber = getTierNumberFromLabel(tier);
+                  const tierLimit = getAbilityTierLimit(abilityName, abilityEntry.rarity);
+                  const isLocked = tierLimit !== null && tierNumber && tierNumber > tierLimit;
+                  return `<li class="ability-tier${isLocked ? " ability-tier--locked" : ""}"><strong>${formatTierLabel(tier)}:</strong> ${detail}</li>`;
+                })
                 .join("")}</ul>`
               : (lines.length
                 ? `<ul>${lines.map(line => `<li>${line}</li>`).join("")}</ul>`
                 : `<p class="muted">No details.</p>`);
-            const tiers = showTierEnergy ? extractTierNumbers(resolved) : [];
-            const tierSummary = showTierEnergy
-              ? (tiers.length
-                ? `<div class="muted">Tiers: ${tiers.map(tier => `Tier ${tier} (Energy ${tier})`).join(", ")}</div>`
-                : "")
+            const tierLimit = getAbilityTierLimit(abilityName, abilityEntry.rarity);
+            const tiers = showTierEnergy && tierLimit !== null
+              ? extractTierNumbers(resolved).filter(tier => tier <= tierLimit)
+              : [];
+            const tierSummary = showTierEnergy && tierLimit !== null
+              ? `<div class="muted">${formatUnlockedTierSummary(tiers, { includeEnergy: true })}</div>`
               : "";
             return `
               <details class="ability-dropdown">
@@ -2156,7 +2203,7 @@
             <strong>Stats</strong>
             ${statList}
             <strong>Abilities</strong>
-            ${renderAbilityDetails(gear.abilities, { showTierDetails })}
+            ${renderAbilityDetails(gear.abilities, { showTierDetails, gearRarity: gear.rarity })}
           </div>
         `;
         generatedGearList.appendChild(card);
@@ -2593,7 +2640,7 @@
         </div>
         <div>
           <strong>Abilities</strong>
-          ${renderAbilityDetails(gear.abilities, { showTierDetails })}
+          ${renderAbilityDetails(gear.abilities, { showTierDetails, gearRarity: gear.rarity })}
         </div>
       `;
       gearDetailStatus.textContent = "";
