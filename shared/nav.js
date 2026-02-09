@@ -12,18 +12,36 @@
 
   // Mobile toggle
   if (nav && btn) {
+    const closeNav = () => {
+      nav.classList.remove("xr-open");
+      btn.setAttribute("aria-expanded", "false");
+    };
+
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
       const open = nav.classList.toggle("xr-open");
       btn.setAttribute("aria-expanded", open ? "true" : "false");
     });
 
+    host.querySelectorAll(".xr-nav-a").forEach(link => {
+      link.addEventListener("click", closeNav);
+    });
+
     document.addEventListener("click", (e) => {
       if (!nav.classList.contains("xr-open")) return;
       if (!nav.contains(e.target) && !btn.contains(e.target)) {
-        nav.classList.remove("xr-open");
-        btn.setAttribute("aria-expanded", "false");
+        closeNav();
       }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeNav();
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      closeNav();
     });
   }
 
