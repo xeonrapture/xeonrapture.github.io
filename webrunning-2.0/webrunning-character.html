@@ -1580,19 +1580,6 @@
       return abilityTierLimits[rarity] ?? 0;
     }
 
-    function getUnlockedTierNumbers(ability, rarity) {
-      if (!ability || typeof ability === "string") return [];
-      const limit = getAbilityTierLimit(ability.name, rarity);
-      if (limit === null) return [];
-      return extractTierNumbers(ability).filter(tier => tier <= limit);
-    }
-
-    function formatUnlockedTierSummary(tiers, { includeEnergy = false } = {}) {
-      if (!tiers.length) return "Unlocked tiers: None";
-      const details = tiers.map(tier => includeEnergy ? `Tier ${tier} (Energy ${tier})` : `Tier ${tier}`);
-      return `Unlocked tiers: ${details.join(", ")}`;
-    }
-
     function renderAbilityDetails(abilities, { showTierDetails = true, gearRarity = null } = {}) {
       if (!abilities || !abilities.length) {
         return `<p class="muted">No abilities.</p>`;
@@ -1610,7 +1597,6 @@
           }
           const tiers = resolved.tierDetails || {};
           const tierEntries = showTierDetails ? Object.entries(tiers) : [];
-          const unlockedTiers = showTierDetails ? getUnlockedTierNumbers(resolved, gearRarity) : [];
           const tierLimit = getAbilityTierLimit(resolved.name, gearRarity);
           const lines = parseAbilityLines(resolved).filter(Boolean);
           const tierList = tierEntries.length
@@ -1625,7 +1611,6 @@
           return `
             <div>
               <strong><a href="${resolved.link}" target="_blank" rel="noopener">${resolved.name}</a></strong>
-              ${showTierDetails && tierLimit !== null ? `<div class="muted">${formatUnlockedTierSummary(unlockedTiers)}</div>` : ""}
               ${tierList}
             </div>
           `;
@@ -1876,18 +1861,11 @@
                 ? `<ul>${lines.map(line => `<li>${line}</li>`).join("")}</ul>`
                 : `<p class="muted">No details.</p>`);
             const tierLimit = getAbilityTierLimit(abilityName, abilityEntry.rarity);
-            const tiers = showTierEnergy && tierLimit !== null
-              ? extractTierNumbers(resolved).filter(tier => tier <= tierLimit)
-              : [];
-            const tierSummary = showTierEnergy && tierLimit !== null
-              ? `<div class="muted">${formatUnlockedTierSummary(tiers, { includeEnergy: true })}</div>`
-              : "";
             return `
               <details class="ability-dropdown">
                 <summary>${abilityName}</summary>
                 <div class="ability-details">
                   ${detailsList}
-                  ${tierSummary}
                   ${abilityLink ? `<a href="${abilityLink}" target="_blank" rel="noopener">View full ability details</a>` : ""}
                 </div>
               </details>
