@@ -1570,13 +1570,43 @@
     };
 
     function getTierNumberFromLabel(label) {
-      const match = String(label || "").match(/(\d+)/);
-      return match ? Number(match[1]) : null;
+      const normalized = String(label || "").trim();
+      if (!normalized) return null;
+      const numericMatch = normalized.match(/(\d+)/);
+      if (numericMatch) {
+        return Number(numericMatch[1]);
+      }
+      const lower = normalized.toLowerCase();
+      const rarityTierMap = {
+        common: 1,
+        uncommon: 2,
+        rare: 3,
+        epic: 4,
+        legendary: 5
+      };
+      if (lower in rarityTierMap) {
+        return rarityTierMap[lower];
+      }
+      const romanMatch = lower.match(/tier\s*([ivx]+)/);
+      if (!romanMatch) return null;
+      const roman = romanMatch[1];
+      const romanValues = { i: 1, v: 5, x: 10 };
+      let total = 0;
+      let prevValue = 0;
+      for (let i = roman.length - 1; i >= 0; i -= 1) {
+        const value = romanValues[roman[i]] || 0;
+        if (value < prevValue) {
+          total -= value;
+        } else {
+          total += value;
+          prevValue = value;
+        }
+      }
+      return total || null;
     }
 
     function getAbilityTierLimit(abilityName, rarity) {
       if (!rarity) return null;
-      if (abilityName === "Cleanse") return 4;
       return abilityTierLimits[rarity] ?? 0;
     }
 
@@ -1625,16 +1655,16 @@
       const details = resolved.tierDetails;
       if (details && typeof details === "object") {
         Object.keys(details).forEach(key => {
-          const match = String(key).match(/(\d+)/);
-          if (match) {
-            tiers.add(Number(match[1]));
+          const tierNumber = getTierNumberFromLabel(key);
+          if (tierNumber) {
+            tiers.add(tierNumber);
           }
         });
       }
       parseAbilityLines(resolved).forEach(line => {
-        const match = String(line).match(/tier\s*(\d+)/i);
-        if (match) {
-          tiers.add(Number(match[1]));
+        const tierNumber = getTierNumberFromLabel(line);
+        if (tierNumber) {
+          tiers.add(tierNumber);
         }
       });
       return [...tiers]
@@ -3521,16 +3551,45 @@
     elements.inventorySlots.addEventListener("click", handleGearListClick);
     elements.localNodeSlots.addEventListener("click", handleGearListClick);
     if (elements.abilitiesList) {
+      const closeAbilityDropdowns = (exception = null) => {
+        elements.abilitiesList.querySelectorAll(".ability-dropdown.is-open").forEach(dropdown => {
+          if (dropdown === exception) return;
+          dropdown.classList.remove("is-open");
+          const toggle = dropdown.querySelector(".ability-summary");
+          const details = dropdown.querySelector(".ability-details");
+          if (toggle) {
+            toggle.setAttribute("aria-expanded", "false");
+          }
+          if (details) {
+            details.hidden = true;
+          }
+        });
+      };
+
       elements.abilitiesList.addEventListener("click", event => {
         const button = event.target.closest(".ability-summary");
         if (!button) return;
         const dropdown = button.closest(".ability-dropdown");
         if (!dropdown) return;
+        const isOpen = !dropdown.classList.contains("is-open");
+        closeAbilityDropdowns(dropdown);
         const details = dropdown.querySelector(".ability-details");
-        const isOpen = dropdown.classList.toggle("is-open");
+        dropdown.classList.toggle("is-open", isOpen);
         button.setAttribute("aria-expanded", String(isOpen));
         if (details) {
           details.hidden = !isOpen;
+        }
+      });
+
+      document.addEventListener("click", event => {
+        if (!elements.abilitiesList.contains(event.target)) {
+          closeAbilityDropdowns();
+        }
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          closeAbilityDropdowns();
         }
       });
     }
