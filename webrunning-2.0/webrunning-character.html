@@ -176,6 +176,10 @@
             <dt>Resell Value:</dt>
             <dd>0</dd>
           </dl>
+          <dl id="adventuringPlusesColumn" class="hidden">
+            <dt>Adventuring Pluses:</dt>
+            <dd id="displayAdventuringPluses"></dd>
+          </dl>
         </div>
       </div>
     </section>
@@ -629,6 +633,8 @@
       displayHacking: document.getElementById("displayHacking"),
       displayInventorySlots: document.getElementById("displayInventorySlots"),
       displayKernelSlots: document.getElementById("displayKernelSlots"),
+      adventuringPlusesColumn: document.getElementById("adventuringPlusesColumn"),
+      displayAdventuringPluses: document.getElementById("displayAdventuringPluses"),
       equippedSlots: document.getElementById("equippedSlots"),
       inventorySlots: document.getElementById("inventorySlots"),
       localNodeSlots: document.getElementById("localNodeSlots"),
@@ -1159,6 +1165,7 @@
       const abilityBonus = createEmptyBonus();
       const baubleBonus = createEmptyBonus();
       const sources = createEmptyBonusSources();
+      const adventuringPluses = [];
 
       characterGear.forEach(entry => {
         if (!entry.gear) return;
@@ -1234,12 +1241,17 @@
           if (!statName) return;
           const value = calculateFormulaValue(stat.formula, updatedLuck, statName, { g: gValue });
           if (typeof value !== "number") return;
-          applyStatBonus(baubleBonus, statName, value, "Bauble", sources);
+          if (statKeyMap[statName]) {
+            applyStatBonus(baubleBonus, statName, value, "Bauble", sources);
+          } else {
+            adventuringPluses.push({ name: statName, value });
+          }
         });
       });
 
       const combined = mergeBonuses(mergeBonuses(nonBaubleBonus, abilityBonus), baubleBonus);
       combined.sources = sources;
+      combined.adventuringPluses = adventuringPluses;
       return combined;
     }
 
@@ -1303,6 +1315,18 @@
         .filter(([, value]) => value)
         .map(([label, value]) => `${formatSignedValue(value)} ${label}`);
       return parts.length ? parts.join(", ") : "";
+    }
+
+    function summarizeAdventuringPluses(list = []) {
+      if (!list.length) return [];
+      const totals = list.reduce((acc, item) => {
+        if (!item || !item.name || !item.value) return acc;
+        acc[item.name] = (acc[item.name] || 0) + item.value;
+        return acc;
+      }, {});
+      return Object.entries(totals)
+        .filter(([, value]) => value)
+        .map(([name, value]) => ({ name, value }));
     }
 
     function scaleSourceList(list = [], factor = 1) {
@@ -1530,7 +1554,7 @@
       return /tier/i.test(tierText) ? tierText : `Tier ${tierText}`;
     }
 
-    function renderAbilityDetails(abilities) {
+    function renderAbilityDetails(abilities, { showTierDetails = true } = {}) {
       if (!abilities || !abilities.length) {
         return `<p class="muted">No abilities.</p>`;
       }
@@ -1540,19 +1564,22 @@
             return `
               <div>
                 <strong>${ability}</strong>
-                <div class="muted">No tier details.</div>
+                ${showTierDetails ? `<div class="muted">No details.</div>` : ""}
               </div>
             `;
           }
           const tiers = ability.tierDetails || {};
-          const tierEntries = Object.entries(tiers);
+          const tierEntries = showTierDetails ? Object.entries(tiers) : [];
+          const lines = parseAbilityLines(ability).filter(Boolean);
           const tierList = tierEntries.length
             ? `<ul>${tierEntries.map(([tier, detail]) => `<li><strong>${formatTierLabel(tier)}:</strong> ${detail}</li>`).join("")}</ul>`
-            : `<p class="muted">No tier details.</p>`;
+            : (lines.length
+              ? `<ul>${lines.map(line => `<li>${line}</li>`).join("")}</ul>`
+              : `<p class="muted">No details.</p>`);
           return `
             <div>
               <strong><a href="${ability.link}" target="_blank" rel="noopener">${ability.name}</a></strong>
-              <div class="muted">Tiers available: ${tierEntries.length}</div>
+              ${showTierDetails ? `<div class="muted">Tiers available: ${tierEntries.length}</div>` : ""}
               ${tierList}
             </div>
           `;
@@ -1772,7 +1799,7 @@
         }
       });
 
-      const renderAbilityDropdowns = (list, { showTierEnergy = false } = {}) => {
+      const renderAbilityDropdowns = (list, { showTierEnergy = false, showTierDetails = true } = {}) => {
         if (!list.length) {
           return `<p class="muted">None.</p>`;
         }
@@ -1782,7 +1809,7 @@
             const abilityLink = typeof ability === "string" ? "" : ability.link;
             const lines = parseAbilityLines(ability).filter(Boolean);
             const tierDetails = typeof ability === "string" ? null : ability.tierDetails;
-            const tierEntries = tierDetails && typeof tierDetails === "object" && !Array.isArray(tierDetails)
+            const tierEntries = showTierDetails && tierDetails && typeof tierDetails === "object" && !Array.isArray(tierDetails)
               ? Object.entries(tierDetails)
               : [];
             const detailsList = tierEntries.length
@@ -1796,7 +1823,7 @@
             const tierSummary = showTierEnergy
               ? (tiers.length
                 ? `<div class="muted">Tiers: ${tiers.map(tier => `Tier ${tier} (Energy ${tier})`).join(", ")}</div>`
-                : `<div class="muted">Tier info unavailable.</div>`)
+                : "")
               : "";
             return `
               <details class="ability-dropdown">
@@ -1820,9 +1847,9 @@
       `;
 
       container.innerHTML = `
-        ${renderAbilityGroup("Actives", actives, { showTierEnergy: true })}
-        ${renderAbilityGroup("Passives", passives)}
-        ${renderAbilityGroup("Effects", effects)}
+        ${renderAbilityGroup("Actives", actives, { showTierEnergy: true, showTierDetails: true })}
+        ${renderAbilityGroup("Passives", passives, { showTierDetails: false })}
+        ${renderAbilityGroup("Effects", effects, { showTierDetails: false })}
       `;
     }
 
@@ -2022,6 +2049,7 @@
         const card = document.createElement("div");
         card.className = "gear-item";
         const gearType = gear.gear_type || gear.gearType;
+        const showTierDetails = !["Kernel", "Consumable", "Bauble"].includes(gearType);
         const colorLabel = [gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral";
         const gValue = gearType === "Bauble" && gear.color ? (colorCounts[gear.color] || 0) : 0;
         const statList = renderGearStatsList(gear.stats, gear.stat_modifiers, totalLuck, { g: gValue });
@@ -2050,7 +2078,7 @@
             <strong>Stats</strong>
             ${statList}
             <strong>Abilities</strong>
-            ${renderAbilityDetails(gear.abilities)}
+            ${renderAbilityDetails(gear.abilities, { showTierDetails })}
           </div>
         `;
         generatedGearList.appendChild(card);
@@ -2462,6 +2490,7 @@
       activeGearRow = entry;
       const gear = entry.gear;
       const gearType = gear.gear_type || gear.gearType;
+      const showTierDetails = !["Kernel", "Consumable", "Bauble"].includes(gearType);
       gearDetailTitle.textContent = formatGearName(gear);
       gearNameInput.value = gear.name || formatGearName(gear);
       const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
@@ -2486,7 +2515,7 @@
         </div>
         <div>
           <strong>Abilities</strong>
-          ${renderAbilityDetails(gear.abilities)}
+          ${renderAbilityDetails(gear.abilities, { showTierDetails })}
         </div>
       `;
       gearDetailStatus.textContent = "";
@@ -2863,6 +2892,18 @@
       elements.inputEnergyGray.value = baseStats.energy_gray;
       setStatDisplay(elements.displayInventorySlots, stats.inventory_slots, summarizeSources(sources.base.inventory_slots));
       setStatDisplay(elements.displayKernelSlots, stats.kernel_slots, summarizeSources(sources.base.kernel_slots));
+      if (elements.adventuringPlusesColumn && elements.displayAdventuringPluses) {
+        const adventuringPluses = summarizeAdventuringPluses(gearBonus?.adventuringPluses || []);
+        if (adventuringPluses.length) {
+          elements.adventuringPlusesColumn.classList.remove("hidden");
+          elements.displayAdventuringPluses.innerHTML = `<ul>${adventuringPluses
+            .map(plus => `<li>${formatSignedValue(plus.value)} ${plus.name}</li>`)
+            .join("")}</ul>`;
+        } else {
+          elements.adventuringPlusesColumn.classList.add("hidden");
+          elements.displayAdventuringPluses.textContent = "";
+        }
+      }
 
       elements.inputPower.value = baseStats.power;
       elements.inputDefense.value = baseStats.defense;

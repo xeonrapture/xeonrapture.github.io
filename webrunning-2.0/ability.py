@@ -89,7 +89,7 @@ class Ability:
         elif self.isUpToRarity:
             i = 0
             for key, value in self.abilityCatalog.abilities[self.name].items():
-                if i == self.tier:
+                if i > self.tier:
                     break
                 self.tierDetails[key] = value
                 i += 1
