@@ -1058,6 +1058,10 @@ textarea:focus {
   gap: 0.5rem;
 }
 
+.wr-scope .ability-dropdown .ability-details[hidden] {
+  display: none;
+}
+
 .wr-scope .status-popup {
   position: fixed;
   top: 1rem;
