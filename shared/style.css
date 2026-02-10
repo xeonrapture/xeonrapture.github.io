@@ -694,9 +694,17 @@ textarea:focus {
 }
 
 .wr-scope .gear-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(150px, 1fr));
+  gap: 0.45rem;
+}
+
+.wr-scope .gear-actions button {
+  width: 100%;
+}
+
+.wr-scope .gear-actions .gear-action-wide {
+  grid-column: 1 / -1;
 }
 
 .wr-scope .gear-tags {
@@ -1437,7 +1445,6 @@ select,
   }
 
   .wr-scope .actions,
-  .wr-scope .gear-actions,
   .wr-scope .gear-generator-actions,
   .wr-scope .paste-actions,
   .wr-scope .gear-modal-actions,
@@ -1446,6 +1453,10 @@ select,
     align-items: stretch;
   }
 
+
+  .wr-scope .gear-actions {
+    grid-template-columns: 1fr;
+  }
   .wr-scope .ability-row,
   .wr-scope .gear-row,
   .wr-scope .manual-gear-row {

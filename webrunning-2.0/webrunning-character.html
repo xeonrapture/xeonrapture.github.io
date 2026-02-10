@@ -187,6 +187,10 @@
             <dd id="displayAdventuringPluses"></dd>
           </dl>
         </div>
+        <div class="gear-generator-actions">
+          <span class="muted" id="tempBuffSummary">No active temporary consumable buffs.</span>
+          <button id="clearTempBuffs" type="button" class="hidden">Clear Temp Buffs</button>
+        </div>
       </div>
     </section>
 
@@ -591,6 +595,35 @@
     </div>
   </div>
 
+
+  <div id="respecModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Use Respec Consumable</h2>
+      <p class="muted" id="respecModalHint"></p>
+      <div class="stat-inputs">
+        <label>Power
+          <input id="respecPower" type="number" min="0" value="0" />
+        </label>
+        <label>Defense
+          <input id="respecDefense" type="number" min="0" value="0" />
+        </label>
+        <label>Speed
+          <input id="respecSpeed" type="number" min="0" value="0" />
+        </label>
+        <label>Intelligence
+          <input id="respecIntelligence" type="number" min="0" value="0" />
+        </label>
+      </div>
+      <p class="muted">Points remaining: <span id="respecPointsRemaining">0</span></p>
+      <div class="xr-modal-actions">
+        <button id="respecApplyBtn" type="button">Apply Respec</button>
+        <button id="respecCancelBtn" type="button">Cancel</button>
+      </div>
+      <div id="respecModalMsg" class="mono muted"></div>
+    </div>
+  </div>
+
   <div id="statusPopup" class="status-popup" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -692,6 +725,8 @@
       displayKernelSlots: document.getElementById("displayKernelSlots"),
       adventuringPlusesColumn: document.getElementById("adventuringPlusesColumn"),
       displayAdventuringPluses: document.getElementById("displayAdventuringPluses"),
+      tempBuffSummary: document.getElementById("tempBuffSummary"),
+      clearTempBuffs: document.getElementById("clearTempBuffs"),
       equippedSlots: document.getElementById("equippedSlots"),
       inventorySlots: document.getElementById("inventorySlots"),
       localNodeSlots: document.getElementById("localNodeSlots"),
@@ -772,7 +807,21 @@
     const dissolveGearButton = document.getElementById("dissolveGear");
     const gearDetailStatus = document.getElementById("gearDetailStatus");
 
+    const respecModal = document.getElementById("respecModal");
+    const respecModalBackdrop = respecModal?.querySelector(".xr-modal-backdrop");
+    const respecModalHint = document.getElementById("respecModalHint");
+    const respecPower = document.getElementById("respecPower");
+    const respecDefense = document.getElementById("respecDefense");
+    const respecSpeed = document.getElementById("respecSpeed");
+    const respecIntelligence = document.getElementById("respecIntelligence");
+    const respecPointsRemaining = document.getElementById("respecPointsRemaining");
+    const respecApplyBtn = document.getElementById("respecApplyBtn");
+    const respecCancelBtn = document.getElementById("respecCancelBtn");
+    const respecModalMsg = document.getElementById("respecModalMsg");
+
     const deletedGearHistory = [];
+    let tempConsumableBonus = createEmptyBonus();
+    let tempConsumableSummary = [];
 
     const gearSlotLabels = {
       weapon_1: "Weapon 1",
@@ -1323,6 +1372,25 @@
       });
 
       const combined = mergeBonuses(mergeBonuses(nonBaubleBonus, abilityBonus), baubleBonus);
+      mergeBonuses(combined, tempConsumableBonus);
+      Object.keys(tempConsumableBonus.base).forEach(key => {
+        const value = tempConsumableBonus.base[key] || 0;
+        if (value) {
+          sources.base[key].push({ value, label: "Temp Buff" });
+        }
+      });
+      Object.keys(tempConsumableBonus.derived).forEach(key => {
+        const value = tempConsumableBonus.derived[key] || 0;
+        if (value) {
+          sources.derived[key].push({ value, label: "Temp Buff" });
+        }
+      });
+      Object.keys(tempConsumableBonus.misc).forEach(key => {
+        const value = tempConsumableBonus.misc[key] || 0;
+        if (value) {
+          sources.misc[key].push({ value, label: "Temp Buff" });
+        }
+      });
       combined.sources = sources;
       combined.adventuringPluses = adventuringPluses;
       return combined;
@@ -1811,13 +1879,13 @@
                   ${renderGearTag(gear.rarity, "rarity")}
                   ${renderGearTag(colorLabel, "color", { primary: gear.color || "Neutral", secondary: gear.color2 })}
                 </div>
-                <span class="muted">Stats: ${statSummary}</span>
+              <span class="muted">Stats: ${statSummary}</span>
+              ${isConsumable(gear) ? `<span class="muted">Consumable Summary: ${getConsumableSummary(gear)}</span>` : ""}
               </div>
               <div class="gear-actions">
                 <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
-                <button type="button" data-action="unequip" data-gear="${entry.gear_id}">Move to Inventory</button>
-              <br>
                 <button type="button" data-action="dissolve" data-gear="${entry.gear_id}">Dissolve</button>
+                <button type="button" data-action="unequip" data-gear="${entry.gear_id}">Move to Inventory</button>
                 <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
               </div>
             </div>
@@ -1825,6 +1893,39 @@
         }
         container.appendChild(card);
       });
+    }
+
+
+    function isConsumable(gear) {
+      const gearType = gear?.gear_type || gear?.gearType;
+      return gearType === "Consumable";
+    }
+
+    function getConsumableType(gear) {
+      return String(gear?.item_type || gear?.itemType || "").trim();
+    }
+
+    function getConsumableEffectText(gear) {
+      if (!gear) return "";
+      const abilities = Array.isArray(gear.abilities) ? gear.abilities : [];
+      const lines = abilities
+        .flatMap(ability => {
+          if (!ability || typeof ability !== "object") return [];
+          const details = ability.tierDetails;
+          if (typeof details === "string") return [details];
+          if (details && typeof details === "object") return Object.values(details).map(value => String(value || ""));
+          return [];
+        })
+        .map(line => String(line || "").trim())
+        .filter(Boolean);
+      return lines[0] || "";
+    }
+
+    function getConsumableSummary(gear) {
+      const type = getConsumableType(gear) || "Consumable";
+      const effect = getConsumableEffectText(gear);
+      if (!effect) return `${type}: Single-use consumable.`;
+      return `${type}: ${effect}`;
     }
 
     function renderInventory(stats) {
@@ -1849,15 +1950,15 @@
         const colorLabel = [gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral";
         const availableSlots = availableSlotsForGear(gear, stats);
         const swapOptions = gearType === "Bauble" ? [] : getSwapOptionsForGear(gear, stats);
-        const healingConsumable = isHealingConsumable(gear);
+        const consumable = isConsumable(gear);
         const slotHint = gearType === "Bauble"
           ? "Baubles cannot be equipped."
-          : (healingConsumable
-            ? "Healing consumable (single use)."
+          : (consumable
+            ? "Consumable (single use)."
           : (availableSlots.length
             ? availableSlots.map(formatSlotLabel).join(", ")
             : (swapOptions.length ? "No slots open (swap available)" : "No slots open")));
-        const canEquip = gearType !== "Bauble" && !healingConsumable && (availableSlots.length || swapOptions.length);
+        const canEquip = gearType !== "Bauble" && !consumable && (availableSlots.length || swapOptions.length);
         const equipLabel = availableSlots.length ? "Equip" : (swapOptions.length ? "Swap" : "Equip");
         const colorCounts = getEquippedColorCounts();
         const gValue = gearType === "Bauble" && gear.color ? (colorCounts[gear.color] || 0) : 0;
@@ -1875,13 +1976,14 @@
               </div>
               <span class="muted">Equip Slots: ${slotHint}</span>
               <span class="muted">Stats: ${statSummary}</span>
+              ${consumable ? `<span class="muted">Consumable Summary: ${getConsumableSummary(gear)}</span>` : ""}
             </div>
             <div class="gear-actions">
               <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
-              ${healingConsumable
+              ${consumable
                 ? `<button type="button" data-action="use" data-gear="${entry.gear_id}">Use</button>`
                 : (gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-gear="${entry.gear_id}" ${canEquip ? "" : "disabled"}>${equipLabel}</button>`)}
-              <button type="button" data-action="local" data-gear="${entry.gear_id}">Move to Local Node Storage</button>
+              <button type="button" data-action="local" class="gear-action-wide" data-gear="${entry.gear_id}">Move to Local Node Storage</button>
               <button type="button" data-action="dissolve" data-gear="${entry.gear_id}">Dissolve</button>
               <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
             </div>
@@ -1914,6 +2016,7 @@
         const colorCounts = getEquippedColorCounts();
         const gValue = gearType === "Bauble" && gear.color ? (colorCounts[gear.color] || 0) : 0;
         const statSummary = buildGearStatSummary(gear, stats.luck, { g: gValue });
+        const consumable = isConsumable(gear);
         const card = document.createElement("div");
         card.className = "gear-item";
         card.innerHTML = `
@@ -1927,11 +2030,12 @@
               </div>
               <span class="muted">Stored in Local Node</span>
               <span class="muted">Stats: ${statSummary}</span>
+              ${consumable ? `<span class="muted">Consumable Summary: ${getConsumableSummary(gear)}</span>` : ""}
             </div>
             <div class="gear-actions">
               <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
-              <button type="button" data-action="inventory" data-gear="${entry.gear_id}">Move to Inventory</button>
               <button type="button" data-action="dissolve" data-gear="${entry.gear_id}">Dissolve</button>
+              <button type="button" data-action="inventory" data-gear="${entry.gear_id}">Move to Inventory</button>
               <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
             </div>
           </div>
@@ -2268,6 +2372,14 @@
 
     async function openGearGeneratorModal() {
       const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      if (elements.tempBuffSummary) {
+        elements.tempBuffSummary.textContent = tempConsumableSummary.length
+          ? `Active Temp Buffs: ${tempConsumableSummary.join(" | ")}`
+          : "No active temporary consumable buffs.";
+      }
+      if (elements.clearTempBuffs) {
+        elements.clearTempBuffs.classList.toggle("hidden", tempConsumableSummary.length === 0);
+      }
       updateGearGeneratorLuck(stats);
       gearGeneratorModal.classList.remove("hidden");
       await ensurePyodide();
@@ -2300,10 +2412,10 @@
         const gValue = gearType === "Bauble" && gear.color ? (colorCounts[gear.color] || 0) : 0;
         const statList = renderGearStatsList(gear.stats, gear.stat_modifiers, totalLuck, { g: gValue });
         const isAdded = gear.__added;
-        const healingConsumable = isHealingConsumable(gear);
+        const consumable = isConsumable(gear);
         const availableSlots = availableSlotsForGear(gear, stats);
         const swapOptions = gearType === "Bauble" ? [] : getSwapOptionsForGear(gear, stats);
-        const canEquip = gearType !== "Bauble" && !healingConsumable && (availableSlots.length || swapOptions.length);
+        const canEquip = gearType !== "Bauble" && !consumable && (availableSlots.length || swapOptions.length);
         const equipLabel = availableSlots.length ? "Equip" : (swapOptions.length ? "Swap" : "Equip");
         card.innerHTML = `
           <div class="gear-summary">
@@ -2317,7 +2429,7 @@
             </div>
             <div class="gear-actions">
               <button type="button" data-action="add" data-index="${index}" ${isAdded ? "disabled" : ""}>${isAdded ? "Added" : "Add to Inventory"}</button>
-              ${healingConsumable
+              ${consumable
                 ? `<button type="button" data-action="use" data-index="${index}" ${isAdded ? "" : "disabled"}>Use</button>`
                 : (gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-index="${index}" ${isAdded || !canEquip ? "disabled" : ""}>${isAdded ? "Added" : equipLabel}</button>`)}
               <button type="button" data-action="remove" data-index="${index}" ${!isAdded ? "disabled" : ""}>${isAdded ? "Remove from Character" : "Not Added"}</button>
@@ -2326,6 +2438,7 @@
           <div class="gear-details-list">
             <strong>Stats</strong>
             ${statList}
+            ${consumable ? `<strong>Consumable Summary</strong><p>${getConsumableSummary(gear)}</p>` : ""}
             <strong>Abilities</strong>
             ${renderAbilityDetails(gear.abilities, { showTierDetails, gearRarity: gear.rarity })}
           </div>
@@ -2711,43 +2824,148 @@
       renderGeneratedGear(applyGearBonuses(currentStats(), calculateGearBonuses(currentStats())));
     }
 
-    async function useHealingConsumable(entry) {
-      if (!entry || !entry.gear || !isHealingConsumable(entry.gear)) return;
+    function getRespecBonusPointsByRarity(rarity) {
+      if (rarity === "Legendary") return 2;
+      if (rarity === "Rare" || rarity === "Epic") return 1;
+      return 0;
+    }
+
+    function applyTempConsumableStats(gear) {
+      const bonus = createEmptyBonus();
+      const applied = [];
+      (gear.stats || []).forEach(stat => {
+        const statName = stat.name || stat.stat || stat.label;
+        const value = Number(stat.value ?? stat.calc);
+        if (!statName || !Number.isFinite(value) || value === 0) return;
+        applyStatBonus(bonus, statName, value, "Temp Buff", null);
+        applied.push(`${formatSignedValue(value)} ${statName}`);
+      });
+      tempConsumableBonus = mergeBonuses(tempConsumableBonus, bonus);
+      if (applied.length) {
+        tempConsumableSummary.push(`${formatGearName(gear)}: ${applied.join(", ")}`);
+      }
+    }
+
+    function openRespecModal(baseStats, bonusPoints = 0) {
+      return new Promise(resolve => {
+        if (!respecModal) {
+          resolve(null);
+          return;
+        }
+        const baseTotal = (Number(baseStats.power) || 0) + (Number(baseStats.defense) || 0) + (Number(baseStats.speed) || 0) + (Number(baseStats.intelligence) || 0);
+        const totalPoints = baseTotal + bonusPoints;
+        const setRemaining = () => {
+          const used = (Number(respecPower.value) || 0) + (Number(respecDefense.value) || 0) + (Number(respecSpeed.value) || 0) + (Number(respecIntelligence.value) || 0);
+          respecPointsRemaining.textContent = String(totalPoints - used);
+        };
+
+        respecPower.value = Number(baseStats.power) || 0;
+        respecDefense.value = Number(baseStats.defense) || 0;
+        respecSpeed.value = Number(baseStats.speed) || 0;
+        respecIntelligence.value = Number(baseStats.intelligence) || 0;
+        respecModalHint.textContent = `Reallocate your current points and add ${bonusPoints} bonus point(s).`;
+        respecModalMsg.textContent = "";
+        setRemaining();
+        respecModal.classList.remove("hidden");
+
+        const clean = (value) => {
+          [respecPower, respecDefense, respecSpeed, respecIntelligence].forEach(input => input.removeEventListener("input", setRemaining));
+          respecApplyBtn.removeEventListener("click", submit);
+          respecCancelBtn.removeEventListener("click", cancel);
+          respecModalBackdrop?.removeEventListener("click", cancel);
+          respecModal.classList.add("hidden");
+          resolve(value);
+        };
+
+        const submit = () => {
+          const next = {
+            power: Number(respecPower.value) || 0,
+            defense: Number(respecDefense.value) || 0,
+            speed: Number(respecSpeed.value) || 0,
+            intelligence: Number(respecIntelligence.value) || 0
+          };
+          const used = next.power + next.defense + next.speed + next.intelligence;
+          const valid = Object.values(next).every(value => Number.isFinite(value) && value >= 0);
+          if (!valid || used !== totalPoints) {
+            respecModalMsg.textContent = `Allocate exactly ${totalPoints} total points.`;
+            return;
+          }
+          clean(next);
+        };
+
+        const cancel = () => clean(null);
+
+        [respecPower, respecDefense, respecSpeed, respecIntelligence].forEach(input => input.addEventListener("input", setRemaining));
+        respecApplyBtn.addEventListener("click", submit);
+        respecCancelBtn.addEventListener("click", cancel);
+        respecModalBackdrop?.addEventListener("click", cancel);
+      });
+    }
+
+    async function useConsumable(entry) {
+      if (!entry || !entry.gear || !isConsumable(entry.gear)) return;
       if (!activeCharacter?.id || !currentUser?.id) {
         pushStatus("Save the character before using consumables.", { tone: "warning" });
         return;
       }
-      const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
-      const healPotential = resolveConsumableHealingAmount(entry.gear, stats);
-      const currentHp = Math.max(0, Number(stats.current_hp) || 0);
-      const maxHp = Math.max(0, Number(stats.hp) || 0);
-      const healedAmount = Math.max(0, Math.min(healPotential, maxHp - currentHp));
-      const updatedStats = { ...activeCharacter.base_stats };
-      updatedStats.current_hp = Math.min(maxHp, currentHp + healPotential);
+      const gear = entry.gear;
+      const type = getConsumableType(gear).toLowerCase();
+      let reminder = "Remember to apply this consumable's effects manually to yourself or an ally if needed.";
 
       try {
-        const { error: hpError } = await sb
-          .from("webrunning_characters")
-          .update({ base_stats: updatedStats })
-          .eq("id", activeCharacter.id)
-          .eq("user_id", currentUser.id);
-        if (hpError) throw hpError;
-        activeCharacter.base_stats = updatedStats;
+        if (type === "temp buff") {
+          applyTempConsumableStats(gear);
+          reminder = "Temporary buff applied. Clear temp buffs when you change nodes.";
+        } else if (type === "energy") {
+          const effect = getConsumableEffectText(gear).toLowerCase();
+          const amount = Number((effect.match(/grants\s*(\d+)/i) || [])[1] || 0);
+          const energyKeyByColor = { red: "energy_red", blue: "energy_blue", green: "energy_green", gray: "energy_gray" };
+          const defaultColor = String(gear.color || "red").trim().toLowerCase();
+          const pick = window.prompt("Choose an energy color (red, blue, green, gray)", defaultColor);
+          const chosen = String(pick || defaultColor).trim().toLowerCase();
+          const key = energyKeyByColor[chosen];
+          if (key && amount > 0) {
+            activeCharacter.base_stats[key] = (Number(activeCharacter.base_stats[key]) || 0) + amount;
+            const { error } = await sb.from("webrunning_characters").update({ base_stats: activeCharacter.base_stats }).eq("id", activeCharacter.id).eq("user_id", currentUser.id);
+            if (error) throw error;
+            reminder = `Added ${amount} ${chosen} energy and ignored energy cap.`;
+          } else {
+            reminder = "No energy was added because no valid color was selected.";
+          }
+        } else if (type === "respec stats") {
+          const bonusPoints = getRespecBonusPointsByRarity(gear.rarity);
+          const updated = await openRespecModal(activeCharacter.base_stats, bonusPoints);
+          if (!updated) {
+            pushStatus("Respec cancelled.", { tone: "warning" });
+            return;
+          }
+          activeCharacter.base_stats.power = updated.power;
+          activeCharacter.base_stats.defense = updated.defense;
+          activeCharacter.base_stats.speed = updated.speed;
+          activeCharacter.base_stats.intelligence = updated.intelligence;
+          const { error } = await sb.from("webrunning_characters").update({ base_stats: activeCharacter.base_stats }).eq("id", activeCharacter.id).eq("user_id", currentUser.id);
+          if (error) throw error;
+          reminder = `Stats reallocated with ${bonusPoints} bonus point(s) from rarity.`;
+        } else if (type === "local shop upgrade") {
+          reminder = "Local shop upgrade consumed. Track local shop upgrades manually.";
+        } else if (type === "healing") {
+          reminder = "Healing consumable used. Apply healing manually to yourself or an ally.";
+        } else {
+          reminder = "Consumable used. Update any manual effects yourself.";
+        }
 
         activeGearRow = entry;
-        activeGearRow.__deletionMetadata = {
-          type: "consumable_use",
-          healedAmount
-        };
+        activeGearRow.__deletionMetadata = { type: "consumable_use" };
         await deleteGear({ mode: "used" });
-        pushStatus(`Used healing consumable for ${healedAmount} HP.`, { tone: "success" });
+        pushStatus(`${reminder}`, { tone: "success" });
+        render();
       } catch (error) {
         console.error(error);
         pushStatus("Failed to use consumable.", { tone: "error" });
       }
     }
 
-    async function useGeneratedHealingConsumable(index) {
+    async function useGeneratedConsumable(index) {
       if (!Number.isFinite(index)) return;
       const gear = generatedGear[index];
       if (!gear || !gear.__added) return;
@@ -2759,7 +2977,7 @@
         pushStatus("That consumable is no longer on this character.", { tone: "warning" });
         return;
       }
-      await useHealingConsumable(entry);
+      await useConsumable(entry);
       gear.__added = false;
       renderGeneratedGear(applyGearBonuses(currentStats(), calculateGearBonuses(currentStats())));
     }
@@ -2905,33 +3123,6 @@
       return snapshot;
     }
 
-    function isHealingConsumable(gear) {
-      const gearType = gear?.gear_type || gear?.gearType;
-      const itemType = String(gear?.item_type || gear?.itemType || "").toLowerCase();
-      return gearType === "Consumable" && itemType === "healing";
-    }
-
-    function resolveConsumableHealingAmount(gear, stats) {
-      if (!isHealingConsumable(gear)) return 0;
-      const abilities = Array.isArray(gear.abilities) ? gear.abilities : [];
-      const abilityText = abilities
-        .flatMap(ability => {
-          if (typeof ability === "string") return [ability];
-          if (!ability || typeof ability !== "object") return [];
-          const details = ability.tierDetails;
-          if (typeof details === "string") return [ability.name, details];
-          if (details && typeof details === "object") return [ability.name, ...Object.values(details).map(value => String(value || ""))];
-          return [ability.name];
-        })
-        .join("\n");
-      const percentMatch = abilityText.match(/(\d+(?:\.\d+)?)\s*%\s*of\s*max\s*hp/i);
-      if (!percentMatch) return 0;
-      const percent = Number(percentMatch[1]);
-      if (!Number.isFinite(percent) || percent <= 0) return 0;
-      const maxHp = Math.max(0, Number(stats.hp) || 0);
-      return Math.floor((maxHp * percent) / 100);
-    }
-
     function renderDeletedGearHistory() {
       if (!elements.deletedGearHistory) return;
       if (!deletedGearHistory.length) {
@@ -2978,30 +3169,11 @@
         return;
       }
       try {
-        if (record.metadata?.type === "consumable_use") {
-          const healAmount = Math.max(0, Number(record.metadata.healedAmount) || 0);
-          if (healAmount > 0) {
-            const updatedStats = { ...activeCharacter.base_stats };
-            const currentHp = Math.max(0, Number(updatedStats.current_hp) || 0);
-            updatedStats.current_hp = Math.max(0, currentHp - healAmount);
-            const { error: hpError } = await sb
-              .from("webrunning_characters")
-              .update({ base_stats: updatedStats })
-              .eq("id", activeCharacter.id)
-              .eq("user_id", currentUser.id);
-            if (hpError) throw hpError;
-            activeCharacter.base_stats = updatedStats;
-          }
-        }
         const inserted = await insertGearToInventory(record.entry.gear, { slot });
         if (!inserted) return;
         deletedGearHistory.splice(recordIndex, 1);
         renderDeletedGearHistory();
-        if (record.metadata?.type === "consumable_use") {
-          pushStatus("Consumable restored and healing reverted.", { tone: "success" });
-        } else {
-          pushStatus("Gear restored.", { tone: "success" });
-        }
+        pushStatus("Gear restored.", { tone: "success" });
       } catch (error) {
         console.error(error);
         pushStatus("Failed to restore gear.", { tone: "error" });
@@ -3274,6 +3446,14 @@
       renderGearSections(stats);
       renderAbilities();
       renderDeletedGearHistory();
+      if (elements.tempBuffSummary) {
+        elements.tempBuffSummary.textContent = tempConsumableSummary.length
+          ? `Active Temp Buffs: ${tempConsumableSummary.join(" | ")}`
+          : "No active temporary consumable buffs.";
+      }
+      if (elements.clearTempBuffs) {
+        elements.clearTempBuffs.classList.toggle("hidden", tempConsumableSummary.length === 0);
+      }
       updateGearGeneratorLuck(stats);
     }
 
@@ -3712,6 +3892,14 @@
     addAllGeneratedGearButton.addEventListener("click", addAllGeneratedGear);
     gearBonusLuck.addEventListener("input", () => {
       const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      if (elements.tempBuffSummary) {
+        elements.tempBuffSummary.textContent = tempConsumableSummary.length
+          ? `Active Temp Buffs: ${tempConsumableSummary.join(" | ")}`
+          : "No active temporary consumable buffs.";
+      }
+      if (elements.clearTempBuffs) {
+        elements.clearTempBuffs.classList.toggle("hidden", tempConsumableSummary.length === 0);
+      }
       updateGearGeneratorLuck(stats);
     });
     addPastedGear.addEventListener("click", addPastedGearFromJson);
@@ -3752,7 +3940,7 @@
       } else if (action === "equip") {
         addGeneratedGear(index, "equip");
       } else if (action === "use") {
-        useGeneratedHealingConsumable(index);
+        useGeneratedConsumable(index);
       } else if (action === "remove") {
         if (!Number.isFinite(index)) return;
         removeGeneratedGearFromCharacter(generatedGear[index]);
@@ -3772,7 +3960,7 @@
       } else if (action === "equip") {
         equipGear(entry);
       } else if (action === "use") {
-        useHealingConsumable(entry);
+        useConsumable(entry);
       } else if (action === "unequip" || action === "inventory") {
         moveGearToInventory(entry);
       } else if (action === "local") {
@@ -3789,6 +3977,15 @@
     elements.equippedSlots.addEventListener("click", handleGearListClick);
     elements.inventorySlots.addEventListener("click", handleGearListClick);
     elements.localNodeSlots.addEventListener("click", handleGearListClick);
+
+    if (elements.clearTempBuffs) {
+      elements.clearTempBuffs.addEventListener("click", () => {
+        tempConsumableBonus = createEmptyBonus();
+        tempConsumableSummary = [];
+        pushStatus("Temporary consumable buffs cleared.", { tone: "success" });
+        render();
+      });
+    }
     if (elements.abilitiesList) {
       const closeAbilityDropdowns = (exception = null) => {
         elements.abilitiesList.querySelectorAll(".ability-dropdown.is-open").forEach(dropdown => {
