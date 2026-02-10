@@ -421,6 +421,10 @@ textarea:focus {
   margin-top: 0.75rem;
 }
 
+.wr-scope .collapsible-body > * + * {
+  margin-top: 0.9rem;
+}
+
 .wr-scope .collapsible.collapsed .collapsible-body {
   display: none;
 }
@@ -1048,6 +1052,10 @@ textarea:focus {
 .wr-scope .ability-dropdown {
   border-top: 1px solid var(--border, #333);
   padding-top: 0.5rem;
+}
+
+.wr-scope .ability-dropdown + .ability-dropdown {
+  margin-top: 0.5rem;
 }
 
 .wr-scope .ability-summary {
