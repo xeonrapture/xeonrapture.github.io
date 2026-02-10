@@ -1392,3 +1392,106 @@ select,
     padding: 0.35rem 0.4rem;
   }
 }
+
+@media (max-width: 720px) {
+  main {
+    padding: 1.75rem 1rem 2.5rem;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+  }
+
+  .xr-nav {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+  }
+
+  .xr-brand {
+    font-size: 1rem;
+  }
+
+  .xr-nav-groups {
+    top: 64px;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    width: 100%;
+  }
+
+  .wr-inline-flex {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wr-scope .sheet-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wr-scope .sheet-actions input {
+    max-width: none;
+  }
+
+  .wr-scope .actions,
+  .wr-scope .gear-actions,
+  .wr-scope .gear-generator-actions,
+  .wr-scope .paste-actions,
+  .wr-scope .gear-modal-actions,
+  .wr-scope .manual-gear-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wr-scope .ability-row,
+  .wr-scope .gear-row,
+  .wr-scope .manual-gear-row {
+    grid-template-columns: 1fr;
+  }
+
+  .wr-scope .gear-item--equipped {
+    padding-left: 1.25rem;
+  }
+
+  .wr-scope .gear-item--equipped::before {
+    display: none;
+  }
+
+  .wr-scope .gear-slot-badge {
+    position: static;
+    transform: none;
+    writing-mode: horizontal-tb;
+  }
+
+  .wr-scope .table-full {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .wr-scope .table-full th,
+  .wr-scope .table-full td {
+    white-space: nowrap;
+  }
+
+  .wr-scope .xr-modal-card {
+    width: calc(100% - 2rem);
+    margin: 10vh auto;
+  }
+
+  .tools-scope .row,
+  .tools-scope .resultGrid,
+  .tools-scope .calendar-grid .row {
+    grid-template-columns: 1fr;
+  }
+
+  .tools-scope .grid .row {
+    grid-template-columns: 1fr;
+  }
+
+  .tools-scope .grid .card {
+    padding: 0.75rem;
+  }
+}
