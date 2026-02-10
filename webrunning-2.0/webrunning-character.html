@@ -1838,12 +1838,15 @@
         const colorLabel = [gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral";
         const availableSlots = availableSlotsForGear(gear, stats);
         const swapOptions = gearType === "Bauble" ? [] : getSwapOptionsForGear(gear, stats);
+        const healingConsumable = isHealingConsumable(gear);
         const slotHint = gearType === "Bauble"
           ? "Baubles cannot be equipped."
+          : (healingConsumable
+            ? "Healing consumable (single use)."
           : (availableSlots.length
             ? availableSlots.map(formatSlotLabel).join(", ")
-            : (swapOptions.length ? "No slots open (swap available)" : "No slots open"));
-        const canEquip = gearType !== "Bauble" && (availableSlots.length || swapOptions.length);
+            : (swapOptions.length ? "No slots open (swap available)" : "No slots open")));
+        const canEquip = gearType !== "Bauble" && !healingConsumable && (availableSlots.length || swapOptions.length);
         const equipLabel = availableSlots.length ? "Equip" : (swapOptions.length ? "Swap" : "Equip");
         const colorCounts = getEquippedColorCounts();
         const gValue = gearType === "Bauble" && gear.color ? (colorCounts[gear.color] || 0) : 0;
@@ -1864,7 +1867,9 @@
             </div>
             <div class="gear-actions">
               <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
-              ${gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-gear="${entry.gear_id}" ${canEquip ? "" : "disabled"}>${equipLabel}</button>`}
+              ${healingConsumable
+                ? `<button type="button" data-action="use" data-gear="${entry.gear_id}">Use</button>`
+                : (gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-gear="${entry.gear_id}" ${canEquip ? "" : "disabled"}>${equipLabel}</button>`)}
               <button type="button" data-action="local" data-gear="${entry.gear_id}">Move to Local Node Storage</button>
               <button type="button" data-action="dissolve" data-gear="${entry.gear_id}">Dissolve</button>
               <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
@@ -2277,9 +2282,10 @@
         const gValue = gearType === "Bauble" && gear.color ? (colorCounts[gear.color] || 0) : 0;
         const statList = renderGearStatsList(gear.stats, gear.stat_modifiers, totalLuck, { g: gValue });
         const isAdded = gear.__added;
+        const healingConsumable = isHealingConsumable(gear);
         const availableSlots = availableSlotsForGear(gear, stats);
         const swapOptions = gearType === "Bauble" ? [] : getSwapOptionsForGear(gear, stats);
-        const canEquip = gearType !== "Bauble" && (availableSlots.length || swapOptions.length);
+        const canEquip = gearType !== "Bauble" && !healingConsumable && (availableSlots.length || swapOptions.length);
         const equipLabel = availableSlots.length ? "Equip" : (swapOptions.length ? "Swap" : "Equip");
         card.innerHTML = `
           <div class="gear-summary">
@@ -2293,7 +2299,9 @@
             </div>
             <div class="gear-actions">
               <button type="button" data-action="add" data-index="${index}" ${isAdded ? "disabled" : ""}>${isAdded ? "Added" : "Add to Inventory"}</button>
-              ${gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-index="${index}" ${isAdded || !canEquip ? "disabled" : ""}>${isAdded ? "Added" : equipLabel}</button>`}
+              ${healingConsumable
+                ? `<button type="button" data-action="use" data-index="${index}" ${isAdded ? "" : "disabled"}>Use</button>`
+                : (gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-index="${index}" ${isAdded || !canEquip ? "disabled" : ""}>${isAdded ? "Added" : equipLabel}</button>`)}
               <button type="button" data-action="remove" data-index="${index}" ${!isAdded ? "disabled" : ""}>${isAdded ? "Remove from Character" : "Not Added"}</button>
             </div>
           </div>
@@ -2685,6 +2693,59 @@
       renderGeneratedGear(applyGearBonuses(currentStats(), calculateGearBonuses(currentStats())));
     }
 
+    async function useHealingConsumable(entry) {
+      if (!entry || !entry.gear || !isHealingConsumable(entry.gear)) return;
+      if (!activeCharacter?.id || !currentUser?.id) {
+        pushStatus("Save the character before using consumables.", { tone: "warning" });
+        return;
+      }
+      const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      const healPotential = resolveConsumableHealingAmount(entry.gear, stats);
+      const currentHp = Math.max(0, Number(stats.current_hp) || 0);
+      const maxHp = Math.max(0, Number(stats.hp) || 0);
+      const healedAmount = Math.max(0, Math.min(healPotential, maxHp - currentHp));
+      const updatedStats = { ...activeCharacter.base_stats };
+      updatedStats.current_hp = Math.min(maxHp, currentHp + healPotential);
+
+      try {
+        const { error: hpError } = await sb
+          .from("webrunning_characters")
+          .update({ base_stats: updatedStats })
+          .eq("id", activeCharacter.id)
+          .eq("user_id", currentUser.id);
+        if (hpError) throw hpError;
+        activeCharacter.base_stats = updatedStats;
+
+        activeGearRow = entry;
+        activeGearRow.__deletionMetadata = {
+          type: "consumable_use",
+          healedAmount
+        };
+        await deleteGear({ mode: "used" });
+        pushStatus(`Used healing consumable for ${healedAmount} HP.`, { tone: "success" });
+      } catch (error) {
+        console.error(error);
+        pushStatus("Failed to use consumable.", { tone: "error" });
+      }
+    }
+
+    async function useGeneratedHealingConsumable(index) {
+      if (!Number.isFinite(index)) return;
+      const gear = generatedGear[index];
+      if (!gear || !gear.__added) return;
+      const signature = gearSignature(gear);
+      const entry = characterGear.find(item => item.gear && gearSignature(item.gear) === signature);
+      if (!entry) {
+        gear.__added = false;
+        renderGeneratedGear(applyGearBonuses(currentStats(), calculateGearBonuses(currentStats())));
+        pushStatus("That consumable is no longer on this character.", { tone: "warning" });
+        return;
+      }
+      await useHealingConsumable(entry);
+      gear.__added = false;
+      renderGeneratedGear(applyGearBonuses(currentStats(), calculateGearBonuses(currentStats())));
+    }
+
     async function addPastedGearFromJson() {
       pasteStatus.textContent = "";
       try {
@@ -2815,11 +2876,42 @@
           gear_slot: entry.gear_slot,
           equipped: entry.equipped,
           gear: entry.gear
-        }
+        },
+        metadata: entry.__deletionMetadata ? { ...entry.__deletionMetadata } : null
       };
+      if (entry.__deletionMetadata) {
+        delete entry.__deletionMetadata;
+      }
       deletedGearHistory.unshift(snapshot);
       renderDeletedGearHistory();
       return snapshot;
+    }
+
+    function isHealingConsumable(gear) {
+      const gearType = gear?.gear_type || gear?.gearType;
+      const itemType = String(gear?.item_type || gear?.itemType || "").toLowerCase();
+      return gearType === "Consumable" && itemType === "healing";
+    }
+
+    function resolveConsumableHealingAmount(gear, stats) {
+      if (!isHealingConsumable(gear)) return 0;
+      const abilities = Array.isArray(gear.abilities) ? gear.abilities : [];
+      const abilityText = abilities
+        .flatMap(ability => {
+          if (typeof ability === "string") return [ability];
+          if (!ability || typeof ability !== "object") return [];
+          const details = ability.tierDetails;
+          if (typeof details === "string") return [ability.name, details];
+          if (details && typeof details === "object") return [ability.name, ...Object.values(details).map(value => String(value || ""))];
+          return [ability.name];
+        })
+        .join("\n");
+      const percentMatch = abilityText.match(/(\d+(?:\.\d+)?)\s*%\s*of\s*max\s*hp/i);
+      if (!percentMatch) return 0;
+      const percent = Number(percentMatch[1]);
+      if (!Number.isFinite(percent) || percent <= 0) return 0;
+      const maxHp = Math.max(0, Number(stats.hp) || 0);
+      return Math.floor((maxHp * percent) / 100);
     }
 
     function renderDeletedGearHistory() {
@@ -2868,11 +2960,30 @@
         return;
       }
       try {
+        if (record.metadata?.type === "consumable_use") {
+          const healAmount = Math.max(0, Number(record.metadata.healedAmount) || 0);
+          if (healAmount > 0) {
+            const updatedStats = { ...activeCharacter.base_stats };
+            const currentHp = Math.max(0, Number(updatedStats.current_hp) || 0);
+            updatedStats.current_hp = Math.max(0, currentHp - healAmount);
+            const { error: hpError } = await sb
+              .from("webrunning_characters")
+              .update({ base_stats: updatedStats })
+              .eq("id", activeCharacter.id)
+              .eq("user_id", currentUser.id);
+            if (hpError) throw hpError;
+            activeCharacter.base_stats = updatedStats;
+          }
+        }
         const inserted = await insertGearToInventory(record.entry.gear, { slot });
         if (!inserted) return;
         deletedGearHistory.splice(recordIndex, 1);
         renderDeletedGearHistory();
-        pushStatus("Gear restored.", { tone: "success" });
+        if (record.metadata?.type === "consumable_use") {
+          pushStatus("Consumable restored and healing reverted.", { tone: "success" });
+        } else {
+          pushStatus("Gear restored.", { tone: "success" });
+        }
       } catch (error) {
         console.error(error);
         pushStatus("Failed to restore gear.", { tone: "error" });
@@ -2917,7 +3028,8 @@
         });
         closeGearDetailModal();
         render();
-        pushStatus("Gear deleted.", {
+        const deletedMessage = mode === "used" ? "Consumable used." : "Gear deleted.";
+        pushStatus(deletedMessage, {
           tone: "warning",
           actionLabel: "Undo",
           onAction: () => restoreDeletedGear(deletedRecord.id),
@@ -3621,6 +3733,8 @@
         addGeneratedGear(index, "add");
       } else if (action === "equip") {
         addGeneratedGear(index, "equip");
+      } else if (action === "use") {
+        useGeneratedHealingConsumable(index);
       } else if (action === "remove") {
         if (!Number.isFinite(index)) return;
         removeGeneratedGearFromCharacter(generatedGear[index]);
@@ -3639,6 +3753,8 @@
         openGearDetailModal(entry);
       } else if (action === "equip") {
         equipGear(entry);
+      } else if (action === "use") {
+        useHealingConsumable(entry);
       } else if (action === "unequip" || action === "inventory") {
         moveGearToInventory(entry);
       } else if (action === "local") {
