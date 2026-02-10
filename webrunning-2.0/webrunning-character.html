@@ -578,13 +578,13 @@
         <div id="gearDetailBody" class="gear-details-list"></div>
       </div>
       <div class="gear-modal-actions">
-        <button id="closeGearDetail" type="button">Close</button>
         <div class="right-actions">
-          <button id="copyGearJson" type="button">Copy JSON</button>
           <button id="saveGearName" type="button">Save Name</button>
-          <button id="deleteGear" type="button">Delete Gear</button>
+          <button id="copyGearJson" type="button">Copy JSON</button>
           <button id="dissolveGear" type="button">Dissolve into Essence</button>
+          <button id="deleteGear" type="button">Delete Gear</button>
         </div>
+        <button id="closeGearDetail" type="button">Close</button>
       </div>
       <div id="gearDetailStatus" class="mono muted"></div>
     </div>
@@ -1815,6 +1815,8 @@
               <div class="gear-actions">
                 <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
                 <button type="button" data-action="unequip" data-gear="${entry.gear_id}">Move to Inventory</button>
+              </div>
+              <div class="gear-actions">
                 <button type="button" data-action="dissolve" data-gear="${entry.gear_id}">Dissolve</button>
                 <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
               </div>
