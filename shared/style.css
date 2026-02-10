@@ -583,6 +583,16 @@ textarea:focus {
   margin-bottom: 0.1rem;
 }
 
+
+.wr-scope .section-stack {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.wr-scope .section-card {
+  margin: 0;
+}
+
 .wr-scope .gear-grid {
   display: grid;
   gap: 1.25rem;
@@ -681,9 +691,9 @@ textarea:focus {
 
 .wr-scope .gear-summary {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
-  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.75rem 1rem;
+  align-items: flex-start;
   justify-content: space-between;
 }
 
@@ -691,6 +701,12 @@ textarea:focus {
   display: grid;
   gap: 0.2rem;
   font-size: 0.9rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.wr-scope .gear-stat-summary {
+  overflow-wrap: anywhere;
 }
 
 .wr-scope .gear-actions {
@@ -1446,6 +1462,7 @@ select,
 
   .wr-scope .actions,
   .wr-scope .gear-generator-actions,
+  .wr-scope .gear-summary,
   .wr-scope .paste-actions,
   .wr-scope .gear-modal-actions,
   .wr-scope .manual-gear-actions {

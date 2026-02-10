@@ -74,137 +74,188 @@
       </div>
     </section>
 
-    <section class="card">
-      <h2>Basic Stats</h2>
-      <div class="stat-inputs">
-        <label>Power
-          <input id="inputPower" type="number" min="0" value="0" />
-        </label>
-        <label>Defense
-          <input id="inputDefense" type="number" min="0" value="0" />
-        </label>
-        <label>Speed
-          <input id="inputSpeed" type="number" min="0" value="0" />
-        </label>
-        <label>Intelligence
-          <input id="inputIntelligence" type="number" min="0" value="0" />
-        </label>
+    <section class="card collapsible collapsed" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Character Info</h2>
+        <button class="collapse-toggle" type="button">Show</button>
+      </div>
+      <div class="collapsible-body section-stack">
+        <section class="card notes-area section-card">
+          <h3>Character Notes</h3>
+          <textarea id="characterNotes" placeholder="Add notes about your character, gear, or story beats..."></textarea>
+        </section>
       </div>
     </section>
 
     <section class="card collapsible" data-collapsible>
       <div class="collapsible-header">
-        <h2>Status Effects</h2>
+        <h2>Stats</h2>
         <button class="collapse-toggle" type="button">Hide</button>
       </div>
-      <div class="collapsible-body">
-        <div class="stat-inputs">
-          <label>Burn
-            <input id="inputStatusBurn" type="number" min="0" value="0" />
-          </label>
-          <label>Freeze
-            <input id="inputStatusFreeze" type="number" min="0" value="0" />
-          </label>
-          <label>Poison
-            <input id="inputStatusPoison" type="number" min="0" value="0" />
-          </label>
-        </div>
-        <br>
-        <div class="stats-grid">
-          <dl>
-            <dt>Damage Taken Modifier:</dt>
-            <dd id="displayDamageTaken">+0</dd>
-            <dt>Defense DC Modifier:</dt>
-            <dd id="displayStatusDefenseDc">+0</dd>
-            <dt>Armor Modifier:</dt>
-            <dd id="displayStatusArmor">+0</dd>
-            <dt>Attack Plus Modifier:</dt>
-            <dd id="displayStatusAttackPlus">+0</dd>
-            <dt>Damage Plus Modifier:</dt>
-            <dd id="displayStatusDamagePlus">+0</dd>
-          </dl>
-        </div>
+      <div class="collapsible-body section-stack">
+        <section class="card section-card">
+          <h3>Basic Stats</h3>
+          <div class="stat-inputs">
+            <label>Power
+              <input id="inputPower" type="number" min="0" value="0" />
+            </label>
+            <label>Defense
+              <input id="inputDefense" type="number" min="0" value="0" />
+            </label>
+            <label>Speed
+              <input id="inputSpeed" type="number" min="0" value="0" />
+            </label>
+            <label>Intelligence
+              <input id="inputIntelligence" type="number" min="0" value="0" />
+            </label>
+          </div>
+        </section>
+
+        <section class="card collapsible section-card" data-collapsible>
+          <div class="collapsible-header">
+            <h3>Secondary Stats</h3>
+            <button class="collapse-toggle" type="button">Hide</button>
+          </div>
+          <div class="collapsible-body">
+            <p class="muted">Tied to Basic Stats and increased by equipping gear.</p>
+            <div class="stats-grid">
+              <dl>
+                <dt>Attack Plus:</dt>
+                <dd id="displayAttackPlus">0</dd>
+                <dt>Damage Plus:</dt>
+                <dd id="displayDamagePlus">0</dd>
+                <dt>Defense DC:</dt>
+                <dd id="displayDefenseDc">10</dd>
+                <dt>Armor:</dt>
+                <dd id="displayArmor">0</dd>
+                <dt>Initiative:</dt>
+                <dd id="displayInitiative">0</dd>
+                <dt>Movement Speed:</dt>
+                <dd id="displayMovementSpeed">10</dd>
+                <dt>Range:</dt>
+                <dd id="displayRange">5</dd>
+                <dt>Perception:</dt>
+                <dd id="displayPerception">0</dd>
+                <dt>AOE Range:</dt>
+                <dd id="displayAoeRange">0</dd>
+                <dt>Hacking:</dt>
+                <dd id="displayHacking">0</dd>
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        <section class="card collapsible section-card" data-collapsible>
+          <div class="collapsible-header">
+            <h3>Neutral Buffs</h3>
+            <button class="collapse-toggle" type="button">Hide</button>
+          </div>
+          <div class="collapsible-body">
+            <div class="stats-grid">
+              <dl>
+                <dt>Inventory Slots:</dt>
+                <dd id="displayInventorySlots">10</dd>
+                <dt>Kernel Slots:</dt>
+                <dd id="displayKernelSlots">1</dd>
+                <dt>Energy Conversion:</dt>
+                <dd>0</dd>
+                <dt>Group XP Gain:</dt>
+                <dd>0</dd>
+                <dt>HP Regen:</dt>
+                <dd>0</dd>
+                <dt>Resell Value:</dt>
+                <dd>0</dd>
+              </dl>
+              <dl id="adventuringPlusesColumn" class="hidden">
+                <dt>Adventuring Pluses:</dt>
+                <dd id="displayAdventuringPluses"></dd>
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        <section class="card collapsible section-card" data-collapsible>
+          <div class="collapsible-header">
+            <h3>Status Effects</h3>
+            <button class="collapse-toggle" type="button">Hide</button>
+          </div>
+          <div class="collapsible-body">
+            <div class="stat-inputs">
+              <label>Burn
+                <input id="inputStatusBurn" type="number" min="0" value="0" />
+              </label>
+              <label>Freeze
+                <input id="inputStatusFreeze" type="number" min="0" value="0" />
+              </label>
+              <label>Poison
+                <input id="inputStatusPoison" type="number" min="0" value="0" />
+              </label>
+            </div>
+            <br>
+            <div class="stats-grid">
+              <dl>
+                <dt>Damage Taken Modifier:</dt>
+                <dd id="displayDamageTaken">+0</dd>
+                <dt>Defense DC Modifier:</dt>
+                <dd id="displayStatusDefenseDc">+0</dd>
+                <dt>Armor Modifier:</dt>
+                <dd id="displayStatusArmor">+0</dd>
+                <dt>Attack Plus Modifier:</dt>
+                <dd id="displayStatusAttackPlus">+0</dd>
+                <dt>Damage Plus Modifier:</dt>
+                <dd id="displayStatusDamagePlus">+0</dd>
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        <section id="tempBuffSection" class="card collapsible section-card hidden" data-collapsible>
+          <div class="collapsible-header">
+            <h3>Active Temp Buffs</h3>
+            <button class="collapse-toggle" type="button">Hide</button>
+          </div>
+          <div class="collapsible-body">
+            <div class="gear-generator-actions">
+              <span class="muted" id="tempBuffSummary">No active temporary consumable buffs.</span>
+              <button id="clearTempBuffs" type="button" class="hidden">Clear Temp Buffs</button>
+            </div>
+          </div>
+        </section>
       </div>
     </section>
 
     <section class="card collapsible" data-collapsible>
       <div class="collapsible-header">
-        <h2>Secondary Stats</h2>
+        <h2>Abilities</h2>
         <button class="collapse-toggle" type="button">Hide</button>
       </div>
       <div class="collapsible-body">
-        <p class="muted">Tied to Basic Stats and increased by equipping gear.</p>
-        <div class="stats-grid">
-          <dl>
-            <dt>Attack Plus:</dt>
-            <dd id="displayAttackPlus">0</dd>
-            <dt>Damage Plus:</dt>
-            <dd id="displayDamagePlus">0</dd>
-            <dt>Defense DC:</dt>
-            <dd id="displayDefenseDc">10</dd>
-            <dt>Armor:</dt>
-            <dd id="displayArmor">0</dd>
-            <dt>Initiative:</dt>
-            <dd id="displayInitiative">0</dd>
-            <dt>Movement Speed:</dt>
-            <dd id="displayMovementSpeed">10</dd>
-            <dt>Range:</dt>
-            <dd id="displayRange">5</dd>
-            <dt>Perception:</dt>
-            <dd id="displayPerception">0</dd>
-            <dt>AOE Range:</dt>
-            <dd id="displayAoeRange">0</dd>
-            <dt>Hacking:</dt>
-            <dd id="displayHacking">0</dd>
-          </dl>
-        </div>
+        <div id="abilitiesList" class="ability-section"></div>
       </div>
     </section>
 
     <section class="card collapsible" data-collapsible>
       <div class="collapsible-header">
-        <h2>Neutral Buffs</h2>
+        <h2>Gear</h2>
         <button class="collapse-toggle" type="button">Hide</button>
       </div>
-      <div class="collapsible-body">
-        <div class="stats-grid">
-          <dl>
-            <dt>Inventory Slots:</dt>
-            <dd id="displayInventorySlots">10</dd>
-            <dt>Kernel Slots:</dt>
-            <dd id="displayKernelSlots">1</dd>
-            <dt>Energy Conversion:</dt>
-            <dd>0</dd>
-            <dt>Group XP Gain:</dt>
-            <dd>0</dd>
-            <dt>HP Regen:</dt>
-            <dd>0</dd>
-            <dt>Resell Value:</dt>
-            <dd>0</dd>
-          </dl>
-          <dl id="adventuringPlusesColumn" class="hidden">
-            <dt>Adventuring Pluses:</dt>
-            <dd id="displayAdventuringPluses"></dd>
-          </dl>
-        </div>
-        <div class="gear-generator-actions">
-          <span class="muted" id="tempBuffSummary">No active temporary consumable buffs.</span>
-          <button id="clearTempBuffs" type="button" class="hidden">Clear Temp Buffs</button>
-        </div>
-      </div>
-    </section>
+      <div class="collapsible-body section-stack">
+        <section class="card collapsible section-card" data-collapsible>
+          <div class="collapsible-header">
+            <h3>Gear Generator</h3>
+            <button class="collapse-toggle" type="button">Hide</button>
+          </div>
+          <div class="collapsible-body">
+            <p class="muted">Click <a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Gear+Generation+and+Modification">here</a> for an explanation of gear generation.</p>
+            <p class="muted">Generate gear with your current luck plus a bonus and add it to your inventory or equip it.</p>
+            <div class="gear-generator-actions">
+              <button id="openGearGenerator" type="button" class="hidden">Generate Gear</button>
+              <span id="gearGeneratorStatus" class="mono muted"></span>
+            </div>
+          </div>
+        </section>
 
-    <section class="card">
-      <h2>Gear Generator</h2>
-      <p class="muted">Click <a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Gear+Generation+and+Modification">here</a> for an explanation of gear generation.</p>
-      <p class="muted">Generate gear with your current luck plus a bonus and add it to your inventory or equip it.</p>
-      <div class="gear-generator-actions">
-        <button id="openGearGenerator" type="button" class="hidden">Generate Gear</button>
-        <span id="gearGeneratorStatus" class="mono muted"></span>
-      </div>
-    </section>
-
-    <section class="card collapsible" data-collapsible>
+        <section class="card collapsible section-card" data-collapsible>
       <div class="collapsible-header">
         <h2>Gear Slots</h2>
         <button class="collapse-toggle" type="button">Hide</button>
@@ -212,9 +263,9 @@
       <div class="collapsible-body">
         <div id="equippedSlots" class="gear-grid"></div>
       </div>
-    </section>
+        </section>
 
-    <section class="card collapsible" data-collapsible>
+        <section class="card collapsible section-card" data-collapsible>
       <div class="collapsible-header">
         <h2>Inventory Slots</h2>
         <button class="collapse-toggle" type="button">Hide</button>
@@ -285,9 +336,9 @@
         <div class="slot-count">Slots used: <span id="inventorySlotCount">0/0</span></div>
         <div id="inventorySlots" class="gear-grid"></div>
       </div>
-    </section>
+        </section>
 
-    <section class="card collapsible collapsed" data-collapsible>
+        <section class="card collapsible collapsed section-card" data-collapsible>
       <div class="collapsible-header">
         <h2>Local Node Storage</h2>
         <button class="collapse-toggle" type="button">Show</button>
@@ -338,22 +389,20 @@
         <div class="slot-count">Slots used: <span id="localNodeSlotCount">0/0</span></div>
         <div id="localNodeSlots" class="gear-grid"></div>
       </div>
+        </section>
+
+        <section class="card collapsible collapsed section-card" data-collapsible>
+          <div class="collapsible-header">
+            <h3>Deleted Gear History</h3>
+            <button class="collapse-toggle" type="button">Show</button>
+          </div>
+          <div class="collapsible-body">
+            <div id="deletedGearHistory" class="deletion-history"></div>
+          </div>
+        </section>
+      </div>
     </section>
 
-    <section class="card">
-      <h2>Abilities</h2>
-      <div id="abilitiesList" class="ability-section"></div>
-    </section>
-
-    <section class="card">
-      <h2>Deleted Gear History</h2>
-      <div id="deletedGearHistory" class="deletion-history"></div>
-    </section>
-
-    <section class="card notes-area">
-      <h2>Character Notes</h2>
-      <textarea id="characterNotes" placeholder="Add notes about your character, gear, or story beats..."></textarea>
-    </section>
   </main>
 
   <div id="levelupModal" class="xr-modal hidden">
@@ -624,6 +673,27 @@
     </div>
   </div>
 
+  <div id="energyModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Use Energy Consumable</h2>
+      <p class="muted">Choose which energy color to restore.</p>
+      <label>
+        Energy Color
+        <select id="energyColorSelect">
+          <option value="red">Red</option>
+          <option value="blue">Blue</option>
+          <option value="green">Green</option>
+          <option value="gray">Gray</option>
+        </select>
+      </label>
+      <div class="xr-modal-actions">
+        <button id="energyApplyBtn" type="button">Apply</button>
+        <button id="energyCancelBtn" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <div id="statusPopup" class="status-popup" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -725,6 +795,7 @@
       displayKernelSlots: document.getElementById("displayKernelSlots"),
       adventuringPlusesColumn: document.getElementById("adventuringPlusesColumn"),
       displayAdventuringPluses: document.getElementById("displayAdventuringPluses"),
+      tempBuffSection: document.getElementById("tempBuffSection"),
       tempBuffSummary: document.getElementById("tempBuffSummary"),
       clearTempBuffs: document.getElementById("clearTempBuffs"),
       equippedSlots: document.getElementById("equippedSlots"),
@@ -818,6 +889,12 @@
     const respecApplyBtn = document.getElementById("respecApplyBtn");
     const respecCancelBtn = document.getElementById("respecCancelBtn");
     const respecModalMsg = document.getElementById("respecModalMsg");
+
+    const energyModal = document.getElementById("energyModal");
+    const energyModalBackdrop = energyModal?.querySelector(".xr-modal-backdrop");
+    const energyColorSelect = document.getElementById("energyColorSelect");
+    const energyApplyBtn = document.getElementById("energyApplyBtn");
+    const energyCancelBtn = document.getElementById("energyCancelBtn");
 
     const deletedGearHistory = [];
     let tempConsumableBonus = createEmptyBonus();
@@ -1879,7 +1956,7 @@
                   ${renderGearTag(gear.rarity, "rarity")}
                   ${renderGearTag(colorLabel, "color", { primary: gear.color || "Neutral", secondary: gear.color2 })}
                 </div>
-              <span class="muted">Stats: ${statSummary}</span>
+              <span class="muted gear-stat-summary">Stats: ${statSummary}</span>
               ${isConsumable(gear) ? `<span class="muted">Consumable Summary: ${getConsumableSummary(gear)}</span>` : ""}
               </div>
               <div class="gear-actions">
@@ -1975,7 +2052,7 @@
                 ${renderGearTag(colorLabel, "color", { primary: gear.color || "Neutral", secondary: gear.color2 })}
               </div>
               <span class="muted">Equip Slots: ${slotHint}</span>
-              <span class="muted">Stats: ${statSummary}</span>
+              <span class="muted gear-stat-summary">Stats: ${statSummary}</span>
               ${consumable ? `<span class="muted">Consumable Summary: ${getConsumableSummary(gear)}</span>` : ""}
             </div>
             <div class="gear-actions">
@@ -2029,7 +2106,7 @@
                 ${renderGearTag(colorLabel, "color", { primary: gear.color || "Neutral", secondary: gear.color2 })}
               </div>
               <span class="muted">Stored in Local Node</span>
-              <span class="muted">Stats: ${statSummary}</span>
+              <span class="muted gear-stat-summary">Stats: ${statSummary}</span>
               ${consumable ? `<span class="muted">Consumable Summary: ${getConsumableSummary(gear)}</span>` : ""}
             </div>
             <div class="gear-actions">
@@ -2372,13 +2449,17 @@
 
     async function openGearGeneratorModal() {
       const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      const hasTempBuffs = tempConsumableSummary.length > 0;
+      if (elements.tempBuffSection) {
+        elements.tempBuffSection.classList.toggle("hidden", !hasTempBuffs);
+      }
       if (elements.tempBuffSummary) {
-        elements.tempBuffSummary.textContent = tempConsumableSummary.length
+        elements.tempBuffSummary.textContent = hasTempBuffs
           ? `Active Temp Buffs: ${tempConsumableSummary.join(" | ")}`
           : "No active temporary consumable buffs.";
       }
       if (elements.clearTempBuffs) {
-        elements.clearTempBuffs.classList.toggle("hidden", tempConsumableSummary.length === 0);
+        elements.clearTempBuffs.classList.toggle("hidden", !hasTempBuffs);
       }
       updateGearGeneratorLuck(stats);
       gearGeneratorModal.classList.remove("hidden");
@@ -2902,6 +2983,39 @@
       });
     }
 
+    function openEnergyColorModal(defaultColor = "red") {
+      return new Promise(resolve => {
+        if (!energyModal || !energyColorSelect || !energyApplyBtn || !energyCancelBtn) {
+          resolve(defaultColor);
+          return;
+        }
+
+        const allowedColors = ["red", "blue", "green", "gray"];
+        const fallback = allowedColors.includes(defaultColor) ? defaultColor : "red";
+        energyColorSelect.value = fallback;
+        energyModal.classList.remove("hidden");
+
+        const clean = (value) => {
+          energyApplyBtn.removeEventListener("click", submit);
+          energyCancelBtn.removeEventListener("click", cancel);
+          energyModalBackdrop?.removeEventListener("click", cancel);
+          energyModal.classList.add("hidden");
+          resolve(value);
+        };
+
+        const submit = () => {
+          const chosen = String(energyColorSelect.value || "").trim().toLowerCase();
+          clean(allowedColors.includes(chosen) ? chosen : null);
+        };
+
+        const cancel = () => clean(null);
+
+        energyApplyBtn.addEventListener("click", submit);
+        energyCancelBtn.addEventListener("click", cancel);
+        energyModalBackdrop?.addEventListener("click", cancel);
+      });
+    }
+
     async function useConsumable(entry) {
       if (!entry || !entry.gear || !isConsumable(entry.gear)) return;
       if (!activeCharacter?.id || !currentUser?.id) {
@@ -2921,8 +3035,11 @@
           const amount = Number((effect.match(/grants\s*(\d+)/i) || [])[1] || 0);
           const energyKeyByColor = { red: "energy_red", blue: "energy_blue", green: "energy_green", gray: "energy_gray" };
           const defaultColor = String(gear.color || "red").trim().toLowerCase();
-          const pick = window.prompt("Choose an energy color (red, blue, green, gray)", defaultColor);
-          const chosen = String(pick || defaultColor).trim().toLowerCase();
+          const chosen = await openEnergyColorModal(defaultColor);
+          if (!chosen) {
+            pushStatus("Energy consumable cancelled.", { tone: "warning" });
+            return;
+          }
           const key = energyKeyByColor[chosen];
           if (key && amount > 0) {
             activeCharacter.base_stats[key] = (Number(activeCharacter.base_stats[key]) || 0) + amount;
@@ -3446,13 +3563,17 @@
       renderGearSections(stats);
       renderAbilities();
       renderDeletedGearHistory();
+      const hasTempBuffs = tempConsumableSummary.length > 0;
+      if (elements.tempBuffSection) {
+        elements.tempBuffSection.classList.toggle("hidden", !hasTempBuffs);
+      }
       if (elements.tempBuffSummary) {
-        elements.tempBuffSummary.textContent = tempConsumableSummary.length
+        elements.tempBuffSummary.textContent = hasTempBuffs
           ? `Active Temp Buffs: ${tempConsumableSummary.join(" | ")}`
           : "No active temporary consumable buffs.";
       }
       if (elements.clearTempBuffs) {
-        elements.clearTempBuffs.classList.toggle("hidden", tempConsumableSummary.length === 0);
+        elements.clearTempBuffs.classList.toggle("hidden", !hasTempBuffs);
       }
       updateGearGeneratorLuck(stats);
     }
@@ -3892,13 +4013,17 @@
     addAllGeneratedGearButton.addEventListener("click", addAllGeneratedGear);
     gearBonusLuck.addEventListener("input", () => {
       const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      const hasTempBuffs = tempConsumableSummary.length > 0;
+      if (elements.tempBuffSection) {
+        elements.tempBuffSection.classList.toggle("hidden", !hasTempBuffs);
+      }
       if (elements.tempBuffSummary) {
-        elements.tempBuffSummary.textContent = tempConsumableSummary.length
+        elements.tempBuffSummary.textContent = hasTempBuffs
           ? `Active Temp Buffs: ${tempConsumableSummary.join(" | ")}`
           : "No active temporary consumable buffs.";
       }
       if (elements.clearTempBuffs) {
-        elements.clearTempBuffs.classList.toggle("hidden", tempConsumableSummary.length === 0);
+        elements.clearTempBuffs.classList.toggle("hidden", !hasTempBuffs);
       }
       updateGearGeneratorLuck(stats);
     });
