@@ -260,8 +260,16 @@
                   <option value="">All</option>
                 </select>
               </label>
+              <label>
+                Filter Free Slot
+                <select id="gearFilterFreeSlot">
+                  <option value="">All</option>
+                  <option value="has">Has Free Slot</option>
+                  <option value="none">No Free Slot</option>
+                </select>
+              </label>
             </div>
-            <span class="muted">Filters apply to inventory and local node storage.</span>
+            <span class="muted">Filters apply to inventory gear.</span>
           </div>
         </div>
         <div class="slot-count">Slots used: <span id="inventorySlotCount">0/0</span></div>
@@ -276,6 +284,47 @@
       </div>
       <div class="collapsible-body">
         <p class="muted">Stored and can only be accessed in your local node.</p>
+        <div class="gear-controls">
+          <div class="gear-controls-section">
+            <div class="gear-controls-row">
+              <label>
+                Filter Rarity
+                <select id="localGearFilterRarity">
+                  <option value="">All</option>
+                </select>
+              </label>
+              <label>
+                Filter Gear Type
+                <select id="localGearFilterType">
+                  <option value="">All</option>
+                </select>
+              </label>
+              <label>
+                Filter Color
+                <select id="localGearFilterColor">
+                  <option value="">All</option>
+                </select>
+              </label>
+            </div>
+            <div class="gear-controls-row">
+              <label>
+                Filter Stat Modified
+                <select id="localGearFilterStat">
+                  <option value="">All</option>
+                </select>
+              </label>
+              <label>
+                Filter Free Slot
+                <select id="localGearFilterFreeSlot">
+                  <option value="">All</option>
+                  <option value="has">Has Free Slot</option>
+                  <option value="none">No Free Slot</option>
+                </select>
+              </label>
+            </div>
+            <span class="muted">Filters apply to local node storage.</span>
+          </div>
+        </div>
         <div class="slot-count">Slots used: <span id="localNodeSlotCount">0/0</span></div>
         <div id="localNodeSlots" class="gear-grid"></div>
       </div>
@@ -697,6 +746,12 @@
     const gearFilterType = document.getElementById("gearFilterType");
     const gearFilterColor = document.getElementById("gearFilterColor");
     const gearFilterStat = document.getElementById("gearFilterStat");
+    const gearFilterFreeSlot = document.getElementById("gearFilterFreeSlot");
+    const localGearFilterRarity = document.getElementById("localGearFilterRarity");
+    const localGearFilterType = document.getElementById("localGearFilterType");
+    const localGearFilterColor = document.getElementById("localGearFilterColor");
+    const localGearFilterStat = document.getElementById("localGearFilterStat");
+    const localGearFilterFreeSlot = document.getElementById("localGearFilterFreeSlot");
 
     const gearDetailModal = document.getElementById("gearDetailModal");
     const gearDetailBackdrop = gearDetailModal.querySelector(".xr-modal-backdrop");
@@ -1443,19 +1498,46 @@
       return allStats.some(stat => normalizeLabel(stat.label || stat.name) === target);
     }
 
-    function matchesGearFilters(gear) {
+    function matchesGearFilters(gear, stats, filters = {}) {
       if (!gear) return false;
-      const filterRarity = gearFilterRarity?.value || "";
-      const filterType = gearFilterType?.value || "";
-      const filterColor = gearFilterColor?.value || "";
-      const filterStat = gearFilterStat?.value || "";
+      const filterRarity = filters.rarity || "";
+      const filterType = filters.type || "";
+      const filterColor = filters.color || "";
+      const filterStat = filters.stat || "";
+      const filterFreeSlot = filters.freeSlot || "";
       const gearType = getGearTypeLabel(gear);
       const gearColor = gear.color || "Neutral";
       if (filterRarity && gear.rarity !== filterRarity) return false;
       if (filterType && gearType !== filterType) return false;
       if (filterColor && gearColor !== filterColor) return false;
       if (filterStat && !gearHasStat(gear, filterStat)) return false;
+      if (filterFreeSlot) {
+        const resolvedStats = stats || applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+        const hasFreeSlot = availableSlotsForGear(gear, resolvedStats).length > 0;
+        if (filterFreeSlot === "has" && !hasFreeSlot) return false;
+        if (filterFreeSlot === "none" && hasFreeSlot) return false;
+      }
       return true;
+    }
+
+    function getInventoryFilterState() {
+      return {
+        rarity: gearFilterRarity?.value || "",
+        type: gearFilterType?.value || "",
+        color: gearFilterColor?.value || "",
+        stat: gearFilterStat?.value || "",
+        freeSlot: gearFilterFreeSlot?.value || ""
+      };
+    }
+
+    function getLocalNodeFilterState() {
+      return {
+        rarity: localGearFilterRarity?.value || "",
+        type: localGearFilterType?.value || "",
+        color: localGearFilterColor?.value || "",
+        stat: localGearFilterStat?.value || "",
+        freeSlot: localGearFilterFreeSlot?.value || ""
+      };
     }
 
     function sortGearEntries(entries) {
@@ -1745,7 +1827,7 @@
         container.innerHTML = `<span class="muted">No gear in inventory.</span>`;
         return;
       }
-      const filteredItems = sortGearEntries(inventoryItems.filter(entry => matchesGearFilters(entry.gear)));
+      const filteredItems = sortGearEntries(inventoryItems.filter(entry => matchesGearFilters(entry.gear, stats, getInventoryFilterState())));
       if (!filteredItems.length) {
         container.innerHTML = `<span class="muted">No inventory gear matches the selected filters.</span>`;
         return;
@@ -1804,7 +1886,7 @@
         container.innerHTML = `<span class="muted">No gear in local node storage.</span>`;
         return;
       }
-      const filteredItems = sortGearEntries(localItems.filter(entry => matchesGearFilters(entry.gear)));
+      const filteredItems = sortGearEntries(localItems.filter(entry => matchesGearFilters(entry.gear, stats, getLocalNodeFilterState())));
       if (!filteredItems.length) {
         container.innerHTML = `<span class="muted">No local node gear matches the selected filters.</span>`;
         return;
@@ -2421,6 +2503,10 @@
       appendOptions(gearFilterType, unique(gearTypeSortOrder));
       appendOptions(gearFilterColor, unique(colorSortOrder));
       appendOptions(gearFilterStat, unique(statOptions));
+      appendOptions(localGearFilterRarity, unique(raritySortOrder));
+      appendOptions(localGearFilterType, unique(gearTypeSortOrder));
+      appendOptions(localGearFilterColor, unique(colorSortOrder));
+      appendOptions(localGearFilterStat, unique(statOptions));
     }
 
     function refreshAbilitySelectOptions() {
@@ -3504,7 +3590,20 @@
     addManualGearAbility.addEventListener("click", () => createManualAbilityRow());
     manualGearType.addEventListener("change", refreshManualStatRowsForType);
 
-    [gearSortField, gearSortDirection, gearFilterRarity, gearFilterType, gearFilterColor, gearFilterStat]
+    [
+      gearSortField,
+      gearSortDirection,
+      gearFilterRarity,
+      gearFilterType,
+      gearFilterColor,
+      gearFilterStat,
+      gearFilterFreeSlot,
+      localGearFilterRarity,
+      localGearFilterType,
+      localGearFilterColor,
+      localGearFilterStat,
+      localGearFilterFreeSlot
+    ]
       .forEach(select => {
         if (!select) return;
         select.addEventListener("change", () => {
