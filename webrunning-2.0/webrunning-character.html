@@ -92,33 +92,38 @@
       </div>
     </section>
 
-    <section class="card">
-      <h2>Status Effects</h2>
-      <div class="stat-inputs">
-        <label>Burn
-          <input id="inputStatusBurn" type="number" min="0" value="0" />
-        </label>
-        <label>Freeze
-          <input id="inputStatusFreeze" type="number" min="0" value="0" />
-        </label>
-        <label>Poison
-          <input id="inputStatusPoison" type="number" min="0" value="0" />
-        </label>
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Status Effects</h2>
+        <button class="collapse-toggle" type="button">Hide</button>
       </div>
-      <br>
-      <div class="stats-grid">
-        <dl>
-          <dt>Damage Taken Modifier:</dt>
-          <dd id="displayDamageTaken">+0</dd>
-          <dt>Defense DC Modifier:</dt>
-          <dd id="displayStatusDefenseDc">+0</dd>
-          <dt>Armor Modifier:</dt>
-          <dd id="displayStatusArmor">+0</dd>
-          <dt>Attack Plus Modifier:</dt>
-          <dd id="displayStatusAttackPlus">+0</dd>
-          <dt>Damage Plus Modifier:</dt>
-          <dd id="displayStatusDamagePlus">+0</dd>
-        </dl>
+      <div class="collapsible-body">
+        <div class="stat-inputs">
+          <label>Burn
+            <input id="inputStatusBurn" type="number" min="0" value="0" />
+          </label>
+          <label>Freeze
+            <input id="inputStatusFreeze" type="number" min="0" value="0" />
+          </label>
+          <label>Poison
+            <input id="inputStatusPoison" type="number" min="0" value="0" />
+          </label>
+        </div>
+        <br>
+        <div class="stats-grid">
+          <dl>
+            <dt>Damage Taken Modifier:</dt>
+            <dd id="displayDamageTaken">+0</dd>
+            <dt>Defense DC Modifier:</dt>
+            <dd id="displayStatusDefenseDc">+0</dd>
+            <dt>Armor Modifier:</dt>
+            <dd id="displayStatusArmor">+0</dd>
+            <dt>Attack Plus Modifier:</dt>
+            <dd id="displayStatusAttackPlus">+0</dd>
+            <dt>Damage Plus Modifier:</dt>
+            <dd id="displayStatusDamagePlus">+0</dd>
+          </dl>
+        </div>
       </div>
     </section>
 
@@ -414,6 +419,7 @@
             <option value="8">Ring</option>
             <option value="9">Neck</option>
             <option value="10">Kernel</option>
+            <option value="11">Consumable</option>
             <option value="12">Bauble</option>
           </select>
         </label>
@@ -983,6 +989,9 @@
         toast.appendChild(actionButton);
       }
       elements.statusPopup.appendChild(toast);
+      toast.addEventListener("click", () => {
+        toast.remove();
+      });
       if (duration !== null) {
         setTimeout(() => {
           toast.remove();
@@ -2088,6 +2097,13 @@
                       "value": buff.calc
                   })
               abilities = [_serialize_ability(ab) for ab in gear.abilities]
+              if gear.gearType == "Consumable":
+                  effect_details = {"Effect": str(getattr(gear, "specificEffect", ""))}
+                  abilities = [{
+                      "name": f"{getattr(gear, 'consumableType', 'Consumable')} Effect",
+                      "link": "",
+                      "tierDetails": effect_details
+                  }]
               aesthetic = getattr(gear, "aesthetic", None) or getattr(gear, "baubleAesthetic", None)
               payload = {
                   "rarity": gear.rarity,
@@ -2277,7 +2293,7 @@
         const card = document.createElement("div");
         card.className = "gear-item";
         const gearType = gear.gear_type || gear.gearType;
-        const showTierDetails = !["Kernel", "Consumable", "Bauble"].includes(gearType);
+        const showTierDetails = !["Kernel", "Bauble"].includes(gearType);
         const colorLabel = [gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral";
         const gValue = gearType === "Bauble" && gear.color ? (colorCounts[gear.color] || 0) : 0;
         const statList = renderGearStatsList(gear.stats, gear.stat_modifiers, totalLuck, { g: gValue });
@@ -2778,7 +2794,7 @@
       activeGearRow = entry;
       const gear = entry.gear;
       const gearType = gear.gear_type || gear.gearType;
-      const showTierDetails = !["Kernel", "Consumable", "Bauble"].includes(gearType);
+      const showTierDetails = !["Kernel", "Bauble"].includes(gearType);
       gearDetailTitle.textContent = formatGearName(gear);
       gearNameInput.value = gear.name || formatGearName(gear);
       const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
