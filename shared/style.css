@@ -468,6 +468,27 @@ textarea:focus {
   color: var(--muted, #b6b6b6);
 }
 
+
+.wr-scope .stat-value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.wr-scope .stat-limit-value {
+  font-size: 0.8em;
+  text-align: right;
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
+.wr-scope .stat-summary {
+  display: block;
+  margin-left: 0.4rem;
+}
+
 .wr-scope .levelup-table {
   width: 100%;
   border-collapse: collapse;
