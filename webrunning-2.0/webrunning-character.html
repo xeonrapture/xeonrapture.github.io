@@ -386,19 +386,24 @@
       </div>
         </section>
 
-        <section class="card section-card gear-modification-panel">
-          <h3>Gear Modification</h3>
-          <p class="muted">All gear modifications must be done at your Local Node and cost Essence.</p>
-          <button id="openGearModificationHub" type="button" aria-label="Open gear modification" title="Open gear modification"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 1 0 3 3l-4.6 4.6a2 2 0 0 1-2.8 0l-1.3-1.3a2 2 0 0 1 0-2.8z"></path><path d="M12 12l-7 7"></path></svg><span>Gear Modification</span></button>
-          <div>
-            <strong>Discount Tier: <span id="gearModTierLabel">None</span></strong>
-            <div class="muted">Current discount: <span id="gearModDiscountLabel">0%</span> off base Essence costs.</div>
+        <section class="card collapsible collapsed section-card gear-modification-panel" data-collapsible>
+          <div class="collapsible-header">
+            <h3>Gear Modification</h3>
+            <button class="collapse-toggle" type="button" aria-label="Show section" title="Show section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button>
           </div>
+          <div class="collapsible-body">
+          <p class="muted">Gear modifications cost Essence.</p>
+          <button id="openGearModificationHub" type="button" aria-label="Open gear modification" title="Open gear modification"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 1 0 3 3l-4.6 4.6a2 2 0 0 1-2.8 0l-1.3-1.3a2 2 0 0 1 0-2.8z"></path><path d="M12 12l-7 7"></path></svg><span>Gear Modification</span></button>
           <div class="gear-mod-upgrade-row">
+            <div>
+              <strong>Discount Tier: <span id="gearModTierLabel">None</span></strong>
+              <div class="muted">Current discount: <span id="gearModDiscountLabel">0%</span> off base Essence costs.</div>
+            </div>
             <button id="upgradeGearModTier" type="button" aria-label="Upgrade gear modification discount" title="Upgrade gear modification discount"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12"></path><path d="M8 8l4-4 4 4"></path><path d="M5 20h14"></path></svg><span>Upgrade Discount</span></button>
           </div>
           <p class="muted">This upgrade lowers Essence prices for gear upgrades, rerolls, condensing, and aesthetics. Upgrading this discount does not cost Essence.</p>
           <div id="gearModUpgradeStatus" class="mono muted"></div>
+          </div>
         </section>
 
         <section class="card collapsible collapsed section-card" data-collapsible>
@@ -815,6 +820,7 @@
     let pyodideReady = false;
     let gearModificationSource = "hub";
     let selectedModificationType = null;
+    let selectedGearModificationTargetId = "";
 
     const elements = {
       nameInput: document.getElementById("characterName"),
@@ -1640,8 +1646,15 @@
       return `${discounted} Essence (${discount}% off)`;
     }
 
-    function getGearModificationCandidates() {
-      return characterGear.filter(entry => entry?.gear).map(entry => ({
+    function getGearModificationCandidates(location = "all") {
+      return characterGear
+        .filter(entry => entry?.gear)
+        .filter(entry => {
+          if (location === "all") return true;
+          if (location === "equipped") return !!entry.equipped;
+          return entry.gear_slot === location;
+        })
+        .map(entry => ({
         id: entry.gear_id,
         slot: entry.gear_slot,
         equipped: !!entry.equipped,
@@ -1650,22 +1663,33 @@
       }));
     }
 
+    function formatEssenceCostWithTotal(cost, stats = currentStats()) {
+      return `${formatCostAfterDiscount(cost, stats)} — You have ${stats.essence || 0} Essence`;
+    }
+
     function renderGearModificationSelection() {
       if (!gearModificationBody) return;
       const stats = currentStats();
-      const candidates = getGearModificationCandidates();
-      const upgradeRows = Object.entries(gearUpgradeCosts).map(([rarity, data]) => `
-        <tr><td>${rarity} → ${data.next}</td><td>${data.statBuff}</td><td>${data.ability}</td><td>${formatCostAfterDiscount(data.cost, stats)}</td></tr>`).join("");
-      const rerollRows = Object.entries(gearRerollCosts).map(([rarity, cost]) => `
-        <tr><td>${rarity}</td><td>${formatCostAfterDiscount(cost, stats)}</td></tr>`).join("");
-      const maxRows = Object.entries(gearMaxes).map(([rarity, caps]) => `
-        <tr><td>${rarity}</td><td>${caps.statBuffMax}</td><td>${caps.activePassiveMax} Actives</td></tr>`).join("");
       gearModificationBody.innerHTML = `
-        <p class="muted"><strong>Local Node only.</strong> Pick your gear and modification type.</p>
-        <p class="muted">Choose a piece of gear from equipped, inventory, or local node storage first.</p>
+        <p class="muted">Full rules + Local Shop info: <a href="https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear/Gear+Modification+and+the+Local+Shop" target="_blank" rel="noopener">Gear Modification and the Local Shop</a>.</p>
+        <ul>
+          <li><strong>Upgrading:</strong> moves gear up a rarity, recalculates stat buffs with your current Luck, can add new modifiers.</li>
+          <li><strong>Rerolling Modifiers:</strong> rerolls Stat Buffs / Actives / Passives but keeps modifier counts the same, using current Luck.</li>
+          <li><strong>Condensing Gear:</strong> destroy one piece to transfer part of its modifiers to another piece. Duplicate stat buffs are allowed.</li>
+          <li><strong>Aesthetic Modification:</strong> change gear appearance or swap aesthetics between two pieces.</li>
+        </ul>
+        <label>
+          Gear Location
+          <select id="gearModificationLocation">
+            <option value="all">Any Section</option>
+            <option value="equipped">Equipped</option>
+            <option value="inventory">Inventory</option>
+            <option value="local_node">Local Node Storage</option>
+          </select>
+        </label>
         <label>
           Piece to Modify
-          <select id="gearModificationTarget">${candidates.length ? candidates.map(item => `<option value="${item.id}">${item.label}</option>`).join("") : '<option value="">No gear available</option>'}</select>
+          <select id="gearModificationTarget"></select>
         </label>
         <div class="gear-mod-option-grid">
           <button type="button" data-mod-choice="upgrading">Upgrading</button>
@@ -1673,23 +1697,31 @@
           <button type="button" data-mod-choice="condensing">Condensing Gear</button>
           <button type="button" data-mod-choice="aesthetic">Aesthetic Modification</button>
         </div>
-        <ul>
-          <li><strong>Upgrading:</strong> moves gear up a rarity, recalculates stat buffs with your current Luck, can add new modifiers.</li>
-          <li><strong>Rerolling Modifiers:</strong> rerolls Stat Buffs / Actives / Passives but keeps modifier counts the same, using current Luck.</li>
-          <li><strong>Condensing Gear:</strong> destroy one piece to transfer part of its modifiers to another piece. Duplicate stat buffs are allowed.</li>
-          <li><strong>Aesthetic Modification:</strong> change gear appearance or swap aesthetics between two pieces.</li>
-        </ul>
-        <p class="muted">Full rules + Local Shop info: <a href="https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear/Gear+Modification+and+the+Local+Shop" target="_blank" rel="noopener">Gear Modification and the Local Shop</a>.</p>
-        <details>
-          <summary>View gear maxes and base costs</summary>
-          <strong>Upgrade Costs</strong>
-          <table><thead><tr><th>Upgrade</th><th>+ Stat Buff</th><th>+ Active/Passive</th><th>Cost</th></tr></thead><tbody>${upgradeRows}</tbody></table>
-          <strong>Reroll Costs</strong>
-          <table><thead><tr><th>Rarity</th><th>Cost</th></tr></thead><tbody>${rerollRows}</tbody></table>
-          <strong>Gear Maxes</strong>
-          <table><thead><tr><th>Rarity</th><th>Stat Buff Max</th><th>Active & Passive Max</th></tr></thead><tbody>${maxRows}</tbody></table>
-        </details>
       `;
+      const locationSelect = document.getElementById("gearModificationLocation");
+      const targetSelect = document.getElementById("gearModificationTarget");
+      if (activeGearRow?.gear_slot) {
+        const initialLocation = activeGearRow.equipped ? "equipped" : activeGearRow.gear_slot;
+        if (["equipped", "inventory", "local_node"].includes(initialLocation)) {
+          locationSelect.value = initialLocation;
+        }
+      }
+      const refreshTargets = () => {
+        const location = locationSelect?.value || "all";
+        const candidates = getGearModificationCandidates(location);
+        targetSelect.innerHTML = candidates.length
+          ? candidates.map(item => `<option value="${item.id}">${item.label}</option>`).join("")
+          : '<option value="">No gear available in this section</option>';
+        if (selectedGearModificationTargetId && candidates.some(item => item.id === selectedGearModificationTargetId)) {
+          targetSelect.value = selectedGearModificationTargetId;
+        }
+        selectedGearModificationTargetId = targetSelect.value || "";
+      };
+      refreshTargets();
+      locationSelect?.addEventListener("change", refreshTargets);
+      targetSelect?.addEventListener("change", () => {
+        selectedGearModificationTargetId = targetSelect.value || "";
+      });
       selectedModificationType = null;
       if (gearModificationStatus) {
         gearModificationStatus.textContent = "Choose a modification type to continue.";
@@ -1701,23 +1733,20 @@
 
     function renderGearModificationDetail(choice) {
       const targetSelect = document.getElementById("gearModificationTarget");
-      const targetId = targetSelect?.value;
+      const targetId = targetSelect?.value || selectedGearModificationTargetId;
       const entry = findGearEntry(targetId);
       if (!entry || !gearModificationBody) return;
       selectedModificationType = choice;
+      selectedGearModificationTargetId = entry.gear_id;
       const stats = currentStats();
       const rarity = entry.gear.rarity || "Common";
-      const isLocal = entry.gear_slot === "local_node";
-      const localReminder = isLocal
-        ? "Selected gear is in Local Node storage."
-        : "Move this gear to Local Node storage before applying modifications.";
-      const common = `<p class="muted">${localReminder}</p><button type="button" data-mod-choice="root">Back to Modification Choices</button>`;
+      const common = `<p class="muted">Selected gear location: ${formatSlotLabel(entry.gear_slot)}.</p>`;
       if (choice === "upgrading") {
         const row = gearUpgradeCosts[rarity];
         gearModificationBody.innerHTML = row ? `
           <strong>Upgrading: ${formatGearName(entry.gear)}</strong>
           <p>Upgrade from ${rarity} to ${row.next}. This rerolls/updates stat values based on your current Luck and can add new modifiers.</p>
-          <p>Cost: <strong>${formatCostAfterDiscount(row.cost, stats)}</strong></p>
+          <p>Cost: <strong>${formatEssenceCostWithTotal(row.cost, stats)}</strong></p>
           <p class="muted">Make sure you do not exceed rarity gear maxes.</p>
           <button type="button" data-mod-apply="upgrading">Apply Modification</button>
           ${common}` : `<p>${rarity} gear cannot be upgraded further.</p>${common}`;
@@ -1726,11 +1755,11 @@
         gearModificationBody.innerHTML = `
           <strong>Rerolling Modifiers: ${formatGearName(entry.gear)}</strong>
           <p>Reroll Stat Buffs, Actives, and Passives while keeping the same amount of each modifier type. Uses your current Luck.</p>
-          <p>Cost: <strong>${formatCostAfterDiscount(cost, stats)}</strong></p>
+          <p>Cost: <strong>${formatEssenceCostWithTotal(cost, stats)}</strong></p>
           <button type="button" data-mod-apply="rerolling">Apply Modification</button>
           ${common}`;
       } else if (choice === "condensing") {
-        const options = (gearCondenseCosts[rarity] || []).map((cost, idx) => `<option value="${idx + 1}">${idx + 1} modifier${idx ? "s" : ""} — ${formatCostAfterDiscount(cost, stats)}</option>`).join("");
+        const options = (gearCondenseCosts[rarity] || []).map((cost, idx) => `<option value="${idx + 1}">${idx + 1} modifier${idx ? "s" : ""} — ${formatEssenceCostWithTotal(cost, stats)}</option>`).join("");
         const max = gearMaxes[rarity] || gearMaxes.Common;
         const donorOptions = characterGear
           .filter(item => item.gear_id !== entry.gear_id)
@@ -1757,8 +1786,8 @@
           <strong>Aesthetic Modification: ${formatGearName(entry.gear)}</strong>
           <label>Mode
             <select id="gearAestheticMode">
-              <option value="modify">Aesthetic Modification (${formatCostAfterDiscount(300, stats)})</option>
-              <option value="swap">Aesthetic Swap (${formatCostAfterDiscount(100, stats)})</option>
+              <option value="modify">Aesthetic Modification (${formatEssenceCostWithTotal(300, stats)})</option>
+              <option value="swap">Aesthetic Swap (${formatEssenceCostWithTotal(100, stats)})</option>
             </select>
           </label>
           <label>New Aesthetic (for modify mode)
@@ -1782,6 +1811,9 @@
       gearModificationSource = source;
       if (entry) {
         activeGearRow = entry;
+        selectedGearModificationTargetId = entry.gear_id;
+      } else {
+        selectedGearModificationTargetId = "";
       }
       renderGearModificationSelection();
       if (entry) {
@@ -1813,13 +1845,9 @@
     }
 
     async function applyGearModification(choice) {
-      const targetId = document.getElementById("gearModificationTarget")?.value;
+      const targetId = document.getElementById("gearModificationTarget")?.value || selectedGearModificationTargetId;
       const entry = findGearEntry(targetId);
       if (!entry) return;
-      if (entry.gear_slot !== "local_node") {
-        pushStatus("Move that gear to Local Node storage before modifying.", { tone: "warning" });
-        return;
-      }
       const luckNow = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats())).luck || 1;
       const base = cloneJson(entry.gear);
       let updated = cloneJson(entry.gear);
@@ -1871,10 +1899,6 @@
         const moveCount = Math.max(1, Number(document.getElementById("gearCondenseCount")?.value || 1));
         if (!donorEntry) {
           pushStatus("Choose donor gear to condense.", { tone: "warning" });
-          return;
-        }
-        if (donorEntry.gear_slot !== "local_node") {
-          pushStatus("Donor gear must also be in Local Node storage.", { tone: "warning" });
           return;
         }
         const costList = gearCondenseCosts[updated.rarity] || [];
@@ -1929,7 +1953,7 @@
       }
 
       if (cost > (activeCharacter.base_stats?.essence || 0)) {
-        pushStatus("Not enough essence for that modification.", { tone: "warning" });
+        pushStatus(`Not enough essence for that modification. Need ${cost}, you have ${activeCharacter.base_stats?.essence || 0}.`, { tone: "warning" });
         return;
       }
 
@@ -2648,7 +2672,7 @@
             <div class="gear-actions">
               <button type="button" data-action="view" data-gear="${entry.gear_id}" aria-label="View details" title="View details"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="M16 16l5 5"></path></svg><span>Details</span></button>
               <button type="button" data-action="modify" data-gear="${entry.gear_id}" aria-label="Modify" title="Modify"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 1 0 3 3l-4.6 4.6a2 2 0 0 1-2.8 0l-1.3-1.3a2 2 0 0 1 0-2.8z"></path><path d="M12 12l-7 7"></path></svg><span>Modify</span></button>
-              <button type="button" data-action="inventory" data-gear="${entry.gear_id}" aria-label="Move to inventory" title="Move to inventory"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"></path><path d="M8 10l4 4 4-4"></path><path d="M4 20h16"></path></svg><span>Inventory</span></button>
+              <button type="button" data-action="inventory" class="gear-action-wide" data-gear="${entry.gear_id}" aria-label="Move to inventory" title="Move to inventory"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"></path><path d="M8 10l4 4 4-4"></path><path d="M4 20h16"></path></svg><span>Inventory</span></button>
               <button type="button" data-action="dissolve" data-gear="${entry.gear_id}" aria-label="Dissolve" title="Dissolve"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4"></path><path d="M11 3v6l-5 8a3 3 0 0 0 2.6 4h6.8A3 3 0 0 0 18 17l-5-8V3"></path><path d="M8 14h8"></path></svg><span>Dissolve</span></button>
               <button type="button" data-action="delete" data-gear="${entry.gear_id}" aria-label="Delete" title="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg><span>Delete</span></button>
             </div>
