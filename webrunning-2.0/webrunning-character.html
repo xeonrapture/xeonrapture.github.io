@@ -37,23 +37,23 @@
         <dl>
           <dt>Name:</dt>
           <dd id="displayName"></dd>
-          <dt title="Your progression rank. Level affects luck caps and core growth.">Level:</dt>
+          <dt title="Your progression rank Level affects luck caps and core growth">Level:</dt>
           <dd id="displayLevel">1</dd>
-          <dt title="Gain XP from clearing nodes. Reaching thresholds levels you up.">XP:</dt>
+          <dt title="Gain XP from clearing nodes Reaching thresholds levels you up">XP:</dt>
           <dd>
             <input id="inputXp" type="number" min="0" value="0" />
           </dd>
-          <dt title="Luck improves generated gear quality and reroll outcomes. It is level-capped unless boosted by effects.">Luck:</dt>
+          <dt title="Luck improves generated gear quality and reroll outcomes It is level-capped unless boosted by effects">Luck:</dt>
           <dd id="displayLuck">1</dd>
         </dl>
         <dl>
-          <dt title="HP is your life total. At 0 HP you become a cyberghost. It scales with level and some gear.">Max HP:</dt>
+          <dt title="HP is your life total At 0 HP you become a cyberghost It scales with level and some gear">Max HP:</dt>
           <dd id="displayHp">10</dd>
           <dt>Current HP:</dt>
           <dd>
             <input id="inputCurrentHp" type="number" min="0" value="10" />
           </dd>
-          <dt title="How much total Energy you can hold at once. At cap, choose which colors to keep.">Energy Cap:</dt>
+          <dt title="How much total Energy you can hold at once At cap, choose which colors to keep">Energy Cap:</dt>
           <dd id="displayEnergyCap">5</dd>
           <dt>Essence:</dt>
           <dd>
@@ -62,16 +62,16 @@
         </dl>
       </div>
       <div class="stat-inputs" style="margin-top: 0.75rem;">
-        <label title="Red Energy powers Red gear actives. Red gear boosts offense (Attack Plus / Damage Plus) and is usually volatile, with burn, push, and pull effects.">Energy (Red)
+        <label title="Red Energy powers Red gear actives Red gear boosts offense (Attack Plus / Damage Plus) and is usually volatile, with burn, push, and pull effects">Energy (Red)
           <input id="inputEnergyRed" type="number" min="0" value="0" />
         </label>
-        <label title="Blue Energy powers Blue gear actives. Blue gear boosts durability (HP / Defense DC / Armor) and can freeze, protect allies, or draw aggro.">Energy (Blue)
+        <label title="Blue Energy powers Blue gear actives Blue gear boosts durability (HP / Defense DC / Armor) and can freeze, protect allies, or draw aggro">Energy (Blue)
           <input id="inputEnergyBlue" type="number" min="0" value="0" />
         </label>
-        <label title="Green Energy powers Green gear actives. Green gear boosts mobility (Initiative / Movement / Range) and supports healing, poison, and ranged pressure.">Energy (Green)
+        <label title="Green Energy powers Green gear actives Green gear boosts mobility (Initiative / Movement / Range) and supports healing, poison, and ranged pressure">Energy (Green)
           <input id="inputEnergyGreen" type="number" min="0" value="0" />
         </label>
-        <label title="Gray Energy powers Gray gear actives. Gray gear boosts utility (Perception / Hacking) and excels at AoE, darkness, and ally-active enabling.">Energy (Gray)
+        <label title="Gray Energy powers Gray gear actives Gray gear boosts utility (Perception / Hacking) and excels at AoE, darkness, and ally-active enabling">Energy (Gray)
           <input id="inputEnergyGray" type="number" min="0" value="0" />
         </label>
       </div>
@@ -86,16 +86,16 @@
         <section class="card section-card">
           <h3>Basic Stats</h3>
           <div class="stat-inputs">
-            <label title="Power adds to physical-strength adventuring checks and generates Red Energy each combat Start Phase.">Power
+            <label title="Power adds to physical-strength adventuring checks and generates Red Energy each combat Start Phase">Power
               <input id="inputPower" type="number" min="0" value="0" />
             </label>
-            <label title="Defense adds to resistance adventuring checks and generates Blue Energy each combat Start Phase.">Defense
+            <label title="Defense adds to resistance adventuring checks and generates Blue Energy each combat Start Phase">Defense
               <input id="inputDefense" type="number" min="0" value="0" />
             </label>
-            <label title="Speed adds to dexterity/speed adventuring checks and generates Green Energy each combat Start Phase.">Speed
+            <label title="Speed adds to dexterity/speed adventuring checks and generates Green Energy each combat Start Phase">Speed
               <input id="inputSpeed" type="number" min="0" value="0" />
             </label>
-            <label title="Intelligence adds to smarts checks and generates Gray Energy each combat Start Phase.">Intelligence
+            <label title="Intelligence adds to smarts checks and generates Gray Energy each combat Start Phase">Intelligence
               <input id="inputIntelligence" type="number" min="0" value="0" />
             </label>
           </div>
@@ -110,29 +110,29 @@
             <p class="muted">Tied to Basic Stats and increased by equipping gear.</p>
             <div class="stats-grid">
               <dl>
-                <dt title="Power-based bonus added to attack rolls.">Attack Plus:</dt>
+                <dt title="Calculated as Power">Attack Plus:</dt>
                 <dd id="displayAttackPlus">0</dd>
-                <dt title="Power-based extra damage added to attacks.">Damage Plus:</dt>
+                <dt title="Calculated as Power">Damage Plus:</dt>
                 <dd id="displayDamagePlus">0</dd>
                 <dt>Attack Damage Limit:</dt>
                 <dd id="displayAttackDamageLimit">0</dd>
                 <dt>Combo Damage Limit:</dt>
                 <dd id="displayComboDamageLimit">0</dd>
-                <dt title="Defense + 10. Enemies must beat this to hit you.">Defense DC:</dt>
+                <dt title="Calculated as Defense + 10">Defense DC:</dt>
                 <dd id="displayDefenseDc">10</dd>
-                <dt title="Defense-based damage reduction when you are hit.">Armor:</dt>
+                <dt title="Calculated as Defense">Armor:</dt>
                 <dd id="displayArmor">0</dd>
-                <dt title="Speed-based turn order value. Higher goes first.">Initiative:</dt>
+                <dt title="Calculated as Speed">Initiative:</dt>
                 <dd id="displayInitiative">0</dd>
-                <dt title="(Speed x 2) + 10. Tiles you can move on your turn.">Movement Speed:</dt>
+                <dt title="Calculated as (Speed × 2) + 10">Movement Speed:</dt>
                 <dd id="displayMovementSpeed">10</dd>
-                <dt title="Speed + 5. Maximum tiles for ranged attacks and many actives.">Range:</dt>
+                <dt title="Calculated as Speed + 5">Range:</dt>
                 <dd id="displayRange">5</dd>
-                <dt title="Intelligence x2. Bonus for noticing hidden details and awareness checks.">Perception:</dt>
+                <dt title="Calculated as Intelligence × 2">Perception:</dt>
                 <dd id="displayPerception">0</dd>
-                <dt title="Usually equals Perception. Maximum radius for AoE effects (minimum 1).">AOE Range:</dt>
+                <dt title="Calculated as Perception">AOE Range:</dt>
                 <dd id="displayAoeRange">0</dd>
-                <dt title="Intelligence-based bonus for hacking checks.">Hacking:</dt>
+                <dt title="Calculated as Intelligence">Hacking:</dt>
                 <dd id="displayHacking">0</dd>
               </dl>
             </div>
@@ -147,17 +147,17 @@
           <div class="collapsible-body">
             <div class="stats-grid">
               <dl>
-                <dt>Inventory Slots:</dt>
+                <dt title="How many total inventory gear slots you can hold">Inventory Slots:</dt>
                 <dd id="displayInventorySlots">10</dd>
-                <dt>Kernel Slots:</dt>
+                <dt title="How many kernel gear slots you can equip">Kernel Slots:</dt>
                 <dd id="displayKernelSlots">1</dd>
-                <dt title="Start Phase: convert this much energy into the item color each turn.">Energy Conversion:</dt>
+                <dt title="Start Phase: convert this much energy into the item color each turn">Energy Conversion:</dt>
                 <dd>0</dd>
-                <dt title="Extra XP each group member gains when nodes are cleared.">Group XP Gain:</dt>
+                <dt title="Extra XP each group member gains when nodes are cleared">Group XP Gain:</dt>
                 <dd>0</dd>
-                <dt title="HP restored each time you move to a new node.">HP Regen:</dt>
+                <dt title="HP restored each time you move to a new node">HP Regen:</dt>
                 <dd>0</dd>
-                <dt title="Multiplier for essence/credits gained when selling gear.">Resell Value:</dt>
+                <dt title="Multiplier for essence/credits gained when selling gear">Resell Value:</dt>
                 <dd>0</dd>
               </dl>
               <dl id="adventuringPlusesColumn" class="hidden">
@@ -175,13 +175,13 @@
           </div>
           <div class="collapsible-body">
             <div class="stat-inputs">
-              <label>Burn
+              <label title="Burn increases damage taken modifier by +1 per stack">Burn
                 <input id="inputStatusBurn" type="number" min="0" value="0" />
               </label>
-              <label>Freeze
+              <label title="Freeze lowers Defense DC and Armor by -1 per stack each">Freeze
                 <input id="inputStatusFreeze" type="number" min="0" value="0" />
               </label>
-              <label>Poison
+              <label title="Poison lowers Attack Plus and Damage Plus by -1 per stack each">Poison
                 <input id="inputStatusPoison" type="number" min="0" value="0" />
               </label>
             </div>
@@ -1161,13 +1161,22 @@
       Gray: ["perception", "hacking", "intelligence"]
     };
     const aestheticPresetOptions = [
-      "Neon pulse shell",
-      "Scrap-metal patched",
-      "Glitching holo-overlay",
-      "Pristine corporate finish",
-      "Bio-luminescent veins",
-      "Void matte with star flecks"
+      "Valdan (Cyberpunk)",
+      "Ydilikian (Medieval)",
+      "Asticarian (Modern)",
+      "Rtolkan (Steampunk)",
+      "Pbosh (Viking/Heavy, Rough Metal)",
+      "Cortez (Western)",
+      "Cortez (Pirate)",
+      "Jiyyagan (Survivor/Jungle)"
     ];
+
+    function toPythonLiteral(value) {
+      if (value === null || value === undefined || value === "") {
+        return "None";
+      }
+      return JSON.stringify(value);
+    }
 
     let availableAbilities = [];
     let abilityDetailMap = new Map();
@@ -1786,7 +1795,6 @@
           <strong>Upgrading: ${formatGearName(entry.gear)}</strong>
           <p>Upgrade from ${rarity} to ${row.next}. This rerolls/updates stat values based on your current Luck and can add new modifiers.</p>
           <p>Cost: <strong>${formatEssenceCostWithTotal(row.cost, stats)}</strong></p>
-          <p class="muted">Make sure you do not exceed rarity gear maxes.</p>
           <button type="button" data-mod-apply="upgrading">Apply Modification</button>
           ${common}` : `<p>${rarity} gear cannot be upgraded further.</p>${common}`;
       } else if (choice === "rerolling") {
@@ -1798,8 +1806,7 @@
           <button type="button" data-mod-apply="rerolling">Apply Modification</button>
           ${common}`;
       } else if (choice === "condensing") {
-        const options = (gearCondenseCosts[rarity] || []).map((cost, idx) => `<option value="${idx + 1}">${idx + 1} modifier${idx ? "s" : ""} — ${formatEssenceCostWithTotal(cost, stats)}</option>`).join("");
-        const max = gearMaxes[rarity] || gearMaxes.Common;
+        const costOptions = (gearCondenseCosts[rarity] || []).map((cost, idx) => `<option value="${idx + 1}">${idx + 1} modifier${idx ? "s" : ""} — ${formatEssenceCostWithTotal(cost, stats)}</option>`).join("");
         const donorOptions = characterGear
           .filter(item => item.gear_id !== entry.gear_id)
           .map(item => `<option value="${item.gear_id}">${formatGearName(item.gear)} [${item.gear_slot}]</option>`)
@@ -1807,17 +1814,23 @@
         gearModificationBody.innerHTML = `
           <strong>Condensing Gear: ${formatGearName(entry.gear)}</strong>
           <p><strong>Warning:</strong> The donor gear is permanently destroyed.</p>
-          <p>Destroy one gear piece and transfer a chosen Stat Buff plus additional modifiers to this gear.</p>
-          <p class="muted">Do not exceed ${rarity} maxes: ${max.statBuffMax} stat buffs and ${max.activePassiveMax} actives/passives.</p>
+          <p>Destroy one gear piece and transfer chosen stat buffs or chosen abilities to this gear.</p>
+          <label>Modifiers to Transfer
+            <select id="gearCondenseCount">${costOptions || '<option value="1">1 modifier</option>'}</select>
+          </label>
           <label>Donor Gear
             <select id="gearCondenseDonor">${donorOptions || '<option value="">No donor gear available</option>'}</select>
           </label>
-          <label>Stat to Transfer (required)
-            <select id="gearCondenseStat"></select>
+          <label>Transfer Type
+            <select id="gearCondenseTransferType">
+              <option value="stat">Stat Buff</option>
+              <option value="ability">Ability</option>
+            </select>
           </label>
-          <label>Modifiers to Move
-            <select id="gearCondenseCount">${options || '<option value="1">1 modifier</option>'}</select>
+          <label>Modifiers to Transfer
+            <select id="gearCondenseModifier" multiple size="6"></select>
           </label>
+          <p class="muted">Hold Ctrl/Cmd to select multiple modifiers</p>
           <button type="button" data-mod-apply="condensing" ${donorOptions ? '' : 'disabled'}>Apply Modification</button>
           ${common}`;
       } else if (choice === "aesthetic") {
@@ -1850,16 +1863,30 @@
       }
       if (choice === "condensing") {
         const donorSelect = document.getElementById("gearCondenseDonor");
-        const statSelect = document.getElementById("gearCondenseStat");
-        const syncDonorStats = () => {
+        const transferTypeSelect = document.getElementById("gearCondenseTransferType");
+        const modifierSelect = document.getElementById("gearCondenseModifier");
+        const countSelect = document.getElementById("gearCondenseCount");
+        const syncDonorModifiers = () => {
           const donor = findGearEntry(donorSelect?.value);
           const donorStats = Array.isArray(donor?.gear?.stats) ? donor.gear.stats : [];
-          statSelect.innerHTML = donorStats.length
-            ? donorStats.map((stat, idx) => `<option value="${idx}">${formatStatSummary(stat)}</option>`).join("")
-            : '<option value="">No donor stats available</option>';
+          const donorAbilities = Array.isArray(donor?.gear?.abilities) ? donor.gear.abilities : [];
+          const options = (transferTypeSelect?.value || "stat") === "ability"
+            ? donorAbilities.map((ability, idx) => `<option value="${idx}">${formatAbilitySummary(ability)}</option>`)
+            : donorStats.map((stat, idx) => `<option value="${idx}">${formatStatSummary(stat)}</option>`);
+          modifierSelect.innerHTML = options.length ? options.join("") : '<option value="">No donor modifiers available</option>';
+          if (countSelect) {
+            const maxSelectable = Math.max(1, options.length);
+            Array.from(countSelect.options).forEach(option => {
+              option.disabled = Number(option.value) > maxSelectable;
+            });
+            if (Number(countSelect.value) > maxSelectable) {
+              countSelect.value = String(maxSelectable);
+            }
+          }
         };
-        donorSelect?.addEventListener("change", syncDonorStats);
-        syncDonorStats();
+        donorSelect?.addEventListener("change", syncDonorModifiers);
+        transferTypeSelect?.addEventListener("change", syncDonorModifiers);
+        syncDonorModifiers();
       }
       if (choice === "aesthetic") {
         const presetSelect = document.getElementById("gearAestheticPreset");
@@ -2085,7 +2112,7 @@
       const color = baseGear.color || "Neutral";
       const color2 = baseGear.color2 || null;
       const result = pyodideClient.runPython(
-        `generate_gear_json(${Math.max(1, Math.round(luck))}, 1, ${gearTypeNumber}, ${JSON.stringify(rarity)}, ${JSON.stringify(color)}, ${JSON.stringify(color2)})`
+        `generate_gear_json(${Math.max(1, Math.round(luck))}, 1, ${gearTypeNumber}, ${toPythonLiteral(rarity)}, ${toPythonLiteral(color)}, ${toPythonLiteral(color2)})`
       );
       const parsed = JSON.parse(result || "[]");
       return parsed[0] || null;
@@ -2142,36 +2169,51 @@
         updated.abilities = cloneJson(rerolled?.abilities || []);
       } else if (choice === "condensing") {
         const donorId = document.getElementById("gearCondenseDonor")?.value;
-        const donorStatIndex = Number(document.getElementById("gearCondenseStat")?.value);
-        const donorEntry = findGearEntry(donorId);
+        const transferType = document.getElementById("gearCondenseTransferType")?.value || "stat";
         const moveCount = Math.max(1, Number(document.getElementById("gearCondenseCount")?.value || 1));
+        const selectedModifierIndexes = Array.from(document.getElementById("gearCondenseModifier")?.selectedOptions || [])
+          .map(option => Number(option.value))
+          .filter(value => Number.isFinite(value));
+        const donorEntry = findGearEntry(donorId);
         if (!donorEntry) {
           pushStatus("Choose donor gear to condense.", { tone: "warning" });
           return;
         }
-        if (!Number.isFinite(donorStatIndex)) {
-          pushStatus("Choose a donor stat to transfer.", { tone: "warning" });
+        if (selectedModifierIndexes.length < moveCount) {
+          pushStatus(`Choose ${moveCount} donor modifier${moveCount === 1 ? "" : "s"} to transfer.`, { tone: "warning" });
           return;
         }
         const costList = gearCondenseCosts[updated.rarity] || [];
-        cost = applyGearModDiscount(costList[moveCount - 1] || 0);
+        cost = applyGearModDiscount(costList[moveCount - 1] || costList[0] || 0);
         const maxCaps = gearMaxes[updated.rarity] || gearMaxes.Common;
         const donorStats = Array.isArray(donorEntry.gear.stats) ? donorEntry.gear.stats : [];
         const donorAbilities = Array.isArray(donorEntry.gear.abilities) ? donorEntry.gear.abilities : [];
         updated.stats = Array.isArray(updated.stats) ? updated.stats : [];
         updated.abilities = Array.isArray(updated.abilities) ? updated.abilities : [];
-        const chosenStat = donorStats[donorStatIndex];
-        if (!chosenStat) {
-          pushStatus("Selected donor stat was not found.", { tone: "warning" });
-          return;
+
+        const pickedIndexes = selectedModifierIndexes.slice(0, moveCount);
+        if (transferType === "ability") {
+          const pickedAbilities = pickedIndexes
+            .map(idx => donorAbilities[idx])
+            .filter(Boolean)
+            .slice(0, Math.max(0, maxCaps.activePassiveMax - updated.abilities.length));
+          if (!pickedAbilities.length) {
+            pushStatus("Selected donor abilities were not found.", { tone: "warning" });
+            return;
+          }
+          updated.abilities.push(...cloneJson(pickedAbilities));
+        } else {
+          const pickedStats = pickedIndexes
+            .map(idx => donorStats[idx])
+            .filter(Boolean)
+            .slice(0, Math.max(0, maxCaps.statBuffMax - updated.stats.length));
+          if (!pickedStats.length) {
+            pushStatus("Selected donor stats were not found.", { tone: "warning" });
+            return;
+          }
+          updated.stats.push(...cloneJson(pickedStats));
         }
-        const pickedStats = [chosenStat, ...donorStats.filter((_, idx) => idx !== donorStatIndex)].slice(0, moveCount);
-        const remaining = Math.max(0, moveCount - 1);
-        const pickedAbilities = donorAbilities.slice(0, remaining);
-        const statRoom = Math.max(0, maxCaps.statBuffMax - updated.stats.length);
-        const abilityRoom = Math.max(0, maxCaps.activePassiveMax - updated.abilities.length);
-        updated.stats.push(...cloneJson(pickedStats.slice(0, statRoom)));
-        updated.abilities.push(...cloneJson(pickedAbilities.slice(0, abilityRoom)));
+
         donorSnapshot = {
           gear: cloneJson(donorEntry.gear),
           gear_id: donorEntry.gear_id,
@@ -2208,6 +2250,8 @@
           updated.aesthetic = value;
         }
       }
+
+      updated = enforceRarityCaps(updated);
 
       if (cost > (activeCharacter.base_stats?.essence || 0)) {
         pushStatus(`Not enough essence for that modification. Need ${cost}, you have ${activeCharacter.base_stats?.essence || 0}.`, { tone: "warning" });
@@ -2390,8 +2434,28 @@
       if (!gear) return "Unknown Gear";
       if (gear.name && gear.name.trim()) return gear.name.trim();
       const typeLabel = gear.item_type || gear.itemType || gear.gear_type || gear.gearType || "Gear";
-      const aestheticLabel = gear.aesthetic ? ` (${gear.aesthetic})` : "";
-      return `${typeLabel}${aestheticLabel}`.trim();
+      const rawAesthetic = String(gear.aesthetic || "").trim();
+      if (!rawAesthetic) return `${typeLabel}`.trim();
+      const parenMatch = rawAesthetic.match(/^([^()]+?)\s*\(([^)]+)\)$/);
+      if (parenMatch) {
+        const base = parenMatch[1].trim();
+        const detail = parenMatch[2].trim();
+        return `${base} ${typeLabel} (${detail})`.trim();
+      }
+      return `${rawAesthetic} ${typeLabel}`.trim();
+    }
+
+    function enforceRarityCaps(gear) {
+      if (!gear) return gear;
+      const rarity = gear.rarity || "Common";
+      const caps = gearMaxes[rarity] || gearMaxes.Common;
+      const stats = Array.isArray(gear.stats) ? gear.stats : [];
+      const abilities = Array.isArray(gear.abilities) ? gear.abilities : [];
+      return {
+        ...gear,
+        stats: cloneJson(stats.slice(0, caps.statBuffMax)),
+        abilities: cloneJson(abilities.slice(0, caps.activePassiveMax))
+      };
     }
 
     const gearTagPalette = {
@@ -3360,7 +3424,7 @@
       try {
         await ensurePyodide();
         const result = pyodideClient.runPython(
-          `generate_gear_json(${totalLuck}, ${amount}, ${gearTypeValue}, ${JSON.stringify(rarity)}, ${JSON.stringify(color)}, ${JSON.stringify(color2)})`
+          `generate_gear_json(${totalLuck}, ${amount}, ${gearTypeValue}, ${toPythonLiteral(rarity)}, ${toPythonLiteral(color)}, ${toPythonLiteral(color2)})`
         );
         generatedGear = JSON.parse(result);
         generatedGear.forEach(gear => {
