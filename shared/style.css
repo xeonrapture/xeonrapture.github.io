@@ -476,6 +476,11 @@ textarea:focus {
   gap: 0.6rem;
 }
 
+.wr-scope .stat-main-group {
+  display: inline-flex;
+  align-items: baseline;
+}
+
 .wr-scope .stat-limit-value {
   margin-left: auto;
   font-size: 0.8em;
