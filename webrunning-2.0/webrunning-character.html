@@ -1613,10 +1613,22 @@
       const valueRow = document.createElement("span");
       valueRow.className = "stat-value-row";
 
+      const valueGroup = document.createElement("span");
+      valueGroup.className = "stat-main-group";
+
       const valueSpan = document.createElement("span");
       valueSpan.className = "stat-main-value";
       valueSpan.textContent = String(displayValue);
-      valueRow.appendChild(valueSpan);
+      valueGroup.appendChild(valueSpan);
+
+      if (summary) {
+        const summarySpan = document.createElement("span");
+        summarySpan.className = "muted stat-summary";
+        summarySpan.textContent = `(${summary})`;
+        valueGroup.appendChild(summarySpan);
+      }
+
+      valueRow.appendChild(valueGroup);
 
       if (limit !== null) {
         const limitSpan = document.createElement("span");
@@ -1640,13 +1652,6 @@
         detailsSpan.className = "muted stat-summary";
         detailsSpan.textContent = `(${details.join(" • ")})`;
         element.appendChild(detailsSpan);
-      }
-
-      if (summary) {
-        const summarySpan = document.createElement("span");
-        summarySpan.className = "muted stat-summary";
-        summarySpan.textContent = `(${summary})`;
-        element.appendChild(summarySpan);
       }
     }
 
