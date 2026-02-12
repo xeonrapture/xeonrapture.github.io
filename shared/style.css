@@ -575,6 +575,10 @@ textarea:focus {
   width: 100%;
 }
 
+.wr-scope .xr-modal {
+  overscroll-behavior: contain;
+}
+
 .wr-scope .xr-modal-actions {
   display: flex;
   gap: 0.5rem;
@@ -585,6 +589,7 @@ textarea:focus {
 .wr-scope .xr-modal-card {
   max-height: 80vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .wr-scope .xr-modal-card h2 {
@@ -826,6 +831,24 @@ textarea:focus {
   align-items: center;
 }
 
+.wr-scope .gear-generator-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.wr-scope .gear-generator-header h2 {
+  margin: 0;
+}
+
+.wr-scope .gear-generator-header-actions {
+  margin-top: 0;
+  display: grid;
+  gap: 0.5rem;
+  justify-items: end;
+}
+
 .wr-scope .gear-details-list {
   display: grid;
   gap: 0.5rem;
@@ -860,6 +883,11 @@ textarea:focus {
   justify-content: space-between;
   flex-wrap: wrap;
   margin-top: 1rem;
+}
+
+.wr-scope .gear-detail-notes {
+  justify-self: end;
+  width: min(100%, 340px);
 }
 
 .wr-scope .gear-modal-actions .right-actions {
@@ -1085,6 +1113,7 @@ textarea:focus {
 .wr-scope .ability-section {
   display: grid;
   gap: 1rem;
+  text-align: left;
 }
 
 .wr-scope .ability-group {
@@ -1137,6 +1166,7 @@ textarea:focus {
   margin-top: 0.5rem;
   display: grid;
   gap: 0.5rem;
+  text-align: left;
 }
 
 .wr-scope .ability-dropdown .ability-details[hidden] {
