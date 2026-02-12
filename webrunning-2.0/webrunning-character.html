@@ -111,6 +111,10 @@
                 <dd id="displayAttackPlus">0</dd>
                 <dt>Damage Plus:</dt>
                 <dd id="displayDamagePlus">0</dd>
+                <dt>Attack Damage Limit:</dt>
+                <dd id="displayAttackDamageLimit">0</dd>
+                <dt>Combo Damage Limit:</dt>
+                <dd id="displayComboDamageLimit">0</dd>
                 <dt>Defense DC:</dt>
                 <dd id="displayDefenseDc">10</dd>
                 <dt>Armor:</dt>
@@ -795,6 +799,8 @@
       inputStatusPoison: document.getElementById("inputStatusPoison"),
       displayAttackPlus: document.getElementById("displayAttackPlus"),
       displayDamagePlus: document.getElementById("displayDamagePlus"),
+      displayAttackDamageLimit: document.getElementById("displayAttackDamageLimit"),
+      displayComboDamageLimit: document.getElementById("displayComboDamageLimit"),
       displayDefenseDc: document.getElementById("displayDefenseDc"),
       displayArmor: document.getElementById("displayArmor"),
       displayDamageTaken: document.getElementById("displayDamageTaken"),
@@ -1601,7 +1607,7 @@
       const limitLabel = options.limitLabel || "Limit";
       const rawValue = options.rawValue;
       const showRawValue = options.showRawValue && Number.isFinite(rawValue);
-      const gearPlus = Number.isFinite(options.gearPlus) ? options.gearPlus : null;
+
 
       element.textContent = "";
       const valueRow = document.createElement("span");
@@ -1617,7 +1623,7 @@
         limitSpan.className = "stat-limit-value muted";
         limitSpan.textContent = `${limitLabel} ${limit}`;
         if (displayValue !== value) {
-          limitSpan.title = `Capped from ${value}`;
+          limitSpan.title = `Limited from ${value}`;
         }
         valueRow.appendChild(limitSpan);
       }
@@ -1625,9 +1631,6 @@
       element.appendChild(valueRow);
 
       const details = [];
-      if (gearPlus !== null) {
-        details.push(`Gear ${formatSignedValue(gearPlus)}`);
-      }
       if (showRawValue) {
         details.push(`Uncapped ${rawValue}`);
       }
@@ -3541,11 +3544,7 @@
         attackTotal,
         summarizeSources(attackSources),
         {
-          limit: limits.attackDamage,
-          limitLabel: "Cap:",
-          gearPlus: sumSourceValues(sources.derived.attackPlus),
-          rawValue: attackTotal,
-          showRawValue: Number.isFinite(limits.attackDamage)
+          rawValue: attackTotal
         }
       );
       setStatDisplay(
@@ -3553,13 +3552,11 @@
         comboTotal,
         summarizeSources(damageSources),
         {
-          limit: limits.comboDamage,
-          limitLabel: "Cap:",
-          gearPlus: sumSourceValues(sources.derived.damagePlus),
-          rawValue: comboTotal,
-          showRawValue: Number.isFinite(limits.comboDamage)
+          rawValue: comboTotal
         }
       );
+      setStatDisplay(elements.displayAttackDamageLimit, limits.attackDamage, "");
+      setStatDisplay(elements.displayComboDamageLimit, limits.comboDamage, "");
       setStatDisplay(
         elements.displayDefenseDc,
         defenseDcTotal,
@@ -3567,8 +3564,7 @@
         {
           displayValue: defenseDcDisplay.displayValue,
           limit: defenseDcDisplay.limit,
-          limitLabel: "Cap:",
-          gearPlus: sumSourceValues(sources.derived.defenseDc),
+          limitLabel: "Limit:",
           rawValue: defenseDcTotal,
           showRawValue: Number.isFinite(defenseDcDisplay.limit)
         }
@@ -3641,16 +3637,14 @@
       setStatDisplay(elements.displayLuck, stats.luck, summarizeSources(sources.base.luck), {
         displayValue: luckDisplay.displayValue,
         limit: luckDisplay.limit,
-        limitLabel: "Cap:",
-        gearPlus: sumSourceValues(sources.base.luck),
+        limitLabel: "Limit:",
         rawValue: stats.luck,
         showRawValue: Number.isFinite(luckDisplay.limit)
       });
       setStatDisplay(elements.displayHp, stats.hp, summarizeSources(sources.base.hp), {
         displayValue: hpDisplay.displayValue,
         limit: hpDisplay.limit,
-        limitLabel: "Cap:",
-        gearPlus: sumSourceValues(sources.base.hp),
+        limitLabel: "Limit:",
         rawValue: stats.hp,
         showRawValue: Number.isFinite(hpDisplay.limit)
       });
