@@ -74,19 +74,6 @@
       </div>
     </section>
 
-    <section class="card collapsible collapsed" data-collapsible>
-      <div class="collapsible-header">
-        <h2>Character Info</h2>
-        <button class="collapse-toggle" type="button">Show</button>
-      </div>
-      <div class="collapsible-body section-stack">
-        <section class="card notes-area section-card">
-          <h3>Character Notes</h3>
-          <textarea id="characterNotes" placeholder="Add notes about your character, gear, or story beats..."></textarea>
-        </section>
-      </div>
-    </section>
-
     <section class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Stats</h2>
@@ -403,6 +390,19 @@
       </div>
     </section>
 
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Character Info</h2>
+        <button class="collapse-toggle" type="button">Hide</button>
+      </div>
+      <div class="collapsible-body section-stack">
+        <section class="card notes-area section-card">
+          <h3>Character Notes</h3>
+          <textarea id="characterNotes" placeholder="Add notes about your character, gear, or story beats..."></textarea>
+        </section>
+      </div>
+    </section>
+
   </main>
 
   <div id="levelupModal" class="xr-modal hidden">
@@ -629,11 +629,15 @@
           Gear Name
           <input id="gearNameInput" type="text" maxlength="60" />
         </label>
+        <label>
+          Notes
+          <textarea id="gearNotesInput" rows="3" placeholder="Add optional notes about this gear..."></textarea>
+        </label>
         <div id="gearDetailBody" class="gear-details-list"></div>
       </div>
       <div class="gear-modal-actions">
         <div class="right-actions">
-          <button id="saveGearName" type="button">Save Name</button>
+          <button id="saveGearName" type="button">Save Details</button>
           <button id="copyGearJson" type="button">Copy JSON</button>
           <button id="dissolveGear" type="button">Dissolve into Essence</button>
           <button id="deleteGear" type="button">Delete Gear</button>
@@ -713,6 +717,19 @@
       { level: 9, xp: 200, baseHp: 45, statPoints: 1, energyCap: 9, kernelSlots: 5, inventorySlots: 26, baseLuck: 9 },
       { level: 10, xp: 260, baseHp: 50, statPoints: 0, energyCap: 10, kernelSlots: 5, inventorySlots: 30, baseLuck: 10 }
     ];
+
+    const statLimitTable = {
+      1: { hp: 20, defenseDc: 17, attackDamage: 20, comboDamage: 40, luck: 5 },
+      2: { hp: 25, defenseDc: 18, attackDamage: 30, comboDamage: 60, luck: 7 },
+      3: { hp: 30, defenseDc: 19, attackDamage: 40, comboDamage: 80, luck: 9 },
+      4: { hp: 35, defenseDc: 20, attackDamage: 50, comboDamage: 100, luck: 11 },
+      5: { hp: 40, defenseDc: 21, attackDamage: 60, comboDamage: 120, luck: 13 },
+      6: { hp: 50, defenseDc: 23, attackDamage: 80, comboDamage: 160, luck: 15 },
+      7: { hp: 60, defenseDc: 25, attackDamage: 100, comboDamage: 200, luck: 18 },
+      8: { hp: 80, defenseDc: 28, attackDamage: 125, comboDamage: 250, luck: 21 },
+      9: { hp: 100, defenseDc: 30, attackDamage: 150, comboDamage: 300, luck: 25 },
+      10: { hp: null, defenseDc: null, attackDamage: null, comboDamage: null, luck: null }
+    };
 
     const defaults = {
       level: 1,
@@ -870,6 +887,7 @@
     const gearDetailBackdrop = gearDetailModal.querySelector(".xr-modal-backdrop");
     const gearDetailTitle = document.getElementById("gearDetailTitle");
     const gearNameInput = document.getElementById("gearNameInput");
+    const gearNotesInput = document.getElementById("gearNotesInput");
     const gearDetailBody = document.getElementById("gearDetailBody");
     const closeGearDetail = document.getElementById("closeGearDetail");
     const copyGearJson = document.getElementById("copyGearJson");
@@ -1558,14 +1576,71 @@
       return lists.flat().filter(Boolean);
     }
 
-    function setStatDisplay(element, value, summary) {
+    function getLevelLimits(level) {
+      return statLimitTable[level] || statLimitTable[10];
+    }
+
+    function applyDisplayLimit(value, limit) {
+      if (!Number.isFinite(limit)) {
+        return { displayValue: value, limit: null };
+      }
+      return { displayValue: Math.min(value, limit), limit };
+    }
+
+    function sumSourceValues(sourceList = []) {
+      return sourceList.reduce((total, item) => {
+        if (!item || !Number.isFinite(item.value)) return total;
+        return total + item.value;
+      }, 0);
+    }
+
+    function setStatDisplay(element, value, summary, options = {}) {
       if (!element) return;
+      const displayValue = options.displayValue ?? value;
+      const limit = Number.isFinite(options.limit) ? options.limit : null;
+      const limitLabel = options.limitLabel || "Limit";
+      const rawValue = options.rawValue;
+      const showRawValue = options.showRawValue && Number.isFinite(rawValue);
+      const gearPlus = Number.isFinite(options.gearPlus) ? options.gearPlus : null;
+
       element.textContent = "";
-      element.append(String(value));
+      const valueRow = document.createElement("span");
+      valueRow.className = "stat-value-row";
+
+      const valueSpan = document.createElement("span");
+      valueSpan.className = "stat-main-value";
+      valueSpan.textContent = String(displayValue);
+      valueRow.appendChild(valueSpan);
+
+      if (limit !== null) {
+        const limitSpan = document.createElement("span");
+        limitSpan.className = "stat-limit-value muted";
+        limitSpan.textContent = `${limitLabel} ${limit}`;
+        if (displayValue !== value) {
+          limitSpan.title = `Capped from ${value}`;
+        }
+        valueRow.appendChild(limitSpan);
+      }
+
+      element.appendChild(valueRow);
+
+      const details = [];
+      if (gearPlus !== null) {
+        details.push(`Gear ${formatSignedValue(gearPlus)}`);
+      }
+      if (showRawValue) {
+        details.push(`Uncapped ${rawValue}`);
+      }
+      if (details.length) {
+        const detailsSpan = document.createElement("span");
+        detailsSpan.className = "muted stat-summary";
+        detailsSpan.textContent = `(${details.join(" • ")})`;
+        element.appendChild(detailsSpan);
+      }
+
       if (summary) {
         const summarySpan = document.createElement("span");
-        summarySpan.className = "muted";
-        summarySpan.style.marginLeft = "0.4rem";
+        summarySpan.className = "muted stat-summary";
         summarySpan.textContent = `(${summary})`;
         element.appendChild(summarySpan);
       }
@@ -2791,7 +2866,8 @@
         essence_value: gear.essence_value || gear.essenceValue || 0,
         credit_value: gear.credit_value || gear.creditValue || 0,
         abilities: gear.abilities || [],
-        stat_modifiers: gear.stat_modifiers || gear.statModifiers || []
+        stat_modifiers: gear.stat_modifiers || gear.statModifiers || [],
+        notes: gear.notes || null
       };
     }
 
@@ -3134,6 +3210,7 @@
       const showTierDetails = !["Kernel", "Bauble"].includes(gearType);
       gearDetailTitle.textContent = formatGearName(gear);
       gearNameInput.value = gear.name || formatGearName(gear);
+      gearNotesInput.value = gear.notes || "";
       const stats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
       const colorCounts = getEquippedColorCounts();
       const gValue = gearType === "Bauble" && gear.color ? (colorCounts[gear.color] || 0) : 0;
@@ -3175,9 +3252,10 @@
         pushStatus("Gear name cannot be empty.", { tone: "warning" });
         return;
       }
+      const notes = gearNotesInput.value.trim();
       const { error } = await sb
         .from("webrunning_gear")
-        .update({ name: newName })
+        .update({ name: newName, notes })
         .eq("id", activeGearRow.gear_id);
       if (error) {
         gearDetailStatus.textContent = error.message;
@@ -3185,9 +3263,10 @@
         return;
       }
       activeGearRow.gear.name = newName;
+      activeGearRow.gear.notes = notes;
       gearDetailTitle.textContent = newName;
-      gearDetailStatus.textContent = "Name saved.";
-      pushStatus("Gear name saved.", { tone: "success" });
+      gearDetailStatus.textContent = "Details saved.";
+      pushStatus("Gear details saved.", { tone: "success" });
       render();
     }
 
@@ -3206,7 +3285,8 @@
         essence_value: gear.essence_value,
         credit_value: gear.credit_value,
         abilities: gear.abilities,
-        stat_modifiers: gear.stat_modifiers
+        stat_modifiers: gear.stat_modifiers,
+        notes: gear.notes || ""
       };
       try {
         await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
@@ -3450,20 +3530,48 @@
       const aoeRangeSources = combineSourceLists(sources.derived.aoeRange, scaleSourceList(sources.base.intelligence, 2 * aoeMultiplier));
       const hackingSources = combineSourceLists(sources.derived.hacking, sources.base.intelligence);
 
+      const limits = getLevelLimits(stats.level);
+      const attackTotal = derived.attackPlus + (derivedBonus.attackPlus || 0) + statusAdjustments.attackPlus;
+      const comboTotal = derived.damagePlus + (derivedBonus.damagePlus || 0) + statusAdjustments.damagePlus;
+      const defenseDcTotal = derived.defenseDc + (derivedBonus.defenseDc || 0) + statusAdjustments.defenseDc;
+      const defenseDcDisplay = applyDisplayLimit(defenseDcTotal, limits.defenseDc);
+
       setStatDisplay(
         elements.displayAttackPlus,
-        derived.attackPlus + (derivedBonus.attackPlus || 0) + statusAdjustments.attackPlus,
-        summarizeSources(attackSources)
+        attackTotal,
+        summarizeSources(attackSources),
+        {
+          limit: limits.attackDamage,
+          limitLabel: "Cap:",
+          gearPlus: sumSourceValues(sources.derived.attackPlus),
+          rawValue: attackTotal,
+          showRawValue: Number.isFinite(limits.attackDamage)
+        }
       );
       setStatDisplay(
         elements.displayDamagePlus,
-        derived.damagePlus + (derivedBonus.damagePlus || 0) + statusAdjustments.damagePlus,
-        summarizeSources(damageSources)
+        comboTotal,
+        summarizeSources(damageSources),
+        {
+          limit: limits.comboDamage,
+          limitLabel: "Cap:",
+          gearPlus: sumSourceValues(sources.derived.damagePlus),
+          rawValue: comboTotal,
+          showRawValue: Number.isFinite(limits.comboDamage)
+        }
       );
       setStatDisplay(
         elements.displayDefenseDc,
-        derived.defenseDc + (derivedBonus.defenseDc || 0) + statusAdjustments.defenseDc,
-        summarizeSources(defenseDcSources)
+        defenseDcTotal,
+        summarizeSources(defenseDcSources),
+        {
+          displayValue: defenseDcDisplay.displayValue,
+          limit: defenseDcDisplay.limit,
+          limitLabel: "Cap:",
+          gearPlus: sumSourceValues(sources.derived.defenseDc),
+          rawValue: defenseDcTotal,
+          showRawValue: Number.isFinite(defenseDcDisplay.limit)
+        }
       );
       setStatDisplay(
         elements.displayArmor,
@@ -3527,8 +3635,25 @@
       elements.displayLevel.textContent = stats.level;
       elements.inputXp.value = baseStats.xp;
       const sources = gearBonus?.sources || createEmptyBonusSources();
-      setStatDisplay(elements.displayLuck, stats.luck, summarizeSources(sources.base.luck));
-      setStatDisplay(elements.displayHp, stats.hp, summarizeSources(sources.base.hp));
+      const limits = getLevelLimits(stats.level);
+      const luckDisplay = applyDisplayLimit(stats.luck, limits.luck);
+      const hpDisplay = applyDisplayLimit(stats.hp, limits.hp);
+      setStatDisplay(elements.displayLuck, stats.luck, summarizeSources(sources.base.luck), {
+        displayValue: luckDisplay.displayValue,
+        limit: luckDisplay.limit,
+        limitLabel: "Cap:",
+        gearPlus: sumSourceValues(sources.base.luck),
+        rawValue: stats.luck,
+        showRawValue: Number.isFinite(luckDisplay.limit)
+      });
+      setStatDisplay(elements.displayHp, stats.hp, summarizeSources(sources.base.hp), {
+        displayValue: hpDisplay.displayValue,
+        limit: hpDisplay.limit,
+        limitLabel: "Cap:",
+        gearPlus: sumSourceValues(sources.base.hp),
+        rawValue: stats.hp,
+        showRawValue: Number.isFinite(hpDisplay.limit)
+      });
       setStatDisplay(elements.displayEnergyCap, stats.energy_cap, summarizeSources(sources.base.energy_cap));
       elements.inputEssence.value = baseStats.essence;
       elements.inputCurrentHp.value = baseStats.current_hp;
@@ -4161,6 +4286,8 @@
     saveGearName.addEventListener("click", saveGearNameUpdate);
     gearNameInput.addEventListener("change", saveGearNameUpdate);
     gearNameInput.addEventListener("blur", saveGearNameUpdate);
+    gearNotesInput.addEventListener("change", saveGearNameUpdate);
+    gearNotesInput.addEventListener("blur", saveGearNameUpdate);
     copyGearJson.addEventListener("click", copyGearJsonToClipboard);
     deleteGearButton.addEventListener("click", () => deleteGear({ mode: "delete" }));
     dissolveGearButton.addEventListener("click", () => deleteGear({ mode: "dissolve" }));
