@@ -37,6 +37,7 @@ a:visited {
 .xr-nav {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
   gap: 16px;
   padding: 0.9rem 1.5rem;
   background: var(--panel);
@@ -56,6 +57,10 @@ a:visited {
   margin-left: auto;
   display: none;
   max-width: 520px;
+  width: auto;
+  flex: 0 0 auto;
+  padding: 0.35rem 0.5rem;
+  line-height: 1;
 }
 
 .xr-nav-groups {
@@ -1126,6 +1131,7 @@ textarea:focus {
 
 .wr-scope .ability-group h3 {
   margin-top: 0;
+  text-align: left;
 }
 
 .wr-scope .ability-dropdown {
@@ -1167,6 +1173,12 @@ textarea:focus {
   margin-top: 0.5rem;
   display: grid;
   gap: 0.5rem;
+  text-align: left;
+  justify-items: start;
+}
+
+.wr-scope .ability-dropdown .ability-details ul,
+.wr-scope .ability-dropdown .ability-details li {
   text-align: left;
 }
 
