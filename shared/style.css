@@ -832,10 +832,7 @@ textarea:focus {
 }
 
 .wr-scope .gear-generator-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
+  display: block;
 }
 
 .wr-scope .gear-generator-header h2 {
@@ -844,9 +841,13 @@ textarea:focus {
 
 .wr-scope .gear-generator-header-actions {
   margin-top: 0;
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  justify-items: end;
+}
+
+.wr-scope .gear-actions--stack {
+  grid-template-columns: 1fr;
 }
 
 .wr-scope .gear-details-list {
