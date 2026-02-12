@@ -3561,8 +3561,8 @@
           rawValue: comboTotal
         }
       );
-      setStatDisplay(elements.displayAttackDamageLimit, limits.attackDamage, "");
-      setStatDisplay(elements.displayComboDamageLimit, limits.comboDamage, "");
+      setStatDisplay(elements.displayAttackDamageLimit, limits.attackDamage ?? "None", "");
+      setStatDisplay(elements.displayComboDamageLimit, limits.comboDamage ?? "None", "");
       setStatDisplay(
         elements.displayDefenseDc,
         defenseDcTotal,
