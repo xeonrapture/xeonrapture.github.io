@@ -1635,7 +1635,7 @@
         limitSpan.className = "stat-limit-value muted";
         const limitDetails = [`${limitLabel} ${limit}`];
         if (showRawValue) {
-          limitDetails.push(`W/o Limit ${rawValue}`);
+          limitDetails.push(`(${rawValue})`);
         }
         limitSpan.textContent = limitDetails.join(" • ");
         if (displayValue !== value) {
