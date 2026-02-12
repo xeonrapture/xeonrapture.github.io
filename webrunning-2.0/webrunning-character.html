@@ -1621,7 +1621,11 @@
       if (limit !== null) {
         const limitSpan = document.createElement("span");
         limitSpan.className = "stat-limit-value muted";
-        limitSpan.textContent = `${limitLabel} ${limit}`;
+        const limitDetails = [`${limitLabel} ${limit}`];
+        if (showRawValue) {
+          limitDetails.push(`Uncapped ${rawValue}`);
+        }
+        limitSpan.textContent = limitDetails.join(" • ");
         if (displayValue !== value) {
           limitSpan.title = `Limited from ${value}`;
         }
@@ -1631,9 +1635,6 @@
       element.appendChild(valueRow);
 
       const details = [];
-      if (showRawValue) {
-        details.push(`Uncapped ${rawValue}`);
-      }
       if (details.length) {
         const detailsSpan = document.createElement("span");
         detailsSpan.className = "muted stat-summary";

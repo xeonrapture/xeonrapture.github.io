@@ -470,13 +470,14 @@ textarea:focus {
 
 
 .wr-scope .stat-value-row {
-  display: inline-flex;
+  display: flex;
+  width: 100%;
   align-items: baseline;
-  justify-content: flex-start;
   gap: 0.6rem;
 }
 
 .wr-scope .stat-limit-value {
+  margin-left: auto;
   font-size: 0.8em;
   text-align: right;
   white-space: nowrap;
