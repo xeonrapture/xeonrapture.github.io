@@ -23,8 +23,8 @@
           <span class="muted">Character Name</span>
           <input id="characterName" type="text" maxlength="32" placeholder="Character name" />
         </label>
-        <button id="saveCharacter" type="button">Save Character</button>
-        <button id="levelUpButton" type="button">Level Up</button>
+        <button id="saveCharacter" type="button" aria-label="Save character" title="Save character"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5z"></path><path d="M8 4v6h8V4"></path><path d="M8 16h8"></path></svg></button>
+        <button id="levelUpButton" type="button" aria-label="Level up" title="Level up"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"></path><path d="M7 10l5-5 5 5"></path></svg></button>
       </div>
     </section>
 
@@ -77,7 +77,7 @@
     <section class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Stats</h2>
-        <button class="collapse-toggle" type="button">Hide</button>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
       </div>
       <div class="collapsible-body section-stack">
         <section class="card section-card">
@@ -101,7 +101,7 @@
         <section class="card collapsible section-card" data-collapsible>
           <div class="collapsible-header">
             <h3>Secondary Stats</h3>
-            <button class="collapse-toggle" type="button">Hide</button>
+            <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
           </div>
           <div class="collapsible-body">
             <p class="muted">Tied to Basic Stats and increased by equipping gear.</p>
@@ -139,7 +139,7 @@
         <section class="card collapsible section-card" data-collapsible>
           <div class="collapsible-header">
             <h3>Neutral Buffs</h3>
-            <button class="collapse-toggle" type="button">Hide</button>
+            <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
           </div>
           <div class="collapsible-body">
             <div class="stats-grid">
@@ -168,7 +168,7 @@
         <section class="card collapsible section-card" data-collapsible>
           <div class="collapsible-header">
             <h3>Status Effects</h3>
-            <button class="collapse-toggle" type="button">Hide</button>
+            <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
           </div>
           <div class="collapsible-body">
             <div class="stat-inputs">
@@ -203,12 +203,12 @@
         <section id="tempBuffSection" class="card collapsible section-card hidden" data-collapsible>
           <div class="collapsible-header">
             <h3>Active Temp Buffs</h3>
-            <button class="collapse-toggle" type="button">Hide</button>
+            <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
           </div>
           <div class="collapsible-body">
             <div class="gear-generator-actions">
               <span class="muted" id="tempBuffSummary">No active temporary consumable buffs.</span>
-              <button id="clearTempBuffs" type="button" class="hidden">Clear Temp Buffs</button>
+              <button id="clearTempBuffs" type="button" class="hidden" aria-label="Clear temporary buffs" title="Clear temporary buffs"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4l6 6"></path><path d="M10 8l6 6"></path><path d="M4 20l9-9"></path><path d="M3 21h7"></path></svg></button>
             </div>
           </div>
         </section>
@@ -218,7 +218,7 @@
     <section class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Abilities</h2>
-        <button class="collapse-toggle" type="button">Hide</button>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
       </div>
       <div class="collapsible-body">
         <div id="abilitiesList" class="ability-section"></div>
@@ -228,19 +228,19 @@
     <section class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Gear</h2>
-        <button class="collapse-toggle" type="button">Hide</button>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
       </div>
       <div class="collapsible-body section-stack">
         <section class="card collapsible section-card" data-collapsible>
           <div class="collapsible-header">
             <h3>Gear Generator</h3>
-            <button class="collapse-toggle" type="button">Hide</button>
+            <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
           </div>
           <div class="collapsible-body">
             <p class="muted">Click <a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Gear+Generation+and+Modification">here</a> for an explanation of gear generation.</p>
             <p class="muted">Generate gear with your current luck plus a bonus and add it to your inventory or equip it.</p>
             <div class="gear-generator-actions">
-              <button id="openGearGenerator" type="button" class="hidden">Generate Gear</button>
+              <button id="openGearGenerator" type="button" class="hidden" aria-label="Generate gear" title="Generate gear"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"></path></svg></button>
               <span id="gearGeneratorStatus" class="mono muted"></span>
             </div>
           </div>
@@ -249,7 +249,7 @@
         <section class="card collapsible section-card" data-collapsible>
       <div class="collapsible-header">
         <h2>Gear Slots</h2>
-        <button class="collapse-toggle" type="button">Hide</button>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
       </div>
       <div class="collapsible-body">
         <div id="equippedSlots" class="gear-grid"></div>
@@ -259,7 +259,7 @@
         <section class="card collapsible section-card" data-collapsible>
       <div class="collapsible-header">
         <h2>Inventory Slots</h2>
-        <button class="collapse-toggle" type="button">Hide</button>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
       </div>
         <div class="collapsible-body">
         <div class="gear-controls">
@@ -332,7 +332,7 @@
         <section class="card collapsible collapsed section-card" data-collapsible>
       <div class="collapsible-header">
         <h2>Local Node Storage</h2>
-        <button class="collapse-toggle" type="button">Show</button>
+        <button class="collapse-toggle" type="button" aria-label="Show section" title="Show section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button>
       </div>
       <div class="collapsible-body">
         <p class="muted">Stored and can only be accessed in your local node.</p>
@@ -385,7 +385,7 @@
         <section class="card collapsible collapsed section-card" data-collapsible>
           <div class="collapsible-header">
             <h3>Deleted Gear History</h3>
-            <button class="collapse-toggle" type="button">Show</button>
+            <button class="collapse-toggle" type="button" aria-label="Show section" title="Show section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button>
           </div>
           <div class="collapsible-body">
             <div id="deletedGearHistory" class="deletion-history"></div>
@@ -397,7 +397,7 @@
     <section class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Character Info</h2>
-        <button class="collapse-toggle" type="button">Hide</button>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
       </div>
       <div class="collapsible-body section-stack">
         <section class="card notes-area section-card">
@@ -444,8 +444,8 @@
         <div id="levelError" class="mono muted"></div>
       </div>
       <div class="xr-modal-actions">
-        <button id="confirmLevelUp" type="button">Apply Level</button>
-        <button id="cancelLevelUp" type="button">Cancel</button>
+        <button id="confirmLevelUp" type="button" aria-label="Apply level" title="Apply level"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></button>
+        <button id="cancelLevelUp" type="button" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
       </div>
     </div>
   </div>
@@ -517,9 +517,9 @@
         <div class="muted">Total luck used: <span id="gearTotalLuck">0</span></div>
       </div>
       <div class="xr-modal-actions">
-        <button id="generateGear" type="button">Generate</button>
-        <button id="addAllGeneratedGear" type="button" disabled>Add All to Inventory</button>
-        <button id="closeGearGenerator" type="button">Close</button>
+        <button id="generateGear" type="button" aria-label="Generate" title="Generate"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"></path></svg></button>
+        <button id="addAllGeneratedGear" type="button" disabled aria-label="Add all to inventory" title="Add all to inventory"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"></path><path d="M8 10l4 4 4-4"></path><path d="M4 20h16"></path></svg></button>
+        <button id="closeGearGenerator" type="button" aria-label="Close" title="Close"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
       </div>
       <div class="gear-details-list" style="margin-top:1rem;">
         <strong>Generated Gear</strong>
@@ -601,15 +601,15 @@
         <div>
           <strong>Stat Modifiers</strong>
           <div id="manualGearStatsList" class="manual-gear-list"></div>
-          <button id="addManualGearStat" type="button">+ Add Stat</button>
+          <button id="addManualGearStat" type="button" aria-label="Add stat" title="Add stat"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19h14"></path><path d="M7 16V9M12 16V6M17 16v-4"></path><path d="M4 5h4M6 3v4"></path></svg></button>
         </div>
         <div>
           <strong>Abilities</strong>
           <div id="manualGearAbilitiesList" class="manual-gear-list"></div>
-          <button id="addManualGearAbility" type="button">+ Add Ability</button>
+          <button id="addManualGearAbility" type="button" aria-label="Add ability" title="Add ability"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l1.5 3.5L17 9l-3.5 1.5L12 14l-1.5-3.5L7 9l3.5-1.5z"></path><path d="M4 18h4M6 16v4"></path></svg></button>
         </div>
         <div class="manual-gear-actions">
-          <button id="addManualGear" type="button">Add Manual Gear</button>
+          <button id="addManualGear" type="button" aria-label="Add manual gear" title="Add manual gear"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l4 4-8 8-4 1 1-4z"></path><path d="M4 6h4M6 4v4"></path></svg></button>
           <span id="manualGearStatus" class="mono muted"></span>
         </div>
       </details>
@@ -617,7 +617,7 @@
         <strong>Paste Gear JSON</strong>
         <textarea id="gearPasteInput" placeholder="Paste gear JSON here"></textarea>
         <div class="gear-generator-actions">
-          <button id="addPastedGear" type="button">Add Pasted Gear</button>
+          <button id="addPastedGear" type="button" aria-label="Add pasted gear" title="Add pasted gear"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="10" height="14" rx="2"></rect><path d="M9 4V2h4v2"></path><path d="M18 17h4M20 15v4"></path></svg></button>
           <span id="pasteStatus" class="mono muted"></span>
         </div>
       </div>
@@ -641,12 +641,12 @@
       </div>
       <div class="gear-modal-actions">
         <div class="right-actions">
-          <button id="saveGearName" type="button">Save Details</button>
-          <button id="copyGearJson" type="button">Copy JSON</button>
-          <button id="dissolveGear" type="button">Dissolve into Essence</button>
-          <button id="deleteGear" type="button">Delete Gear</button>
+          <button id="saveGearName" type="button" aria-label="Save details" title="Save details"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5z"></path><path d="M8 4v6h8V4"></path><path d="M8 16h8"></path></svg></button>
+          <button id="copyGearJson" type="button" aria-label="Copy JSON" title="Copy JSON"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="12" height="16" rx="2"></rect><path d="M9 5V3h6v2"></path><path d="M9 11h6M9 15h6"></path></svg></button>
+          <button id="dissolveGear" type="button" aria-label="Dissolve into essence" title="Dissolve into essence"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4"></path><path d="M11 3v6l-5 8a3 3 0 0 0 2.6 4h6.8A3 3 0 0 0 18 17l-5-8V3"></path><path d="M8 14h8"></path></svg></button>
+          <button id="deleteGear" type="button" aria-label="Delete gear" title="Delete gear"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
         </div>
-        <button id="closeGearDetail" type="button">Close</button>
+        <button id="closeGearDetail" type="button" aria-label="Close" title="Close"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
       </div>
       <div id="gearDetailStatus" class="mono muted"></div>
     </div>
@@ -674,8 +674,8 @@
       </div>
       <p class="muted">Points remaining: <span id="respecPointsRemaining">0</span></p>
       <div class="xr-modal-actions">
-        <button id="respecApplyBtn" type="button">Apply Respec</button>
-        <button id="respecCancelBtn" type="button">Cancel</button>
+        <button id="respecApplyBtn" type="button" aria-label="Apply respec" title="Apply respec"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></button>
+        <button id="respecCancelBtn" type="button" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
       </div>
       <div id="respecModalMsg" class="mono muted"></div>
     </div>
@@ -696,8 +696,8 @@
         </select>
       </label>
       <div class="xr-modal-actions">
-        <button id="energyApplyBtn" type="button">Apply</button>
-        <button id="energyCancelBtn" type="button">Cancel</button>
+        <button id="energyApplyBtn" type="button" aria-label="Apply" title="Apply"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></button>
+        <button id="energyCancelBtn" type="button" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
       </div>
     </div>
   </div>
@@ -2044,10 +2044,10 @@
               ${isConsumable(gear) ? `<span class="muted">Consumable Summary: ${getConsumableSummary(gear)}</span>` : ""}
               </div>
               <div class="gear-actions">
-                <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
-                <button type="button" data-action="dissolve" data-gear="${entry.gear_id}">Dissolve</button>
-                <button type="button" data-action="unequip" data-gear="${entry.gear_id}">Move to Inventory</button>
-                <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
+                <button type="button" data-action="view" data-gear="${entry.gear_id}" aria-label="View details" title="View details">🔎</button>
+                <button type="button" data-action="dissolve" data-gear="${entry.gear_id}" aria-label="Dissolve" title="Dissolve"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4"></path><path d="M11 3v6l-5 8a3 3 0 0 0 2.6 4h6.8A3 3 0 0 0 18 17l-5-8V3"></path><path d="M8 14h8"></path></svg></button>
+                <button type="button" data-action="unequip" data-gear="${entry.gear_id}" aria-label="Move to inventory" title="Move to inventory"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"></path><path d="M8 10l4 4 4-4"></path><path d="M4 20h16"></path></svg></button>
+                <button type="button" data-action="delete" data-gear="${entry.gear_id}" aria-label="Delete" title="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
               </div>
             </div>
           `;
@@ -2120,7 +2120,6 @@
             ? availableSlots.map(formatSlotLabel).join(", ")
             : (swapOptions.length ? "No slots open (swap available)" : "No slots open")));
         const canEquip = gearType !== "Bauble" && !consumable && (availableSlots.length || swapOptions.length);
-        const equipLabel = availableSlots.length ? "Equip" : (swapOptions.length ? "Swap" : "Equip");
         const colorCounts = getEquippedColorCounts();
         const gValue = gearType === "Bauble" && gear.color ? (colorCounts[gear.color] || 0) : 0;
         const statSummary = buildGearStatSummary(gear, stats.luck, { g: gValue });
@@ -2140,13 +2139,13 @@
               ${consumable ? `<span class="muted">Consumable Summary: ${getConsumableSummary(gear)}</span>` : ""}
             </div>
             <div class="gear-actions">
-              <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
+              <button type="button" data-action="view" data-gear="${entry.gear_id}" aria-label="View details" title="View details">🔎</button>
               ${consumable
-                ? `<button type="button" data-action="use" data-gear="${entry.gear_id}">Use</button>`
-                : (gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-gear="${entry.gear_id}" ${canEquip ? "" : "disabled"}>${equipLabel}</button>`)}
-              <button type="button" data-action="local" class="gear-action-wide" data-gear="${entry.gear_id}">Move to Local Node Storage</button>
-              <button type="button" data-action="dissolve" data-gear="${entry.gear_id}">Dissolve</button>
-              <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
+                ? `<button type="button" data-action="use" data-gear="${entry.gear_id}" aria-label="Use" title="Use"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L5 13h6l-1 9 9-13h-6z"></path></svg></button>`
+                : (gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-gear="${entry.gear_id}" ${canEquip ? "" : "disabled"} aria-label="Equip" title="Equip"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"></path></svg></button>`)}
+              <button type="button" data-action="local" class="gear-action-wide" data-gear="${entry.gear_id}" aria-label="Move to local node storage" title="Move to local node storage"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4z"></path><path d="M3 7v10l9 4 9-4V7"></path><path d="M12 11v10"></path></svg></button>
+              <button type="button" data-action="dissolve" data-gear="${entry.gear_id}" aria-label="Dissolve" title="Dissolve"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4"></path><path d="M11 3v6l-5 8a3 3 0 0 0 2.6 4h6.8A3 3 0 0 0 18 17l-5-8V3"></path><path d="M8 14h8"></path></svg></button>
+              <button type="button" data-action="delete" data-gear="${entry.gear_id}" aria-label="Delete" title="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
             </div>
           </div>
         `;
@@ -2194,10 +2193,10 @@
               ${consumable ? `<span class="muted">Consumable Summary: ${getConsumableSummary(gear)}</span>` : ""}
             </div>
             <div class="gear-actions">
-              <button type="button" data-action="view" data-gear="${entry.gear_id}">View Details</button>
-              <button type="button" data-action="dissolve" data-gear="${entry.gear_id}">Dissolve</button>
-              <button type="button" data-action="inventory" data-gear="${entry.gear_id}">Move to Inventory</button>
-              <button type="button" data-action="delete" data-gear="${entry.gear_id}">Delete</button>
+              <button type="button" data-action="view" data-gear="${entry.gear_id}" aria-label="View details" title="View details">🔎</button>
+              <button type="button" data-action="dissolve" data-gear="${entry.gear_id}" aria-label="Dissolve" title="Dissolve"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4"></path><path d="M11 3v6l-5 8a3 3 0 0 0 2.6 4h6.8A3 3 0 0 0 18 17l-5-8V3"></path><path d="M8 14h8"></path></svg></button>
+              <button type="button" data-action="inventory" data-gear="${entry.gear_id}" aria-label="Move to inventory" title="Move to inventory"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"></path><path d="M8 10l4 4 4-4"></path><path d="M4 20h16"></path></svg></button>
+              <button type="button" data-action="delete" data-gear="${entry.gear_id}" aria-label="Delete" title="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
             </div>
           </div>
         `;
@@ -2581,7 +2580,6 @@
         const availableSlots = availableSlotsForGear(gear, stats);
         const swapOptions = gearType === "Bauble" ? [] : getSwapOptionsForGear(gear, stats);
         const canEquip = gearType !== "Bauble" && !consumable && (availableSlots.length || swapOptions.length);
-        const equipLabel = availableSlots.length ? "Equip" : (swapOptions.length ? "Swap" : "Equip");
         card.innerHTML = `
           <div class="gear-summary">
             <div class="gear-meta">
@@ -2593,11 +2591,11 @@
               </div>
             </div>
             <div class="gear-actions">
-              <button type="button" data-action="add" data-index="${index}" ${isAdded ? "disabled" : ""}>${isAdded ? "Added" : "Add to Inventory"}</button>
+              <button type="button" data-action="add" data-index="${index}" ${isAdded ? "disabled" : ""} aria-label="Add to inventory" title="Add to inventory">${isAdded ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg>' : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"></path><path d="M8 10l4 4 4-4"></path><path d="M4 20h16"></path></svg>'}</button>
               ${consumable
-                ? `<button type="button" data-action="use" data-index="${index}" ${isAdded ? "" : "disabled"}>Use</button>`
-                : (gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-index="${index}" ${isAdded || !canEquip ? "disabled" : ""}>${isAdded ? "Added" : equipLabel}</button>`)}
-              <button type="button" data-action="remove" data-index="${index}" ${!isAdded ? "disabled" : ""}>${isAdded ? "Remove from Character" : "Not Added"}</button>
+                ? `<button type="button" data-action="use" data-index="${index}" ${isAdded ? "" : "disabled"} aria-label="Use" title="Use"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L5 13h6l-1 9 9-13h-6z"></path></svg></button>`
+                : (gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-index="${index}" ${isAdded || !canEquip ? "disabled" : ""} aria-label="Equip" title="Equip">${isAdded ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg>' : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"></path></svg>'}</button>`)}
+              <button type="button" data-action="remove" data-index="${index}" ${!isAdded ? "disabled" : ""} aria-label="Remove from character" title="Remove from character">${isAdded ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V10"></path><path d="M8 14l4-4 4 4"></path><path d="M4 4h16"></path></svg>' : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="6" width="3" height="12"></rect><rect x="14" y="6" width="3" height="12"></rect></svg>'}</button>
             </div>
           </div>
           <div class="gear-details-list">
@@ -2669,7 +2667,7 @@
           ${buildStatOptionList(statName || statOptions[0])}
         </select>
         <div class="manual-gear-stat-value"></div>
-        <button type="button" class="manual-gear-remove">Remove</button>
+        <button type="button" class="manual-gear-remove" aria-label="Remove" title="Remove"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
       `;
       const valueContainer = row.querySelector(".manual-gear-stat-value");
       const removeButton = row.querySelector(".manual-gear-remove");
@@ -2718,7 +2716,7 @@
           ${buildAbilityOptionList(selectedValue)}
         </select>
         <div class="manual-gear-stat-value"></div>
-        <button type="button" class="manual-gear-remove">Remove</button>
+        <button type="button" class="manual-gear-remove" aria-label="Remove" title="Remove"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
       `;
       const removeButton = row.querySelector(".manual-gear-remove");
       removeButton.addEventListener("click", () => {
@@ -3342,7 +3340,7 @@
               <strong>${formatGearName(record.entry.gear)}</strong>
               <div class="muted">${record.deletedAt.toLocaleString()}</div>
             </div>
-            <button type="button" data-action="restore" data-record="${record.id}">Restore</button>
+            <button type="button" data-action="restore" data-record="${record.id}" aria-label="Restore" title="Restore"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8L4 12l5 4"></path><path d="M4 12h8a6 6 0 1 1 0 12"></path></svg></button>
           </div>
         `)
         .join("");
@@ -3995,11 +3993,18 @@
       document.querySelectorAll("[data-collapsible]").forEach(section => {
         const button = section.querySelector(".collapse-toggle");
         if (!button) return;
+        const updateCollapseButton = collapsed => {
+          button.innerHTML = collapsed
+            ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>'
+            : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg>';
+          button.setAttribute("aria-label", collapsed ? "Show section" : "Hide section");
+          button.setAttribute("title", collapsed ? "Show section" : "Hide section");
+        };
         const isCollapsed = section.classList.contains("collapsed");
-        button.textContent = isCollapsed ? "Show" : "Hide";
+        updateCollapseButton(isCollapsed);
         button.addEventListener("click", () => {
           const nowCollapsed = section.classList.toggle("collapsed");
-          button.textContent = nowCollapsed ? "Show" : "Hide";
+          updateCollapseButton(nowCollapsed);
         });
       });
     }

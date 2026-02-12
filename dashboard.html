@@ -23,7 +23,7 @@
       <div id="userInfo" class="mono muted">Loading user…</div>
 
       <div class="wr-mt-1">
-        <button id="logoutBtn">Log out</button>
+        <button id="logoutBtn" aria-label="Log out" title="Log out"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h10v16H4z"></path><path d="M14 12h6"></path><path d="M18 9l3 3-3 3"></path></svg></button>
       </div>
     </div>
 
@@ -52,8 +52,8 @@
       />
 
       <div class="xr-modal-actions">
-        <button id="saveUsernameBtn">Save</button>
-        <button id="cancelUsernameBtn">Cancel</button>
+        <button id="saveUsernameBtn" aria-label="Save username" title="Save username"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5z"></path><path d="M8 4v6h8V4"></path><path d="M8 16h8"></path></svg></button>
+        <button id="cancelUsernameBtn" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
       </div>
 
       <div id="usernameModalMsg" class="mono muted">&nbsp;</div>
@@ -101,7 +101,7 @@
     userInfo.innerHTML = `
       <div class="wr-inline-flex">
         <span>Username: <strong id="usernameValue">${username}</strong></span>
-        <button id="editUsernameBtn" type="button">Edit</button>
+        <button id="editUsernameBtn" type="button" aria-label="Edit username" title="Edit username"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 9-9-3-3-9 9-1 4z"></path><path d="M13 7l3 3"></path></svg></button>
       </div>
       <div class="wr-mt-0-5">Email: ${user.email}</div>
       <div>Name: ${displayName}</div>
