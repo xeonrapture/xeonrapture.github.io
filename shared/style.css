@@ -794,9 +794,13 @@ textarea:focus {
 }
 
 
-.wr-scope .gear-modification-panel {
+.wr-scope .gear-modification-panel .collapsible-body {
   display: grid;
   gap: 0.6rem;
+}
+
+.wr-scope #openGearModificationHub {
+  margin-bottom: 0.2rem;
 }
 
 .wr-scope .gear-mod-upgrade-row {
