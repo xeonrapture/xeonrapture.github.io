@@ -1514,7 +1514,12 @@
     function getGearGeneratorLuck(stats) {
       const baseLuck = stats.luck || 0;
       const bonus = Number(gearBonusLuck.value) || 0;
-      return baseLuck + bonus;
+      const totalLuck = baseLuck + bonus;
+      const luckLimit = getLevelLimits(stats.level).luck;
+      if (!Number.isFinite(luckLimit)) {
+        return totalLuck;
+      }
+      return Math.min(totalLuck, luckLimit);
     }
 
     function updateGearGeneratorLuck(stats) {
