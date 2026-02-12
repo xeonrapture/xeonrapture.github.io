@@ -90,8 +90,8 @@
         </div>
 
         <div class="gear-actions">
-          <button id="run" disabled>Loading Python…</button>
-          <button id="run2" disabled>Loading Python…</button>
+          <button id="run" disabled aria-label="Generate gear" title="Generate gear"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10"></path><path d="M8 4c0 4 4 4 4 8s-4 4-4 8"></path><path d="M16 4c0 4-4 4-4 8s4 4 4 8"></path></svg></button>
+          <button id="run2" disabled aria-label="Generate consumable" title="Generate consumable"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10"></path><path d="M8 4c0 4 4 4 4 8s-4 4-4 8"></path><path d="M16 4c0 4-4 4-4 8s4 4 4 8"></path></svg></button>
         </div>
       </div>
 
@@ -166,7 +166,7 @@
                 return `
                   <div class="gear-json-entry">
                     <span>${name || `Gear ${index + 1}`}</span>
-                    <button type="button" data-copy-gear="${json}">Copy JSON</button>
+                    <button type="button" data-copy-gear="${json}" aria-label="Copy JSON" title="Copy JSON"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="12" height="16" rx="2"></rect><path d="M9 5V3h6v2"></path><path d="M9 11h6M9 15h6"></path></svg></button>
                   </div>
                 `;
               })
@@ -381,10 +381,14 @@
 
       // Enable buttons
       btn.disabled = false;
-      btn.textContent = "Generate Gear";
+      btn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"></path></svg>';
+      btn.setAttribute("aria-label", "Generate gear");
+      btn.setAttribute("title", "Generate gear");
 
       btn2.disabled = false;
-      btn2.textContent = "Generate Luck-Calculated Gear";
+      btn2.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="1"></circle></svg>';
+      btn2.setAttribute("aria-label", "Generate luck-calculated gear");
+      btn2.setAttribute("title", "Generate luck-calculated gear");
 
       btn.onclick = () => {
         out.textContent = "Running…";
