@@ -453,7 +453,14 @@
   <div id="gearGeneratorModal" class="xr-modal hidden">
     <div class="xr-modal-backdrop"></div>
     <div class="xr-modal-card">
-      <h2>Generate Gear</h2>
+      <div class="gear-generator-header">
+        <h2>Generate Gear</h2>
+        <div class="xr-modal-actions gear-generator-header-actions">
+          <button id="generateGear" type="button" aria-label="Generate" title="Generate"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"></path></svg><span>Generate</span></button>
+          <button id="addAllGeneratedGear" type="button" disabled aria-label="Add all to inventory" title="Add all to inventory"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"></path><path d="M8 10l4 4 4-4"></path><path d="M4 20h16"></path></svg><span>Inventory All</span></button>
+          <button id="closeGearGenerator" type="button" aria-label="Close" title="Close"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg><span>Close</span></button>
+        </div>
+      </div>
       <div class="modal-grid">
         <label>
           Bonus Luck
@@ -515,11 +522,6 @@
           </select>
         </label>
         <div class="muted">Total luck used: <span id="gearTotalLuck">0</span></div>
-      </div>
-      <div class="xr-modal-actions">
-        <button id="generateGear" type="button" aria-label="Generate" title="Generate"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"></path></svg><span>Generate</span></button>
-        <button id="addAllGeneratedGear" type="button" disabled aria-label="Add all to inventory" title="Add all to inventory"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"></path><path d="M8 10l4 4 4-4"></path><path d="M4 20h16"></path></svg><span>Add All</span></button>
-        <button id="closeGearGenerator" type="button" aria-label="Close" title="Close"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg><span>Close</span></button>
       </div>
       <div class="gear-details-list" style="margin-top:1rem;">
         <strong>Generated Gear</strong>
@@ -617,7 +619,7 @@
         <strong>Paste Gear JSON</strong>
         <textarea id="gearPasteInput" placeholder="Paste gear JSON here"></textarea>
         <div class="gear-generator-actions">
-          <button id="addPastedGear" type="button" aria-label="Add pasted gear" title="Add pasted gear"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="10" height="14" rx="2"></rect><path d="M9 4V2h4v2"></path><path d="M18 17h4M20 15v4"></path></svg><span>Add Pasted</span></button>
+          <button id="addPastedGear" type="button" aria-label="Add pasted gear" title="Add pasted gear"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="10" height="14" rx="2"></rect><path d="M9 4V2h4v2"></path><path d="M18 17h4M20 15v4"></path></svg><span>Add Pasted to List Above</span></button>
           <span id="pasteStatus" class="mono muted"></span>
         </div>
       </div>
@@ -633,11 +635,11 @@
           Gear Name
           <input id="gearNameInput" type="text" maxlength="60" />
         </label>
-        <label>
+        <div id="gearDetailBody" class="gear-details-list"></div>
+        <label class="gear-detail-notes">
           Notes
           <textarea id="gearNotesInput" rows="3" placeholder="Add optional notes about this gear..."></textarea>
         </label>
-        <div id="gearDetailBody" class="gear-details-list"></div>
       </div>
       <div class="gear-modal-actions">
         <div class="right-actions">
@@ -645,8 +647,8 @@
           <button id="copyGearJson" type="button" aria-label="Copy JSON" title="Copy JSON"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="12" height="16" rx="2"></rect><path d="M9 5V3h6v2"></path><path d="M9 11h6M9 15h6"></path></svg><span>Copy JSON</span></button>
           <button id="dissolveGear" type="button" aria-label="Dissolve into essence" title="Dissolve into essence"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4"></path><path d="M11 3v6l-5 8a3 3 0 0 0 2.6 4h6.8A3 3 0 0 0 18 17l-5-8V3"></path><path d="M8 14h8"></path></svg><span>Dissolve</span></button>
           <button id="deleteGear" type="button" aria-label="Delete gear" title="Delete gear"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg><span>Delete</span></button>
+          <button id="closeGearDetail" type="button" aria-label="Close" title="Close"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg><span>Close</span></button>
         </div>
-        <button id="closeGearDetail" type="button" aria-label="Close" title="Close"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg><span>Close</span></button>
       </div>
       <div id="gearDetailStatus" class="mono muted"></div>
     </div>
@@ -2046,7 +2048,7 @@
               <div class="gear-actions">
                 <button type="button" data-action="view" data-gear="${entry.gear_id}" aria-label="View details" title="View details"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="M16 16l5 5"></path></svg><span>Details</span></button>
                 <button type="button" data-action="dissolve" data-gear="${entry.gear_id}" aria-label="Dissolve" title="Dissolve"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4"></path><path d="M11 3v6l-5 8a3 3 0 0 0 2.6 4h6.8A3 3 0 0 0 18 17l-5-8V3"></path><path d="M8 14h8"></path></svg><span>Dissolve</span></button>
-                <button type="button" data-action="unequip" data-gear="${entry.gear_id}" aria-label="Move to inventory" title="Move to inventory"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"></path><path d="M8 10l4 4 4-4"></path><path d="M4 20h16"></path></svg><span>Inventory</span></button>
+                <button type="button" data-action="unequip" data-gear="${entry.gear_id}" aria-label="Unequip" title="Unequip"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V10"></path><path d="M8 14l4-4 4 4"></path><path d="M4 4h16"></path></svg><span>Unequip</span></button>
                 <button type="button" data-action="delete" data-gear="${entry.gear_id}" aria-label="Delete" title="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg><span>Delete</span></button>
               </div>
             </div>
@@ -2111,6 +2113,7 @@
         const colorLabel = [gear.color, gear.color2].filter(Boolean).join(" / ") || "Neutral";
         const availableSlots = availableSlotsForGear(gear, stats);
         const swapOptions = gearType === "Bauble" ? [] : getSwapOptionsForGear(gear, stats);
+        const shouldSwap = !availableSlots.length && swapOptions.length;
         const consumable = isConsumable(gear);
         const slotHint = gearType === "Bauble"
           ? "Baubles cannot be equipped."
@@ -2142,7 +2145,7 @@
               <button type="button" data-action="view" data-gear="${entry.gear_id}" aria-label="View details" title="View details"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="M16 16l5 5"></path></svg><span>Details</span></button>
               ${consumable
                 ? `<button type="button" data-action="use" data-gear="${entry.gear_id}" aria-label="Use" title="Use"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L5 13h6l-1 9 9-13h-6z"></path></svg><span>Use</span></button>`
-                : (gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-gear="${entry.gear_id}" ${canEquip ? "" : "disabled"} aria-label="Equip" title="Equip"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"></path></svg><span>Equip</span></button>`)}
+                : (gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-gear="${entry.gear_id}" ${canEquip ? "" : "disabled"} aria-label="${shouldSwap ? "Swap" : "Equip"}" title="${shouldSwap ? "Swap" : "Equip"}">${shouldSwap ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10"></path><path d="M14 4l3 3-3 3"></path><path d="M17 17H7"></path><path d="M10 14l-3 3 3 3"></path></svg><span>Swap</span>' : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"></path></svg><span>Equip</span>'}</button>`)}
               <button type="button" data-action="local" class="gear-action-wide" data-gear="${entry.gear_id}" aria-label="Move to local node storage" title="Move to local node storage"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"></path><path d="M8 10l4 4 4-4"></path><path d="M4 20h16"></path></svg><span>Local Storage</span></button>
               <button type="button" data-action="dissolve" data-gear="${entry.gear_id}" aria-label="Dissolve" title="Dissolve"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4"></path><path d="M11 3v6l-5 8a3 3 0 0 0 2.6 4h6.8A3 3 0 0 0 18 17l-5-8V3"></path><path d="M8 14h8"></path></svg><span>Dissolve</span></button>
               <button type="button" data-action="delete" data-gear="${entry.gear_id}" aria-label="Delete" title="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg><span>Delete</span></button>
@@ -2579,6 +2582,7 @@
         const consumable = isConsumable(gear);
         const availableSlots = availableSlotsForGear(gear, stats);
         const swapOptions = gearType === "Bauble" ? [] : getSwapOptionsForGear(gear, stats);
+        const shouldSwap = !availableSlots.length && swapOptions.length;
         const canEquip = gearType !== "Bauble" && !consumable && (availableSlots.length || swapOptions.length);
         card.innerHTML = `
           <div class="gear-summary">
@@ -2591,10 +2595,10 @@
               </div>
             </div>
             <div class="gear-actions">
-              <button type="button" data-action="add" data-index="${index}" ${isAdded ? "disabled" : ""} aria-label="Add to inventory" title="Add to inventory">${isAdded ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg><span>Added</span>' : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"></path><path d="M8 10l4 4 4-4"></path><path d="M4 20h16"></path></svg><span>Add</span>'}</button>
+              <button type="button" data-action="add" data-index="${index}" ${isAdded ? "disabled" : ""} aria-label="Add to inventory" title="Add to inventory">${isAdded ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg><span>Added</span>' : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"></path><path d="M8 10l4 4 4-4"></path><path d="M4 20h16"></path></svg><span>Inventory</span>'}</button>
               ${consumable
                 ? `<button type="button" data-action="use" data-index="${index}" ${isAdded ? "" : "disabled"} aria-label="Use" title="Use"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L5 13h6l-1 9 9-13h-6z"></path></svg><span>Use</span></button>`
-                : (gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-index="${index}" ${isAdded || !canEquip ? "disabled" : ""} aria-label="Equip" title="Equip">${isAdded ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg><span>Equipped</span>' : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"></path></svg><span>Equip</span>'}</button>`)}
+                : (gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-index="${index}" ${isAdded || !canEquip ? "disabled" : ""} aria-label="${shouldSwap ? "Swap" : "Equip"}" title="${shouldSwap ? "Swap" : "Equip"}">${isAdded ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg><span>Equipped</span>' : (shouldSwap ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10"></path><path d="M14 4l3 3-3 3"></path><path d="M17 17H7"></path><path d="M10 14l-3 3 3 3"></path></svg><span>Swap</span>' : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"></path></svg><span>Equip</span>')}</button>`)}
               <button type="button" data-action="remove" data-index="${index}" ${!isAdded ? "disabled" : ""} aria-label="Remove from character" title="Remove from character">${isAdded ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V10"></path><path d="M8 14l4-4 4 4"></path><path d="M4 4h16"></path></svg><span>Remove</span>' : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="6" width="3" height="12"></rect><rect x="14" y="6" width="3" height="12"></rect></svg><span>Not Added</span>'}</button>
             </div>
           </div>
@@ -3457,10 +3461,6 @@
         const swapOptions = getSwapOptionsForGear(entry.gear, stats);
         if (!swapOptions.length) {
           pushStatus("No open slots for that gear.", { tone: "warning" });
-          return;
-        }
-        if (inventoryCount() >= inventoryCapacity(stats)) {
-          pushStatus("No inventory slots available to swap gear.", { tone: "warning" });
           return;
         }
         const selected = selectSwapSlot(swapOptions);
