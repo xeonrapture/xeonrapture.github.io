@@ -399,7 +399,10 @@
               <strong>Discount Tier: <span id="gearModTierLabel">None</span></strong>
               <div class="muted">Current discount: <span id="gearModDiscountLabel">0%</span> off base Essence costs.</div>
             </div>
-            <button id="upgradeGearModTier" type="button" aria-label="Upgrade gear modification discount" title="Upgrade gear modification discount"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12"></path><path d="M8 8l4-4 4 4"></path><path d="M5 20h14"></path></svg><span>Upgrade Discount</span></button>
+            <label>
+              Set Discount Tier
+              <select id="gearModTierSelect" aria-label="Set gear modification discount tier"></select>
+            </label>
           </div>
           <p class="muted">This upgrade lowers Essence prices for gear upgrades, rerolls, condensing, and aesthetics. Upgrading this discount does not cost Essence.</p>
           <div id="gearModUpgradeStatus" class="mono muted"></div>
@@ -821,6 +824,7 @@
     let gearModificationSource = "hub";
     let selectedModificationType = null;
     let selectedGearModificationTargetId = "";
+    let pendingModificationRecord = null;
 
     const elements = {
       nameInput: document.getElementById("characterName"),
@@ -880,7 +884,7 @@
       deletedGearHistory: document.getElementById("deletedGearHistory"),
       notesInput: document.getElementById("characterNotes"),
       openGearModificationHub: document.getElementById("openGearModificationHub"),
-      upgradeGearModTier: document.getElementById("upgradeGearModTier"),
+      gearModTierSelect: document.getElementById("gearModTierSelect"),
       gearModTierLabel: document.getElementById("gearModTierLabel"),
       gearModDiscountLabel: document.getElementById("gearModDiscountLabel"),
       gearModUpgradeStatus: document.getElementById("gearModUpgradeStatus")
@@ -1668,6 +1672,7 @@
     }
 
     function renderGearModificationSelection() {
+      pendingModificationRecord = null;
       if (!gearModificationBody) return;
       const stats = currentStats();
       gearModificationBody.innerHTML = `
@@ -1807,6 +1812,125 @@
       }
     }
 
+    function formatStatSummary(stat = {}) {
+      const statName = stat.label || stat.name || "Stat";
+      if (typeof stat.value === "number") {
+        return `${statName}: ${formatSignedValue(stat.value)}`;
+      }
+      if (stat.formula) {
+        return `${statName}: ${stat.formula}`;
+      }
+      return statName;
+    }
+
+    function formatAbilitySummary(ability = {}) {
+      const name = ability.name || "Unknown Ability";
+      const type = ability.type || "Ability";
+      const tierKeys = Object.keys(ability?.tierDetails || {});
+      const tierLabel = tierKeys.length ? ` (${tierKeys.join(", ")})` : "";
+      return `${name} [${type}]${tierLabel}`;
+    }
+
+    function summarizeGearModificationResult(choice, before, after, { donorSnapshot, secondTargetSnapshot } = {}) {
+      const summary = [];
+      if (choice === "upgrading") {
+        summary.push(`Rarity: ${before.rarity || "Unknown"} → ${after.rarity || "Unknown"}`);
+      }
+      const beforeStats = Array.isArray(before.stats) ? before.stats : [];
+      const afterStats = Array.isArray(after.stats) ? after.stats : [];
+      const beforeAbilities = Array.isArray(before.abilities) ? before.abilities : [];
+      const afterAbilities = Array.isArray(after.abilities) ? after.abilities : [];
+
+      const newStats = afterStats.slice(beforeStats.length);
+      const newAbilities = afterAbilities.slice(beforeAbilities.length);
+      if (newStats.length) {
+        summary.push(`New stat buffs: ${newStats.map(formatStatSummary).join(", ")}`);
+      }
+      if (newAbilities.length) {
+        summary.push(`New abilities: ${newAbilities.map(formatAbilitySummary).join(", ")}`);
+      }
+
+      const statChanges = [];
+      const comparedStats = Math.min(beforeStats.length, afterStats.length);
+      for (let i = 0; i < comparedStats; i += 1) {
+        const prev = beforeStats[i];
+        const next = afterStats[i];
+        if (!prev || !next) continue;
+        const prevVal = typeof prev.value === "number" ? prev.value : prev.formula;
+        const nextVal = typeof next.value === "number" ? next.value : next.formula;
+        if (prevVal !== nextVal) {
+          statChanges.push(`${next.label || next.name || "Stat"}: ${prevVal} → ${nextVal}`);
+        }
+      }
+      if (statChanges.length) {
+        summary.push(`Stat changes: ${statChanges.join(", ")}`);
+      }
+
+      const abilityTierChanges = [];
+      const comparedAbilities = Math.min(beforeAbilities.length, afterAbilities.length);
+      for (let i = 0; i < comparedAbilities; i += 1) {
+        const prev = beforeAbilities[i] || {};
+        const next = afterAbilities[i] || {};
+        const prevTiers = Object.keys(prev.tierDetails || {}).join(", ") || "None";
+        const nextTiers = Object.keys(next.tierDetails || {}).join(", ") || "None";
+        if (prevTiers !== nextTiers) {
+          abilityTierChanges.push(`${next.name || prev.name || "Ability"}: ${prevTiers} → ${nextTiers}`);
+        }
+      }
+      if (abilityTierChanges.length) {
+        summary.push(`Ability tier changes: ${abilityTierChanges.join(", ")}`);
+      }
+
+      if (choice === "condensing" && donorSnapshot) {
+        summary.push(`Condensed from: ${formatGearName(donorSnapshot.gear)}`);
+      }
+      if (choice === "aesthetic") {
+        const beforeAesthetic = before.aesthetic || "None";
+        const afterAesthetic = after.aesthetic || "None";
+        if (beforeAesthetic !== afterAesthetic) {
+          summary.push(`Aesthetic: ${beforeAesthetic} → ${afterAesthetic}`);
+        }
+        if (secondTargetSnapshot) {
+          summary.push(`Swapped with: ${formatGearName(secondTargetSnapshot.after)}`);
+        }
+      }
+
+      if (!summary.length) {
+        summary.push("No visible modifier changes were detected.");
+      }
+      return summary;
+    }
+
+    function renderGearModificationResult(record) {
+      if (!gearModificationBody) return;
+      const summary = summarizeGearModificationResult(
+        record.modification?.choice,
+        record.modification?.before || {},
+        record.modification?.after || {},
+        {
+          donorSnapshot: record.modification?.donorSnapshot,
+          secondTargetSnapshot: record.modification?.secondTargetSnapshot
+        }
+      );
+      gearModificationBody.innerHTML = `
+        <h3>Modification Complete</h3>
+        <p><strong>${record.label}</strong></p>
+        <p class="muted">Spent ${record.modification?.cost || 0} Essence.</p>
+        <ul>${summary.map(item => `<li>${item}</li>`).join("")}</ul>
+        <div class="gear-modal-actions">
+          <button type="button" data-mod-result-action="undo">Undo Modification</button>
+          <button type="button" data-mod-result-action="details">Go to Gear Details</button>
+          <button type="button" data-mod-result-action="back">Back to Modifiers</button>
+        </div>
+      `;
+      if (gearModificationStatus) {
+        gearModificationStatus.textContent = "Review the changes or undo this modification.";
+      }
+      if (gearModificationBack) {
+        gearModificationBack.classList.remove("hidden");
+      }
+    }
+
     function openGearModificationModal({ source = "hub", entry = null } = {}) {
       gearModificationSource = source;
       if (entry) {
@@ -1824,6 +1948,7 @@
     }
 
     function closeGearModificationModal() {
+      pendingModificationRecord = null;
       gearModificationModal?.classList.add("hidden");
     }
 
@@ -1966,7 +2091,7 @@
         if (error) throw error;
         entry.gear = updated;
 
-        addGearHistoryRecord({
+        const historyRecord = addGearHistoryRecord({
           type: "modify",
           label: `${choice[0].toUpperCase()}${choice.slice(1)}: ${formatGearName(updated)}`,
           entry: { gear_id: entry.gear_id, gear_slot: entry.gear_slot, equipped: entry.equipped, gear: cloneJson(updated) },
@@ -1980,8 +2105,9 @@
           }
         });
 
+        pendingModificationRecord = historyRecord;
         render();
-        closeGearModificationModal();
+        renderGearModificationResult(historyRecord);
         pushStatus(`Modification applied. Spent ${cost} essence.`, { tone: "success" });
       } catch (error) {
         console.error(error);
@@ -2131,9 +2257,9 @@
     function formatGearName(gear) {
       if (!gear) return "Unknown Gear";
       if (gear.name && gear.name.trim()) return gear.name.trim();
-      const colors = [gear.color, gear.color2].filter(Boolean).join("/");
-      const colorLabel = colors ? `${colors} ` : "";
-      return `${gear.rarity || ""} ${colorLabel}${gear.item_type || gear.itemType || gear.gear_type || gear.gearType || "Gear"}`.trim();
+      const typeLabel = gear.item_type || gear.itemType || gear.gear_type || gear.gearType || "Gear";
+      const aestheticLabel = gear.aesthetic ? ` (${gear.aesthetic})` : "";
+      return `${typeLabel}${aestheticLabel}`.trim();
     }
 
     const gearTagPalette = {
@@ -4237,8 +4363,8 @@
       if (elements.gearModDiscountLabel) {
         elements.gearModDiscountLabel.textContent = `${tierInfo.discount}%`;
       }
-      if (elements.upgradeGearModTier) {
-        elements.upgradeGearModTier.disabled = modTier >= 5;
+      if (elements.gearModTierSelect) {
+        elements.gearModTierSelect.value = String(modTier);
       }
     }
 
@@ -4371,18 +4497,13 @@
       return stats;
     }
 
-    async function upgradeGearModificationTier() {
+    async function setGearModificationTier(tierValue) {
       if (!activeCharacter?.id || !currentUser?.id) return;
+      const nextTier = Math.max(0, Math.min(5, Number(tierValue) || 0));
       const stats = currentStats();
-      const tier = getGearModTier(stats);
-      if (tier >= 5) {
-        if (elements.gearModUpgradeStatus) {
-          elements.gearModUpgradeStatus.textContent = "Gear modification discount is already maxed.";
-        }
-        pushStatus("Gear modification discount is already at Tier V.", { tone: "warning" });
-        return;
-      }
-      const updatedStats = { ...stats, gear_mod_discount_tier: tier + 1 };
+      const currentTier = getGearModTier(stats);
+      if (nextTier === currentTier) return;
+      const updatedStats = { ...stats, gear_mod_discount_tier: nextTier };
       const { error } = await sb
         .from("webrunning_characters")
         .update({ base_stats: updatedStats })
@@ -4390,16 +4511,19 @@
         .eq("user_id", currentUser.id);
       if (error) {
         if (elements.gearModUpgradeStatus) {
-          elements.gearModUpgradeStatus.textContent = "Failed to upgrade discount tier.";
+          elements.gearModUpgradeStatus.textContent = "Failed to update discount tier.";
         }
-        pushStatus("Failed to upgrade gear modification discount.", { tone: "error" });
+        if (elements.gearModTierSelect) {
+          elements.gearModTierSelect.value = String(currentTier);
+        }
+        pushStatus("Failed to update gear modification discount tier.", { tone: "error" });
         return;
       }
       activeCharacter.base_stats = updatedStats;
       if (elements.gearModUpgradeStatus) {
-        elements.gearModUpgradeStatus.textContent = `Upgraded to Tier ${gearModificationDiscountTiers[tier + 1].label}.`;
+        elements.gearModUpgradeStatus.textContent = `Discount tier set to ${gearModificationDiscountTiers[nextTier].label}.`;
       }
-      pushStatus("Gear modification discount upgraded.", { tone: "success" });
+      pushStatus("Gear modification discount tier updated.", { tone: "success" });
       render();
     }
 
@@ -4888,7 +5012,9 @@
     }
 
     elements.openGearModificationHub?.addEventListener("click", () => openGearModificationModal({ source: "hub" }));
-    elements.upgradeGearModTier?.addEventListener("click", upgradeGearModificationTier);
+    elements.gearModTierSelect?.addEventListener("change", event => {
+      setGearModificationTier(event.target.value);
+    });
     gearModificationBackdrop?.addEventListener("click", closeGearModificationModal);
     closeGearModification?.addEventListener("click", closeGearModificationModal);
     gearModificationBack?.addEventListener("click", () => {
@@ -4898,11 +5024,33 @@
         closeGearModificationModal();
       }
     });
-    gearModificationBody?.addEventListener("click", event => {
+    gearModificationBody?.addEventListener("click", async event => {
       const modApplyButton = event.target.closest("button[data-mod-apply]");
       if (modApplyButton) {
         applyGearModification(modApplyButton.dataset.modApply);
         return;
+      }
+      const resultActionButton = event.target.closest("button[data-mod-result-action]");
+      if (resultActionButton && pendingModificationRecord) {
+        const action = resultActionButton.dataset.modResultAction;
+        if (action === "undo") {
+          await undoGearHistory(pendingModificationRecord.id);
+          pendingModificationRecord = null;
+          renderGearModificationSelection();
+          return;
+        }
+        if (action === "details") {
+          activeGearRow = findGearEntry(pendingModificationRecord.entry?.gear_id) || activeGearRow;
+          pendingModificationRecord = null;
+          closeGearModificationModal();
+          if (activeGearRow) openGearDetail(activeGearRow.gear_id);
+          return;
+        }
+        if (action === "back") {
+          pendingModificationRecord = null;
+          renderGearModificationSelection();
+          return;
+        }
       }
       const button = event.target.closest("button[data-mod-choice]");
       if (!button) return;
@@ -4916,6 +5064,11 @@
 
     window.addEventListener("DOMContentLoaded", () => {
       populateGearFilterSelects();
+      if (elements.gearModTierSelect) {
+        elements.gearModTierSelect.innerHTML = gearModificationDiscountTiers
+          .map(item => `<option value="${item.tier}">Tier ${item.label} (${item.discount}% off)</option>` )
+          .join("");
+      }
       if (manualGearStatsList && !manualGearStatsList.children.length) {
         createManualStatRow();
       }
