@@ -37,23 +37,23 @@
         <dl>
           <dt>Name:</dt>
           <dd id="displayName"></dd>
-          <dt>Level:</dt>
+          <dt title="Your progression rank. Level affects luck caps and core growth.">Level:</dt>
           <dd id="displayLevel">1</dd>
-          <dt>XP:</dt>
+          <dt title="Gain XP from clearing nodes. Reaching thresholds levels you up.">XP:</dt>
           <dd>
             <input id="inputXp" type="number" min="0" value="0" />
           </dd>
-          <dt>Luck:</dt>
+          <dt title="Luck improves generated gear quality and reroll outcomes. It is level-capped unless boosted by effects.">Luck:</dt>
           <dd id="displayLuck">1</dd>
         </dl>
         <dl>
-          <dt>Max HP:</dt>
+          <dt title="HP is your life total. At 0 HP you become a cyberghost. It scales with level and some gear.">Max HP:</dt>
           <dd id="displayHp">10</dd>
           <dt>Current HP:</dt>
           <dd>
             <input id="inputCurrentHp" type="number" min="0" value="10" />
           </dd>
-          <dt>Energy Cap:</dt>
+          <dt title="How much total Energy you can hold at once. At cap, choose which colors to keep.">Energy Cap:</dt>
           <dd id="displayEnergyCap">5</dd>
           <dt>Essence:</dt>
           <dd>
@@ -62,16 +62,16 @@
         </dl>
       </div>
       <div class="stat-inputs" style="margin-top: 0.75rem;">
-        <label>Energy (Red)
+        <label title="Red Energy powers Red gear actives. Red gear boosts offense (Attack Plus / Damage Plus) and is usually volatile, with burn, push, and pull effects.">Energy (Red)
           <input id="inputEnergyRed" type="number" min="0" value="0" />
         </label>
-        <label>Energy (Blue)
+        <label title="Blue Energy powers Blue gear actives. Blue gear boosts durability (HP / Defense DC / Armor) and can freeze, protect allies, or draw aggro.">Energy (Blue)
           <input id="inputEnergyBlue" type="number" min="0" value="0" />
         </label>
-        <label>Energy (Green)
+        <label title="Green Energy powers Green gear actives. Green gear boosts mobility (Initiative / Movement / Range) and supports healing, poison, and ranged pressure.">Energy (Green)
           <input id="inputEnergyGreen" type="number" min="0" value="0" />
         </label>
-        <label>Energy (Gray)
+        <label title="Gray Energy powers Gray gear actives. Gray gear boosts utility (Perception / Hacking) and excels at AoE, darkness, and ally-active enabling.">Energy (Gray)
           <input id="inputEnergyGray" type="number" min="0" value="0" />
         </label>
       </div>
@@ -86,16 +86,16 @@
         <section class="card section-card">
           <h3>Basic Stats</h3>
           <div class="stat-inputs">
-            <label>Power
+            <label title="Power adds to physical-strength adventuring checks and generates Red Energy each combat Start Phase.">Power
               <input id="inputPower" type="number" min="0" value="0" />
             </label>
-            <label>Defense
+            <label title="Defense adds to resistance adventuring checks and generates Blue Energy each combat Start Phase.">Defense
               <input id="inputDefense" type="number" min="0" value="0" />
             </label>
-            <label>Speed
+            <label title="Speed adds to dexterity/speed adventuring checks and generates Green Energy each combat Start Phase.">Speed
               <input id="inputSpeed" type="number" min="0" value="0" />
             </label>
-            <label>Intelligence
+            <label title="Intelligence adds to smarts checks and generates Gray Energy each combat Start Phase.">Intelligence
               <input id="inputIntelligence" type="number" min="0" value="0" />
             </label>
           </div>
@@ -110,29 +110,29 @@
             <p class="muted">Tied to Basic Stats and increased by equipping gear.</p>
             <div class="stats-grid">
               <dl>
-                <dt>Attack Plus:</dt>
+                <dt title="Power-based bonus added to attack rolls.">Attack Plus:</dt>
                 <dd id="displayAttackPlus">0</dd>
-                <dt>Damage Plus:</dt>
+                <dt title="Power-based extra damage added to attacks.">Damage Plus:</dt>
                 <dd id="displayDamagePlus">0</dd>
                 <dt>Attack Damage Limit:</dt>
                 <dd id="displayAttackDamageLimit">0</dd>
                 <dt>Combo Damage Limit:</dt>
                 <dd id="displayComboDamageLimit">0</dd>
-                <dt>Defense DC:</dt>
+                <dt title="Defense + 10. Enemies must beat this to hit you.">Defense DC:</dt>
                 <dd id="displayDefenseDc">10</dd>
-                <dt>Armor:</dt>
+                <dt title="Defense-based damage reduction when you are hit.">Armor:</dt>
                 <dd id="displayArmor">0</dd>
-                <dt>Initiative:</dt>
+                <dt title="Speed-based turn order value. Higher goes first.">Initiative:</dt>
                 <dd id="displayInitiative">0</dd>
-                <dt>Movement Speed:</dt>
+                <dt title="(Speed x 2) + 10. Tiles you can move on your turn.">Movement Speed:</dt>
                 <dd id="displayMovementSpeed">10</dd>
-                <dt>Range:</dt>
+                <dt title="Speed + 5. Maximum tiles for ranged attacks and many actives.">Range:</dt>
                 <dd id="displayRange">5</dd>
-                <dt>Perception:</dt>
+                <dt title="Intelligence x2. Bonus for noticing hidden details and awareness checks.">Perception:</dt>
                 <dd id="displayPerception">0</dd>
-                <dt>AOE Range:</dt>
+                <dt title="Usually equals Perception. Maximum radius for AoE effects (minimum 1).">AOE Range:</dt>
                 <dd id="displayAoeRange">0</dd>
-                <dt>Hacking:</dt>
+                <dt title="Intelligence-based bonus for hacking checks.">Hacking:</dt>
                 <dd id="displayHacking">0</dd>
               </dl>
             </div>
@@ -151,13 +151,13 @@
                 <dd id="displayInventorySlots">10</dd>
                 <dt>Kernel Slots:</dt>
                 <dd id="displayKernelSlots">1</dd>
-                <dt>Energy Conversion:</dt>
+                <dt title="Start Phase: convert this much energy into the item color each turn.">Energy Conversion:</dt>
                 <dd>0</dd>
-                <dt>Group XP Gain:</dt>
+                <dt title="Extra XP each group member gains when nodes are cleared.">Group XP Gain:</dt>
                 <dd>0</dd>
-                <dt>HP Regen:</dt>
+                <dt title="HP restored each time you move to a new node.">HP Regen:</dt>
                 <dd>0</dd>
-                <dt>Resell Value:</dt>
+                <dt title="Multiplier for essence/credits gained when selling gear.">Resell Value:</dt>
                 <dd>0</dd>
               </dl>
               <dl id="adventuringPlusesColumn" class="hidden">
@@ -692,6 +692,8 @@
       <div id="gearModificationBody" class="gear-details-list"></div>
       <div class="xr-modal-actions">
         <button id="gearModificationBack" type="button" aria-label="Back" title="Back"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8L4 12l5 4"></path><path d="M4 12h16"></path></svg><span>Back</span></button>
+        <button id="gearModificationUndo" class="hidden" type="button" aria-label="Undo modification" title="Undo modification"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"></path><path d="M4 6v6h6"></path></svg><span>Undo Mod</span></button>
+        <button id="gearModificationDetails" class="hidden" type="button" aria-label="Go to gear details" title="Go to gear details"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01"></path><path d="M11 12h2v5h-2z"></path></svg><span>Gear Details</span></button>
         <button id="closeGearModification" type="button" aria-label="Close" title="Close"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg><span>Close</span></button>
       </div>
       <div id="gearModificationStatus" class="mono muted"></div>
@@ -965,6 +967,8 @@
     const gearModificationBody = document.getElementById("gearModificationBody");
     const gearModificationStatus = document.getElementById("gearModificationStatus");
     const gearModificationBack = document.getElementById("gearModificationBack");
+    const gearModificationUndo = document.getElementById("gearModificationUndo");
+    const gearModificationDetails = document.getElementById("gearModificationDetails");
     const closeGearModification = document.getElementById("closeGearModification");
 
     const respecModal = document.getElementById("respecModal");
@@ -1135,6 +1139,34 @@
       { tier: 3, label: "III", discount: 30 },
       { tier: 4, label: "IV", discount: 40 },
       { tier: 5, label: "V", discount: 50 }
+    ];
+    const gearTypeToNumber = {
+      "One-Handed Weapon": 1,
+      "Two-Handed Weapon": 2,
+      "Head": 3,
+      "Torso": 4,
+      "Hands": 5,
+      "Legs": 6,
+      "Feet": 7,
+      "Ring": 8,
+      "Neck": 9,
+      "Kernel": 10,
+      "Consumable": 11,
+      "Bauble": 12
+    };
+    const colorBuffKeywords = {
+      Red: ["attack plus", "damage plus", "power"],
+      Blue: ["hp", "defense dc", "armor", "defense"],
+      Green: ["initiative", "movement speed", "range", "speed"],
+      Gray: ["perception", "hacking", "intelligence"]
+    };
+    const aestheticPresetOptions = [
+      "Neon pulse shell",
+      "Scrap-metal patched",
+      "Glitching holo-overlay",
+      "Pristine corporate finish",
+      "Bio-luminescent veins",
+      "Void matte with star flecks"
     ];
 
     let availableAbilities = [];
@@ -1734,6 +1766,8 @@
       if (gearModificationBack) {
         gearModificationBack.classList.add("hidden");
       }
+      gearModificationUndo?.classList.add("hidden");
+      gearModificationDetails?.classList.add("hidden");
     }
 
     function renderGearModificationDetail(choice) {
@@ -1772,10 +1806,14 @@
           .join("");
         gearModificationBody.innerHTML = `
           <strong>Condensing Gear: ${formatGearName(entry.gear)}</strong>
-          <p>Destroy one gear piece and transfer a portion of Stat Buffs / Actives / Passives to this gear.</p>
+          <p><strong>Warning:</strong> The donor gear is permanently destroyed.</p>
+          <p>Destroy one gear piece and transfer a chosen Stat Buff plus additional modifiers to this gear.</p>
           <p class="muted">Do not exceed ${rarity} maxes: ${max.statBuffMax} stat buffs and ${max.activePassiveMax} actives/passives.</p>
           <label>Donor Gear
             <select id="gearCondenseDonor">${donorOptions || '<option value="">No donor gear available</option>'}</select>
+          </label>
+          <label>Stat to Transfer (required)
+            <select id="gearCondenseStat"></select>
           </label>
           <label>Modifiers to Move
             <select id="gearCondenseCount">${options || '<option value="1">1 modifier</option>'}</select>
@@ -1795,6 +1833,12 @@
               <option value="swap">Aesthetic Swap (${formatEssenceCostWithTotal(100, stats)})</option>
             </select>
           </label>
+          <label>Aesthetic Preset (optional)
+            <select id="gearAestheticPreset">
+              <option value="">Choose a preset</option>
+              ${aestheticPresetOptions.map(option => `<option value="${option}">${option}</option>`).join("")}
+            </select>
+          </label>
           <label>New Aesthetic (for modify mode)
             <input id="gearAestheticInput" type="text" maxlength="80" placeholder="Describe the new look" />
           </label>
@@ -1804,12 +1848,36 @@
           <button type="button" data-mod-apply="aesthetic">Apply Modification</button>
           ${common}`;
       }
+      if (choice === "condensing") {
+        const donorSelect = document.getElementById("gearCondenseDonor");
+        const statSelect = document.getElementById("gearCondenseStat");
+        const syncDonorStats = () => {
+          const donor = findGearEntry(donorSelect?.value);
+          const donorStats = Array.isArray(donor?.gear?.stats) ? donor.gear.stats : [];
+          statSelect.innerHTML = donorStats.length
+            ? donorStats.map((stat, idx) => `<option value="${idx}">${formatStatSummary(stat)}</option>`).join("")
+            : '<option value="">No donor stats available</option>';
+        };
+        donorSelect?.addEventListener("change", syncDonorStats);
+        syncDonorStats();
+      }
+      if (choice === "aesthetic") {
+        const presetSelect = document.getElementById("gearAestheticPreset");
+        const input = document.getElementById("gearAestheticInput");
+        presetSelect?.addEventListener("change", () => {
+          if (presetSelect.value && input) {
+            input.value = presetSelect.value;
+          }
+        });
+      }
       if (gearModificationStatus) {
         gearModificationStatus.textContent = "Choose Apply Modification to spend Essence and record this change in Gear History.";
       }
       if (gearModificationBack) {
         gearModificationBack.classList.remove("hidden");
       }
+      gearModificationUndo?.classList.add("hidden");
+      gearModificationDetails?.classList.add("hidden");
     }
 
     function formatStatSummary(stat = {}) {
@@ -1917,11 +1985,6 @@
         <p><strong>${record.label}</strong></p>
         <p class="muted">Spent ${record.modification?.cost || 0} Essence.</p>
         <ul>${summary.map(item => `<li>${item}</li>`).join("")}</ul>
-        <div class="gear-modal-actions">
-          <button type="button" data-mod-result-action="undo">Undo Modification</button>
-          <button type="button" data-mod-result-action="details">Go to Gear Details</button>
-          <button type="button" data-mod-result-action="back">Back to Modifiers</button>
-        </div>
       `;
       if (gearModificationStatus) {
         gearModificationStatus.textContent = "Review the changes or undo this modification.";
@@ -1929,6 +1992,8 @@
       if (gearModificationBack) {
         gearModificationBack.classList.remove("hidden");
       }
+      gearModificationUndo?.classList.remove("hidden");
+      gearModificationDetails?.classList.remove("hidden");
     }
 
     function openGearModificationModal({ source = "hub", entry = null } = {}) {
@@ -1949,6 +2014,8 @@
 
     function closeGearModificationModal() {
       pendingModificationRecord = null;
+      gearModificationUndo?.classList.add("hidden");
+      gearModificationDetails?.classList.add("hidden");
       gearModificationModal?.classList.add("hidden");
     }
 
@@ -1969,6 +2036,61 @@
       return updatedEssence;
     }
 
+    function isColorCompatibleStat(stat, color) {
+      if (!color || color === "Neutral") return true;
+      const name = normalizeLabel(stat?.label || stat?.name);
+      if (!name) return true;
+      const keywords = colorBuffKeywords[color] || [];
+      return keywords.some(keyword => name.includes(keyword));
+    }
+
+    function pickUniqueStat(stats, takenNames = []) {
+      const taken = new Set(takenNames.map(normalizeLabel));
+      return (stats || []).find(stat => !taken.has(normalizeLabel(stat?.label || stat?.name))) || null;
+    }
+
+    function buildUpgradedAbility(baseAbility, rarity) {
+      const resolved = resolveAbilityDetails(baseAbility);
+      if (typeof resolved === "string") {
+        return {
+          name: resolved,
+          type: "Active",
+          rarity,
+          tierDetails: { Detail: "No tier details available." }
+        };
+      }
+      const tierLimit = getAbilityTierLimit(resolved.name, rarity);
+      const filteredTierDetails = {};
+      Object.entries(resolved.tierDetails || {}).forEach(([tier, detail]) => {
+        const tierNum = getTierNumberFromLabel(tier);
+        if (tierLimit === null || !tierNum || tierNum <= tierLimit) {
+          filteredTierDetails[tier] = detail;
+        }
+      });
+      return {
+        ...resolved,
+        type: baseAbility?.type || "Active",
+        rarity,
+        tierDetails: Object.keys(filteredTierDetails).length ? filteredTierDetails : (resolved.tierDetails || { Detail: "No tier details available." })
+      };
+    }
+
+    async function generateRerolledGear(baseGear, luck, rarityOverride = null) {
+      if (!pyodideClient) {
+        await ensurePyodideReady();
+      }
+      if (!pyodideClient) return null;
+      const gearTypeNumber = gearTypeToNumber[baseGear.gear_type || baseGear.gearType] || 0;
+      const rarity = rarityOverride || baseGear.rarity || "Common";
+      const color = baseGear.color || "Neutral";
+      const color2 = baseGear.color2 || null;
+      const result = pyodideClient.runPython(
+        `generate_gear_json(${Math.max(1, Math.round(luck))}, 1, ${gearTypeNumber}, ${JSON.stringify(rarity)}, ${JSON.stringify(color)}, ${JSON.stringify(color2)})`
+      );
+      const parsed = JSON.parse(result || "[]");
+      return parsed[0] || null;
+    }
+
     async function applyGearModification(choice) {
       const targetId = document.getElementById("gearModificationTarget")?.value || selectedGearModificationTargetId;
       const entry = findGearEntry(targetId);
@@ -1987,43 +2109,48 @@
           return;
         }
         cost = applyGearModDiscount(row.cost);
+        const rerolled = await generateRerolledGear(base, luckNow, row.next);
         updated.rarity = row.next;
-        updated.stats = Array.isArray(updated.stats) ? updated.stats : [];
-        updated.abilities = Array.isArray(updated.abilities) ? updated.abilities : [];
-        const cap = gearMaxes[row.next]?.statBuffMax || updated.stats.length;
-        if (updated.stats.length < cap) {
-          updated.stats.push({ name: "Power", label: "Power", value: Math.max(1, Math.round(luckNow / 2)) });
+        updated.stats = Array.isArray(base.stats) ? cloneJson(base.stats) : [];
+        updated.abilities = Array.isArray(base.abilities) ? cloneJson(base.abilities) : [];
+        const rarityCaps = gearMaxes[row.next] || gearMaxes.Common;
+        const currentStatNames = updated.stats.map(stat => stat.label || stat.name);
+        if (updated.stats.length < rarityCaps.statBuffMax) {
+          const colorMatchedStats = (rerolled?.stats || []).filter(stat => isColorCompatibleStat(stat, base.color));
+          const statToAdd = pickUniqueStat(colorMatchedStats.length ? colorMatchedStats : (rerolled?.stats || []), currentStatNames);
+          if (statToAdd) {
+            updated.stats.push(cloneJson(statToAdd));
+          }
         }
         updated.stats = updated.stats.map(stat => {
-          const next = { ...stat };
-          if (typeof next.value === "number") {
-            next.value = Math.max(1, Math.round(next.value + Math.max(1, luckNow / 5)));
-          }
-          return next;
+          if (typeof stat.value !== "number") return stat;
+          const luckScale = Math.max(1, Math.round(luckNow / 4));
+          return { ...stat, value: Math.max(1, stat.value + luckScale) };
         });
-        updated.abilities = updated.abilities.map(ability => ({ ...ability, rarity: row.next }));
-        if (row.ability && row.ability.includes("+1 Active")) {
-          updated.abilities.push({ name: "Upgraded Active", type: "Active", rarity: row.next, tierDetails: { Detail: "Gained from upgrading." } });
+        updated.abilities = updated.abilities.map(ability => buildUpgradedAbility(ability, row.next));
+        if (updated.abilities.length < rarityCaps.activePassiveMax) {
+          const existingNames = new Set(updated.abilities.map(ability => normalizeLabel(ability?.name)));
+          const nextAbility = (rerolled?.abilities || []).find(ability => !existingNames.has(normalizeLabel(ability?.name)));
+          if (nextAbility) {
+            updated.abilities.push(buildUpgradedAbility(nextAbility, row.next));
+          }
         }
       } else if (choice === "rerolling") {
         cost = applyGearModDiscount(gearRerollCosts[updated.rarity] || 0);
-        updated.stats = (Array.isArray(updated.stats) ? updated.stats : []).map(stat => {
-          const next = { ...stat };
-          if (typeof next.value === "number") {
-            next.value = Math.max(1, Math.round((Math.random() * luckNow) + 1));
-          }
-          return next;
-        });
-        updated.abilities = (Array.isArray(updated.abilities) ? updated.abilities : []).map(ability => ({
-          ...ability,
-          tierDetails: ability?.tierDetails || { Detail: "Rerolled modifier." }
-        }));
+        const rerolled = await generateRerolledGear(base, luckNow, base.rarity);
+        updated.stats = cloneJson(rerolled?.stats || []);
+        updated.abilities = cloneJson(rerolled?.abilities || []);
       } else if (choice === "condensing") {
         const donorId = document.getElementById("gearCondenseDonor")?.value;
+        const donorStatIndex = Number(document.getElementById("gearCondenseStat")?.value);
         const donorEntry = findGearEntry(donorId);
         const moveCount = Math.max(1, Number(document.getElementById("gearCondenseCount")?.value || 1));
         if (!donorEntry) {
           pushStatus("Choose donor gear to condense.", { tone: "warning" });
+          return;
+        }
+        if (!Number.isFinite(donorStatIndex)) {
+          pushStatus("Choose a donor stat to transfer.", { tone: "warning" });
           return;
         }
         const costList = gearCondenseCosts[updated.rarity] || [];
@@ -2033,8 +2160,13 @@
         const donorAbilities = Array.isArray(donorEntry.gear.abilities) ? donorEntry.gear.abilities : [];
         updated.stats = Array.isArray(updated.stats) ? updated.stats : [];
         updated.abilities = Array.isArray(updated.abilities) ? updated.abilities : [];
-        const pickedStats = donorStats.slice(0, moveCount);
-        const remaining = Math.max(0, moveCount - pickedStats.length);
+        const chosenStat = donorStats[donorStatIndex];
+        if (!chosenStat) {
+          pushStatus("Selected donor stat was not found.", { tone: "warning" });
+          return;
+        }
+        const pickedStats = [chosenStat, ...donorStats.filter((_, idx) => idx !== donorStatIndex)].slice(0, moveCount);
+        const remaining = Math.max(0, moveCount - 1);
         const pickedAbilities = donorAbilities.slice(0, remaining);
         const statRoom = Math.max(0, maxCaps.statBuffMax - updated.stats.length);
         const abilityRoom = Math.max(0, maxCaps.activePassiveMax - updated.abilities.length);
@@ -2068,7 +2200,7 @@
           secondTargetSnapshot = { gear_id: otherEntry.gear_id, before: otherBase, after: cloneJson(otherUpdated) };
         } else {
           cost = applyGearModDiscount(300);
-          const value = (document.getElementById("gearAestheticInput")?.value || "").trim();
+          const value = (document.getElementById("gearAestheticInput")?.value || document.getElementById("gearAestheticPreset")?.value || "").trim();
           if (!value) {
             pushStatus("Enter a new aesthetic description.", { tone: "warning" });
             return;
@@ -5024,33 +5156,24 @@
         closeGearModificationModal();
       }
     });
+    gearModificationUndo?.addEventListener("click", async () => {
+      if (!pendingModificationRecord) return;
+      await undoGearHistory(pendingModificationRecord.id);
+      pendingModificationRecord = null;
+      renderGearModificationSelection();
+    });
+    gearModificationDetails?.addEventListener("click", () => {
+      if (!pendingModificationRecord) return;
+      activeGearRow = findGearEntry(pendingModificationRecord.entry?.gear_id) || activeGearRow;
+      pendingModificationRecord = null;
+      closeGearModificationModal();
+      if (activeGearRow) openGearDetail(activeGearRow.gear_id);
+    });
     gearModificationBody?.addEventListener("click", async event => {
       const modApplyButton = event.target.closest("button[data-mod-apply]");
       if (modApplyButton) {
         applyGearModification(modApplyButton.dataset.modApply);
         return;
-      }
-      const resultActionButton = event.target.closest("button[data-mod-result-action]");
-      if (resultActionButton && pendingModificationRecord) {
-        const action = resultActionButton.dataset.modResultAction;
-        if (action === "undo") {
-          await undoGearHistory(pendingModificationRecord.id);
-          pendingModificationRecord = null;
-          renderGearModificationSelection();
-          return;
-        }
-        if (action === "details") {
-          activeGearRow = findGearEntry(pendingModificationRecord.entry?.gear_id) || activeGearRow;
-          pendingModificationRecord = null;
-          closeGearModificationModal();
-          if (activeGearRow) openGearDetail(activeGearRow.gear_id);
-          return;
-        }
-        if (action === "back") {
-          pendingModificationRecord = null;
-          renderGearModificationSelection();
-          return;
-        }
       }
       const button = event.target.closest("button[data-mod-choice]");
       if (!button) return;
