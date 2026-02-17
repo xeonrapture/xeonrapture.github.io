@@ -1118,6 +1118,13 @@
       Epic: { statBuffMax: 7, activePassiveMax: 3 },
       Legendary: { statBuffMax: 10, activePassiveMax: 4 }
     };
+    const rarityBaseModifierCaps = {
+      Common: { basicStats: 1, colorStats: 0, actives: 0 },
+      Uncommon: { basicStats: 1, colorStats: 1, actives: 1 },
+      Rare: { basicStats: 1, colorStats: 2, actives: 1 },
+      Epic: { basicStats: 2, colorStats: 2, actives: 2 },
+      Legendary: { basicStats: 2, colorStats: 3, actives: 2 }
+    };
     const gearUpgradeCosts = {
       Common: { next: "Uncommon", statBuff: "+1", ability: "-", cost: 1000 },
       Uncommon: { next: "Rare", statBuff: "+1", ability: "+1 Active", cost: 2000 },
@@ -1403,7 +1410,8 @@
       if (!stat || typeof stat !== "object") return stat;
       const chartLookupLabel = getChartLookupLabelForStat(stat);
       const statLabel = chartLookupLabel || stat.label || stat.name || stat.stat;
-      const chartFormula = chartLookupLabel ? getChartFormulaForStat(chartLookupLabel, rarity) : null;
+      const normalizedLookup = typeof statLabel === "string" ? statLabel.trim() : "";
+      const chartFormula = getChartFormulaForStat(chartLookupLabel || normalizedLookup, rarity);
       const formula = chartFormula ?? stat.formula;
       if (!formula) {
         return { ...stat, formula: chartFormula ?? stat.formula };
@@ -2425,6 +2433,23 @@
       return output;
     }
 
+    function isCondensedModifier(modifier) {
+      return modifier?.modifier_origin === "condensed";
+    }
+
+    function splitModifiersByOrigin(modifiers = []) {
+      const base = [];
+      const condensed = [];
+      (modifiers || []).forEach(modifier => {
+        if (isCondensedModifier(modifier)) {
+          condensed.push(modifier);
+        } else {
+          base.push(modifier);
+        }
+      });
+      return { base, condensed };
+    }
+
     function buildUpgradedAbility(baseAbility, rarity) {
       const resolved = resolveAbilityDetails(baseAbility);
       if (typeof resolved === "string") {
@@ -2526,12 +2551,17 @@
         updated.abilities = Array.isArray(base.abilities) ? cloneJson(base.abilities) : [];
 
         const rarityCaps = gearMaxes[row.next] || gearMaxes.Common;
+        const rarityBaseCaps = rarityBaseModifierCaps[row.next] || rarityBaseModifierCaps.Common;
         const isBauble = (updated.gear_type || updated.gearType) === "Bauble";
         const targetStatsKey = isBauble ? "stat_modifiers" : "stats";
+        const baseStatTargetCount = rarityBaseCaps.basicStats + rarityBaseCaps.colorStats;
+        const baseActiveTargetCount = rarityBaseCaps.actives;
         const rerollStats = isBauble ? (rerolled?.stat_modifiers || []) : (rerolled?.stats || []);
-        const currentStatNames = (updated[targetStatsKey] || []).map(stat => stat.label || stat.name);
+        const statSplit = splitModifiersByOrigin(updated[targetStatsKey]);
+        const abilitySplit = splitModifiersByOrigin(updated.abilities);
+        const currentStatNames = statSplit.base.map(stat => stat.label || stat.name);
 
-        if ((updated[targetStatsKey] || []).length < rarityCaps.statBuffMax) {
+        if (statSplit.base.length < baseStatTargetCount) {
           const candidateStats = isBauble
             ? rerollStats
             : (() => {
@@ -2540,22 +2570,25 @@
               })();
           const statToAdd = pickUniqueStat(candidateStats, currentStatNames);
           if (statToAdd) {
-            updated[targetStatsKey].push(cloneJson(statToAdd));
+            statSplit.base.push(cloneJson(statToAdd));
           }
         }
-        updated[targetStatsKey] = takeRerolledStats(updated[targetStatsKey], rarityCaps.statBuffMax);
+        const rerolledBaseStats = takeRerolledStats(statSplit.base, baseStatTargetCount);
+        updated[targetStatsKey] = [...rerolledBaseStats, ...statSplit.condensed].slice(0, rarityCaps.statBuffMax);
 
         const gValue = updated.color ? (getEquippedColorCounts()[updated.color] || 0) : 0;
         updated = recalculateGearStatsForRarity(updated, row.next, luckNow, { g: gValue });
 
-        updated.abilities = updated.abilities.map(ability => buildUpgradedAbility(ability, row.next));
-        if (updated.abilities.length < rarityCaps.activePassiveMax) {
-          const existingNames = new Set(updated.abilities.map(ability => normalizeLabel(ability?.name)));
+        const upgradedBaseAbilities = abilitySplit.base.map(ability => buildUpgradedAbility(ability, row.next));
+        if (upgradedBaseAbilities.length < baseActiveTargetCount) {
+          const existingNames = new Set(upgradedBaseAbilities.map(ability => normalizeLabel(ability?.name)));
           const nextAbility = (rerolled?.abilities || []).find(ability => !existingNames.has(normalizeLabel(ability?.name)));
           if (nextAbility) {
-            updated.abilities.push(buildUpgradedAbility(nextAbility, row.next));
+            upgradedBaseAbilities.push(buildUpgradedAbility(nextAbility, row.next));
           }
         }
+        const condensedAbilities = abilitySplit.condensed.map(ability => buildUpgradedAbility(ability, row.next));
+        updated.abilities = [...upgradedBaseAbilities.slice(0, baseActiveTargetCount), ...condensedAbilities].slice(0, rarityCaps.activePassiveMax);
       } else if (choice === "rerolling") {
         cost = applyGearModDiscount(gearRerollCosts[updated.rarity] || 0);
         const rerollPool = { stats: [], stat_modifiers: [], abilities: [] };
@@ -2634,6 +2667,7 @@
           const abilityPayload = pickedAbilities.map(ability => {
             const next = cloneJson(ability);
             next.source_color = preferredModifierColor(ability, "ability", donorEntry.gear.color);
+            next.modifier_origin = "condensed";
             return next;
           });
           updated.abilities.push(...abilityPayload);
@@ -2653,6 +2687,7 @@
           const statPayload = pickedStats.map(stat => {
             const next = cloneJson(stat);
             next.source_color = preferredModifierColor(stat, "stat", donorEntry.gear.color);
+            next.modifier_origin = "condensed";
             return next;
           });
           updated[targetStatKey].push(...statPayload);
