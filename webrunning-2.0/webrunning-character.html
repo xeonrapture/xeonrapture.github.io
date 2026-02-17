@@ -2271,9 +2271,45 @@
       return keywords.some(keyword => name.includes(keyword));
     }
 
+    function getStatIdentityKey(stat) {
+      const raw = String(stat?.label || stat?.name || "");
+      return normalizeLabel(raw.replace(/✦+/g, "").replace(/\s+/g, " "));
+    }
+
+    function inferColorFromStat(stat) {
+      const name = normalizeLabel(stat?.label || stat?.name);
+      if (!name) return null;
+      const match = Object.entries(colorBuffKeywords).find(([, keywords]) => keywords.some(keyword => name.includes(keyword)));
+      return match?.[0] || null;
+    }
+
+    function inferColorFromAbility(ability) {
+      const textChunks = [];
+      if (ability?.name) textChunks.push(String(ability.name));
+      parseAbilityLines(ability).forEach(line => textChunks.push(String(line)));
+      const joined = normalizeLabel(textChunks.join(" "));
+      if (!joined) return null;
+      let bestColor = null;
+      let bestScore = 0;
+      Object.entries(colorBuffKeywords).forEach(([color, keywords]) => {
+        const score = keywords.reduce((acc, keyword) => acc + (joined.includes(keyword) ? 1 : 0), 0);
+        if (score > bestScore) {
+          bestScore = score;
+          bestColor = color;
+        }
+      });
+      return bestColor;
+    }
+
+    function preferredModifierColor(modifier, type, fallbackColor = null) {
+      if (modifier?.source_color) return modifier.source_color;
+      const inferred = type === "ability" ? inferColorFromAbility(modifier) : inferColorFromStat(modifier);
+      return inferred || fallbackColor || null;
+    }
+
     function pickUniqueStat(stats, takenNames = []) {
-      const taken = new Set(takenNames.map(normalizeLabel));
-      return (stats || []).find(stat => !taken.has(normalizeLabel(stat?.label || stat?.name))) || null;
+      const taken = new Set(takenNames.map(name => getStatIdentityKey({ label: name })));
+      return (stats || []).find(stat => !taken.has(getStatIdentityKey(stat))) || null;
     }
 
 
@@ -2283,7 +2319,7 @@
       const taken = new Set();
       (rerolledStats || []).forEach(stat => {
         if (selected.length >= targetCount) return;
-        const key = normalizeLabel(stat?.label || stat?.name);
+        const key = getStatIdentityKey(stat);
         if (!key || taken.has(key)) return;
         selected.push(cloneJson(stat));
         taken.add(key);
@@ -2311,6 +2347,82 @@
         selected.push(buildUpgradedAbility(ability, rarity || ability?.rarity));
       }
       return selected.slice(0, targetCount);
+    }
+
+    function takeRerolledStatsByProfile(rerolledStats = [], profileStats = [], fallbackColor = null) {
+      if (!Array.isArray(profileStats) || !profileStats.length) return [];
+      const selected = [];
+      const taken = new Set();
+      const pool = Array.isArray(rerolledStats) ? rerolledStats : [];
+      profileStats.forEach(sourceStat => {
+        const preferredColor = preferredModifierColor(sourceStat, "stat", fallbackColor);
+        let candidate = pool.find(stat => {
+          const key = getStatIdentityKey(stat);
+          return key && !taken.has(key) && (!preferredColor || preferredModifierColor(stat, "stat", fallbackColor) === preferredColor);
+        });
+        if (!candidate) {
+          candidate = pool.find(stat => {
+            const key = getStatIdentityKey(stat);
+            return key && !taken.has(key);
+          });
+        }
+        if (!candidate) return;
+        const next = cloneJson(candidate);
+        if (preferredColor) next.source_color = preferredColor;
+        selected.push(next);
+        taken.add(getStatIdentityKey(candidate));
+      });
+      return selected;
+    }
+
+    function takeRerolledAbilitiesByProfile(rerolledAbilities = [], profileAbilities = [], rarity = null, fallbackColor = null) {
+      if (!Array.isArray(profileAbilities) || !profileAbilities.length) return [];
+      const selected = [];
+      const taken = new Set();
+      const pool = Array.isArray(rerolledAbilities) ? rerolledAbilities : [];
+      profileAbilities.forEach(sourceAbility => {
+        const preferredColor = preferredModifierColor(sourceAbility, "ability", fallbackColor);
+        let candidate = pool.find(ability => {
+          const key = normalizeLabel(ability?.name);
+          return key && !taken.has(key) && (!preferredColor || preferredModifierColor(ability, "ability", fallbackColor) === preferredColor);
+        });
+        if (!candidate) {
+          candidate = pool.find(ability => {
+            const key = normalizeLabel(ability?.name);
+            return key && !taken.has(key);
+          });
+        }
+        if (!candidate) return;
+        const next = buildUpgradedAbility(candidate, rarity || candidate?.rarity);
+        if (preferredColor) next.source_color = preferredColor;
+        selected.push(next);
+        taken.add(normalizeLabel(candidate?.name));
+      });
+      return selected;
+    }
+
+    function dedupeStatsByIdentity(stats = []) {
+      const output = [];
+      const seen = new Set();
+      (stats || []).forEach(stat => {
+        const key = getStatIdentityKey(stat);
+        if (!key || seen.has(key)) return;
+        output.push(stat);
+        seen.add(key);
+      });
+      return output;
+    }
+
+    function dedupeAbilitiesByName(abilities = []) {
+      const output = [];
+      const seen = new Set();
+      (abilities || []).forEach(ability => {
+        const key = normalizeLabel(ability?.name);
+        if (!key || seen.has(key)) return;
+        output.push(ability);
+        seen.add(key);
+      });
+      return output;
     }
 
     function buildUpgradedAbility(baseAbility, rarity) {
@@ -2431,6 +2543,7 @@
             updated[targetStatsKey].push(cloneJson(statToAdd));
           }
         }
+        updated[targetStatsKey] = takeRerolledStats(updated[targetStatsKey], rarityCaps.statBuffMax);
 
         const gValue = updated.color ? (getEquippedColorCounts()[updated.color] || 0) : 0;
         updated = recalculateGearStatsForRarity(updated, row.next, luckNow, { g: gValue });
@@ -2445,14 +2558,27 @@
         }
       } else if (choice === "rerolling") {
         cost = applyGearModDiscount(gearRerollCosts[updated.rarity] || 0);
-        const rerolled = await generateRerolledGear(base, luckNow, base.rarity);
-        const baseStatsCount = Array.isArray(base.stats) ? base.stats.length : 0;
-        const baseStatModifierCount = Array.isArray(base.stat_modifiers) ? base.stat_modifiers.length : 0;
-        const baseAbilityCount = Array.isArray(base.abilities) ? base.abilities.length : 0;
+        const rerollPool = { stats: [], stat_modifiers: [], abilities: [] };
+        for (let attempt = 0; attempt < 6; attempt += 1) {
+          const rerolled = await generateRerolledGear(base, luckNow, base.rarity);
+          rerollPool.stats.push(...(rerolled?.stats || []));
+          rerollPool.stat_modifiers.push(...(rerolled?.stat_modifiers || []));
+          rerollPool.abilities.push(...(rerolled?.abilities || []));
+        }
 
-        updated.stats = takeRerolledStats(rerolled?.stats || [], baseStatsCount);
-        updated.stat_modifiers = takeRerolledStats(rerolled?.stat_modifiers || [], baseStatModifierCount);
-        updated.abilities = takeRerolledAbilities(rerolled?.abilities || [], baseAbilityCount, base.rarity);
+        updated.stats = takeRerolledStatsByProfile(rerollPool.stats, Array.isArray(base.stats) ? base.stats : [], base.color);
+        updated.stat_modifiers = takeRerolledStatsByProfile(rerollPool.stat_modifiers, Array.isArray(base.stat_modifiers) ? base.stat_modifiers : [], base.color);
+        updated.abilities = takeRerolledAbilitiesByProfile(rerollPool.abilities, Array.isArray(base.abilities) ? base.abilities : [], base.rarity, base.color);
+
+        if (updated.stats.length < (base.stats || []).length) {
+          updated.stats = [...updated.stats, ...cloneJson((base.stats || []).slice(updated.stats.length))];
+        }
+        if (updated.stat_modifiers.length < (base.stat_modifiers || []).length) {
+          updated.stat_modifiers = [...updated.stat_modifiers, ...cloneJson((base.stat_modifiers || []).slice(updated.stat_modifiers.length))];
+        }
+        if (updated.abilities.length < (base.abilities || []).length) {
+          updated.abilities = [...updated.abilities, ...cloneJson((base.abilities || []).slice(updated.abilities.length))];
+        }
 
         const gValue = updated.color ? (getEquippedColorCounts()[updated.color] || 0) : 0;
         updated = recalculateGearStatsForRarity(updated, base.rarity, luckNow, { g: gValue });
@@ -2505,7 +2631,12 @@
             pushStatus("Selected donor abilities were not found.", { tone: "warning" });
             return;
           }
-          updated.abilities.push(...cloneJson(pickedAbilities));
+          const abilityPayload = pickedAbilities.map(ability => {
+            const next = cloneJson(ability);
+            next.source_color = preferredModifierColor(ability, "ability", donorEntry.gear.color);
+            return next;
+          });
+          updated.abilities.push(...abilityPayload);
         } else {
           if (remainingStatSlots <= 0) {
             pushStatus("This gear is already at the maximum number of stat buffs for its rarity.", { tone: "warning" });
@@ -2519,7 +2650,12 @@
             pushStatus("Selected donor stats were not found.", { tone: "warning" });
             return;
           }
-          updated[targetStatKey].push(...cloneJson(pickedStats));
+          const statPayload = pickedStats.map(stat => {
+            const next = cloneJson(stat);
+            next.source_color = preferredModifierColor(stat, "stat", donorEntry.gear.color);
+            return next;
+          });
+          updated[targetStatKey].push(...statPayload);
         }
 
         updated.abilities = updated.abilities.map(ability => buildUpgradedAbility(ability, updated.rarity));
@@ -2570,6 +2706,9 @@
         }
       }
 
+      updated.stats = dedupeStatsByIdentity(updated.stats || []);
+      updated.stat_modifiers = dedupeStatsByIdentity(updated.stat_modifiers || []);
+      updated.abilities = dedupeAbilitiesByName(updated.abilities || []);
       updated = enforceRarityCaps(updated);
 
       if (cost > (activeCharacter.base_stats?.essence || 0)) {
@@ -5572,7 +5711,7 @@
       activeGearRow = findGearEntry(pendingModificationRecord.entry?.gear_id) || activeGearRow;
       pendingModificationRecord = null;
       closeGearModificationModal();
-      if (activeGearRow) openGearDetail(activeGearRow.gear_id);
+      if (activeGearRow) openGearDetailModal(activeGearRow);
     });
     gearModificationBody?.addEventListener("click", async event => {
       const modApplyButton = event.target.closest("button[data-mod-apply]");
