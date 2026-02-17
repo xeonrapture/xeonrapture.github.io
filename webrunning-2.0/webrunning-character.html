@@ -1362,14 +1362,14 @@
       if (/^\d+(\.\d+)?$/.test(normalized)) {
         return Number(normalized);
       }
-      const match = normalized.match(/^([LG])([x÷])([\d.]+)$/);
+      const match = normalized.match(/^([LG])([x*÷\/])([\d.]+)$/i);
       if (!match) return 0;
       const [, symbol, op, raw] = match;
       const value = Number(raw);
       const gValue = Number(context.g) || 0;
-      const baseValue = symbol === "G" ? gValue : effectiveLuck;
+      const baseValue = symbol.toUpperCase() === "G" ? gValue : effectiveLuck;
       let result = 0;
-      if (op === "x") {
+      if (op === "x" || op === "*") {
         result = Math.floor(baseValue * value);
       } else {
         result = Math.floor(baseValue / value);
@@ -2544,8 +2544,8 @@
           const thisAesthetic = updated.aesthetic || null;
           updated.aesthetic = otherBase.aesthetic || null;
           const otherUpdated = { ...otherBase, aesthetic: thisAesthetic };
-          await updateGearRecord(otherEntry.gear_id, buildGearInsertPayload(otherUpdated));
-          otherEntry.gear = otherUpdated;
+          const persistedOther = await updateGearRecord(otherEntry.gear_id, buildGearInsertPayload(otherUpdated));
+          otherEntry.gear = persistedOther;
           secondTargetSnapshot = { gear_id: otherEntry.gear_id, before: otherBase, after: cloneJson(otherUpdated) };
         } else {
           cost = applyGearModDiscount(300);
@@ -2570,8 +2570,8 @@
           currentUser = await requireUser();
         }
         await updateEssenceBy(-cost);
-        await updateGearRecord(entry.gear_id, buildGearInsertPayload(updated));
-        entry.gear = updated;
+        const persistedGear = await updateGearRecord(entry.gear_id, buildGearInsertPayload(updated));
+        entry.gear = persistedGear;
         if (gearModificationSource === "detail") {
           openGearDetailModal(entry);
         }
@@ -3993,11 +3993,17 @@
     }
 
     async function updateGearRecord(gearId, payload) {
-      const { error } = await sb
+      const { data, error } = await sb
         .from("webrunning_gear")
         .update(payload)
-        .eq("id", gearId);
+        .eq("id", gearId)
+        .select("*")
+        .maybeSingle();
       if (error) throw error;
+      if (!data) {
+        throw new Error("No gear record was updated.");
+      }
+      return data;
     }
 
     function gearSignature(gear) {
