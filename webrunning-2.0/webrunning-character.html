@@ -1804,7 +1804,7 @@
         <ul>
           <li><strong>Upgrading:</strong> moves gear up a rarity, recalculates stat buffs with your current Luck, can add new modifiers.</li>
           <li><strong>Rerolling Modifiers:</strong> rerolls Stat Buffs / Actives / Passives but keeps modifier counts the same, using current Luck.</li>
-          <li><strong>Condensing Gear:</strong> destroy one piece to transfer part of its modifiers to another piece. Duplicate stat buffs are allowed.</li>
+          <li><strong>Condense Into:</strong> condense source gear into a target piece to transfer selected modifiers. Source gear is destroyed.</li>
           <li><strong>Aesthetic Modification:</strong> change gear appearance or swap aesthetics between two pieces.</li>
         </ul>
         <label>
@@ -1823,7 +1823,7 @@
         <div class="gear-mod-option-grid">
           <button type="button" data-mod-choice="upgrading">Upgrading</button>
           <button type="button" data-mod-choice="rerolling">Rerolling Modifiers</button>
-          <button type="button" data-mod-choice="condensing">Condensing Gear</button>
+          <button type="button" data-mod-choice="condensing">Condense Into</button>
           <button type="button" data-mod-choice="aesthetic">Aesthetic Modification</button>
         </div>
       `;
@@ -1903,22 +1903,30 @@
           ${essenceLine}
           ${common}`;
       } else if (choice === "condensing") {
+        if (!canGearCondense(entry.gear)) {
+          gearModificationBody.innerHTML = `
+            <strong>Condense Into: ${formatGearName(entry.gear)}</strong>
+            <p>This gear cannot be condensed into. Only non-Kernel/Bauble/Consumable gear can use Condense Into.</p>
+            ${essenceLine}
+            ${common}`;
+          return;
+        }
         const costOptions = (gearCondenseCosts[rarity] || []).map((cost, idx) => `<option value="${idx + 1}">${idx + 1} modifier${idx ? "s" : ""}</option>`).join("");
         const donorOptions = characterGear
-          .filter(item => item.gear_id !== entry.gear_id)
+          .filter(item => item.gear_id !== entry.gear_id && canGearCondense(item.gear))
           .map(item => `<option value="${item.gear_id}">${formatGearName(item.gear)} [${item.gear_slot}]</option>`)
           .join("");
         gearModificationBody.innerHTML = `
-          <strong>Condensing Gear: ${formatGearName(entry.gear)}</strong>
+          <strong>Condense Into: ${formatGearName(entry.gear)}</strong>
           <p class="muted">Costs by transfer count are shown below.</p>
           <p class="muted">1 transfer: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[0] || 0, stats)} · 2 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[1] || 0, stats)} · 3 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[2] || 0, stats)}</p>
-          <p><strong>Warning:</strong> The donor gear is permanently destroyed.</p>
-          <p>Destroy one gear piece and transfer chosen stat buffs or chosen abilities to this gear.</p>
+          <p><strong>Warning:</strong> The source gear is permanently destroyed.</p>
+          <p>Condense source gear into this target gear. The source gear transfers chosen stat buffs or chosen abilities to the target.</p>
           <label>Modifiers to Transfer
             <select id="gearCondenseCount">${costOptions || '<option value="1">1 modifier</option>'}</select>
           </label>
-          <label>Donor Gear
-            <select id="gearCondenseDonor">${donorOptions || '<option value="">No donor gear available</option>'}</select>
+          <label>Source Gear to Condense Into Target
+            <select id="gearCondenseDonor">${donorOptions || '<option value="">No source gear available</option>'}</select>
           </label>
           <label>Transfer Type
             <select id="gearCondenseTransferType">
@@ -1930,12 +1938,20 @@
             <select id="gearCondenseModifier" multiple size="6"></select>
           </label>
           <p class="muted">Hold Ctrl/Cmd to select multiple modifiers</p>
-          <button type="button" data-mod-apply="condensing" ${donorOptions ? '' : 'disabled'}>Apply Modification</button>
+          <button type="button" data-mod-apply="condensing" ${donorOptions ? '' : 'disabled'}>Apply Condense Into</button>
           ${essenceLine}
           ${common}`;
       } else if (choice === "aesthetic") {
+        if (!canGearUseAestheticModification(entry.gear)) {
+          gearModificationBody.innerHTML = `
+            <strong>Aesthetic Modification: ${formatGearName(entry.gear)}</strong>
+            <p>This gear has no aesthetic, so it cannot be used for aesthetic modification or swap.</p>
+            ${essenceLine}
+            ${common}`;
+          return;
+        }
         const others = characterGear
-          .filter(item => item.gear_id !== entry.gear_id)
+          .filter(item => item.gear_id !== entry.gear_id && canGearUseAestheticModification(item.gear))
           .map(item => `<option value="${item.gear_id}">${formatGearName(item.gear)} — ${item.gear.aesthetic || "None"}</option>`)
           .join("");
         gearModificationBody.innerHTML = `
@@ -1958,7 +1974,7 @@
             <select id="gearAestheticSwapTarget">${others || '<option value="">No swap target available</option>'}</select>
           </label>
           <p id="gearAestheticSwapPreview" class="muted"></p>
-          <button type="button" data-mod-apply="aesthetic">Apply Modification</button>
+          <button type="button" data-mod-apply="aesthetic" ${others ? "" : "disabled"}>Apply Modification</button>
           ${essenceLine}
           ${common}`;
       }
@@ -1992,7 +2008,7 @@
           const options = transferType === "ability"
             ? donorAbilities.map((ability, idx) => `<option value="${idx}">${formatAbilitySummary(ability)}</option>`)
             : donorStatPool.map((stat, idx) => `<option value="${idx}">${formatStatSummary(stat)}</option>`);
-          modifierSelect.innerHTML = options.length ? options.join("") : '<option value="">No donor modifiers available</option>';
+          modifierSelect.innerHTML = options.length ? options.join("") : '<option value="">No source modifiers available</option>';
           if (countSelect) {
             const remainingCap = transferType === "ability"
               ? Math.max(0, maxCaps.activePassiveMax - targetAbilityCount)
@@ -2063,9 +2079,19 @@
     function formatAbilitySummary(ability = {}) {
       const name = ability.name || "Unknown Ability";
       const type = ability.type || "Ability";
-      const tierKeys = Object.keys(ability?.tierDetails || {});
+      const tierKeys = getUnlockedTierLabelsForAbility(ability, ability?.rarity);
       const tierLabel = tierKeys.length ? ` (${tierKeys.join(", ")})` : "";
       return `${name} [${type}]${tierLabel}`;
+    }
+
+    function getUnlockedTierLabelsForAbility(ability, rarity = null) {
+      if (!ability || typeof ability !== "object") return [];
+      const tierLimit = getAbilityTierLimit(ability.name, rarity || ability.rarity);
+      return Object.keys(ability.tierDetails || {}).filter(tier => {
+        if (tierLimit === null) return true;
+        const tierNumber = getTierNumberFromLabel(tier);
+        return !tierNumber || tierNumber <= tierLimit;
+      });
     }
 
     function summarizeGearModificationResult(choice, before, after, { donorSnapshot, secondTargetSnapshot } = {}) {
@@ -2109,8 +2135,8 @@
         for (let i = 0; i < comparedAbilities; i += 1) {
           const prev = beforeAbilities[i] || {};
           const next = afterAbilities[i] || {};
-          const prevTiers = Object.keys(prev.tierDetails || {}).join(", ") || "None";
-          const nextTiers = Object.keys(next.tierDetails || {}).join(", ") || "None";
+          const prevTiers = getUnlockedTierLabelsForAbility(prev, before.rarity).join(", ") || "None";
+          const nextTiers = getUnlockedTierLabelsForAbility(next, after.rarity).join(", ") || "None";
           if (prevTiers !== nextTiers) {
             abilityTierChanges.push(`${next.name || prev.name || "Ability"}: ${prevTiers} → ${nextTiers}`);
           }
@@ -2128,7 +2154,7 @@
       }
 
       if (choice === "condensing" && donorSnapshot) {
-        summary.push(`Condensed from: ${formatGearName(donorSnapshot.gear)}`);
+        summary.push(`Condensed into this gear from: ${formatGearName(donorSnapshot.gear)}`);
       }
       if (choice === "aesthetic") {
         const beforeAesthetic = before.aesthetic || "None";
@@ -2237,20 +2263,32 @@
           tierDetails: { Detail: "No tier details available." }
         };
       }
-      const tierLimit = getAbilityTierLimit(resolved.name, rarity);
+      const canonical = abilityDetailMap.get(resolved.name) || resolved;
+      const tierLimit = getAbilityTierLimit(canonical.name, rarity);
       const filteredTierDetails = {};
-      Object.entries(resolved.tierDetails || {}).forEach(([tier, detail]) => {
+      Object.entries(canonical.tierDetails || {}).forEach(([tier, detail]) => {
         const tierNum = getTierNumberFromLabel(tier);
         if (tierLimit === null || !tierNum || tierNum <= tierLimit) {
           filteredTierDetails[tier] = detail;
         }
       });
       return {
+        ...canonical,
         ...resolved,
         type: baseAbility?.type || "Active",
         rarity,
-        tierDetails: Object.keys(filteredTierDetails).length ? filteredTierDetails : (resolved.tierDetails || { Detail: "No tier details available." })
+        tierDetails: Object.keys(filteredTierDetails).length ? filteredTierDetails : (canonical.tierDetails || resolved.tierDetails || { Detail: "No tier details available." })
       };
+    }
+
+    function canGearCondense(gear) {
+      if (!gear || typeof gear !== "object") return false;
+      const gearType = gear.gear_type || gear.gearType;
+      return !["Kernel", "Bauble", "Consumable"].includes(gearType);
+    }
+
+    function canGearUseAestheticModification(gear) {
+      return Boolean(gear && typeof gear === "object" && gear.aesthetic);
     }
 
     async function generateRerolledGear(baseGear, luck, rarityOverride = null) {
@@ -2335,13 +2373,8 @@
         }
 
         const gValue = updated.color ? (getEquippedColorCounts()[updated.color] || 0) : 0;
-        const previousValues = (base[targetStatsKey] || []).map(stat => Number.isFinite(stat?.value) ? Number(stat.value) : null);
-        updated[targetStatsKey] = (updated[targetStatsKey] || []).map((stat, index) => {
+        updated[targetStatsKey] = (updated[targetStatsKey] || []).map(stat => {
           const recalculated = recalculateGearStatFromChart(stat, row.next, luckNow, { g: gValue });
-          const prevValue = previousValues[index];
-          if (Number.isFinite(prevValue) && Number.isFinite(recalculated?.value) && recalculated.value < prevValue) {
-            return { ...recalculated, value: prevValue };
-          }
           return recalculated;
         });
 
@@ -2368,7 +2401,11 @@
           .filter(value => Number.isFinite(value));
         const donorEntry = findGearEntry(donorId);
         if (!donorEntry) {
-          pushStatus("Choose donor gear to condense.", { tone: "warning" });
+          pushStatus("Choose source gear to condense into the target gear.", { tone: "warning" });
+          return;
+        }
+        if (!canGearCondense(updated) || !canGearCondense(donorEntry.gear)) {
+          pushStatus("Only non-Kernel/Bauble/Consumable gear can use Condense Into.", { tone: "warning" });
           return;
         }
         if (selectedModifierIndexes.length !== moveCount) {
@@ -2421,6 +2458,8 @@
           updated[targetStatKey].push(...cloneJson(pickedStats));
         }
 
+        updated.abilities = updated.abilities.map(ability => buildUpgradedAbility(ability, updated.rarity));
+
         donorSnapshot = {
           gear: cloneJson(donorEntry.gear),
           gear_id: donorEntry.gear_id,
@@ -2432,12 +2471,20 @@
         if (donorGearError) throw donorGearError;
         characterGear = characterGear.filter(item => item.gear_id !== donorEntry.gear_id);
       } else if (choice === "aesthetic") {
+        if (!canGearUseAestheticModification(updated)) {
+          pushStatus("This gear has no aesthetic, so it cannot be used for aesthetic modification or swap.", { tone: "warning" });
+          return;
+        }
         const mode = document.getElementById("gearAestheticMode")?.value || "modify";
         if (mode === "swap") {
           const otherId = document.getElementById("gearAestheticSwapTarget")?.value;
           const otherEntry = findGearEntry(otherId);
           if (!otherEntry) {
             pushStatus("Choose another gear piece for aesthetic swap.", { tone: "warning" });
+            return;
+          }
+          if (!canGearUseAestheticModification(otherEntry.gear)) {
+            pushStatus("Swap target must already have an aesthetic.", { tone: "warning" });
             return;
           }
           cost = applyGearModDiscount(100);
