@@ -3997,13 +3997,13 @@
         .from("webrunning_gear")
         .update(payload)
         .eq("id", gearId)
-        .select("*")
-        .maybeSingle();
+        .select("*");
       if (error) throw error;
-      if (!data) {
+      const updated = Array.isArray(data) ? data[0] : data;
+      if (!updated) {
         throw new Error("No gear record was updated.");
       }
-      return data;
+      return updated;
     }
 
     function gearSignature(gear) {
