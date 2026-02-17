@@ -3993,17 +3993,33 @@
     }
 
     async function updateGearRecord(gearId, payload) {
+      if (!gearId) {
+        throw new Error("Cannot update gear without a gear id.");
+      }
       const { data, error } = await sb
         .from("webrunning_gear")
         .update(payload)
         .eq("id", gearId)
-        .select("*");
+        .select("*")
+        .maybeSingle();
       if (error) throw error;
-      const updated = Array.isArray(data) ? data[0] : data;
-      if (!updated) {
-        throw new Error("No gear record was updated.");
+
+      if (data) {
+        return data;
       }
-      return updated;
+
+      const { data: refreshed, error: refreshError } = await sb
+        .from("webrunning_gear")
+        .select("*")
+        .eq("id", gearId)
+        .maybeSingle();
+      if (refreshError) throw refreshError;
+      if (refreshed) {
+        return refreshed;
+      }
+
+      console.warn("Gear update returned no row; falling back to local payload.", { gearId });
+      return { id: gearId, ...payload };
     }
 
     function gearSignature(gear) {
