@@ -1869,6 +1869,10 @@
       return values.length ? values.join(", ") : "None";
     }
 
+    function formatFullAbilityList(abilities = []) {
+      return abilities.length ? abilities.map(formatAbilitySummary).join(", ") : "None";
+    }
+
     function renderGearModificationDetail(choice) {
       const targetSelect = document.getElementById("gearModificationTarget");
       const targetId = targetSelect?.value || selectedGearModificationTargetId;
@@ -1963,26 +1967,52 @@
         const transferTypeSelect = document.getElementById("gearCondenseTransferType");
         const modifierSelect = document.getElementById("gearCondenseModifier");
         const countSelect = document.getElementById("gearCondenseCount");
+        const maxCaps = gearMaxes[entry.gear.rarity] || gearMaxes.Common;
+        const targetStatCount = Array.isArray(entry.gear.stats)
+          ? entry.gear.stats.length
+          : Array.isArray(entry.gear.stat_modifiers)
+            ? entry.gear.stat_modifiers.length
+            : 0;
+        const targetAbilityCount = Array.isArray(entry.gear.abilities) ? entry.gear.abilities.length : 0;
+        const enforceCondenseSelectionLimit = () => {
+          const desiredCount = Math.max(1, Number(countSelect?.value || 1));
+          const selectedOptions = Array.from(modifierSelect?.selectedOptions || []);
+          if (selectedOptions.length <= desiredCount) return;
+          selectedOptions.slice(desiredCount).forEach(option => {
+            option.selected = false;
+          });
+        };
         const syncDonorModifiers = () => {
           const donor = findGearEntry(donorSelect?.value);
           const donorStats = Array.isArray(donor?.gear?.stats) ? donor.gear.stats : [];
+          const donorStatModifiers = Array.isArray(donor?.gear?.stat_modifiers) ? donor.gear.stat_modifiers : [];
           const donorAbilities = Array.isArray(donor?.gear?.abilities) ? donor.gear.abilities : [];
-          const options = (transferTypeSelect?.value || "stat") === "ability"
+          const transferType = transferTypeSelect?.value || "stat";
+          const donorStatPool = donorStats.length ? donorStats : donorStatModifiers;
+          const options = transferType === "ability"
             ? donorAbilities.map((ability, idx) => `<option value="${idx}">${formatAbilitySummary(ability)}</option>`)
-            : donorStats.map((stat, idx) => `<option value="${idx}">${formatStatSummary(stat)}</option>`);
+            : donorStatPool.map((stat, idx) => `<option value="${idx}">${formatStatSummary(stat)}</option>`);
           modifierSelect.innerHTML = options.length ? options.join("") : '<option value="">No donor modifiers available</option>';
           if (countSelect) {
-            const maxSelectable = Math.max(1, options.length);
+            const remainingCap = transferType === "ability"
+              ? Math.max(0, maxCaps.activePassiveMax - targetAbilityCount)
+              : Math.max(0, maxCaps.statBuffMax - targetStatCount);
+            const maxSelectable = Math.max(0, Math.min(options.length, remainingCap));
             Array.from(countSelect.options).forEach(option => {
               option.disabled = Number(option.value) > maxSelectable;
             });
-            if (Number(countSelect.value) > maxSelectable) {
+            if (maxSelectable === 0) {
+              countSelect.value = "1";
+            } else if (Number(countSelect.value) > maxSelectable) {
               countSelect.value = String(maxSelectable);
             }
           }
+          enforceCondenseSelectionLimit();
         };
         donorSelect?.addEventListener("change", syncDonorModifiers);
         transferTypeSelect?.addEventListener("change", syncDonorModifiers);
+        countSelect?.addEventListener("change", enforceCondenseSelectionLimit);
+        modifierSelect?.addEventListener("change", enforceCondenseSelectionLimit);
         syncDonorModifiers();
       }
       if (choice === "aesthetic") {
@@ -2057,40 +2087,44 @@
         summary.push(`New abilities: ${newAbilities.map(formatAbilitySummary).join(", ")}`);
       }
 
-      const statChanges = [];
-      const comparedStats = Math.min(beforeStats.length, afterStats.length);
-      for (let i = 0; i < comparedStats; i += 1) {
-        const prev = beforeStats[i];
-        const next = afterStats[i];
-        if (!prev || !next) continue;
-        const prevVal = typeof prev.value === "number" ? prev.value : prev.formula;
-        const nextVal = typeof next.value === "number" ? next.value : next.formula;
-        if (prevVal !== nextVal) {
-          statChanges.push(`${next.label || next.name || "Stat"}: ${prevVal} → ${nextVal}`);
+      if (choice !== "rerolling") {
+        const statChanges = [];
+        const comparedStats = Math.min(beforeStats.length, afterStats.length);
+        for (let i = 0; i < comparedStats; i += 1) {
+          const prev = beforeStats[i];
+          const next = afterStats[i];
+          if (!prev || !next) continue;
+          const prevVal = typeof prev.value === "number" ? prev.value : prev.formula;
+          const nextVal = typeof next.value === "number" ? next.value : next.formula;
+          if (prevVal !== nextVal) {
+            statChanges.push(`${next.label || next.name || "Stat"}: ${prevVal} → ${nextVal}`);
+          }
         }
-      }
-      if (statChanges.length) {
-        summary.push(`Stat changes: ${statChanges.join(", ")}`);
-      }
+        if (statChanges.length) {
+          summary.push(`Stat changes: ${statChanges.join(", ")}`);
+        }
 
-      const abilityTierChanges = [];
-      const comparedAbilities = Math.min(beforeAbilities.length, afterAbilities.length);
-      for (let i = 0; i < comparedAbilities; i += 1) {
-        const prev = beforeAbilities[i] || {};
-        const next = afterAbilities[i] || {};
-        const prevTiers = Object.keys(prev.tierDetails || {}).join(", ") || "None";
-        const nextTiers = Object.keys(next.tierDetails || {}).join(", ") || "None";
-        if (prevTiers !== nextTiers) {
-          abilityTierChanges.push(`${next.name || prev.name || "Ability"}: ${prevTiers} → ${nextTiers}`);
+        const abilityTierChanges = [];
+        const comparedAbilities = Math.min(beforeAbilities.length, afterAbilities.length);
+        for (let i = 0; i < comparedAbilities; i += 1) {
+          const prev = beforeAbilities[i] || {};
+          const next = afterAbilities[i] || {};
+          const prevTiers = Object.keys(prev.tierDetails || {}).join(", ") || "None";
+          const nextTiers = Object.keys(next.tierDetails || {}).join(", ") || "None";
+          if (prevTiers !== nextTiers) {
+            abilityTierChanges.push(`${next.name || prev.name || "Ability"}: ${prevTiers} → ${nextTiers}`);
+          }
         }
-      }
-      if (abilityTierChanges.length) {
-        summary.push(`Ability tier changes: ${abilityTierChanges.join(", ")}`);
+        if (abilityTierChanges.length) {
+          summary.push(`Ability tier changes: ${abilityTierChanges.join(", ")}`);
+        }
       }
 
       if (choice === "rerolling") {
         summary.push(`Previous stats: ${formatFullStatList(beforeStats, before.stat_modifiers || [])}`);
         summary.push(`Rerolled stats: ${formatFullStatList(afterStats, after.stat_modifiers || [])}`);
+        summary.push(`Previous abilities: ${formatFullAbilityList(beforeAbilities)}`);
+        summary.push(`Rerolled abilities: ${formatFullAbilityList(afterAbilities)}`);
       }
 
       if (choice === "condensing" && donorSnapshot) {
@@ -2131,7 +2165,7 @@
         <ul>${summary.map(item => `<li>${item}</li>`).join("")}</ul>
       `;
       if (gearModificationStatus) {
-        gearModificationStatus.textContent = "Review the changes or undo this modification.";
+        gearModificationStatus.textContent = "";
       }
       if (gearModificationBack) {
         gearModificationBack.classList.remove("hidden");
@@ -2337,39 +2371,54 @@
           pushStatus("Choose donor gear to condense.", { tone: "warning" });
           return;
         }
-        if (selectedModifierIndexes.length < moveCount) {
-          pushStatus(`Choose ${moveCount} donor modifier${moveCount === 1 ? "" : "s"} to transfer.`, { tone: "warning" });
+        if (selectedModifierIndexes.length !== moveCount) {
+          pushStatus(`Select exactly ${moveCount} donor modifier${moveCount === 1 ? "" : "s"} to transfer.`, { tone: "warning" });
           return;
         }
         const costList = gearCondenseCosts[updated.rarity] || [];
         cost = applyGearModDiscount(costList[moveCount - 1] || costList[0] || 0);
         const maxCaps = gearMaxes[updated.rarity] || gearMaxes.Common;
         const donorStats = Array.isArray(donorEntry.gear.stats) ? donorEntry.gear.stats : [];
+        const donorStatModifiers = Array.isArray(donorEntry.gear.stat_modifiers) ? donorEntry.gear.stat_modifiers : [];
         const donorAbilities = Array.isArray(donorEntry.gear.abilities) ? donorEntry.gear.abilities : [];
         updated.stats = Array.isArray(updated.stats) ? updated.stats : [];
+        updated.stat_modifiers = Array.isArray(updated.stat_modifiers) ? updated.stat_modifiers : [];
         updated.abilities = Array.isArray(updated.abilities) ? updated.abilities : [];
+        const isBauble = (updated.gear_type || updated.gearType) === "Bauble";
+        const targetStatKey = isBauble ? "stat_modifiers" : "stats";
+        const donorStatPool = donorStats.length ? donorStats : donorStatModifiers;
+        const remainingStatSlots = Math.max(0, maxCaps.statBuffMax - updated[targetStatKey].length);
+        const remainingAbilitySlots = Math.max(0, maxCaps.activePassiveMax - updated.abilities.length);
 
         const pickedIndexes = selectedModifierIndexes.slice(0, moveCount);
         if (transferType === "ability") {
+          if (remainingAbilitySlots <= 0) {
+            pushStatus("This gear is already at the maximum number of abilities for its rarity.", { tone: "warning" });
+            return;
+          }
           const pickedAbilities = pickedIndexes
             .map(idx => donorAbilities[idx])
             .filter(Boolean)
-            .slice(0, Math.max(0, maxCaps.activePassiveMax - updated.abilities.length));
+            .slice(0, remainingAbilitySlots);
           if (!pickedAbilities.length) {
             pushStatus("Selected donor abilities were not found.", { tone: "warning" });
             return;
           }
           updated.abilities.push(...cloneJson(pickedAbilities));
         } else {
+          if (remainingStatSlots <= 0) {
+            pushStatus("This gear is already at the maximum number of stat buffs for its rarity.", { tone: "warning" });
+            return;
+          }
           const pickedStats = pickedIndexes
-            .map(idx => donorStats[idx])
+            .map(idx => donorStatPool[idx])
             .filter(Boolean)
-            .slice(0, Math.max(0, maxCaps.statBuffMax - updated.stats.length));
+            .slice(0, remainingStatSlots);
           if (!pickedStats.length) {
             pushStatus("Selected donor stats were not found.", { tone: "warning" });
             return;
           }
-          updated.stats.push(...cloneJson(pickedStats));
+          updated[targetStatKey].push(...cloneJson(pickedStats));
         }
 
         donorSnapshot = {
