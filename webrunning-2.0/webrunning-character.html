@@ -1332,19 +1332,31 @@
       }
     }
 
+    function getCappedLuckValue(luck, level = null) {
+      const numericLuck = Number(luck) || 0;
+      const fallbackLevel = currentStats().level;
+      const resolvedLevel = Number(level ?? fallbackLevel) || 1;
+      const luckLimit = getLevelLimits(resolvedLevel).luck;
+      if (!Number.isFinite(luckLimit)) {
+        return numericLuck;
+      }
+      return Math.min(numericLuck, luckLimit);
+    }
+
     function calculateFormulaValue(formula, luck, statName, context = {}) {
       if (formula == null) return 0;
       if (typeof formula === "number") return formula;
+      const effectiveLuck = getCappedLuckValue(luck, context.level);
       const trimmed = String(formula).trim();
       if (!trimmed) return 0;
       if (trimmed.startsWith("x")) {
         return 0;
       }
       if (trimmed === "D") {
-        return String(luck).length;
+        return String(effectiveLuck).length;
       }
       if (trimmed === "D+1") {
-        return String(luck).length + 1;
+        return String(effectiveLuck).length + 1;
       }
       const normalized = trimmed.replace(/^\+/, "");
       if (/^\d+(\.\d+)?$/.test(normalized)) {
@@ -1355,7 +1367,7 @@
       const [, symbol, op, raw] = match;
       const value = Number(raw);
       const gValue = Number(context.g) || 0;
-      const baseValue = symbol === "G" ? gValue : luck;
+      const baseValue = symbol === "G" ? gValue : effectiveLuck;
       let result = 0;
       if (op === "x") {
         result = Math.floor(baseValue * value);
@@ -1840,7 +1852,7 @@
       });
       selectedModificationType = null;
       if (gearModificationStatus) {
-        gearModificationStatus.textContent = "Choose a modification type to continue.";
+        gearModificationStatus.textContent = "";
       }
       if (gearModificationBack) {
         gearModificationBack.classList.add("hidden");
@@ -1876,13 +1888,14 @@
           <button type="button" data-mod-apply="rerolling">Apply Modification</button>
           ${common}`;
       } else if (choice === "condensing") {
-        const costOptions = (gearCondenseCosts[rarity] || []).map((cost, idx) => `<option value="${idx + 1}">${idx + 1} modifier${idx ? "s" : ""} — ${formatEssenceCostWithTotal(cost, stats)}</option>`).join("");
+        const costOptions = (gearCondenseCosts[rarity] || []).map((cost, idx) => `<option value="${idx + 1}">${idx + 1} modifier${idx ? "s" : ""} — ${formatCostAfterDiscount(cost, stats)}</option>`).join("");
         const donorOptions = characterGear
           .filter(item => item.gear_id !== entry.gear_id)
           .map(item => `<option value="${item.gear_id}">${formatGearName(item.gear)} [${item.gear_slot}]</option>`)
           .join("");
         gearModificationBody.innerHTML = `
           <strong>Condensing Gear: ${formatGearName(entry.gear)}</strong>
+          <p class="muted">Total Essence available: ${stats.essence || 0}</p>
           <p><strong>Warning:</strong> The donor gear is permanently destroyed.</p>
           <p>Destroy one gear piece and transfer chosen stat buffs or chosen abilities to this gear.</p>
           <label>Modifiers to Transfer
@@ -1910,24 +1923,23 @@
           .join("");
         gearModificationBody.innerHTML = `
           <strong>Aesthetic Modification: ${formatGearName(entry.gear)}</strong>
+          <p class="muted">Current Aesthetic: ${entry.gear.aesthetic || "None"}</p>
           <label>Mode
             <select id="gearAestheticMode">
               <option value="modify">Aesthetic Modification (${formatEssenceCostWithTotal(300, stats)})</option>
               <option value="swap">Aesthetic Swap (${formatEssenceCostWithTotal(100, stats)})</option>
             </select>
           </label>
-          <label>Aesthetic Preset (optional)
+          <label>Aesthetic Preset
             <select id="gearAestheticPreset">
               <option value="">Choose a preset</option>
               ${aestheticPresetOptions.map(option => `<option value="${option}">${option}</option>`).join("")}
             </select>
           </label>
-          <label>New Aesthetic (for modify mode)
-            <input id="gearAestheticInput" type="text" maxlength="80" placeholder="Describe the new look" />
-          </label>
           <label>Swap Target (for swap mode)
             <select id="gearAestheticSwapTarget">${others || '<option value="">No swap target available</option>'}</select>
           </label>
+          <p id="gearAestheticSwapPreview" class="muted"></p>
           <button type="button" data-mod-apply="aesthetic">Apply Modification</button>
           ${common}`;
       }
@@ -1959,16 +1971,26 @@
         syncDonorModifiers();
       }
       if (choice === "aesthetic") {
-        const presetSelect = document.getElementById("gearAestheticPreset");
-        const input = document.getElementById("gearAestheticInput");
-        presetSelect?.addEventListener("change", () => {
-          if (presetSelect.value && input) {
-            input.value = presetSelect.value;
+        const swapTarget = document.getElementById("gearAestheticSwapTarget");
+        const modeSelect = document.getElementById("gearAestheticMode");
+        const preview = document.getElementById("gearAestheticSwapPreview");
+        const syncSwapPreview = () => {
+          if (!preview) return;
+          if ((modeSelect?.value || "modify") !== "swap") {
+            preview.textContent = "";
+            return;
           }
-        });
+          const otherEntry = findGearEntry(swapTarget?.value);
+          preview.textContent = otherEntry
+            ? `Swap target aesthetic: ${otherEntry.gear?.aesthetic || "None"}`
+            : "Swap target aesthetic: None";
+        };
+        swapTarget?.addEventListener("change", syncSwapPreview);
+        modeSelect?.addEventListener("change", syncSwapPreview);
+        syncSwapPreview();
       }
       if (gearModificationStatus) {
-        gearModificationStatus.textContent = "Choose Apply Modification to spend Essence and record this change in Gear History.";
+        gearModificationStatus.textContent = "";
       }
       if (gearModificationBack) {
         gearModificationBack.classList.remove("hidden");
@@ -2192,7 +2214,8 @@
       const targetId = document.getElementById("gearModificationTarget")?.value || selectedGearModificationTargetId;
       const entry = findGearEntry(targetId);
       if (!entry) return;
-      const luckNow = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats())).luck || 1;
+      const liveStats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      const luckNow = getCappedLuckValue(liveStats.luck || 1, liveStats.level);
       const base = cloneJson(entry.gear);
       let updated = cloneJson(entry.gear);
       let cost = 0;
@@ -2248,6 +2271,7 @@
         cost = applyGearModDiscount(gearRerollCosts[updated.rarity] || 0);
         const rerolled = await generateRerolledGear(base, luckNow, base.rarity);
         updated.stats = cloneJson(rerolled?.stats || []);
+        updated.stat_modifiers = cloneJson(rerolled?.stat_modifiers || []);
         updated.abilities = cloneJson(rerolled?.abilities || []);
       } else if (choice === "condensing") {
         const donorId = document.getElementById("gearCondenseDonor")?.value;
@@ -2301,8 +2325,10 @@
           gear_id: donorEntry.gear_id,
           gear_slot: donorEntry.gear_slot
         };
-        await sb.from("webrunning_character_gear").delete().eq("character_id", activeCharacter.id).eq("gear_id", donorEntry.gear_id);
-        await sb.from("webrunning_gear").delete().eq("id", donorEntry.gear_id);
+        const { error: donorLinkError } = await sb.from("webrunning_character_gear").delete().eq("character_id", activeCharacter.id).eq("gear_id", donorEntry.gear_id);
+        if (donorLinkError) throw donorLinkError;
+        const { error: donorGearError } = await sb.from("webrunning_gear").delete().eq("id", donorEntry.gear_id);
+        if (donorGearError) throw donorGearError;
         characterGear = characterGear.filter(item => item.gear_id !== donorEntry.gear_id);
       } else if (choice === "aesthetic") {
         const mode = document.getElementById("gearAestheticMode")?.value || "modify";
@@ -2324,9 +2350,9 @@
           secondTargetSnapshot = { gear_id: otherEntry.gear_id, before: otherBase, after: cloneJson(otherUpdated) };
         } else {
           cost = applyGearModDiscount(300);
-          const value = (document.getElementById("gearAestheticInput")?.value || document.getElementById("gearAestheticPreset")?.value || "").trim();
+          const value = (document.getElementById("gearAestheticPreset")?.value || "").trim();
           if (!value) {
-            pushStatus("Enter a new aesthetic description.", { tone: "warning" });
+            pushStatus("Choose an aesthetic preset.", { tone: "warning" });
             return;
           }
           updated.aesthetic = value;
@@ -2348,6 +2374,9 @@
         const { error } = await sb.from("webrunning_gear").update(buildGearInsertPayload(updated)).eq("id", entry.gear_id);
         if (error) throw error;
         entry.gear = updated;
+        if (gearModificationSource === "detail") {
+          openGearDetailModal(entry);
+        }
 
         const historyRecord = addGearHistoryRecord({
           type: "modify",
