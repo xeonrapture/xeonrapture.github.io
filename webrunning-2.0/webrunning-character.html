@@ -1232,6 +1232,14 @@
       return JSON.stringify(value);
     }
 
+    function reportZeroedStatIssue(scope, details = {}) {
+      console.error("[WR2 Zeroed Stat Diagnostic]", {
+        scope,
+        timestamp: new Date().toISOString(),
+        ...details
+      });
+    }
+
     let availableAbilities = [];
     let abilityDetailMap = new Map();
 
@@ -1370,7 +1378,15 @@
         return Number(normalized);
       }
       const match = normalized.match(/^([LG])([x*÷\/])([\d.]+)$/i);
-      if (!match) return 0;
+      if (!match) {
+        reportZeroedStatIssue("calculateFormulaValue.unparsed_formula", {
+          statName,
+          formula: trimmed,
+          luck,
+          context
+        });
+        return 0;
+      }
       const [, symbol, op, raw] = match;
       const value = Number(raw);
       const gValue = Number(context.g) || 0;
@@ -1384,7 +1400,20 @@
       if (statName === "Kernel Slots") {
         return Math.min(3, Math.max(1, result));
       }
-      return Math.max(1, result);
+      const finalResult = Math.max(1, result);
+      if (!Number.isFinite(finalResult)) {
+        reportZeroedStatIssue("calculateFormulaValue.invalid_result", {
+          statName,
+          formula: trimmed,
+          luck,
+          context,
+          baseValue,
+          parsedValue: value,
+          result,
+          finalResult
+        });
+      }
+      return finalResult;
     }
 
     function getChartFormulaForStat(statLabel, rarity) {
@@ -1414,13 +1443,60 @@
       const chartFormula = getChartFormulaForStat(chartLookupLabel || normalizedLookup, rarity);
       const formula = chartFormula ?? stat.formula;
       if (!formula) {
+        reportZeroedStatIssue("recalculateGearStatFromChart.missing_formula", {
+          rarity,
+          luck,
+          context,
+          stat
+        });
         return { ...stat, formula: chartFormula ?? stat.formula };
       }
       if (typeof formula === "string" && formula.trim().startsWith("x")) {
         return { ...stat, formula, value: formula };
       }
       const value = calculateFormulaValue(formula, luck, statLabel, context);
+      if (typeof value === "number" && value <= 0) {
+        reportZeroedStatIssue("recalculateGearStatFromChart.non_positive_value", {
+          statLabel,
+          formula,
+          rarity,
+          luck,
+          context,
+          value,
+          stat
+        });
+      }
       return { ...stat, formula, value };
+    }
+
+    function debugZeroedGearStats(gear, source = "unknown") {
+      if (!gear || typeof gear !== "object") return;
+      const scan = (list, listType) => {
+        (list || []).forEach((stat, index) => {
+          const statName = stat?.name || stat?.label || stat?.stat || "Unknown";
+          const hasFormula = stat?.formula != null && String(stat.formula).trim() !== "";
+          const resolvedValue = stat?.value ?? stat?.calc;
+          if (!hasFormula) return;
+          if (!Number.isFinite(Number(resolvedValue)) || Number(resolvedValue) === 0) {
+            reportZeroedStatIssue("debugZeroedGearStats.empty_or_zero_stat", {
+              source,
+              listType,
+              index,
+              statName,
+              formula: stat?.formula,
+              value: resolvedValue,
+              gearName: gear?.name,
+              gearType: gear?.gear_type || gear?.gearType,
+              rarity: gear?.rarity,
+              color: gear?.color,
+              color2: gear?.color2,
+              stat
+            });
+          }
+        });
+      };
+      scan(gear.stats, "stats");
+      scan(gear.stat_modifiers, "stat_modifiers");
     }
 
     function recalculateGearStatsForRarity(gear, rarity, luck, context = {}) {
@@ -1431,6 +1507,7 @@
       nextGear.stat_modifiers = Array.isArray(gear?.stat_modifiers)
         ? gear.stat_modifiers.map(stat => recalculateGearStatFromChart(stat, rarity, luck, context))
         : [];
+      debugZeroedGearStats(nextGear, "recalculateGearStatsForRarity");
       return nextGear;
     }
 
@@ -1652,6 +1729,19 @@
             if (!statName) return;
             const value = stat.value ?? stat.calc ?? calculateFormulaValue(stat.formula, baseLuck, statName);
             if (typeof value !== "number") return;
+            if (value === 0 && stat?.formula) {
+              reportZeroedStatIssue("calculateGearBonuses.zero_non_bauble_stat", {
+                statName,
+                formula: stat.formula,
+                baseLuck,
+                gearName: gear?.name,
+                gearType,
+                rarity: gear?.rarity,
+                color: gear?.color,
+                color2: gear?.color2,
+                stat
+              });
+            }
             applyStatBonus(nonBaubleBonus, statName, value, gearType, sources);
           });
         }
@@ -1713,6 +1803,20 @@
           if (!statName) return;
           const value = stat.value ?? stat.calc ?? calculateFormulaValue(stat.formula, cappedUpdatedLuck, statName, { g: gValue });
           if (typeof value !== "number") return;
+          if (value === 0 && stat?.formula) {
+            reportZeroedStatIssue("calculateGearBonuses.zero_bauble_stat_modifier", {
+              statName,
+              formula: stat.formula,
+              gValue,
+              cappedUpdatedLuck,
+              gearName: gear?.name,
+              gearType,
+              rarity: gear?.rarity,
+              color: gear?.color,
+              color2: gear?.color2,
+              stat
+            });
+          }
           if (statKeyMap[statName]) {
             applyStatBonus(baubleBonus, statName, value, "Bauble", sources);
           } else {
