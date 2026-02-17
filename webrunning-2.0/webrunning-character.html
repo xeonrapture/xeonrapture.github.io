@@ -1403,6 +1403,17 @@
       return { ...stat, formula, value };
     }
 
+    function recalculateGearStatsForRarity(gear, rarity, luck, context = {}) {
+      const nextGear = { ...(gear || {}) };
+      nextGear.stats = Array.isArray(gear?.stats)
+        ? gear.stats.map(stat => recalculateGearStatFromChart(stat, rarity, luck, context))
+        : [];
+      nextGear.stat_modifiers = Array.isArray(gear?.stat_modifiers)
+        ? gear.stat_modifiers.map(stat => recalculateGearStatFromChart(stat, rarity, luck, context))
+        : [];
+      return nextGear;
+    }
+
     function resolveAbilityDetails(ability) {
       if (!ability || typeof ability !== "string") return ability;
       return abilityDetailMap.get(ability) || ability;
@@ -2090,7 +2101,7 @@
       return Object.keys(ability.tierDetails || {}).filter(tier => {
         if (tierLimit === null) return true;
         const tierNumber = getTierNumberFromLabel(tier);
-        return !tierNumber || tierNumber <= tierLimit;
+        return tierNumber === null || tierNumber <= tierLimit;
       });
     }
 
@@ -2253,6 +2264,43 @@
       return (stats || []).find(stat => !taken.has(normalizeLabel(stat?.label || stat?.name))) || null;
     }
 
+
+    function takeRerolledStats(rerolledStats = [], targetCount = 0) {
+      if (targetCount <= 0) return [];
+      const selected = [];
+      const taken = new Set();
+      (rerolledStats || []).forEach(stat => {
+        if (selected.length >= targetCount) return;
+        const key = normalizeLabel(stat?.label || stat?.name);
+        if (!key || taken.has(key)) return;
+        selected.push(cloneJson(stat));
+        taken.add(key);
+      });
+      for (const stat of (rerolledStats || [])) {
+        if (selected.length >= targetCount) break;
+        selected.push(cloneJson(stat));
+      }
+      return selected.slice(0, targetCount);
+    }
+
+    function takeRerolledAbilities(rerolledAbilities = [], targetCount = 0, rarity = null) {
+      if (targetCount <= 0) return [];
+      const selected = [];
+      const taken = new Set();
+      (rerolledAbilities || []).forEach(ability => {
+        if (selected.length >= targetCount) return;
+        const key = normalizeLabel(ability?.name);
+        if (!key || taken.has(key)) return;
+        selected.push(buildUpgradedAbility(ability, rarity || ability?.rarity));
+        taken.add(key);
+      });
+      for (const ability of (rerolledAbilities || [])) {
+        if (selected.length >= targetCount) break;
+        selected.push(buildUpgradedAbility(ability, rarity || ability?.rarity));
+      }
+      return selected.slice(0, targetCount);
+    }
+
     function buildUpgradedAbility(baseAbility, rarity) {
       const resolved = resolveAbilityDetails(baseAbility);
       if (typeof resolved === "string") {
@@ -2268,7 +2316,7 @@
       const filteredTierDetails = {};
       Object.entries(canonical.tierDetails || {}).forEach(([tier, detail]) => {
         const tierNum = getTierNumberFromLabel(tier);
-        if (tierLimit === null || !tierNum || tierNum <= tierLimit) {
+        if (tierLimit === null || tierNum === null || tierNum <= tierLimit) {
           filteredTierDetails[tier] = detail;
         }
       });
@@ -2373,10 +2421,7 @@
         }
 
         const gValue = updated.color ? (getEquippedColorCounts()[updated.color] || 0) : 0;
-        updated[targetStatsKey] = (updated[targetStatsKey] || []).map(stat => {
-          const recalculated = recalculateGearStatFromChart(stat, row.next, luckNow, { g: gValue });
-          return recalculated;
-        });
+        updated = recalculateGearStatsForRarity(updated, row.next, luckNow, { g: gValue });
 
         updated.abilities = updated.abilities.map(ability => buildUpgradedAbility(ability, row.next));
         if (updated.abilities.length < rarityCaps.activePassiveMax) {
@@ -2389,9 +2434,16 @@
       } else if (choice === "rerolling") {
         cost = applyGearModDiscount(gearRerollCosts[updated.rarity] || 0);
         const rerolled = await generateRerolledGear(base, luckNow, base.rarity);
-        updated.stats = cloneJson(rerolled?.stats || []);
-        updated.stat_modifiers = cloneJson(rerolled?.stat_modifiers || []);
-        updated.abilities = cloneJson(rerolled?.abilities || []);
+        const baseStatsCount = Array.isArray(base.stats) ? base.stats.length : 0;
+        const baseStatModifierCount = Array.isArray(base.stat_modifiers) ? base.stat_modifiers.length : 0;
+        const baseAbilityCount = Array.isArray(base.abilities) ? base.abilities.length : 0;
+
+        updated.stats = takeRerolledStats(rerolled?.stats || [], baseStatsCount);
+        updated.stat_modifiers = takeRerolledStats(rerolled?.stat_modifiers || [], baseStatModifierCount);
+        updated.abilities = takeRerolledAbilities(rerolled?.abilities || [], baseAbilityCount, base.rarity);
+
+        const gValue = updated.color ? (getEquippedColorCounts()[updated.color] || 0) : 0;
+        updated = recalculateGearStatsForRarity(updated, base.rarity, luckNow, { g: gValue });
       } else if (choice === "condensing") {
         const donorId = document.getElementById("gearCondenseDonor")?.value;
         const transferType = document.getElementById("gearCondenseTransferType")?.value || "stat";
@@ -3008,7 +3060,7 @@
           const filteredTierEntries = tierEntries.filter(([tier]) => {
             if (tierLimit === null) return true;
             const tierNumber = getTierNumberFromLabel(tier);
-            return !tierNumber || tierNumber <= tierLimit;
+            return tierNumber === null || tierNumber <= tierLimit;
           });
           const tierList = filteredTierEntries.length
             ? `<ul>${filteredTierEntries.map(([tier, detail]) => (
@@ -3035,14 +3087,14 @@
       if (details && typeof details === "object") {
         Object.keys(details).forEach(key => {
           const tierNumber = getTierNumberFromLabel(key);
-          if (tierNumber) {
+          if (tierNumber !== null) {
             tiers.add(tierNumber);
           }
         });
       }
       parseAbilityLines(resolved).forEach(line => {
         const tierNumber = getTierNumberFromLabel(line);
-        if (tierNumber) {
+        if (tierNumber !== null) {
           tiers.add(tierNumber);
         }
       });
@@ -3307,7 +3359,7 @@
             const filteredTierEntries = tierEntries.filter(([tier]) => {
               if (tierLimit === null) return true;
               const tierNumber = getTierNumberFromLabel(tier);
-              return !tierNumber || tierNumber <= tierLimit;
+              return tierNumber === null || tierNumber <= tierLimit;
             });
             const detailsList = filteredTierEntries.length
               ? `<ul>${filteredTierEntries
