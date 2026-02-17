@@ -3993,16 +3993,11 @@
     }
 
     async function updateGearRecord(gearId, payload) {
-      const { data, error } = await sb
+      const { error } = await sb
         .from("webrunning_gear")
         .update(payload)
-        .eq("id", gearId)
-        .select("id")
-        .maybeSingle();
+        .eq("id", gearId);
       if (error) throw error;
-      if (!data) {
-        throw new Error("Gear update did not persist to the database.");
-      }
     }
 
     function gearSignature(gear) {
