@@ -52,7 +52,7 @@ class StatBuff:
             "Power": [None,None,None,"D","D+1"],
 
             "HP": ["L÷2","L","Lx1.25","Lx1.5","Lx2"],
-            "HP ✦": ["L","Lx1.25","Lx1.5","Lx2","Lx2.5"],
+            "HP ✦": ["L","Lx1.25","Lx1.5","Lx1.75","Lx2.5"],
             "Defense DC": ["L÷5","L÷4","L÷3","L÷2","L"],
             "Defense DC ✦": ["L÷4","L÷3","L÷2","L","Lx1.25"],
             "Armor": ["L÷5","L÷5","L÷4","L÷4","L÷3"],
@@ -62,7 +62,7 @@ class StatBuff:
             "Initiative": ["L÷5","L÷4","L÷3","L÷2","L"],
             "Initiative ✦": ["L÷4","L÷3","L÷2","L","Lx1.25"],
             "Movement Speed": ["L÷2","L","Lx1.25","Lx1.5","Lx2"],
-            "Movement Speed ✦": ["L","Lx1.25","Lx1.5","Lx2","Lx2.5"],
+            "Movement Speed ✦": ["L","Lx1.25","Lx1.5","Lx1.75","Lx2.5"],
             "Range": ["L÷4","L÷3","L÷2","L","Lx1.25"],
             "Range ✦": ["L÷3","L÷2","L","Lx1.25","Lx1.5"],
             "Speed": [None,None,None,"D","D+1"],
@@ -77,7 +77,7 @@ class StatBuff:
             "Energy Conversion": ["1","2","3","4","5"],
             "Group XP Gain": ["1","2","3","4","5"],
             "HP Regen": ["L÷4","L÷3","L÷2","L","Lx1.25"],
-            "Resell Value": ["x1.25","x1.5","x2","x2","x2.5"]
+            "Resell Value": ["x1.25","x1.5","x1.75","x2","x2.5"]
         }
 
         self.calcDict = {
@@ -122,7 +122,7 @@ class StatBuff:
             "Energy Conversion": [1,2,3,4,5],
             "Group XP Gain": [1,2,3,4,5],
             "HP Regen": [self.divFour, self.divThree, self.divTwo, self.nothing, self.timesOnePointTwoFive],
-            "Resell Value": ["x1.25","x1.5","x2","x2","x2.5"]
+            "Resell Value": ["x1.25","x1.5","x1.75","x2","x2.5"]
         }
 
         self.colorBuffsDict = {

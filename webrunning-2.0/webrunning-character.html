@@ -1160,6 +1160,53 @@
       Green: ["initiative", "movement speed", "range", "speed"],
       Gray: ["perception", "hacking", "intelligence"]
     };
+
+    const rarityIndexMap = {
+      Common: 0,
+      Uncommon: 1,
+      Rare: 2,
+      Epic: 3,
+      Legendary: 4
+    };
+    const statBuffFormulaByLabel = {
+      "Luck": ["1", "2", "3", "5", "8"],
+      "Luck ✦": ["2", "3", "4", "6", "9"],
+      "Luck ✦✦": ["3", "4", "5", "7", "10"],
+      "Inventory Slots": ["L÷4", "L÷3", "L÷2", "L", "Lx1.25"],
+      "Inventory Slots ✦": ["L÷3", "L÷2", "L", "Lx1.25", "Lx1.5"],
+      "Energy Cap": ["L÷5", "L÷4", "L÷3", "L÷2", "L"],
+      "Energy Cap ✦": ["L÷4", "L÷3", "L÷2", "L", "Lx1.25"],
+      "Kernel Slots": ["L÷5", "L÷4", "L÷3", "L÷2", "L"],
+      "Attack Plus": ["L÷5", "L÷4", "L÷3", "L÷2", "L"],
+      "Attack Plus ✦": ["L÷4", "L÷3", "L÷2", "L", "Lx1.25"],
+      "Damage Plus": ["L÷5", "L÷4", "L÷3", "L÷2", "L"],
+      "Damage Plus ✦": ["L÷4", "L÷3", "L÷2", "L", "Lx1.25"],
+      "Power": [null, null, null, "D", "D+1"],
+      "HP": ["L÷2", "L", "Lx1.25", "Lx1.5", "Lx2"],
+      "HP ✦": ["L", "Lx1.25", "Lx1.5", "Lx1.75", "Lx2.5"],
+      "Defense DC": ["L÷5", "L÷4", "L÷3", "L÷2", "L"],
+      "Defense DC ✦": ["L÷4", "L÷3", "L÷2", "L", "Lx1.25"],
+      "Armor": ["L÷5", "L÷5", "L÷4", "L÷4", "L÷3"],
+      "Armor ✦": ["L÷4", "L÷4", "L÷3", "L÷3", "L÷2"],
+      "Defense": [null, null, null, "D", "D+1"],
+      "Initiative": ["L÷5", "L÷4", "L÷3", "L÷2", "L"],
+      "Initiative ✦": ["L÷4", "L÷3", "L÷2", "L", "Lx1.25"],
+      "Movement Speed": ["L÷2", "L", "Lx1.25", "Lx1.5", "Lx2"],
+      "Movement Speed ✦": ["L", "Lx1.25", "Lx1.5", "Lx1.75", "Lx2.5"],
+      "Range": ["L÷4", "L÷3", "L÷2", "L", "Lx1.25"],
+      "Range ✦": ["L÷3", "L÷2", "L", "Lx1.25", "Lx1.5"],
+      "Speed": [null, null, null, "D", "D+1"],
+      "Perception": ["L÷4", "L÷3", "L÷2", "L", "Lx1.25"],
+      "Perception ✦": ["L÷3", "L÷2", "L", "Lx1.25", "Lx1.5"],
+      "Hacking": ["L÷4", "L÷3", "L÷2", "L", "Lx1.25"],
+      "Hacking ✦": ["L÷3", "L÷2", "L", "Lx1.25", "Lx1.5"],
+      "Intelligence": [null, null, null, "D", "D+1"],
+      "Energy Generation": ["1", "1", "2", "2", "3"],
+      "Energy Conversion": ["1", "2", "3", "4", "5"],
+      "Group XP Gain": ["1", "2", "3", "4", "5"],
+      "HP Regen": ["L÷4", "L÷3", "L÷2", "L", "Lx1.25"],
+      "Resell Value": ["x1.25", "x1.5", "x1.75", "x2", "x2.5"]
+    };
     const aestheticPresetOptions = [
       "Valdan (Cyberpunk)",
       "Ydilikian (Medieval)",
@@ -1319,6 +1366,29 @@
         return Math.min(3, Math.max(1, result));
       }
       return Math.max(1, result);
+    }
+
+    function getChartFormulaForStat(statLabel, rarity) {
+      const formulas = statBuffFormulaByLabel[statLabel];
+      if (!formulas) return null;
+      const rarityIndex = rarityIndexMap[rarity];
+      if (!Number.isInteger(rarityIndex)) return null;
+      return formulas[rarityIndex] ?? null;
+    }
+
+    function recalculateGearStatFromChart(stat, rarity, luck, context = {}) {
+      if (!stat || typeof stat !== "object") return stat;
+      const statLabel = stat.label || stat.name || stat.stat;
+      const chartFormula = getChartFormulaForStat(statLabel, rarity);
+      const formula = chartFormula ?? stat.formula;
+      if (!formula) {
+        return { ...stat, formula: chartFormula ?? stat.formula };
+      }
+      if (typeof formula === "string" && formula.trim().startsWith("x")) {
+        return { ...stat, formula, value: formula };
+      }
+      const value = calculateFormulaValue(formula, luck, statLabel, context);
+      return { ...stat, formula, value };
     }
 
     function resolveAbilityDetails(ability) {
@@ -2139,21 +2209,33 @@
         const rerolled = await generateRerolledGear(base, luckNow, row.next);
         updated.rarity = row.next;
         updated.stats = Array.isArray(base.stats) ? cloneJson(base.stats) : [];
+        updated.stat_modifiers = Array.isArray(base.stat_modifiers) ? cloneJson(base.stat_modifiers) : [];
         updated.abilities = Array.isArray(base.abilities) ? cloneJson(base.abilities) : [];
+
         const rarityCaps = gearMaxes[row.next] || gearMaxes.Common;
-        const currentStatNames = updated.stats.map(stat => stat.label || stat.name);
-        if (updated.stats.length < rarityCaps.statBuffMax) {
-          const colorMatchedStats = (rerolled?.stats || []).filter(stat => isColorCompatibleStat(stat, base.color));
-          const statToAdd = pickUniqueStat(colorMatchedStats.length ? colorMatchedStats : (rerolled?.stats || []), currentStatNames);
+        const isBauble = (updated.gear_type || updated.gearType) === "Bauble";
+        const targetStatsKey = isBauble ? "stat_modifiers" : "stats";
+        const rerollStats = isBauble ? (rerolled?.stat_modifiers || []) : (rerolled?.stats || []);
+        const currentStatNames = (updated[targetStatsKey] || []).map(stat => stat.label || stat.name);
+
+        if ((updated[targetStatsKey] || []).length < rarityCaps.statBuffMax) {
+          const candidateStats = isBauble
+            ? rerollStats
+            : (() => {
+                const colorMatched = rerollStats.filter(stat => isColorCompatibleStat(stat, base.color));
+                return colorMatched.length ? colorMatched : rerollStats;
+              })();
+          const statToAdd = pickUniqueStat(candidateStats, currentStatNames);
           if (statToAdd) {
-            updated.stats.push(cloneJson(statToAdd));
+            updated[targetStatsKey].push(cloneJson(statToAdd));
           }
         }
-        updated.stats = updated.stats.map(stat => {
-          if (typeof stat.value !== "number") return stat;
-          const luckScale = Math.max(1, Math.round(luckNow / 4));
-          return { ...stat, value: Math.max(1, stat.value + luckScale) };
-        });
+
+        const gValue = updated.color ? (getEquippedColorCounts()[updated.color] || 0) : 0;
+        updated[targetStatsKey] = (updated[targetStatsKey] || []).map(stat =>
+          recalculateGearStatFromChart(stat, row.next, luckNow, { g: gValue })
+        );
+
         updated.abilities = updated.abilities.map(ability => buildUpgradedAbility(ability, row.next));
         if (updated.abilities.length < rarityCaps.activePassiveMax) {
           const existingNames = new Set(updated.abilities.map(ability => normalizeLabel(ability?.name)));
