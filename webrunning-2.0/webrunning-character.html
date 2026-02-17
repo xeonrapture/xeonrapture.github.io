@@ -1350,7 +1350,7 @@
       const trimmed = String(formula).trim();
       if (!trimmed) return 0;
       if (trimmed.startsWith("x")) {
-        return 0;
+        return null;
       }
       if (trimmed === "D") {
         return String(effectiveLuck).length;
@@ -1691,7 +1691,7 @@
         (gear.stat_modifiers || []).forEach(stat => {
           const statName = stat.name || stat.stat || stat.label;
           if (!statName) return;
-          const value = calculateFormulaValue(stat.formula, cappedUpdatedLuck, statName, { g: gValue });
+          const value = stat.value ?? stat.calc ?? calculateFormulaValue(stat.formula, cappedUpdatedLuck, statName, { g: gValue });
           if (typeof value !== "number") return;
           if (statKeyMap[statName]) {
             applyStatBonus(baubleBonus, statName, value, "Bauble", sources);
@@ -2544,8 +2544,7 @@
           const thisAesthetic = updated.aesthetic || null;
           updated.aesthetic = otherBase.aesthetic || null;
           const otherUpdated = { ...otherBase, aesthetic: thisAesthetic };
-          const { error: otherError } = await sb.from("webrunning_gear").update(buildGearInsertPayload(otherUpdated)).eq("id", otherEntry.gear_id);
-          if (otherError) throw otherError;
+          await updateGearRecord(otherEntry.gear_id, buildGearInsertPayload(otherUpdated));
           otherEntry.gear = otherUpdated;
           secondTargetSnapshot = { gear_id: otherEntry.gear_id, before: otherBase, after: cloneJson(otherUpdated) };
         } else {
@@ -2571,8 +2570,7 @@
           currentUser = await requireUser();
         }
         await updateEssenceBy(-cost);
-        const { error } = await sb.from("webrunning_gear").update(buildGearInsertPayload(updated)).eq("id", entry.gear_id);
-        if (error) throw error;
+        await updateGearRecord(entry.gear_id, buildGearInsertPayload(updated));
         entry.gear = updated;
         if (gearModificationSource === "detail") {
           openGearDetailModal(entry);
@@ -2958,7 +2956,7 @@
       (statModifiers || []).forEach(stat => {
         const statName = stat.label || stat.name;
         if (!statName) return;
-        const value = calculateFormulaValue(stat.formula, luck, stat.name || statName, context);
+        const value = stat.value ?? stat.calc ?? calculateFormulaValue(stat.formula, luck, stat.name || statName, context);
         rows.push(`<li class="gear-stat gear-stat--bonus">${statName}: ${value} <span class="muted">(${stat.formula || "?"})</span></li>`);
       });
       return rows.length ? `<ul>${rows.join("")}</ul>` : `<p class="muted">No stat changes.</p>`;
@@ -2976,7 +2974,7 @@
       (gear.stat_modifiers || []).forEach(stat => {
         const statName = stat.label || stat.name;
         if (!statName) return;
-        const value = calculateFormulaValue(stat.formula, luck, stat.name || statName, context);
+        const value = stat.value ?? stat.calc ?? calculateFormulaValue(stat.formula, luck, stat.name || statName, context);
         if (typeof value !== "number" || value === 0) return;
         parts.push(`${formatSignedValue(value)} ${statName}`);
       });
@@ -3994,6 +3992,19 @@
       };
     }
 
+    async function updateGearRecord(gearId, payload) {
+      const { data, error } = await sb
+        .from("webrunning_gear")
+        .update(payload)
+        .eq("id", gearId)
+        .select("id")
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) {
+        throw new Error("Gear update did not persist to the database.");
+      }
+    }
+
     function gearSignature(gear) {
       return JSON.stringify(buildGearInsertPayload(gear));
     }
@@ -4376,11 +4387,9 @@
         return;
       }
       const notes = gearNotesInput.value.trim();
-      const { error } = await sb
-        .from("webrunning_gear")
-        .update({ name: newName, notes })
-        .eq("id", activeGearRow.gear_id);
-      if (error) {
+      try {
+        await updateGearRecord(activeGearRow.gear_id, { name: newName, notes });
+      } catch (error) {
         gearDetailStatus.textContent = error.message;
         pushStatus(error.message, { tone: "error" });
         return;
@@ -4503,21 +4512,13 @@
         return false;
       }
       const mod = record.modification || {};
-      const { error } = await sb
-        .from("webrunning_gear")
-        .update(buildGearInsertPayload(mod.before))
-        .eq("id", entry.gear_id);
-      if (error) throw error;
+      await updateGearRecord(entry.gear_id, buildGearInsertPayload(mod.before));
       entry.gear = cloneJson(mod.before);
 
       if (mod.secondTargetSnapshot) {
         const second = findGearEntry(mod.secondTargetSnapshot.gear_id);
         if (second) {
-          const { error: secondErr } = await sb
-            .from("webrunning_gear")
-            .update(buildGearInsertPayload(mod.secondTargetSnapshot.before))
-            .eq("id", second.gear_id);
-          if (secondErr) throw secondErr;
+          await updateGearRecord(second.gear_id, buildGearInsertPayload(mod.secondTargetSnapshot.before));
           second.gear = cloneJson(mod.secondTargetSnapshot.before);
         }
       }
