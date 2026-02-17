@@ -1667,6 +1667,7 @@
       const combinedBeforeBauble = mergeBonuses(mergeBonuses(createEmptyBonus(), nonBaubleBonus), abilityBonus);
       const interimStats = applyGearBonuses(baseStats, combinedBeforeBauble);
       const updatedLuck = interimStats.luck || baseLuck;
+      const cappedUpdatedLuck = getCappedLuckValue(updatedLuck, baseStats.level);
 
       characterGear.forEach(entry => {
         if (!entry.gear) return;
@@ -1679,7 +1680,7 @@
         (gear.stat_modifiers || []).forEach(stat => {
           const statName = stat.name || stat.stat || stat.label;
           if (!statName) return;
-          const value = calculateFormulaValue(stat.formula, updatedLuck, statName, { g: gValue });
+          const value = calculateFormulaValue(stat.formula, cappedUpdatedLuck, statName, { g: gValue });
           if (typeof value !== "number") return;
           if (statKeyMap[statName]) {
             applyStatBonus(baubleBonus, statName, value, "Bauble", sources);
@@ -1791,7 +1792,7 @@
     }
 
     function formatEssenceCostWithTotal(cost, stats = currentStats()) {
-      return `${formatCostAfterDiscount(cost, stats)} — You have ${stats.essence || 0} Essence`;
+      return `${formatCostAfterDiscount(cost, stats)}`;
     }
 
     function renderGearModificationSelection() {
@@ -1861,6 +1862,13 @@
       gearModificationDetails?.classList.add("hidden");
     }
 
+    function formatFullStatList(stats = [], modifiers = []) {
+      const values = [];
+      stats.forEach(stat => values.push(formatStatSummary(stat)));
+      modifiers.forEach(stat => values.push(formatStatSummary(stat)));
+      return values.length ? values.join(", ") : "None";
+    }
+
     function renderGearModificationDetail(choice) {
       const targetSelect = document.getElementById("gearModificationTarget");
       const targetId = targetSelect?.value || selectedGearModificationTargetId;
@@ -1871,6 +1879,7 @@
       const stats = currentStats();
       const rarity = entry.gear.rarity || "Common";
       const common = `<p class="muted">Selected gear location: ${formatSlotLabel(entry.gear_slot)}.</p>`;
+      const essenceLine = `<p class="muted">Current Essence: ${stats.essence || 0}</p>`;
       if (choice === "upgrading") {
         const row = gearUpgradeCosts[rarity];
         gearModificationBody.innerHTML = row ? `
@@ -1878,7 +1887,8 @@
           <p>Upgrade from ${rarity} to ${row.next}. This rerolls/updates stat values based on your current Luck and can add new modifiers.</p>
           <p>Cost: <strong>${formatEssenceCostWithTotal(row.cost, stats)}</strong></p>
           <button type="button" data-mod-apply="upgrading">Apply Modification</button>
-          ${common}` : `<p>${rarity} gear cannot be upgraded further.</p>${common}`;
+          ${essenceLine}
+          ${common}` : `<p>${rarity} gear cannot be upgraded further.</p>${essenceLine}${common}`;
       } else if (choice === "rerolling") {
         const cost = gearRerollCosts[rarity];
         gearModificationBody.innerHTML = `
@@ -1886,16 +1896,18 @@
           <p>Reroll Stat Buffs, Actives, and Passives while keeping the same amount of each modifier type. Uses your current Luck.</p>
           <p>Cost: <strong>${formatEssenceCostWithTotal(cost, stats)}</strong></p>
           <button type="button" data-mod-apply="rerolling">Apply Modification</button>
+          ${essenceLine}
           ${common}`;
       } else if (choice === "condensing") {
-        const costOptions = (gearCondenseCosts[rarity] || []).map((cost, idx) => `<option value="${idx + 1}">${idx + 1} modifier${idx ? "s" : ""} — ${formatCostAfterDiscount(cost, stats)}</option>`).join("");
+        const costOptions = (gearCondenseCosts[rarity] || []).map((cost, idx) => `<option value="${idx + 1}">${idx + 1} modifier${idx ? "s" : ""}</option>`).join("");
         const donorOptions = characterGear
           .filter(item => item.gear_id !== entry.gear_id)
           .map(item => `<option value="${item.gear_id}">${formatGearName(item.gear)} [${item.gear_slot}]</option>`)
           .join("");
         gearModificationBody.innerHTML = `
           <strong>Condensing Gear: ${formatGearName(entry.gear)}</strong>
-          <p class="muted">Total Essence available: ${stats.essence || 0}</p>
+          <p class="muted">Costs by transfer count are shown below.</p>
+          <p class="muted">1 transfer: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[0] || 0, stats)} · 2 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[1] || 0, stats)} · 3 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[2] || 0, stats)}</p>
           <p><strong>Warning:</strong> The donor gear is permanently destroyed.</p>
           <p>Destroy one gear piece and transfer chosen stat buffs or chosen abilities to this gear.</p>
           <label>Modifiers to Transfer
@@ -1915,32 +1927,35 @@
           </label>
           <p class="muted">Hold Ctrl/Cmd to select multiple modifiers</p>
           <button type="button" data-mod-apply="condensing" ${donorOptions ? '' : 'disabled'}>Apply Modification</button>
+          ${essenceLine}
           ${common}`;
       } else if (choice === "aesthetic") {
         const others = characterGear
           .filter(item => item.gear_id !== entry.gear_id)
-          .map(item => `<option value="${item.gear_id}">${formatGearName(item.gear)}</option>`)
+          .map(item => `<option value="${item.gear_id}">${formatGearName(item.gear)} — ${item.gear.aesthetic || "None"}</option>`)
           .join("");
         gearModificationBody.innerHTML = `
           <strong>Aesthetic Modification: ${formatGearName(entry.gear)}</strong>
           <p class="muted">Current Aesthetic: ${entry.gear.aesthetic || "None"}</p>
           <label>Mode
             <select id="gearAestheticMode">
-              <option value="modify">Aesthetic Modification (${formatEssenceCostWithTotal(300, stats)})</option>
-              <option value="swap">Aesthetic Swap (${formatEssenceCostWithTotal(100, stats)})</option>
+              <option value="modify">Aesthetic Modification</option>
+              <option value="swap">Aesthetic Swap</option>
             </select>
           </label>
-          <label>Aesthetic Preset
+          <p class="muted">Aesthetic Modification Cost: ${formatCostAfterDiscount(300, stats)} · Aesthetic Swap Cost: ${formatCostAfterDiscount(100, stats)}</p>
+          <label id="gearAestheticPresetWrap">Aesthetic Preset
             <select id="gearAestheticPreset">
               <option value="">Choose a preset</option>
               ${aestheticPresetOptions.map(option => `<option value="${option}">${option}</option>`).join("")}
             </select>
           </label>
-          <label>Swap Target (for swap mode)
+          <label id="gearAestheticSwapTargetWrap">Swap Target
             <select id="gearAestheticSwapTarget">${others || '<option value="">No swap target available</option>'}</select>
           </label>
           <p id="gearAestheticSwapPreview" class="muted"></p>
           <button type="button" data-mod-apply="aesthetic">Apply Modification</button>
+          ${essenceLine}
           ${common}`;
       }
       if (choice === "condensing") {
@@ -1974,9 +1989,14 @@
         const swapTarget = document.getElementById("gearAestheticSwapTarget");
         const modeSelect = document.getElementById("gearAestheticMode");
         const preview = document.getElementById("gearAestheticSwapPreview");
+        const presetWrap = document.getElementById("gearAestheticPresetWrap");
+        const swapWrap = document.getElementById("gearAestheticSwapTargetWrap");
         const syncSwapPreview = () => {
           if (!preview) return;
-          if ((modeSelect?.value || "modify") !== "swap") {
+          const mode = modeSelect?.value || "modify";
+          if (presetWrap) presetWrap.classList.toggle("hidden", mode !== "modify");
+          if (swapWrap) swapWrap.classList.toggle("hidden", mode !== "swap");
+          if (mode !== "swap") {
             preview.textContent = "";
             return;
           }
@@ -2066,6 +2086,11 @@
       }
       if (abilityTierChanges.length) {
         summary.push(`Ability tier changes: ${abilityTierChanges.join(", ")}`);
+      }
+
+      if (choice === "rerolling") {
+        summary.push(`Previous stats: ${formatFullStatList(beforeStats, before.stat_modifiers || [])}`);
+        summary.push(`Rerolled stats: ${formatFullStatList(afterStats, after.stat_modifiers || [])}`);
       }
 
       if (choice === "condensing" && donorSnapshot) {
@@ -2210,12 +2235,33 @@
       return parsed[0] || null;
     }
 
+
+    function getGearLuckContribution(gear, baseLuck) {
+      let total = 0;
+      (gear?.stats || []).forEach(stat => {
+        const statName = normalizeLabel(stat?.label || stat?.name || stat?.stat);
+        if (statName !== "luck") return;
+        const value = stat?.value ?? stat?.calc ?? calculateFormulaValue(stat?.formula, baseLuck, "Luck");
+        if (Number.isFinite(value)) total += Number(value);
+      });
+      (gear?.stat_modifiers || []).forEach(stat => {
+        const statName = normalizeLabel(stat?.label || stat?.name || stat?.stat);
+        if (statName !== "luck") return;
+        const value = stat?.value ?? stat?.calc ?? calculateFormulaValue(stat?.formula, baseLuck, "Luck");
+        if (Number.isFinite(value)) total += Number(value);
+      });
+      return total;
+    }
+
     async function applyGearModification(choice) {
       const targetId = document.getElementById("gearModificationTarget")?.value || selectedGearModificationTargetId;
       const entry = findGearEntry(targetId);
       if (!entry) return;
       const liveStats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
-      const luckNow = getCappedLuckValue(liveStats.luck || 1, liveStats.level);
+      const baseStats = currentStats();
+      const targetLuck = getGearLuckContribution(entry.gear, baseStats.luck || 0);
+      const modificationLuck = Math.max(1, (liveStats.luck || 1) - targetLuck);
+      const luckNow = getCappedLuckValue(modificationLuck, liveStats.level);
       const base = cloneJson(entry.gear);
       let updated = cloneJson(entry.gear);
       let cost = 0;
@@ -2255,9 +2301,15 @@
         }
 
         const gValue = updated.color ? (getEquippedColorCounts()[updated.color] || 0) : 0;
-        updated[targetStatsKey] = (updated[targetStatsKey] || []).map(stat =>
-          recalculateGearStatFromChart(stat, row.next, luckNow, { g: gValue })
-        );
+        const previousValues = (base[targetStatsKey] || []).map(stat => Number.isFinite(stat?.value) ? Number(stat.value) : null);
+        updated[targetStatsKey] = (updated[targetStatsKey] || []).map((stat, index) => {
+          const recalculated = recalculateGearStatFromChart(stat, row.next, luckNow, { g: gValue });
+          const prevValue = previousValues[index];
+          if (Number.isFinite(prevValue) && Number.isFinite(recalculated?.value) && recalculated.value < prevValue) {
+            return { ...recalculated, value: prevValue };
+          }
+          return recalculated;
+        });
 
         updated.abilities = updated.abilities.map(ability => buildUpgradedAbility(ability, row.next));
         if (updated.abilities.length < rarityCaps.activePassiveMax) {
@@ -2794,7 +2846,7 @@
       Uncommon: 1,
       Rare: 2,
       Epic: 3,
-      Legendary: 4
+      Legendary: Number.POSITIVE_INFINITY
     };
 
     function getTierNumberFromLabel(label) {
