@@ -1388,10 +1388,22 @@
       return formulas[rarityIndex] ?? null;
     }
 
+    function getChartLookupLabelForStat(stat) {
+      if (!stat || typeof stat !== "object") return null;
+      if (typeof stat.label === "string" && stat.label.trim()) {
+        return stat.label.trim();
+      }
+      if (typeof stat.name === "string" && stat.name.includes("✦")) {
+        return stat.name.trim();
+      }
+      return null;
+    }
+
     function recalculateGearStatFromChart(stat, rarity, luck, context = {}) {
       if (!stat || typeof stat !== "object") return stat;
-      const statLabel = stat.label || stat.name || stat.stat;
-      const chartFormula = getChartFormulaForStat(statLabel, rarity);
+      const chartLookupLabel = getChartLookupLabelForStat(stat);
+      const statLabel = chartLookupLabel || stat.label || stat.name || stat.stat;
+      const chartFormula = chartLookupLabel ? getChartFormulaForStat(chartLookupLabel, rarity) : null;
       const formula = chartFormula ?? stat.formula;
       if (!formula) {
         return { ...stat, formula: chartFormula ?? stat.formula };
