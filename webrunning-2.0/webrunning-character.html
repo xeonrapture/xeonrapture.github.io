@@ -2032,7 +2032,7 @@
       } else if (choice === "rerolling") {
         const cost = gearRerollCosts[rarity];
         gearModificationBody.innerHTML = `
-          <p><strong>Reroll Modifiers: ${formatGearName(entry.gear)}</strong>
+          <p><strong>Reroll Modifiers: ${formatGearName(entry.gear)}</strong><br>
           Reroll Stat Buffs, Actives, and Passives while keeping the same amount of each modifier type. Uses your current Luck.</p>
           <p>Cost: <strong>${formatEssenceCostWithTotal(cost, stats)}</strong>
           ${essenceLine}</p>
@@ -2054,7 +2054,7 @@
           .join("");
         gearModificationBody.innerHTML = `
           <strong>Condense Into: ${formatGearName(entry.gear)}</strong>
-          <p>Condense source gear into this target gear. The source gear transfers chosen stat buffs or chosen abilities to the target.
+          <p>Condense source gear into this target gear. The source gear transfers chosen stat buffs or chosen abilities to the target.<br>
           <strong>Warning:</strong> The source gear is permanently destroyed.</p>
           <p class="muted">1 transfer: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[0] || 0, stats)} · 2 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[1] || 0, stats)} · 3 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[2] || 0, stats)}
           ${essenceLine}</p>
