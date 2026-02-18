@@ -4975,11 +4975,55 @@
       };
     }
 
+    function normalizeHistoryText(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function buildHistoryDetailSignature(details = []) {
+      return (Array.isArray(details) ? details : [])
+        .map(item => normalizeHistoryText(item))
+        .filter(Boolean)
+        .join("||");
+    }
+
+    function areHistoryRecordsVerySimilar(a, b) {
+      if (!a || !b) return false;
+      const aType = normalizeHistoryText(a.type);
+      const bType = normalizeHistoryText(b.type);
+      const aLabel = normalizeHistoryText(a.label);
+      const bLabel = normalizeHistoryText(b.label);
+      const aDetails = buildHistoryDetailSignature(a.details);
+      const bDetails = buildHistoryDetailSignature(b.details);
+      const aEntryId = a.entry?.gear_id || null;
+      const bEntryId = b.entry?.gear_id || null;
+
+      const sameTypeAndDetails = aType && aType === bType && aDetails && aDetails === bDetails;
+      const sameEntryAndDetails = aEntryId && bEntryId && aEntryId === bEntryId && aDetails && aDetails === bDetails;
+      const sameLabelAndDetails = aLabel && aLabel === bLabel && aDetails && aDetails === bDetails;
+      return sameTypeAndDetails || sameEntryAndDetails || sameLabelAndDetails;
+    }
+
     async function addEditHistoryRecord(record) {
       const snapshot = normalizeHistoryRecord({
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
         ...record
       });
+      const latest = editHistory[0];
+      if (areHistoryRecordsVerySimilar(latest, snapshot)) {
+        latest.details = Array.from(new Set([...(latest.details || []), ...(snapshot.details || [])]));
+        latest.label = latest.label || snapshot.label;
+        latest.type = latest.type || snapshot.type;
+        if (!latest.entry && snapshot.entry) {
+          latest.entry = snapshot.entry;
+        }
+        gearHistory = editHistory.filter(item => ["delete", "modify"].includes(item.type));
+        renderGearHistory();
+        await persistEditHistory();
+        return latest;
+      }
       editHistory.unshift(snapshot);
       gearHistory = editHistory.filter(item => ["delete", "modify"].includes(item.type));
       renderGearHistory();
