@@ -409,15 +409,6 @@
           </div>
         </section>
 
-        <section class="card collapsible collapsed section-card" data-collapsible>
-          <div class="collapsible-header">
-            <h3>Gear History</h3>
-            <button class="collapse-toggle" type="button" aria-label="Show section" title="Show section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button>
-          </div>
-          <div class="collapsible-body">
-            <div id="deletedGearHistory" class="deletion-history"></div>
-          </div>
-        </section>
       </div>
     </section>
 
@@ -431,9 +422,20 @@
           <h3>Character Notes</h3>
           <textarea id="characterNotes" placeholder="Add notes about your character, gear, or story beats..."></textarea>
         </section>
+
       </div>
     </section>
 
+
+    <section class="card collapsible collapsed" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Edit History</h2>
+        <button class="collapse-toggle" type="button" aria-label="Show section" title="Show section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button>
+      </div>
+      <div class="collapsible-body">
+        <div id="deletedGearHistory" class="deletion-history"></div>
+      </div>
+    </section>
   </main>
 
   <div id="levelupModal" class="xr-modal hidden">
@@ -750,6 +752,27 @@
     </div>
   </div>
 
+  <div id="gearChangeModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Use Gear Change Consumable</h2>
+      <p class="muted" id="gearChangeHint">Pick the gear and target value for this consumable.</p>
+      <label>
+        Target Gear
+        <select id="gearChangeTarget"></select>
+      </label>
+      <label>
+        New Value
+        <select id="gearChangeValue"></select>
+      </label>
+      <div class="xr-modal-actions">
+        <button id="gearChangeApplyBtn" type="button" aria-label="Apply" title="Apply"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></button>
+        <button id="gearChangeCancelBtn" type="button" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+      </div>
+      <div id="gearChangeModalMsg" class="mono muted"></div>
+    </div>
+  </div>
+
   <div id="statusPopup" class="status-popup" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -989,7 +1012,17 @@
     const energyApplyBtn = document.getElementById("energyApplyBtn");
     const energyCancelBtn = document.getElementById("energyCancelBtn");
 
-    const gearHistory = [];
+    const gearChangeModal = document.getElementById("gearChangeModal");
+    const gearChangeModalBackdrop = gearChangeModal?.querySelector(".xr-modal-backdrop");
+    const gearChangeHint = document.getElementById("gearChangeHint");
+    const gearChangeTarget = document.getElementById("gearChangeTarget");
+    const gearChangeValue = document.getElementById("gearChangeValue");
+    const gearChangeApplyBtn = document.getElementById("gearChangeApplyBtn");
+    const gearChangeCancelBtn = document.getElementById("gearChangeCancelBtn");
+    const gearChangeModalMsg = document.getElementById("gearChangeModalMsg");
+
+    let gearHistory = [];
+    let editHistory = [];
     let tempConsumableBonus = createEmptyBonus();
     let tempConsumableSummary = [];
 
@@ -2280,14 +2313,11 @@
       }
 
       if (choice === "rerolling") {
-        summary.push(`Previous stats: ${formatFullStatList(beforeStats, before.stat_modifiers || [])}`);
-        summary.push(`Rerolled stats: ${formatFullStatList(afterStats, after.stat_modifiers || [])}`);
-        summary.push(`Previous abilities: ${formatFullAbilityList(beforeAbilities)}`);
-        summary.push(`Rerolled abilities: ${formatFullAbilityList(afterAbilities)}`);
+        summary.push("Rerolled modifiers on this gear.");
       }
 
       if (choice === "condensing" && donorSnapshot) {
-        summary.push(`Condensed into this gear from: ${formatGearName(donorSnapshot.gear)}`);
+        summary.push(`Condensed ${formatGearName(donorSnapshot.gear)} into ${formatGearName(after)}.`);
       }
       if (choice === "aesthetic") {
         const beforeAesthetic = before.aesthetic || "None";
@@ -2652,6 +2682,9 @@
       let cost = 0;
       let donorSnapshot = null;
       let secondTargetSnapshot = null;
+      const freeChoice = activeCharacter?.base_stats?.free_gear_mod || null;
+      const freeMaxRarity = activeCharacter?.base_stats?.free_gear_mod_max_rarity || "Common";
+      let consumedFreeMod = false;
 
       if (choice === "upgrading") {
         const row = gearUpgradeCosts[updated.rarity];
@@ -2866,6 +2899,11 @@
       updated.abilities = dedupeAbilitiesByName(updated.abilities || []);
       updated = enforceRarityCaps(updated);
 
+      if (freeChoice && freeChoice === choice && getRarityRank(updated.rarity || "Common") <= getRarityRank(freeMaxRarity)) {
+        consumedFreeMod = true;
+        cost = 0;
+      }
+
       if (cost > (activeCharacter.base_stats?.essence || 0)) {
         pushStatus(`Not enough essence for that modification. Need ${cost}, you have ${activeCharacter.base_stats?.essence || 0}.`, { tone: "warning" });
         return;
@@ -2876,30 +2914,39 @@
           currentUser = await requireUser();
         }
         await updateEssenceBy(-cost);
+        if (consumedFreeMod) {
+          delete activeCharacter.base_stats.free_gear_mod;
+          delete activeCharacter.base_stats.free_gear_mod_max_rarity;
+          const { error: freeError } = await sb.from("webrunning_characters").update({ base_stats: activeCharacter.base_stats }).eq("id", activeCharacter.id).eq("user_id", currentUser.id);
+          if (freeError) throw freeError;
+        }
         const persistedGear = await updateGearRecord(entry.gear_id, buildGearInsertPayload(updated));
         entry.gear = persistedGear;
         if (gearModificationSource === "detail") {
           openGearDetailModal(entry);
         }
 
-        const historyRecord = addGearHistoryRecord({
+        const details = summarizeGearModificationResult(choice, base, updated, { donorSnapshot, secondTargetSnapshot });
+        const historyRecord = await addGearHistoryRecord({
           type: "modify",
           label: `${choice[0].toUpperCase()}${choice.slice(1)}: ${formatGearName(updated)}`,
           entry: { gear_id: entry.gear_id, gear_slot: entry.gear_slot, equipped: entry.equipped, gear: cloneJson(updated) },
+          details,
           modification: {
             choice,
             cost,
             before: base,
             after: cloneJson(updated),
             donorSnapshot,
-            secondTargetSnapshot
+            secondTargetSnapshot,
+            consumedFreeMod
           }
         });
 
         pendingModificationRecord = historyRecord;
         render();
         renderGearModificationResult(historyRecord);
-        pushStatus(`Modification applied. Spent ${cost} essence.`, { tone: "success" });
+        pushStatus(`Modification applied. Spent ${cost} essence.${consumedFreeMod ? " (Used free consumable mod.)" : ""}`, { tone: "success" });
       } catch (error) {
         console.error(error);
         pushStatus("Failed to apply gear modification.", { tone: "error" });
@@ -3512,6 +3559,113 @@
       return `${type}: ${effect}`;
     }
 
+    function getRarityRank(rarity) {
+      const order = ["Basic", "Common", "Uncommon", "Rare", "Epic", "Legendary"];
+      const idx = order.indexOf(rarity);
+      return idx === -1 ? 0 : idx;
+    }
+
+    function getGearModChoiceFromEffect(effect = "") {
+      const text = String(effect || "").toLowerCase();
+      if (text.includes("upgrade")) return "upgrading";
+      if (text.includes("reroll")) return "rerolling";
+      if (text.includes("condense")) return "condensing";
+      if (text.includes("aesthetic")) return "aesthetic";
+      return null;
+    }
+
+    async function openGearChangeModal(mode = "type", consumableRarity = "Common") {
+      return new Promise(resolve => {
+        if (!gearChangeModal || !gearChangeTarget || !gearChangeValue) {
+          resolve(null);
+          return;
+        }
+        const candidates = characterGear.filter(entry => {
+          const type = entry.gear?.gear_type || entry.gear?.gearType;
+          if (["Consumable", "Bauble", "Kernel"].includes(type)) return false;
+          return getRarityRank(entry.gear?.rarity || "Common") <= getRarityRank(consumableRarity || "Common");
+        });
+        if (!candidates.length) {
+          resolve(null);
+          return;
+        }
+        const typeOptions = ["One-Handed Weapon","Two-Handed Weapon","Head","Torso","Hands","Legs","Feet","Ring","Neck"];
+        const colorOptions = ["Neutral", "Red", "Blue", "Green", "Gray"];
+        gearChangeHint.textContent = mode === "type"
+          ? "Select a gear piece and its new type. Rarity and color stay the same."
+          : "Select a gear piece and its new color. Rarity and type stay the same.";
+        gearChangeTarget.innerHTML = candidates.map(entry => `<option value="${entry.gear_id}">${formatGearName(entry.gear)} [${entry.gear.rarity}]</option>`).join("");
+        gearChangeValue.innerHTML = (mode === "type" ? typeOptions : colorOptions).map(value => `<option value="${value}">${value}</option>`).join("");
+        gearChangeModalMsg.textContent = "";
+        gearChangeModal.classList.remove("hidden");
+
+        const cleanup = (value) => {
+          gearChangeApplyBtn.removeEventListener("click", submit);
+          gearChangeCancelBtn.removeEventListener("click", cancel);
+          gearChangeModalBackdrop?.removeEventListener("click", cancel);
+          gearChangeModal.classList.add("hidden");
+          resolve(value);
+        };
+        const submit = () => cleanup({ gearId: gearChangeTarget.value, value: gearChangeValue.value, mode });
+        const cancel = () => cleanup(null);
+        gearChangeApplyBtn.addEventListener("click", submit);
+        gearChangeCancelBtn.addEventListener("click", cancel);
+        gearChangeModalBackdrop?.addEventListener("click", cancel);
+      });
+    }
+
+    async function applyGearChangeConsumable(selection, consumableRarity) {
+      if (!selection?.gearId || !selection?.value) return null;
+      const entry = findGearEntry(selection.gearId);
+      if (!entry) return null;
+      if (getRarityRank(entry.gear?.rarity || "Common") > getRarityRank(consumableRarity || "Common")) {
+        pushStatus("That gear is above this consumable's rarity limit.", { tone: "warning" });
+        return null;
+      }
+      const liveStats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
+      const rerolled = await generateRerolledGear({
+        ...entry.gear,
+        ...(selection.mode === "type" ? { gear_type: selection.value } : {}),
+        ...(selection.mode === "color" ? { color: selection.value } : {})
+      }, getCappedLuckValue(liveStats.luck || 1, liveStats.level), entry.gear.rarity || "Common");
+      if (!rerolled) return null;
+      const before = cloneJson(entry.gear);
+      const updated = {
+        ...entry.gear,
+        ...(selection.mode === "type" ? { gear_type: selection.value } : { color: selection.value }),
+        stats: cloneJson(rerolled.stats || []),
+        stat_modifiers: cloneJson(rerolled.stat_modifiers || []),
+        abilities: cloneJson(rerolled.abilities || [])
+      };
+      const persisted = await updateGearRecord(entry.gear_id, buildGearInsertPayload(updated));
+      entry.gear = persisted;
+      return { entry, before, after: cloneJson(persisted), selection };
+    }
+
+    function buildConsumableReminder(gear, stats = currentStats()) {
+      const type = getConsumableType(gear);
+      const effect = getConsumableEffectText(gear);
+      if (type === "Healing") {
+        const percent = Number((effect.match(/(\d+)%/i) || [])[1] || 0);
+        const maxHp = Number(stats.max_hp) || Number(stats.hp) || 0;
+        const currentHp = Number(stats.current_hp) || 0;
+        const missing = Math.max(maxHp - currentHp, 0);
+        const estimated = percent > 0 ? Math.ceil((maxHp * percent) / 100) : 0;
+        return `Healing used (${effect || "custom effect"}). Missing HP: ${missing}. Estimated healing: ${estimated}.`;
+      }
+      if (type === "Energy") {
+        const amount = Number((effect.match(/grants\s*(\d+)/i) || [])[1] || 0);
+        return `Energy consumable used (${effect || "custom effect"}). Choose color and add ${amount || "the listed"} energy.`;
+      }
+      if (type === "Gear Mod") {
+        return `Gear Mod consumable used: ${effect}. You get one free ${effect.toLowerCase()} action.`;
+      }
+      if (type === "Gear Type Change" || type === "Gear Color Change") {
+        return `${type} consumable used (${effect}). Pick a gear piece and reroll all stats/abilities after the change.`;
+      }
+      return `${type || "Consumable"} used (${effect || "single-use effect"}). Apply any manual effects now.`;
+    }
+
     function renderInventory(stats) {
       const container = elements.inventorySlots;
       container.innerHTML = "";
@@ -4021,9 +4175,7 @@
             </div>
             <div class="gear-actions gear-actions--stack">
               <button type="button" data-action="add" data-index="${index}" ${isAdded ? "disabled" : ""} aria-label="Add to inventory" title="Add to inventory">${isAdded ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg><span>Added</span>' : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"></path><path d="M8 10l4 4 4-4"></path><path d="M4 20h16"></path></svg><span>Inventory</span>'}</button>
-              ${consumable
-                ? `<button type="button" data-action="use" data-index="${index}" ${isAdded ? "" : "disabled"} aria-label="Use" title="Use"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L5 13h6l-1 9 9-13h-6z"></path></svg><span>Use</span></button>`
-                : (gearType === "Bauble" ? "" : `<button type="button" data-action="equip" data-index="${index}" ${isAdded || !canEquip ? "disabled" : ""} aria-label="${shouldSwap ? "Swap" : "Equip"}" title="${shouldSwap ? "Swap" : "Equip"}">${isAdded ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg><span>Equipped</span>' : (shouldSwap ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10"></path><path d="M14 4l3 3-3 3"></path><path d="M17 17H7"></path><path d="M10 14l-3 3 3 3"></path></svg><span>Swap</span>' : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"></path></svg><span>Equip</span>')}</button>`)}
+              ${gearType === "Bauble" || consumable ? "" : `<button type="button" data-action="equip" data-index="${index}" ${isAdded || !canEquip ? "disabled" : ""} aria-label="${shouldSwap ? "Swap" : "Equip"}" title="${shouldSwap ? "Swap" : "Equip"}">${isAdded ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg><span>Equipped</span>' : (shouldSwap ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10"></path><path d="M14 4l3 3-3 3"></path><path d="M17 17H7"></path><path d="M10 14l-3 3 3 3"></path></svg><span>Swap</span>' : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"></path></svg><span>Equip</span>')}</button>`}
               <button type="button" data-action="remove" data-index="${index}" ${!isAdded ? "disabled" : ""} aria-label="Remove from character" title="Remove from character">${isAdded ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V10"></path><path d="M8 14l4-4 4 4"></path><path d="M4 4h16"></path></svg><span>Remove</span>' : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="6" width="3" height="12"></rect><rect x="14" y="6" width="3" height="12"></rect></svg><span>Not Added</span>'}</button>
             </div>
           </div>
@@ -4569,16 +4721,21 @@
         return;
       }
       const gear = entry.gear;
-      const type = getConsumableType(gear).toLowerCase();
-      let reminder = "Remember to apply this consumable's effects manually to yourself or an ally if needed.";
+      const type = getConsumableType(gear);
+      const effect = getConsumableEffectText(gear);
+      const details = [
+        `Consumable: ${formatGearName(gear)}`,
+        `Type: ${type || "Consumable"}`,
+        effect ? `Effect: ${effect}` : null
+      ].filter(Boolean);
+      let reminder = buildConsumableReminder(gear, currentStats());
 
       try {
-        if (type === "temp buff") {
+        if (type === "Temp Buff") {
           applyTempConsumableStats(gear);
-          reminder = "Temporary buff applied. Clear temp buffs when you change nodes.";
-        } else if (type === "energy") {
-          const effect = getConsumableEffectText(gear).toLowerCase();
-          const amount = Number((effect.match(/grants\s*(\d+)/i) || [])[1] || 0);
+          details.push("Temporary buffs were applied for this node.");
+        } else if (type === "Energy") {
+          const amount = Number((effect.toLowerCase().match(/grants\s*(\d+)/i) || [])[1] || 0);
           const energyKeyByColor = { red: "energy_red", blue: "energy_blue", green: "energy_green", gray: "energy_gray" };
           const defaultColor = String(gear.color || "red").trim().toLowerCase();
           const chosen = await openEnergyColorModal(defaultColor);
@@ -4591,11 +4748,9 @@
             activeCharacter.base_stats[key] = (Number(activeCharacter.base_stats[key]) || 0) + amount;
             const { error } = await sb.from("webrunning_characters").update({ base_stats: activeCharacter.base_stats }).eq("id", activeCharacter.id).eq("user_id", currentUser.id);
             if (error) throw error;
-            reminder = `Added ${amount} ${chosen} energy and ignored energy cap.`;
-          } else {
-            reminder = "No energy was added because no valid color was selected.";
+            details.push(`Added ${amount} ${chosen} energy (ignores energy cap).`);
           }
-        } else if (type === "respec stats") {
+        } else if (type === "Respec Stats") {
           const bonusPoints = getRespecBonusPointsByRarity(gear.rarity);
           const updated = await openRespecModal(activeCharacter.base_stats, bonusPoints);
           if (!updated) {
@@ -4608,19 +4763,48 @@
           activeCharacter.base_stats.intelligence = updated.intelligence;
           const { error } = await sb.from("webrunning_characters").update({ base_stats: activeCharacter.base_stats }).eq("id", activeCharacter.id).eq("user_id", currentUser.id);
           if (error) throw error;
-          reminder = `Stats reallocated with ${bonusPoints} bonus point(s) from rarity.`;
-        } else if (type === "local shop upgrade") {
-          reminder = "Local shop upgrade consumed. Track local shop upgrades manually.";
-        } else if (type === "healing") {
-          reminder = "Healing consumable used. Apply healing manually to yourself or an ally.";
-        } else {
-          reminder = "Consumable used. Update any manual effects yourself.";
+          details.push(`Reallocated stats with ${bonusPoints} bonus point(s).`);
+        } else if (type === "Gear Mod") {
+          const modChoice = getGearModChoiceFromEffect(effect);
+          activeCharacter.base_stats.free_gear_mod = modChoice;
+          activeCharacter.base_stats.free_gear_mod_max_rarity = gear.rarity || "Common";
+          const { error } = await sb.from("webrunning_characters").update({ base_stats: activeCharacter.base_stats }).eq("id", activeCharacter.id).eq("user_id", currentUser.id);
+          if (error) throw error;
+          details.push(`Granted free gear modification: ${modChoice || "any"} (up to ${gear.rarity || "Common"} rarity).`);
+          reminder = `Free gear mod granted: ${effect}. Open Gear Modification to use it at 0 essence.`;
+        } else if (type === "Gear Type Change" || type === "Gear Color Change") {
+          const mode = type === "Gear Type Change" ? "type" : "color";
+          const selection = await openGearChangeModal(mode, gear.rarity || "Common");
+          if (!selection) {
+            pushStatus("Gear change consumable cancelled.", { tone: "warning" });
+            return;
+          }
+          const result = await applyGearChangeConsumable(selection, gear.rarity || "Common");
+          if (!result) return;
+          details.push(
+            mode === "type"
+              ? `Changed gear type: ${(result.before.gear_type || result.before.gearType)} → ${selection.value}.`
+              : `Changed gear color: ${result.before.color || "Neutral"} → ${selection.value}.`,
+            `Rerolled modifiers and abilities on ${formatGearName(result.after)}.`
+          );
+        } else if (type === "Local Shop Upgrade") {
+          details.push("Local shop upgrade reminder logged.");
         }
 
         activeGearRow = entry;
         activeGearRow.__deletionMetadata = { type: "consumable_use" };
-        await deleteGear({ mode: "used" });
-        pushStatus(`${reminder}`, { tone: "success" });
+        const deletedRecord = await deleteGear({ mode: "used", details });
+        await addEditHistoryRecord({
+          type: "consumable",
+          label: `Consumable used: ${formatGearName(gear)}`,
+          details
+        });
+        pushStatus(`${reminder}`, {
+          tone: "success",
+          actionLabel: deletedRecord ? "Undo" : undefined,
+          onAction: deletedRecord ? () => undoGearHistory(deletedRecord.id) : undefined,
+          duration: 8500
+        });
         render();
       } catch (error) {
         console.error(error);
@@ -4767,21 +4951,52 @@
       }
     }
 
-    function addGearHistoryRecord(record) {
-      const snapshot = {
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        createdAt: new Date(),
-        ...record
+
+    function toHistoryTimestamp(value = new Date()) {
+      const date = value instanceof Date ? value : new Date(value);
+      return date.toISOString();
+    }
+
+    async function persistEditHistory() {
+      if (!activeCharacter?.id || !currentUser?.id) return;
+      const { error } = await sb
+        .from("webrunning_characters")
+        .update({ edit_history: editHistory })
+        .eq("id", activeCharacter.id)
+        .eq("user_id", currentUser.id);
+      if (error) throw error;
+    }
+
+    function normalizeHistoryRecord(record = {}) {
+      return {
+        ...record,
+        createdAt: record.createdAt || toHistoryTimestamp(),
+        details: Array.isArray(record.details) ? record.details : []
       };
-      gearHistory.unshift(snapshot);
+    }
+
+    async function addEditHistoryRecord(record) {
+      const snapshot = normalizeHistoryRecord({
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        ...record
+      });
+      editHistory.unshift(snapshot);
+      gearHistory = editHistory.filter(item => ["delete", "modify"].includes(item.type));
       renderGearHistory();
+      await persistEditHistory();
       return snapshot;
     }
 
-    function addDeletedGearHistory(entry, mode) {
+    async function addGearHistoryRecord(record) {
+      return addEditHistoryRecord(record);
+    }
+
+    async function addDeletedGearHistory(entry, mode, details = []) {
       return addGearHistoryRecord({
         type: "delete",
         mode,
+        label: `${mode === "used" ? "Consumable Used" : mode === "dissolve" ? "Gear Dissolved" : "Gear Deleted"}: ${formatGearName(entry.gear)}`,
+        details,
         entry: {
           gear_id: entry.gear_id,
           gear_slot: entry.gear_slot,
@@ -4793,21 +5008,32 @@
 
     function renderGearHistory() {
       if (!elements.deletedGearHistory) return;
-      if (!gearHistory.length) {
-        elements.deletedGearHistory.innerHTML = `<span class="muted">No gear history yet.</span>`;
+      if (!editHistory.length) {
+        elements.deletedGearHistory.innerHTML = `<span class="muted">No edit history yet.</span>`;
         return;
       }
-      elements.deletedGearHistory.innerHTML = gearHistory
+      elements.deletedGearHistory.innerHTML = editHistory
         .map(record => {
           const title = record.label || formatGearName(record.entry?.gear || {});
-          const kind = record.type === "modify" ? "Modification" : "Deletion";
+          const kind = record.type === "modify"
+            ? "Gear Modification"
+            : (record.type === "delete" ? "Gear Change" : "Character Edit");
+          const details = Array.isArray(record.details) ? record.details : [];
+          const detailHtml = details.length
+            ? `<ul>${details.map(item => `<li>${item}</li>`).join("")}</ul>`
+            : "";
+          const canUndo = record.type === "modify" || record.type === "delete";
+          const created = new Date(record.createdAt || Date.now()).toLocaleString();
           return `
             <div class="deletion-history-item">
               <div>
                 <strong>${title}</strong>
-                <div class="muted">${kind} • ${record.createdAt.toLocaleString()}</div>
+                <div class="muted">${kind} • ${created}</div>
+                ${detailHtml}
               </div>
-              <button type="button" data-action="undo-history" data-record="${record.id}" aria-label="Undo" title="Undo"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8L4 12l5 4"></path><path d="M4 12h8a6 6 0 1 1 0 12"></path></svg><span>Undo</span></button>
+              ${canUndo
+                ? `<button type="button" data-action="undo-history" data-record="${record.id}" aria-label="Undo" title="Undo"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8L4 12l5 4"></path><path d="M4 12h8a6 6 0 1 1 0 12"></path></svg><span>Undo</span></button>`
+                : ""}
             </div>
           `;
         })
@@ -4870,15 +5096,17 @@
     }
 
     async function undoGearHistory(recordId) {
-      const recordIndex = gearHistory.findIndex(record => record.id === recordId);
+      const recordIndex = editHistory.findIndex(record => record.id === recordId);
       if (recordIndex === -1) return;
-      const record = gearHistory[recordIndex];
+      const record = editHistory[recordIndex];
       try {
         const success = record.type === "modify"
           ? await undoModificationHistoryRecord(record)
           : await undoDeleteHistoryRecord(record);
         if (!success) return;
-        gearHistory.splice(recordIndex, 1);
+        editHistory.splice(recordIndex, 1);
+        gearHistory = editHistory.filter(item => ["delete", "modify"].includes(item.type));
+        await persistEditHistory();
         renderGearHistory();
         render();
         pushStatus("Undo complete.", { tone: "success" });
@@ -4888,9 +5116,17 @@
       }
     }
 
-    async function deleteGear({ mode = "delete" } = {}) {
+    async function deleteGear({ mode = "delete", details = [] } = {}) {
       if (!activeGearRow) return;
       const gear = activeGearRow.gear;
+      const historyDetails = Array.isArray(details) && details.length
+        ? details
+        : [
+            `Item: ${formatGearName(gear)}`,
+            `Rarity: ${gear.rarity || "Unknown"}`,
+            `Action: ${mode === "dissolve" ? "Dissolved" : mode === "used" ? "Used" : "Deleted"}`,
+            mode === "dissolve" ? `Essence gained: ${gear.essence_value || 0}` : null
+          ].filter(Boolean);
       try {
         if (mode === "dissolve") {
           const updatedEssence = (activeCharacter.base_stats?.essence || 0) + (gear.essence_value || 0);
@@ -4917,7 +5153,7 @@
           .eq("id", activeGearRow.gear_id);
         if (gearError) throw gearError;
 
-        const deletedRecord = addDeletedGearHistory(activeGearRow, mode);
+        const deletedRecord = await addDeletedGearHistory(activeGearRow, mode, historyDetails);
         characterGear = characterGear.filter(entry => entry.gear_id !== activeGearRow.gear_id);
         generatedGear.forEach(item => {
           if (item && gearSignature(item) === gearSignature(gear)) {
@@ -4926,13 +5162,18 @@
         });
         closeGearDetailModal();
         render();
-        const deletedMessage = mode === "used" ? "Consumable used." : "Gear deleted.";
-        pushStatus(deletedMessage, {
-          tone: "warning",
-          actionLabel: "Undo",
-          onAction: () => undoGearHistory(deletedRecord.id),
-          duration: 8000
-        });
+        const deletedMessage = mode === "used"
+          ? "Consumable used."
+          : (mode === "dissolve" ? "Gear dissolved." : "Gear deleted.");
+        if (mode !== "used") {
+          pushStatus(deletedMessage, {
+            tone: "warning",
+            actionLabel: "Undo",
+            onAction: () => undoGearHistory(deletedRecord.id),
+            duration: 8000
+          });
+        }
+        return deletedRecord;
       } catch (error) {
         console.error(error);
         gearDetailStatus.textContent = "Failed to delete gear.";
@@ -5257,7 +5498,7 @@
         const characterId = params.get("id");
         let query = sb
           .from("webrunning_characters")
-          .select("id, name, base_stats, status_effects, notes")
+          .select("id, name, base_stats, status_effects, notes, edit_history")
           .eq("user_id", currentUser.id);
 
         if (characterId) {
@@ -5274,7 +5515,8 @@
           id: null,
           name: "",
           base_stats: { ...defaults },
-          status_effects: null
+          status_effects: null,
+          edit_history: []
         };
 
         if (activeCharacter.status_effects) {
@@ -5286,6 +5528,9 @@
             activeCharacter.status_effects
           );
         }
+
+        editHistory = Array.isArray(activeCharacter.edit_history) ? activeCharacter.edit_history.map(normalizeHistoryRecord) : [];
+        gearHistory = editHistory.filter(item => ["delete", "modify"].includes(item.type));
 
         elements.nameInput.value = activeCharacter.name || "";
         if (elements.notesInput) {
@@ -5394,6 +5639,10 @@
         const baseStats = readBaseStatsFromForm();
         const notes = elements.notesInput ? elements.notesInput.value.trim() : "";
 
+        const previousName = activeCharacter?.name || "";
+        const previousStats = activeCharacter?.base_stats ? cloneJson(activeCharacter.base_stats) : null;
+        const previousNotes = activeCharacter?.notes || "";
+
         if (activeCharacter?.id) {
           const { error } = await sb
             .from("webrunning_characters")
@@ -5401,7 +5650,8 @@
               name,
               base_stats: baseStats,
               status_effects: getStatusEffectsPayload(baseStats),
-              notes
+              notes,
+              edit_history: editHistory
             })
             .eq("id", activeCharacter.id)
             .eq("user_id", currentUser.id);
@@ -5414,9 +5664,10 @@
               name,
               base_stats: baseStats,
               status_effects: getStatusEffectsPayload(baseStats),
-              notes
+              notes,
+              edit_history: editHistory
             })
-            .select("id, name, base_stats, status_effects, notes")
+            .select("id, name, base_stats, status_effects, notes, edit_history")
             .maybeSingle();
           if (error) throw error;
           activeCharacter = data;
@@ -5429,11 +5680,29 @@
           }
         }
 
+        if (activeCharacter?.id) {
+          const changed = previousName !== name
+            || JSON.stringify(previousStats || {}) !== JSON.stringify(baseStats)
+            || previousNotes !== notes;
+          if (changed) {
+            await addEditHistoryRecord({
+              type: "character_edit",
+              label: "Character updated",
+              details: [
+                previousName !== name ? `Name: ${previousName || "(empty)"} → ${name}` : null,
+                JSON.stringify(previousStats || {}) !== JSON.stringify(baseStats) ? "Core stats were updated." : null,
+                previousNotes !== notes ? "Character notes were updated." : null
+              ].filter(Boolean)
+            });
+          }
+        }
+
         isDirty = false;
         activeCharacter.name = name;
         activeCharacter.base_stats = baseStats;
         activeCharacter.status_effects = getStatusEffectsPayload(baseStats);
         activeCharacter.notes = notes;
+        activeCharacter.edit_history = editHistory;
         render();
         updateSaveStatus(mode === "auto" ? "Autosaved:" : "Saved:");
       } catch (e) {
@@ -5735,8 +6004,6 @@
         addGeneratedGear(index, "add");
       } else if (action === "equip") {
         addGeneratedGear(index, "equip");
-      } else if (action === "use") {
-        useGeneratedConsumable(index);
       } else if (action === "remove") {
         if (!Number.isFinite(index)) return;
         removeGeneratedGearFromCharacter(generatedGear[index]);
