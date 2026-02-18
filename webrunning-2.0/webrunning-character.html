@@ -1943,12 +1943,6 @@
       const stats = currentStats();
       gearModificationBody.innerHTML = `
         <p class="muted">Full rules + Local Shop info: <a href="https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear/Gear+Modification+and+the+Local+Shop" target="_blank" rel="noopener">Gear Modification and the Local Shop</a>.</p>
-        <ul>
-          <li><strong>Upgrade:</strong> moves gear up a rarity, recalculates stat buffs with your current Luck, can add new modifiers.</li>
-          <li><strong>Reroll Modifiers:</strong> rerolls Stat Buffs / Actives / Passives but keeps modifier counts the same, using current Luck.</li>
-          <li><strong>Condense Into:</strong> condense source gear into a target piece to transfer selected modifiers. Source gear is destroyed.</li>
-          <li><strong>Aesthetic Modification:</strong> change gear appearance or swap aesthetics between two pieces.</li>
-        </ul>
         <label>
           Gear Location
           <select id="gearModificationLocation">
@@ -1963,10 +1957,10 @@
           <select id="gearModificationTarget"></select>
         </label>
         <div class="gear-mod-option-grid">
-          <button type="button" data-mod-choice="upgrading">Upgrade</button>
-          <button type="button" data-mod-choice="rerolling">Reroll Modifiers</button>
-          <button type="button" data-mod-choice="condensing">Condense Into</button>
-          <button type="button" data-mod-choice="aesthetic">Aesthetic Modification</button>
+          <button type="button" data-mod-choice="upgrading" title="Moves gear up a rarity, recalculates stat buffs with your current Luck, can add new modifiers">Upgrade</button>
+          <button type="button" data-mod-choice="rerolling" title="Rerolls Stat Buffs / Actives / Passives using current Luck, keeps modifier counts the same">Reroll Modifiers</button>
+          <button type="button" data-mod-choice="condensing" title="Takes abilities or stat buffs from a source piece and moves them into a target piece, destroying source gear">Condense Into</button>
+          <button type="button" data-mod-choice="aesthetic" title="Changes gear appearance or swaps aesthetics between two pieces">Aesthetic Modification</button>
         </div>
       `;
       const locationSelect = document.getElementById("gearModificationLocation");
@@ -2038,10 +2032,10 @@
       } else if (choice === "rerolling") {
         const cost = gearRerollCosts[rarity];
         gearModificationBody.innerHTML = `
-          <strong>Reroll Modifiers: ${formatGearName(entry.gear)}</strong>
-          <p>Reroll Stat Buffs, Actives, and Passives while keeping the same amount of each modifier type. Uses your current Luck.</p>
-          <p>Cost: <strong>${formatEssenceCostWithTotal(cost, stats)}</strong></p>
-          ${essenceLine}
+          <p><strong>Reroll Modifiers: ${formatGearName(entry.gear)}</strong>
+          Reroll Stat Buffs, Actives, and Passives while keeping the same amount of each modifier type. Uses your current Luck.</p>
+          <p>Cost: <strong>${formatEssenceCostWithTotal(cost, stats)}</strong>
+          ${essenceLine}</p>
           <button type="button" data-mod-apply="rerolling">Apply Modification</button>
           
           ${common}`;
@@ -2060,10 +2054,10 @@
           .join("");
         gearModificationBody.innerHTML = `
           <strong>Condense Into: ${formatGearName(entry.gear)}</strong>
-          <p>Condense source gear into this target gear. The source gear transfers chosen stat buffs or chosen abilities to the target.</p>
-          <p><strong>Warning:</strong> The source gear is permanently destroyed.</p>
-          <p class="muted">1 transfer: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[0] || 0, stats)} · 2 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[1] || 0, stats)} · 3 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[2] || 0, stats)}</p>
-          ${essenceLine}
+          <p>Condense source gear into this target gear. The source gear transfers chosen stat buffs or chosen abilities to the target.
+          <strong>Warning:</strong> The source gear is permanently destroyed.</p>
+          <p class="muted">1 transfer: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[0] || 0, stats)} · 2 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[1] || 0, stats)} · 3 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[2] || 0, stats)}
+          ${essenceLine}</p>
           <label>Modifiers to Transfer
             <select id="gearCondenseCount">${costOptions || '<option value="1">1 modifier</option>'}</select>
           </label>
@@ -2097,8 +2091,8 @@
         gearModificationBody.innerHTML = `
           <strong>Aesthetic Modification: ${formatGearName(entry.gear)}</strong>
           <p class="muted">Current Aesthetic: ${entry.gear.aesthetic || "None"}</p>
-          <p class="muted">Aesthetic Modification Cost: ${formatCostAfterDiscount(300, stats)} · Aesthetic Swap Cost: ${formatCostAfterDiscount(100, stats)}</p>
-          ${essenceLine}
+          <p class="muted">Aesthetic Modification Cost: ${formatCostAfterDiscount(300, stats)} · Aesthetic Swap Cost: ${formatCostAfterDiscount(100, stats)}
+          ${essenceLine}</p>
           <label>Mode
             <select id="gearAestheticMode">
               <option value="modify">Aesthetic Modification</option>
