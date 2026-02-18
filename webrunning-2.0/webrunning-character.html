@@ -2624,6 +2624,20 @@
       return total;
     }
 
+
+    function preserveHigherExistingStatValues(previousStats, recalculatedStats) {
+      if (!Array.isArray(recalculatedStats) || !Array.isArray(previousStats)) return recalculatedStats;
+      return recalculatedStats.map((stat, index) => {
+        const previous = previousStats[index];
+        if (!previous || typeof stat !== "object" || stat == null) return stat;
+        const nextValue = Number(stat?.value ?? stat?.calc);
+        const oldValue = Number(previous?.value ?? previous?.calc);
+        if (!Number.isFinite(nextValue) || !Number.isFinite(oldValue)) return stat;
+        if (nextValue >= oldValue) return stat;
+        return { ...stat, value: oldValue };
+      });
+    }
+
     async function applyGearModification(choice) {
       const targetId = document.getElementById("gearModificationTarget")?.value || selectedGearModificationTargetId;
       const entry = findGearEntry(targetId);
@@ -2680,6 +2694,8 @@
 
         const gValue = updated.color ? (getEquippedColorCounts()[updated.color] || 0) : 0;
         updated = recalculateGearStatsForRarity(updated, row.next, luckNow, { g: gValue });
+        updated.stats = preserveHigherExistingStatValues(base.stats, updated.stats);
+        updated.stat_modifiers = preserveHigherExistingStatValues(base.stat_modifiers, updated.stat_modifiers);
 
         const upgradedBaseAbilities = abilitySplit.base.map(ability => buildUpgradedAbility(ability, row.next));
         if (upgradedBaseAbilities.length < baseActiveTargetCount) {
@@ -2717,6 +2733,8 @@
 
         const gValue = updated.color ? (getEquippedColorCounts()[updated.color] || 0) : 0;
         updated = recalculateGearStatsForRarity(updated, base.rarity, luckNow, { g: gValue });
+        updated.stats = preserveHigherExistingStatValues(base.stats, updated.stats);
+        updated.stat_modifiers = preserveHigherExistingStatValues(base.stat_modifiers, updated.stat_modifiers);
       } else if (choice === "condensing") {
         const donorId = document.getElementById("gearCondenseDonor")?.value;
         const transferType = document.getElementById("gearCondenseTransferType")?.value || "stat";
