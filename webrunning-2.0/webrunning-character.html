@@ -1362,6 +1362,7 @@
       if (formula == null) return 0;
       if (typeof formula === "number") return formula;
       const effectiveLuck = getCappedLuckValue(luck, context.level);
+      const gValue = Math.max(0, Number(context.g) || 0);
       const trimmed = String(formula).trim();
       if (!trimmed) return 0;
       if (trimmed.startsWith("x")) {
@@ -1374,6 +1375,13 @@
         return String(effectiveLuck).length + 1;
       }
       const normalized = trimmed.replace(/^\+/, "");
+      // Valid grammar: D, D+1, numeric literals, standalone variables (L/G), and binary L/G operator forms.
+      if (normalized.toUpperCase() === "L") {
+        return effectiveLuck;
+      }
+      if (normalized.toUpperCase() === "G") {
+        return gValue;
+      }
       if (/^\d+(\.\d+)?$/.test(normalized)) {
         return Number(normalized);
       }
@@ -1389,7 +1397,6 @@
       }
       const [, symbol, op, raw] = match;
       const value = Number(raw);
-      const gValue = Number(context.g) || 0;
       const baseValue = symbol.toUpperCase() === "G" ? gValue : effectiveLuck;
       let result = 0;
       if (op === "x" || op === "*") {
