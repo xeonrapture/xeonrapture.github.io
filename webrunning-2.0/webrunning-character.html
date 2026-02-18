@@ -761,6 +761,7 @@
         Target Gear
         <select id="gearChangeTarget"></select>
       </label>
+      <p class="muted" id="gearChangeCurrentValue">Current value: —</p>
       <label>
         New Value
         <select id="gearChangeValue"></select>
@@ -850,6 +851,7 @@
     let selectedModificationType = null;
     let selectedGearModificationTargetId = "";
     let pendingModificationRecord = null;
+    let activeConsumableGearMod = null;
 
     const elements = {
       nameInput: document.getElementById("characterName"),
@@ -1016,6 +1018,7 @@
     const gearChangeModalBackdrop = gearChangeModal?.querySelector(".xr-modal-backdrop");
     const gearChangeHint = document.getElementById("gearChangeHint");
     const gearChangeTarget = document.getElementById("gearChangeTarget");
+    const gearChangeCurrentValue = document.getElementById("gearChangeCurrentValue");
     const gearChangeValue = document.getElementById("gearChangeValue");
     const gearChangeApplyBtn = document.getElementById("gearChangeApplyBtn");
     const gearChangeCancelBtn = document.getElementById("gearChangeCancelBtn");
@@ -1949,10 +1952,12 @@
       return `${discounted} Essence (${discount}% off)`;
     }
 
-    function getGearModificationCandidates(location = "all") {
+    function getGearModificationCandidates(location = "all", options = {}) {
+      const maxRarityRank = getRarityRank(options.maxRarity || "Legendary");
       return characterGear
         .filter(entry => entry?.gear)
         .filter(entry => {
+          if (getRarityRank(entry.gear?.rarity || "Common") > maxRarityRank) return false;
           if (location === "all") return true;
           if (location === "equipped") return !!entry.equipped;
           return entry.gear_slot === location;
@@ -1974,8 +1979,10 @@
       pendingModificationRecord = null;
       if (!gearModificationBody) return;
       const stats = currentStats();
+      const consumableChoice = activeConsumableGearMod?.choice || null;
+      const targetRarity = activeConsumableGearMod?.maxRarity || null;
       gearModificationBody.innerHTML = `
-        <p class="muted">Full rules + Local Shop info: <a href="https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear/Gear+Modification+and+the+Local+Shop" target="_blank" rel="noopener">Gear Modification and the Local Shop</a>.</p>
+        <p class="muted">${activeConsumableGearMod ? `Consumable gear modification (${targetRarity || "Common"} max rarity). Choose gear and apply now.` : `Full rules + Local Shop info: <a href="https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear/Gear+Modification+and+the+Local+Shop" target="_blank" rel="noopener">Gear Modification and the Local Shop</a>.`}</p>
         <label>
           Gear Location
           <select id="gearModificationLocation">
@@ -1990,10 +1997,10 @@
           <select id="gearModificationTarget"></select>
         </label><br>
         <div class="gear-mod-option-grid">
-          <button type="button" data-mod-choice="upgrading" title="Moves gear up a rarity, recalculates stat buffs with your current Luck, can add new modifiers">Upgrade</button>
-          <button type="button" data-mod-choice="rerolling" title="Rerolls Stat Buffs / Actives / Passives using current Luck, keeps modifier counts the same">Reroll Modifiers</button>
-          <button type="button" data-mod-choice="condensing" title="Takes abilities or stat buffs from a source piece and moves them into a target piece, destroying source gear">Condense Into</button>
-          <button type="button" data-mod-choice="aesthetic" title="Changes gear appearance or swaps aesthetics between two pieces">Aesthetic Modification</button>
+          ${!consumableChoice || consumableChoice === "upgrading" ? '<button type="button" data-mod-choice="upgrading" title="Moves gear up a rarity, recalculates stat buffs with your current Luck, can add new modifiers">Upgrade</button>' : ""}
+          ${!consumableChoice || consumableChoice === "rerolling" ? '<button type="button" data-mod-choice="rerolling" title="Rerolls Stat Buffs / Actives / Passives using current Luck, keeps modifier counts the same">Reroll Modifiers</button>' : ""}
+          ${!consumableChoice || consumableChoice === "condensing" ? '<button type="button" data-mod-choice="condensing" title="Takes abilities or stat buffs from a source piece and moves them into a target piece, destroying source gear">Condense Into</button>' : ""}
+          ${!consumableChoice || consumableChoice === "aesthetic" ? '<button type="button" data-mod-choice="aesthetic" title="Changes gear appearance or swaps aesthetics between two pieces">Aesthetic Modification</button>' : ""}
         </div>
       `;
       const locationSelect = document.getElementById("gearModificationLocation");
@@ -2006,7 +2013,7 @@
       }
       const refreshTargets = () => {
         const location = locationSelect?.value || "all";
-        const candidates = getGearModificationCandidates(location);
+        const candidates = getGearModificationCandidates(location, { maxRarity: targetRarity || "Legendary" });
         targetSelect.innerHTML = candidates.length
           ? candidates.map(item => `<option value="${item.id}">${item.label}</option>`).join("")
           : '<option value="">No gear available in this section</option>';
@@ -2381,6 +2388,7 @@
 
     function closeGearModificationModal() {
       pendingModificationRecord = null;
+      activeConsumableGearMod = null;
       gearModificationUndo?.classList.add("hidden");
       gearModificationDetails?.classList.add("hidden");
       gearModificationModal?.classList.add("hidden");
@@ -2620,6 +2628,18 @@
       return Boolean(gear && typeof gear === "object" && gear.aesthetic);
     }
 
+    function canGearUseModificationChoice(gear, choice = null) {
+      if (!gear || typeof gear !== "object") return false;
+      const gearType = gear.gear_type || gear.gearType;
+      if (["Consumable", "Kernel", "Bauble"].includes(gearType)) {
+        return choice === "aesthetic" ? canGearUseAestheticModification(gear) : false;
+      }
+      if (!choice) return true;
+      if (choice === "condensing") return canGearCondense(gear);
+      if (choice === "aesthetic") return canGearUseAestheticModification(gear);
+      return true;
+    }
+
     async function generateRerolledGear(baseGear, luck, rarityOverride = null) {
       if (!pyodideClient) {
         await ensurePyodideReady();
@@ -2671,7 +2691,19 @@
     async function applyGearModification(choice) {
       const targetId = document.getElementById("gearModificationTarget")?.value || selectedGearModificationTargetId;
       const entry = findGearEntry(targetId);
-      if (!entry) return;
+      if (!entry) return null;
+      if (activeConsumableGearMod?.choice && choice !== activeConsumableGearMod.choice) {
+        pushStatus("This consumable only allows one gear modification type.", { tone: "warning" });
+        return null;
+      }
+      if (activeConsumableGearMod?.maxRarity && getRarityRank(entry.gear?.rarity || "Common") > getRarityRank(activeConsumableGearMod.maxRarity)) {
+        pushStatus("That gear is above this consumable's rarity limit.", { tone: "warning" });
+        return null;
+      }
+      if (!canGearUseModificationChoice(entry.gear, choice)) {
+        pushStatus("That gear cannot use this modification.", { tone: "warning" });
+        return null;
+      }
       const liveStats = applyGearBonuses(currentStats(), calculateGearBonuses(currentStats()));
       const baseStats = currentStats();
       const targetLuck = getGearLuckContribution(entry.gear, baseStats.luck || 0);
@@ -2682,9 +2714,7 @@
       let cost = 0;
       let donorSnapshot = null;
       let secondTargetSnapshot = null;
-      const freeChoice = activeCharacter?.base_stats?.free_gear_mod || null;
-      const freeMaxRarity = activeCharacter?.base_stats?.free_gear_mod_max_rarity || "Common";
-      let consumedFreeMod = false;
+      const freeFromConsumable = Boolean(activeConsumableGearMod);
 
       if (choice === "upgrading") {
         const row = gearUpgradeCosts[updated.rarity];
@@ -2899,8 +2929,7 @@
       updated.abilities = dedupeAbilitiesByName(updated.abilities || []);
       updated = enforceRarityCaps(updated);
 
-      if (freeChoice && freeChoice === choice && getRarityRank(updated.rarity || "Common") <= getRarityRank(freeMaxRarity)) {
-        consumedFreeMod = true;
+      if (freeFromConsumable) {
         cost = 0;
       }
 
@@ -2914,12 +2943,6 @@
           currentUser = await requireUser();
         }
         await updateEssenceBy(-cost);
-        if (consumedFreeMod) {
-          delete activeCharacter.base_stats.free_gear_mod;
-          delete activeCharacter.base_stats.free_gear_mod_max_rarity;
-          const { error: freeError } = await sb.from("webrunning_characters").update({ base_stats: activeCharacter.base_stats }).eq("id", activeCharacter.id).eq("user_id", currentUser.id);
-          if (freeError) throw freeError;
-        }
         const persistedGear = await updateGearRecord(entry.gear_id, buildGearInsertPayload(updated));
         entry.gear = persistedGear;
         if (gearModificationSource === "detail") {
@@ -2939,17 +2962,19 @@
             after: cloneJson(updated),
             donorSnapshot,
             secondTargetSnapshot,
-            consumedFreeMod
+            consumedFreeMod: freeFromConsumable
           }
         });
 
         pendingModificationRecord = historyRecord;
         render();
         renderGearModificationResult(historyRecord);
-        pushStatus(`Modification applied. Spent ${cost} essence.${consumedFreeMod ? " (Used free consumable mod.)" : ""}`, { tone: "success" });
+        pushStatus(`Modification applied. Spent ${cost} essence.${freeFromConsumable ? " (Used gear mod consumable.)" : ""}`, { tone: "success" });
+        return historyRecord;
       } catch (error) {
         console.error(error);
         pushStatus("Failed to apply gear modification.", { tone: "error" });
+        return null;
       }
     }
 
@@ -3596,6 +3621,20 @@
           : "Select a gear piece and its new color. Rarity and type stay the same.";
         gearChangeTarget.innerHTML = candidates.map(entry => `<option value="${entry.gear_id}">${formatGearName(entry.gear)} [${entry.gear.rarity}]</option>`).join("");
         gearChangeValue.innerHTML = (mode === "type" ? typeOptions : colorOptions).map(value => `<option value="${value}">${value}</option>`).join("");
+        const syncCurrentValue = () => {
+          const selectedEntry = findGearEntry(gearChangeTarget.value);
+          if (!gearChangeCurrentValue) return;
+          if (!selectedEntry) {
+            gearChangeCurrentValue.textContent = "Current value: —";
+            return;
+          }
+          const currentValue = mode === "type"
+            ? (selectedEntry.gear?.gear_type || selectedEntry.gear?.gearType || "Unknown")
+            : (selectedEntry.gear?.color || "Neutral");
+          gearChangeCurrentValue.textContent = `Current value: ${currentValue}`;
+        };
+        gearChangeTarget.addEventListener("change", syncCurrentValue);
+        syncCurrentValue();
         gearChangeModalMsg.textContent = "";
         gearChangeModal.classList.remove("hidden");
 
@@ -3603,10 +3642,66 @@
           gearChangeApplyBtn.removeEventListener("click", submit);
           gearChangeCancelBtn.removeEventListener("click", cancel);
           gearChangeModalBackdrop?.removeEventListener("click", cancel);
+          gearChangeTarget.removeEventListener("change", syncCurrentValue);
           gearChangeModal.classList.add("hidden");
           resolve(value);
         };
         const submit = () => cleanup({ gearId: gearChangeTarget.value, value: gearChangeValue.value, mode });
+        const cancel = () => cleanup(null);
+        gearChangeApplyBtn.addEventListener("click", submit);
+        gearChangeCancelBtn.addEventListener("click", cancel);
+        gearChangeModalBackdrop?.addEventListener("click", cancel);
+      });
+    }
+
+    async function openGearModConsumableModal(modChoice = null, consumableRarity = "Common") {
+      return new Promise(resolve => {
+        if (!gearChangeModal || !gearChangeTarget || !gearChangeValue) {
+          resolve(null);
+          return;
+        }
+        const candidates = getGearModificationCandidates("all", { maxRarity: consumableRarity })
+          .map(item => item.entry)
+          .filter(entry => canGearUseModificationChoice(entry?.gear, modChoice));
+        if (!candidates.length) {
+          resolve(null);
+          return;
+        }
+        const options = [
+          { value: "upgrading", label: "Upgrade" },
+          { value: "rerolling", label: "Reroll Modifiers" },
+          { value: "condensing", label: "Condense Into" },
+          { value: "aesthetic", label: "Aesthetic Modification" }
+        ];
+        const allowedOptions = modChoice ? options.filter(item => item.value === modChoice) : options;
+        gearChangeHint.textContent = "Pick a gear piece and apply this consumable's gear modification now.";
+        gearChangeTarget.innerHTML = candidates.map(entry => `<option value="${entry.gear_id}">${formatGearName(entry.gear)} [${entry.gear.rarity}]</option>`).join("");
+        gearChangeValue.innerHTML = allowedOptions.map(item => `<option value="${item.value}">${item.label}</option>`).join("");
+        const syncCurrentValue = () => {
+          const selectedEntry = findGearEntry(gearChangeTarget.value);
+          if (!gearChangeCurrentValue) return;
+          if (!selectedEntry) {
+            gearChangeCurrentValue.textContent = "Current value: —";
+            return;
+          }
+          const typeLabel = selectedEntry.gear?.gear_type || selectedEntry.gear?.gearType || "Unknown";
+          const colorLabel = [selectedEntry.gear?.color, selectedEntry.gear?.color2].filter(Boolean).join(" / ") || "Neutral";
+          gearChangeCurrentValue.textContent = `Current gear: ${typeLabel} · ${colorLabel}`;
+        };
+        gearChangeTarget.addEventListener("change", syncCurrentValue);
+        syncCurrentValue();
+        gearChangeModalMsg.textContent = "";
+        gearChangeModal.classList.remove("hidden");
+
+        const cleanup = value => {
+          gearChangeApplyBtn.removeEventListener("click", submit);
+          gearChangeCancelBtn.removeEventListener("click", cancel);
+          gearChangeModalBackdrop?.removeEventListener("click", cancel);
+          gearChangeTarget.removeEventListener("change", syncCurrentValue);
+          gearChangeModal.classList.add("hidden");
+          resolve(value);
+        };
+        const submit = () => cleanup({ gearId: gearChangeTarget.value, choice: gearChangeValue.value });
         const cancel = () => cleanup(null);
         gearChangeApplyBtn.addEventListener("click", submit);
         gearChangeCancelBtn.addEventListener("click", cancel);
@@ -3642,28 +3737,36 @@
       return { entry, before, after: cloneJson(persisted), selection };
     }
 
-    function buildConsumableReminder(gear, stats = currentStats()) {
-      const type = getConsumableType(gear);
+    function getConsumableEffectDetails(gear) {
       const effect = getConsumableEffectText(gear);
+      const type = getConsumableType(gear);
       if (type === "Healing") {
-        const percent = Number((effect.match(/(\d+)%/i) || [])[1] || 0);
-        const maxHp = Number(stats.max_hp) || Number(stats.hp) || 0;
-        const currentHp = Number(stats.current_hp) || 0;
-        const missing = Math.max(maxHp - currentHp, 0);
-        const estimated = percent > 0 ? Math.ceil((maxHp * percent) / 100) : 0;
-        return `Healing used (${effect || "custom effect"}). Missing HP: ${missing}. Estimated healing: ${estimated}.`;
+        const match = effect.match(/(\d+)%/i);
+        return match ? `Restores ${match[1]}% HP.` : (effect || "Healing effect.");
       }
       if (type === "Energy") {
-        const amount = Number((effect.match(/grants\s*(\d+)/i) || [])[1] || 0);
-        return `Energy consumable used (${effect || "custom effect"}). Choose color and add ${amount || "the listed"} energy.`;
+        const match = effect.match(/grants\s*(\d+)/i);
+        return match ? `Grants ${match[1]} energy to a chosen color.` : (effect || "Energy effect.");
+      }
+      return effect || "Single-use effect.";
+    }
+
+    function buildConsumableReminder(gear, stats = currentStats()) {
+      const type = getConsumableType(gear);
+      const effect = getConsumableEffectDetails(gear);
+      if (type === "Healing") {
+        return `Healing consumable used. ${effect}`;
+      }
+      if (type === "Energy") {
+        return `Energy consumable used. ${effect}`;
       }
       if (type === "Gear Mod") {
-        return `Gear Mod consumable used: ${effect}. You get one free ${effect.toLowerCase()} action.`;
+        return `Gear Mod consumable used. ${effect}`;
       }
       if (type === "Gear Type Change" || type === "Gear Color Change") {
         return `${type} consumable used (${effect}). Pick a gear piece and reroll all stats/abilities after the change.`;
       }
-      return `${type || "Consumable"} used (${effect || "single-use effect"}). Apply any manual effects now.`;
+      return `${type || "Consumable"} used. ${effect}`;
     }
 
     function renderInventory(stats) {
@@ -4766,12 +4869,18 @@
           details.push(`Reallocated stats with ${bonusPoints} bonus point(s).`);
         } else if (type === "Gear Mod") {
           const modChoice = getGearModChoiceFromEffect(effect);
-          activeCharacter.base_stats.free_gear_mod = modChoice;
-          activeCharacter.base_stats.free_gear_mod_max_rarity = gear.rarity || "Common";
-          const { error } = await sb.from("webrunning_characters").update({ base_stats: activeCharacter.base_stats }).eq("id", activeCharacter.id).eq("user_id", currentUser.id);
-          if (error) throw error;
-          details.push(`Granted free gear modification: ${modChoice || "any"} (up to ${gear.rarity || "Common"} rarity).`);
-          reminder = `Free gear mod granted: ${effect}. Open Gear Modification to use it at 0 essence.`;
+          const selection = await openGearModConsumableModal(modChoice, gear.rarity || "Common");
+          if (!selection) {
+            pushStatus("Gear mod consumable cancelled.", { tone: "warning" });
+            return;
+          }
+          activeConsumableGearMod = { choice: selection.choice || modChoice, maxRarity: gear.rarity || "Common" };
+          selectedGearModificationTargetId = selection.gearId;
+          const applied = await applyGearModification(selection.choice || modChoice || "upgrading");
+          activeConsumableGearMod = null;
+          if (!applied) return;
+          details.push(`Applied ${applied.modification?.choice || selection.choice || modChoice || "gear"} modification to ${formatGearName(applied.modification?.after || gear)}.`);
+          reminder = `Gear Mod consumable used. ${getConsumableEffectDetails(gear)}`;
         } else if (type === "Gear Type Change" || type === "Gear Color Change") {
           const mode = type === "Gear Type Change" ? "type" : "color";
           const selection = await openGearChangeModal(mode, gear.rarity || "Common");
