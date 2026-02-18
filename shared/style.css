@@ -33,6 +33,10 @@ a:visited {
   color: #b99dff;
 }
 
+p {
+  margin: 0.5em 0;
+}
+
 /* ===== Shared Nav ===== */
 .xr-nav {
   display: flex;
