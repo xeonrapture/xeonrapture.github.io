@@ -2024,17 +2024,17 @@
         const row = gearUpgradeCosts[rarity];
         gearModificationBody.innerHTML = row ? `
           <strong>Upgrade: ${formatGearName(entry.gear)}</strong>
-          <p>This updates stat values based on your current Luck and can add new modifiers and/or abilities.</p>
-          <p>Cost: <strong>${formatEssenceCostWithTotal(row.cost, stats)}</strong></p>
-          ${essenceLine}
+          <p>This updates stat values based on your current Luck and can add new modifiers and/or abilities.<br>
+          Cost: <strong>${formatEssenceCostWithTotal(row.cost, stats)}</strong>
+          ${essenceLine}</p>
           <button type="button" data-mod-apply="upgrading">Upgrade to ${row.next}</button>
           ${common}` : `<p>${rarity} gear cannot be upgraded further.</p>${essenceLine}${common}`;
       } else if (choice === "rerolling") {
         const cost = gearRerollCosts[rarity];
         gearModificationBody.innerHTML = `
           <p><strong>Reroll Modifiers: ${formatGearName(entry.gear)}</strong><br>
-          Reroll Stat Buffs, Actives, and Passives while keeping the same amount of each modifier type. Uses your current Luck.</p>
-          <p>Cost: <strong>${formatEssenceCostWithTotal(cost, stats)}</strong>
+          Reroll Stat Buffs, Actives, and Passives while keeping the same amount of each modifier type. Uses your current Luck.<br>
+          Cost: <strong>${formatEssenceCostWithTotal(cost, stats)}</strong>
           ${essenceLine}</p>
           <button type="button" data-mod-apply="rerolling">Reroll Modifiers</button>
           
@@ -2074,7 +2074,7 @@
             <select id="gearCondenseModifier" multiple size="6"></select>
           </label>
           <p class="muted">Hold Ctrl/Cmd to select multiple modifiers</p>
-          <button type="button" data-mod-apply="condensing" ${donorOptions ? '' : 'disabled'}>Apply Condense Into</button>
+          <button type="button" data-mod-apply="condensing" ${donorOptions ? '' : 'disabled'}>Condense</button>
           ${common}`;
       } else if (choice === "aesthetic") {
         if (!canGearUseAestheticModification(entry.gear)) {
