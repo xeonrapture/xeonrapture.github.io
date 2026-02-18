@@ -1944,8 +1944,8 @@
       gearModificationBody.innerHTML = `
         <p class="muted">Full rules + Local Shop info: <a href="https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear/Gear+Modification+and+the+Local+Shop" target="_blank" rel="noopener">Gear Modification and the Local Shop</a>.</p>
         <ul>
-          <li><strong>Upgrading:</strong> moves gear up a rarity, recalculates stat buffs with your current Luck, can add new modifiers.</li>
-          <li><strong>Rerolling Modifiers:</strong> rerolls Stat Buffs / Actives / Passives but keeps modifier counts the same, using current Luck.</li>
+          <li><strong>Upgrade:</strong> moves gear up a rarity, recalculates stat buffs with your current Luck, can add new modifiers.</li>
+          <li><strong>Reroll Modifiers:</strong> rerolls Stat Buffs / Actives / Passives but keeps modifier counts the same, using current Luck.</li>
           <li><strong>Condense Into:</strong> condense source gear into a target piece to transfer selected modifiers. Source gear is destroyed.</li>
           <li><strong>Aesthetic Modification:</strong> change gear appearance or swap aesthetics between two pieces.</li>
         </ul>
@@ -1963,8 +1963,8 @@
           <select id="gearModificationTarget"></select>
         </label>
         <div class="gear-mod-option-grid">
-          <button type="button" data-mod-choice="upgrading">Upgrading</button>
-          <button type="button" data-mod-choice="rerolling">Rerolling Modifiers</button>
+          <button type="button" data-mod-choice="upgrading">Upgrade</button>
+          <button type="button" data-mod-choice="rerolling">Reroll Modifiers</button>
           <button type="button" data-mod-choice="condensing">Condense Into</button>
           <button type="button" data-mod-choice="aesthetic">Aesthetic Modification</button>
         </div>
@@ -2029,27 +2029,27 @@
       if (choice === "upgrading") {
         const row = gearUpgradeCosts[rarity];
         gearModificationBody.innerHTML = row ? `
-          <strong>Upgrading: ${formatGearName(entry.gear)}</strong>
-          <p>Upgrade from ${rarity} to ${row.next}. This rerolls/updates stat values based on your current Luck and can add new modifiers.</p>
+          <strong>Upgrade: ${formatGearName(entry.gear)}</strong>
+          <p>This updates stat values based on your current Luck and can add new modifiers and/or abilities.</p>
           <p>Cost: <strong>${formatEssenceCostWithTotal(row.cost, stats)}</strong></p>
-          <button type="button" data-mod-apply="upgrading">Apply Modification</button>
           ${essenceLine}
+          <button type="button" data-mod-apply="upgrading">Upgrade to ${row.next}</button>
           ${common}` : `<p>${rarity} gear cannot be upgraded further.</p>${essenceLine}${common}`;
       } else if (choice === "rerolling") {
         const cost = gearRerollCosts[rarity];
         gearModificationBody.innerHTML = `
-          <strong>Rerolling Modifiers: ${formatGearName(entry.gear)}</strong>
+          <strong>Reroll Modifiers: ${formatGearName(entry.gear)}</strong>
           <p>Reroll Stat Buffs, Actives, and Passives while keeping the same amount of each modifier type. Uses your current Luck.</p>
           <p>Cost: <strong>${formatEssenceCostWithTotal(cost, stats)}</strong></p>
-          <button type="button" data-mod-apply="rerolling">Apply Modification</button>
           ${essenceLine}
+          <button type="button" data-mod-apply="rerolling">Apply Modification</button>
+          
           ${common}`;
       } else if (choice === "condensing") {
         if (!canGearCondense(entry.gear)) {
           gearModificationBody.innerHTML = `
             <strong>Condense Into: ${formatGearName(entry.gear)}</strong>
             <p>This gear cannot be condensed into. Only non-Kernel/Bauble/Consumable gear can use Condense Into.</p>
-            ${essenceLine}
             ${common}`;
           return;
         }
@@ -2060,10 +2060,10 @@
           .join("");
         gearModificationBody.innerHTML = `
           <strong>Condense Into: ${formatGearName(entry.gear)}</strong>
-          <p class="muted">Costs by transfer count are shown below.</p>
-          <p class="muted">1 transfer: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[0] || 0, stats)} · 2 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[1] || 0, stats)} · 3 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[2] || 0, stats)}</p>
-          <p><strong>Warning:</strong> The source gear is permanently destroyed.</p>
           <p>Condense source gear into this target gear. The source gear transfers chosen stat buffs or chosen abilities to the target.</p>
+          <p><strong>Warning:</strong> The source gear is permanently destroyed.</p>
+          <p class="muted">1 transfer: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[0] || 0, stats)} · 2 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[1] || 0, stats)} · 3 transfers: ${formatCostAfterDiscount((gearCondenseCosts[rarity] || [])[2] || 0, stats)}</p>
+          ${essenceLine}
           <label>Modifiers to Transfer
             <select id="gearCondenseCount">${costOptions || '<option value="1">1 modifier</option>'}</select>
           </label>
@@ -2081,14 +2081,12 @@
           </label>
           <p class="muted">Hold Ctrl/Cmd to select multiple modifiers</p>
           <button type="button" data-mod-apply="condensing" ${donorOptions ? '' : 'disabled'}>Apply Condense Into</button>
-          ${essenceLine}
           ${common}`;
       } else if (choice === "aesthetic") {
         if (!canGearUseAestheticModification(entry.gear)) {
           gearModificationBody.innerHTML = `
             <strong>Aesthetic Modification: ${formatGearName(entry.gear)}</strong>
             <p>This gear has no aesthetic, so it cannot be used for aesthetic modification or swap.</p>
-            ${essenceLine}
             ${common}`;
           return;
         }
@@ -2099,13 +2097,14 @@
         gearModificationBody.innerHTML = `
           <strong>Aesthetic Modification: ${formatGearName(entry.gear)}</strong>
           <p class="muted">Current Aesthetic: ${entry.gear.aesthetic || "None"}</p>
+          <p class="muted">Aesthetic Modification Cost: ${formatCostAfterDiscount(300, stats)} · Aesthetic Swap Cost: ${formatCostAfterDiscount(100, stats)}</p>
+          ${essenceLine}
           <label>Mode
             <select id="gearAestheticMode">
               <option value="modify">Aesthetic Modification</option>
               <option value="swap">Aesthetic Swap</option>
             </select>
           </label>
-          <p class="muted">Aesthetic Modification Cost: ${formatCostAfterDiscount(300, stats)} · Aesthetic Swap Cost: ${formatCostAfterDiscount(100, stats)}</p>
           <label id="gearAestheticPresetWrap">Aesthetic Preset
             <select id="gearAestheticPreset">
               <option value="">Choose a preset</option>
@@ -2117,7 +2116,6 @@
           </label>
           <p id="gearAestheticSwapPreview" class="muted"></p>
           <button type="button" data-mod-apply="aesthetic" ${others ? "" : "disabled"}>Apply Modification</button>
-          ${essenceLine}
           ${common}`;
       }
       if (choice === "condensing") {
