@@ -783,21 +783,44 @@
     <div class="xr-modal-backdrop"></div>
     <div class="xr-modal-card">
       <h2>Keyboard Hotkeys</h2>
-      <ul>
-        <li><strong>Save Character:</strong> Ctrl+S (Windows/Linux) / Command+S (Mac)</li>
-        <li><strong>Section Up/Down (nested only):</strong> Ctrl+↑, Ctrl+↓ / Command+↑, Command+↓</li>
-        <li><strong>Collapse/Expand All:</strong> Ctrl+Alt+-, Ctrl+Alt++ / Command+Option+-, Command+Option++</li>
-        <li><strong>Go to Core Info:</strong> Ctrl+Alt+C / Command+Option+C</li>
-        <li><strong>Go to Stats:</strong> Ctrl+Alt+S / Command+Option+S</li>
-        <li><strong>Go to Abilities:</strong> Ctrl+Alt+A / Command+Option+A</li>
-        <li><strong>Go to Gear:</strong> Ctrl+Alt+G / Command+Option+G</li>
-        <li><strong>Go to Equipped Gear:</strong> Ctrl+Alt+E / Command+Option+E</li>
-        <li><strong>Go to Inventory:</strong> Ctrl+Alt+I / Command+Option+I</li>
-        <li><strong>Go to Character Info:</strong> Ctrl+Alt+N / Command+Option+N</li>
-        <li><strong>Go to Edit History:</strong> Ctrl+Alt+H / Command+Option+H</li>
-        <li><strong>Undo/Redo:</strong> Ctrl+Z, Ctrl+Y / Command+Z, Command+Shift+Z</li>
-        <li><strong>Show Hotkeys:</strong> Ctrl+/ / Command+/</li>
-      </ul>
+      <h3>Actions</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Windows / Linux</th>
+            <th>Mac</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Save Character + Go to Stats</td><td>Ctrl+Alt+S</td><td>Command+Option+S</td></tr>
+          <tr><td>Show Hotkeys</td><td>Ctrl+Alt+/</td><td>Command+Option+/</td></tr>
+          <tr><td>Collapse / Expand all sections</td><td>Ctrl+Alt+- / Ctrl+Alt++</td><td>Command+Option+- / Command+Option++</td></tr>
+          <tr><td>Undo / Redo</td><td>Ctrl+Z / Ctrl+Y</td><td>Command+Z / Command+Shift+Z</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Navigation</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Windows / Linux</th>
+            <th>Mac</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Cycle sections</td><td>Ctrl+Alt+↑ / Ctrl+Alt+↓</td><td>Command+Option+↑ / Command+Option+↓</td></tr>
+          <tr><td>Go to top of page</td><td>Ctrl+Alt+T</td><td>Command+Option+T</td></tr>
+          <tr><td>Go to Core Info</td><td>Ctrl+Alt+C</td><td>Command+Option+C</td></tr>
+          <tr><td>Go to Abilities</td><td>Ctrl+Alt+A</td><td>Command+Option+A</td></tr>
+          <tr><td>Go to Gear</td><td>Ctrl+Alt+G</td><td>Command+Option+G</td></tr>
+          <tr><td>Go to Equipped Gear</td><td>Ctrl+Alt+E</td><td>Command+Option+E</td></tr>
+          <tr><td>Go to Inventory</td><td>Ctrl+Alt+I</td><td>Command+Option+I</td></tr>
+          <tr><td>Go to Character Info</td><td>Ctrl+Alt+N</td><td>Command+Option+N</td></tr>
+          <tr><td>Go to Edit History</td><td>Ctrl+Alt+H</td><td>Command+Option+H</td></tr>
+        </tbody>
+      </table>
       <div class="modal-actions">
         <button id="closeHotkeysHelp" type="button" aria-label="Close hotkeys" title="Close hotkeys"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
       </div>
@@ -951,7 +974,6 @@
 
     const hotkeySections = {
       c: document.getElementById("coreInfoSection"),
-      s: document.getElementById("statsSection"),
       a: document.getElementById("abilitiesSection"),
       g: document.getElementById("gearSection"),
       e: document.getElementById("equippedGearSection"),
@@ -6075,21 +6097,21 @@
       return target.closest("input, textarea, select, [contenteditable='true']") !== null;
     }
 
-    function getNestedSectionCards() {
-      return Array.from(document.querySelectorAll("section.section-card"))
-        .filter(section => !section.classList.contains("hidden"));
+    function getNavigableSections() {
+      return Array.from(document.querySelectorAll("section.card"))
+        .filter(section => !section.classList.contains("hidden") && section.offsetParent !== null);
     }
 
-    function navigateNestedSections(direction = 1) {
-      const nested = getNestedSectionCards();
-      if (!nested.length) return;
-      const active = document.activeElement instanceof HTMLElement ? document.activeElement.closest("section.section-card") : null;
-      let index = nested.findIndex(section => section === active);
+    function navigateSections(direction = 1) {
+      const sections = getNavigableSections();
+      if (!sections.length) return;
+      const active = document.activeElement instanceof HTMLElement ? document.activeElement.closest("section.card") : null;
+      let index = sections.findIndex(section => section === active);
       if (index === -1) {
         index = direction > 0 ? -1 : 0;
       }
-      const nextIndex = (index + direction + nested.length) % nested.length;
-      focusSection(nested[nextIndex]);
+      const nextIndex = (index + direction + sections.length) % sections.length;
+      focusSection(sections[nextIndex]);
     }
 
     function setAllCollapsibles(collapsed) {
@@ -6137,27 +6159,34 @@
         closeHotkeysModal();
       }
       const key = event.key.toLowerCase();
-      if (hasAccel(event) && key === "s") {
+      if (hasAccel(event) && event.altKey && key === "s") {
         event.preventDefault();
         saveCharacter();
+        focusSection(document.getElementById("statsSection"));
         return;
       }
 
-      if (hasAccel(event) && !event.shiftKey && !event.altKey && key === "/") {
+      if (hasAccel(event) && event.altKey && !event.shiftKey && key === "/") {
         event.preventDefault();
         openHotkeysModal();
         return;
       }
 
-      if (hasAccel(event) && !event.altKey && key === "arrowdown") {
+      if (hasAccel(event) && event.altKey && key === "arrowdown") {
         event.preventDefault();
-        navigateNestedSections(1);
+        navigateSections(1);
         return;
       }
 
-      if (hasAccel(event) && !event.altKey && key === "arrowup") {
+      if (hasAccel(event) && event.altKey && key === "arrowup") {
         event.preventDefault();
-        navigateNestedSections(-1);
+        navigateSections(-1);
+        return;
+      }
+
+      if (hasAccel(event) && event.altKey && !event.shiftKey && key === "t") {
+        event.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
 
