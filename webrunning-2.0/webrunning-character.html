@@ -11,10 +11,15 @@
 
   <main class="wrap sheet">
     <header>
-      <a class="action-btn" href="/webrunning-2.0/webrunning-character-manager.html" aria-label="Back to character manager">
-        <span aria-hidden="true">←</span>
-        <span>Back to Character Manager</span>
-      </a>
+      <div style="display:flex; align-items:center; gap:0.5rem; justify-content:space-between; flex-wrap:wrap;">
+        <a class="action-btn" href="/webrunning-2.0/webrunning-character-manager.html" aria-label="Back to character manager">
+          <span aria-hidden="true">←</span>
+          <span>Back to Character Manager</span>
+        </a>
+        <button id="openHotkeysHelp" class="action-btn" type="button" aria-label="Show hotkeys" title="Show hotkeys">
+          <span>Hotkeys</span>
+        </button>
+      </div>
       <h1>Webrunning Character Sheet</h1>
       <p>Use this page to track your character stats, gear, and progression.</p>
     </header>
@@ -31,7 +36,7 @@
       </div>
     </section>
 
-    <section class="card">
+    <section id="coreInfoSection" class="card">
       <h2>Core Info</h2>
       <div class="stats-grid core-info">
         <dl>
@@ -77,7 +82,7 @@
       </div>
     </section>
 
-    <section class="card collapsible" data-collapsible>
+    <section id="statsSection" class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Stats</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -218,7 +223,7 @@
       </div>
     </section>
 
-    <section class="card collapsible" data-collapsible>
+    <section id="abilitiesSection" class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Abilities</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -228,13 +233,13 @@
       </div>
     </section>
 
-    <section class="card collapsible" data-collapsible>
+    <section id="gearSection" class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Gear</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
       </div>
       <div class="collapsible-body section-stack">
-        <section class="card collapsible section-card" data-collapsible>
+        <section id="gearGeneratorSection" class="card collapsible section-card" data-collapsible>
           <div class="collapsible-header">
             <h3>Gear Generator</h3>
             <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -250,7 +255,7 @@
           </div>
         </section>
 
-        <section class="card collapsible section-card" data-collapsible>
+        <section id="equippedGearSection" class="card collapsible section-card" data-collapsible>
       <div class="collapsible-header">
         <h2>Gear Slots</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -260,7 +265,7 @@
       </div>
         </section>
 
-        <section class="card collapsible section-card" data-collapsible>
+        <section id="inventorySection" class="card collapsible section-card" data-collapsible>
       <div class="collapsible-header">
         <h2>Inventory Slots</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -412,7 +417,7 @@
       </div>
     </section>
 
-    <section class="card collapsible" data-collapsible>
+    <section id="characterInfoSection" class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Character Info</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -427,7 +432,7 @@
     </section>
 
 
-    <section class="card collapsible collapsed" data-collapsible>
+    <section id="editHistorySection" class="card collapsible collapsed" data-collapsible>
       <div class="collapsible-header">
         <h2>Edit History</h2>
         <button class="collapse-toggle" type="button" aria-label="Show section" title="Show section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button>
@@ -774,6 +779,31 @@
     </div>
   </div>
 
+  <div id="hotkeysModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Keyboard Hotkeys</h2>
+      <ul>
+        <li><strong>Save Character:</strong> Ctrl+S (Windows/Linux) / Command+S (Mac)</li>
+        <li><strong>Section Up/Down (nested only):</strong> Ctrl+↑, Ctrl+↓ / Command+↑, Command+↓</li>
+        <li><strong>Collapse/Expand All:</strong> Ctrl+Alt+-, Ctrl+Alt++ / Command+Option+-, Command+Option++</li>
+        <li><strong>Go to Core Info:</strong> Ctrl+Alt+C / Command+Option+C</li>
+        <li><strong>Go to Stats:</strong> Ctrl+Alt+S / Command+Option+S</li>
+        <li><strong>Go to Abilities:</strong> Ctrl+Alt+A / Command+Option+A</li>
+        <li><strong>Go to Gear:</strong> Ctrl+Alt+G / Command+Option+G</li>
+        <li><strong>Go to Equipped Gear:</strong> Ctrl+Alt+E / Command+Option+E</li>
+        <li><strong>Go to Inventory:</strong> Ctrl+Alt+I / Command+Option+I</li>
+        <li><strong>Go to Character Info:</strong> Ctrl+Alt+N / Command+Option+N</li>
+        <li><strong>Go to Edit History:</strong> Ctrl+Alt+H / Command+Option+H</li>
+        <li><strong>Undo/Redo:</strong> Ctrl+Z, Ctrl+Y / Command+Z, Command+Shift+Z</li>
+        <li><strong>Show Hotkeys:</strong> Ctrl+/ / Command+/</li>
+      </ul>
+      <div class="modal-actions">
+        <button id="closeHotkeysHelp" type="button" aria-label="Close hotkeys" title="Close hotkeys"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+      </div>
+    </div>
+  </div>
+
   <div id="statusPopup" class="status-popup" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -852,6 +882,7 @@
     let selectedGearModificationTargetId = "";
     let pendingModificationRecord = null;
     let activeConsumableGearMod = null;
+    let historyRedoStack = [];
 
     const elements = {
       nameInput: document.getElementById("characterName"),
@@ -914,7 +945,19 @@
       gearModTierSelect: document.getElementById("gearModTierSelect"),
       gearModTierLabel: document.getElementById("gearModTierLabel"),
       gearModDiscountLabel: document.getElementById("gearModDiscountLabel"),
-      gearModUpgradeStatus: document.getElementById("gearModUpgradeStatus")
+      gearModUpgradeStatus: document.getElementById("gearModUpgradeStatus"),
+      openHotkeysHelp: document.getElementById("openHotkeysHelp")
+    };
+
+    const hotkeySections = {
+      c: document.getElementById("coreInfoSection"),
+      s: document.getElementById("statsSection"),
+      a: document.getElementById("abilitiesSection"),
+      g: document.getElementById("gearSection"),
+      e: document.getElementById("equippedGearSection"),
+      i: document.getElementById("inventorySection"),
+      n: document.getElementById("characterInfoSection"),
+      h: document.getElementById("editHistorySection")
     };
 
     const modal = document.getElementById("levelupModal");
@@ -1023,6 +1066,10 @@
     const gearChangeApplyBtn = document.getElementById("gearChangeApplyBtn");
     const gearChangeCancelBtn = document.getElementById("gearChangeCancelBtn");
     const gearChangeModalMsg = document.getElementById("gearChangeModalMsg");
+    const hotkeysModal = document.getElementById("hotkeysModal");
+    const hotkeysBackdrop = hotkeysModal?.querySelector(".xr-modal-backdrop");
+    const closeHotkeysHelp = document.getElementById("closeHotkeysHelp");
+
 
     let gearHistory = [];
     let editHistory = [];
@@ -5149,6 +5196,7 @@
         return latest;
       }
       editHistory.unshift(snapshot);
+      historyRedoStack = [];
       gearHistory = editHistory.filter(item => ["delete", "modify"].includes(item.type));
       renderGearHistory();
       await persistEditHistory();
@@ -5263,7 +5311,7 @@
       return true;
     }
 
-    async function undoGearHistory(recordId) {
+    async function undoGearHistory(recordId, { shouldTrackRedo = false } = {}) {
       const recordIndex = editHistory.findIndex(record => record.id === recordId);
       if (recordIndex === -1) return;
       const record = editHistory[recordIndex];
@@ -5273,6 +5321,9 @@
           : await undoDeleteHistoryRecord(record);
         if (!success) return;
         editHistory.splice(recordIndex, 1);
+        if (shouldTrackRedo) {
+          historyRedoStack.unshift(cloneJson(record));
+        }
         gearHistory = editHistory.filter(item => ["delete", "modify"].includes(item.type));
         await persistEditHistory();
         renderGearHistory();
@@ -5967,24 +6018,181 @@
       modal.classList.add("hidden");
     }
 
+    function updateCollapsibleButton(section) {
+      const button = section?.querySelector(".collapse-toggle");
+      if (!button) return;
+      const collapsed = section.classList.contains("collapsed");
+      button.innerHTML = collapsed
+        ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>'
+        : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg>';
+      button.setAttribute("aria-label", collapsed ? "Show section" : "Hide section");
+      button.setAttribute("title", collapsed ? "Show section" : "Hide section");
+    }
+
+    function setSectionCollapsed(section, collapsed) {
+      if (!section?.hasAttribute("data-collapsible")) return;
+      section.classList.toggle("collapsed", collapsed);
+      updateCollapsibleButton(section);
+    }
+
+    function expandSectionPath(section) {
+      let cursor = section;
+      while (cursor) {
+        if (cursor.matches?.("[data-collapsible]")) {
+          setSectionCollapsed(cursor, false);
+        }
+        cursor = cursor.parentElement?.closest?.("[data-collapsible]") || null;
+      }
+    }
+
+    function focusSection(section) {
+      if (!section) return;
+      expandSectionPath(section);
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+      const focusTarget = section.querySelector("h3, h2, button, input, select, textarea") || section;
+      if (focusTarget instanceof HTMLElement) {
+        if (!focusTarget.hasAttribute("tabindex") && !["BUTTON", "INPUT", "SELECT", "TEXTAREA"].includes(focusTarget.tagName)) {
+          focusTarget.setAttribute("tabindex", "-1");
+        }
+        focusTarget.focus({ preventScroll: true });
+      }
+    }
+
     function initCollapsibles() {
       document.querySelectorAll("[data-collapsible]").forEach(section => {
         const button = section.querySelector(".collapse-toggle");
         if (!button) return;
-        const updateCollapseButton = collapsed => {
-          button.innerHTML = collapsed
-            ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>'
-            : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg>';
-          button.setAttribute("aria-label", collapsed ? "Show section" : "Hide section");
-          button.setAttribute("title", collapsed ? "Show section" : "Hide section");
-        };
-        const isCollapsed = section.classList.contains("collapsed");
-        updateCollapseButton(isCollapsed);
+        updateCollapsibleButton(section);
         button.addEventListener("click", () => {
           const nowCollapsed = section.classList.toggle("collapsed");
-          updateCollapseButton(nowCollapsed);
+          updateCollapsibleButton(section);
         });
       });
+    }
+
+    function isTypingTarget(target) {
+      if (!(target instanceof HTMLElement)) return false;
+      return target.closest("input, textarea, select, [contenteditable='true']") !== null;
+    }
+
+    function getNestedSectionCards() {
+      return Array.from(document.querySelectorAll("section.section-card"))
+        .filter(section => !section.classList.contains("hidden"));
+    }
+
+    function navigateNestedSections(direction = 1) {
+      const nested = getNestedSectionCards();
+      if (!nested.length) return;
+      const active = document.activeElement instanceof HTMLElement ? document.activeElement.closest("section.section-card") : null;
+      let index = nested.findIndex(section => section === active);
+      if (index === -1) {
+        index = direction > 0 ? -1 : 0;
+      }
+      const nextIndex = (index + direction + nested.length) % nested.length;
+      focusSection(nested[nextIndex]);
+    }
+
+    function setAllCollapsibles(collapsed) {
+      document.querySelectorAll("[data-collapsible]").forEach(section => {
+        setSectionCollapsed(section, collapsed);
+      });
+    }
+
+    function openHotkeysModal() {
+      hotkeysModal?.classList.remove("hidden");
+    }
+
+    function closeHotkeysModal() {
+      hotkeysModal?.classList.add("hidden");
+    }
+
+    async function undoLatestHistoryAction() {
+      const record = editHistory.find(item => ["modify", "delete"].includes(item.type));
+      if (!record) {
+        pushStatus("No history action available to undo.", { tone: "warning" });
+        return;
+      }
+      await undoGearHistory(record.id, { shouldTrackRedo: true });
+    }
+
+    async function redoLatestHistoryAction() {
+      const record = historyRedoStack.shift();
+      if (!record) {
+        pushStatus("No history action available to redo.", { tone: "warning" });
+        return;
+      }
+      editHistory.unshift(record);
+      gearHistory = editHistory.filter(item => ["delete", "modify"].includes(item.type));
+      await persistEditHistory();
+      renderGearHistory();
+      pushStatus("Redo restored the last undone history entry.", { tone: "success" });
+    }
+
+    function hasAccel(event) {
+      return event.ctrlKey || event.metaKey;
+    }
+
+    function handleGlobalHotkeys(event) {
+      if (event.key === "Escape") {
+        closeHotkeysModal();
+      }
+      const key = event.key.toLowerCase();
+      if (hasAccel(event) && key === "s") {
+        event.preventDefault();
+        saveCharacter();
+        return;
+      }
+
+      if (hasAccel(event) && !event.shiftKey && !event.altKey && key === "/") {
+        event.preventDefault();
+        openHotkeysModal();
+        return;
+      }
+
+      if (hasAccel(event) && !event.altKey && key === "arrowdown") {
+        event.preventDefault();
+        navigateNestedSections(1);
+        return;
+      }
+
+      if (hasAccel(event) && !event.altKey && key === "arrowup") {
+        event.preventDefault();
+        navigateNestedSections(-1);
+        return;
+      }
+
+      if (hasAccel(event) && event.altKey && !event.shiftKey && Object.prototype.hasOwnProperty.call(hotkeySections, key)) {
+        event.preventDefault();
+        focusSection(hotkeySections[key]);
+        return;
+      }
+
+      if (hasAccel(event) && event.altKey && (key === "-" || key === "_")) {
+        event.preventDefault();
+        setAllCollapsibles(true);
+        return;
+      }
+
+      if (hasAccel(event) && event.altKey && (key === "=" || key === "+")) {
+        event.preventDefault();
+        setAllCollapsibles(false);
+        return;
+      }
+
+      if (isTypingTarget(event.target)) return;
+
+      if (hasAccel(event) && !event.shiftKey && !event.altKey && key === "z") {
+        event.preventDefault();
+        undoLatestHistoryAction();
+        return;
+      }
+
+      const isRedoMac = event.metaKey && event.shiftKey && key === "z";
+      const isRedoWin = event.ctrlKey && !event.shiftKey && key === "y";
+      if ((isRedoMac || isRedoWin) && !event.altKey) {
+        event.preventDefault();
+        redoLatestHistoryAction();
+      }
     }
 
     async function applyLevelUp() {
@@ -6260,6 +6468,7 @@
       document.addEventListener("keydown", event => {
         if (event.key === "Escape") {
           closeAbilityDropdowns();
+          closeHotkeysModal();
         }
       });
     }
@@ -6278,6 +6487,10 @@
     });
     deleteGearButton.addEventListener("click", () => deleteGear({ mode: "delete" }));
     dissolveGearButton.addEventListener("click", () => deleteGear({ mode: "dissolve" }));
+
+    elements.openHotkeysHelp?.addEventListener("click", openHotkeysModal);
+    closeHotkeysHelp?.addEventListener("click", closeHotkeysModal);
+    hotkeysBackdrop?.addEventListener("click", closeHotkeysModal);
 
     if (elements.deletedGearHistory) {
       elements.deletedGearHistory.addEventListener("click", event => {
@@ -6331,6 +6544,8 @@
       }
       renderGearModificationDetail(choice);
     });
+
+    document.addEventListener("keydown", handleGlobalHotkeys);
 
     window.addEventListener("DOMContentLoaded", () => {
       populateGearFilterSelects();
