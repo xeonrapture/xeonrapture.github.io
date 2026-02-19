@@ -2207,6 +2207,7 @@
       if (choice === "aesthetic") {
         const swapTarget = document.getElementById("gearAestheticSwapTarget");
         const modeSelect = document.getElementById("gearAestheticMode");
+        const applyButton = gearModificationBody.querySelector('button[data-mod-apply="aesthetic"]');
         const preview = document.getElementById("gearAestheticSwapPreview");
         const presetWrap = document.getElementById("gearAestheticPresetWrap");
         const swapWrap = document.getElementById("gearAestheticSwapTargetWrap");
@@ -2216,10 +2217,12 @@
           if (presetWrap) presetWrap.classList.toggle("hidden", mode !== "modify");
           if (swapWrap) swapWrap.classList.toggle("hidden", mode !== "swap");
           if (mode !== "swap") {
+            if (applyButton) applyButton.disabled = false;
             preview.textContent = "";
             return;
           }
           const otherEntry = findGearEntry(swapTarget?.value);
+          if (applyButton) applyButton.disabled = !otherEntry;
           preview.textContent = otherEntry
             ? `Swap target aesthetic: ${otherEntry.gear?.aesthetic || "None"}`
             : "Swap target aesthetic: None";
@@ -3741,8 +3744,20 @@
       const effect = getConsumableEffectText(gear);
       const type = getConsumableType(gear);
       if (type === "Healing") {
-        const match = effect.match(/(\d+)%/i);
-        return match ? `Restores ${match[1]}% HP.` : (effect || "Healing effect.");
+        const normalized = String(effect || "").replace(/\s+/g, " ").trim();
+        const healPercent = Number((normalized.match(/(\d+(?:\.\d+)?)\s*%/i) || [])[1]);
+        const targetCount = Number((normalized.match(/(?:up to|for)\s*(\d+)\s*(?:people|targets?|allies|party members?|players?)/i) || [])[1]);
+        const targetScope = /party|everyone|all allies|all targets?/i.test(normalized)
+          ? "the party"
+          : (Number.isFinite(targetCount) && targetCount > 0
+            ? `${targetCount} ${targetCount === 1 ? "target" : "targets"}`
+            : "the selected target(s)");
+        if (Number.isFinite(healPercent) && healPercent > 0) {
+          return `Heals ${targetScope} for ${healPercent}% of max HP.`;
+        }
+        return normalized
+          ? normalized.replace(/%\s*hp/ig, "% of max HP")
+          : "Healing effect.";
       }
       if (type === "Energy") {
         const match = effect.match(/grants\s*(\d+)/i);
