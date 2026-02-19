@@ -793,7 +793,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr><td>Save Character + Go to Stats</td><td>Ctrl+Alt+S</td><td>Command+Option+S</td></tr>
+          <tr><td>Save Character</td><td>Ctrl+S</td><td>Command+S</td></tr>
+          <tr><td>Go to Stats</td><td>Ctrl+Alt+S</td><td>Command+Option+S</td></tr>
           <tr><td>Show Hotkeys</td><td>Ctrl+Alt+/</td><td>Command+Option+/</td></tr>
           <tr><td>Collapse / Expand all sections</td><td>Ctrl+Alt+- / Ctrl+Alt++</td><td>Command+Option+- / Command+Option++</td></tr>
           <tr><td>Undo / Redo</td><td>Ctrl+Z / Ctrl+Y</td><td>Command+Z / Command+Shift+Z</td></tr>
@@ -6161,8 +6162,13 @@
       const key = event.key.toLowerCase();
       if (hasAccel(event) && event.altKey && key === "s") {
         event.preventDefault();
-        saveCharacter();
         focusSection(document.getElementById("statsSection"));
+        return;
+      }
+
+      if (hasAccel(event) && !event.altKey && !event.shiftKey && key === "s") {
+        event.preventDefault();
+        saveCharacter();
         return;
       }
 
