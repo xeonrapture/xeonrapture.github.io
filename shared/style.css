@@ -601,6 +601,23 @@ textarea:focus {
   overscroll-behavior: contain;
 }
 
+.wr-scope #hotkeysModal .xr-modal-card {
+  max-width: 720px;
+}
+
+.wr-scope #hotkeysModal table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.wr-scope #hotkeysModal th,
+.wr-scope #hotkeysModal td {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  text-align: left;
+}
+
 .wr-scope .xr-modal-card h2 {
   margin-top: 0;
 }
