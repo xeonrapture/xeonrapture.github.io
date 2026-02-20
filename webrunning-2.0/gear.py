@@ -60,7 +60,9 @@ class Gear:
             5: "Pbosh (Viking/Heavy, Rough Metal)",
             6: "Cortez (Western)",
             7: "Cortez (Pirate)",
-            8: "Jiyyagan (Survivor/Jungle)"
+            8: "Jiyyagan (Survivor/Jungle)",
+            9: "Exozinik (Shiny, Futuristic)",
+            10: "Drokk (Stone, Linens, Precious Metals)"
         }
 
         self.defineColor()
@@ -208,7 +210,7 @@ class Gear:
             self.abilities.append(Ability(self.rarity, self.color, self.gearType, self.color2))
 
     def defineAesthetic(self):
-        randInt = d(8)
+        randInt = d(10)
         self.aesthetic = self.aestheticDict[randInt]
 
     def defineSpecificItem(self):
