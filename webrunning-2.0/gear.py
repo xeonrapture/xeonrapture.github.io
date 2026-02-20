@@ -61,7 +61,7 @@ class Gear:
             6: "Cortez (Western)",
             7: "Cortez (Pirate)",
             8: "Jiyyagan (Survivor/Jungle)",
-            9: "Exozinik (Shiny, Futuristic)",
+            9: "Exozinik (Shiny, Chrome, Futuristic)",
             10: "Drokk (Stone, Linens, Precious Metals)"
         }
 
