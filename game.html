@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>XR Campaigns</title>
+  <link rel="stylesheet" href="/shared/style.css">
+</head>
+<body class="wr-scope">
+  <div id="nav"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/shared/auth.js"></script>
+  <script src="/shared/nav.js"></script>
+
+  <main class="wrap">
+    <h1>Campaigns</h1>
+    <p class="muted">This page is shared between GMs and players. Everyone can view party characters in read-only mode.</p>
+
+    <section class="card wr-mt-1">
+      <h2>Your Campaigns</h2>
+      <select id="gameSelect"></select>
+      <div id="gameStatus" class="mono muted wr-mt-0-5"></div>
+    </section>
+
+    <section class="card wr-mt-1">
+      <h2>Players</h2>
+      <div id="memberList" class="mono muted">Loading members...</div>
+      <div id="gmControls" class="wr-mt-1 hidden">
+        <h3>GM Campaign Controls</h3>
+        <label>Invite player by username
+          <input id="inviteUsername" type="text" maxlength="24" placeholder="username" />
+        </label>
+        <button id="invitePlayerBtn" type="button">Invite to Campaign</button>
+      </div>
+    </section>
+
+    <section class="card wr-mt-1">
+      <h2>Assigned Characters (Read-only)</h2>
+      <div id="characterList" class="mono muted">No characters assigned yet.</div>
+    </section>
+  </main>
+
+  <script>
+    const sb = window.supabaseClient;
+    const gameSelect = document.getElementById("gameSelect");
+    const gameStatus = document.getElementById("gameStatus");
+    const memberList = document.getElementById("memberList");
+    const characterList = document.getElementById("characterList");
+    const gmControls = document.getElementById("gmControls");
+    const invitePlayerBtn = document.getElementById("invitePlayerBtn");
+    const inviteUsername = document.getElementById("inviteUsername");
+
+    let currentUser = null;
+    let memberships = [];
+
+    async function requireUser() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) {
+        window.location.href = "/login.html";
+        throw new Error("No user");
+      }
+      return user;
+    }
+
+    function selectedGameId() {
+      return gameSelect.value || null;
+    }
+
+    async function loadGames() {
+      currentUser = await requireUser();
+      const { data, error } = await sb
+        .from("campaign_members")
+        .select("campaign_id, role, campaigns(id, name, gm_user_id)")
+        .eq("user_id", currentUser.id)
+        .order("joined_at", { ascending: true });
+
+      if (error) {
+        gameStatus.textContent = `Failed to load campaigns: ${error.message}`;
+        return;
+      }
+
+      memberships = data || [];
+      gameSelect.innerHTML = "";
+      if (!memberships.length) {
+        gameSelect.innerHTML = "<option value=''>No campaigns yet</option>";
+        gameStatus.textContent = "Accept a campaign invite from Notifications to join.";
+        memberList.textContent = "No game selected.";
+        characterList.textContent = "No game selected.";
+        return;
+      }
+
+      memberships.forEach(m => {
+        const option = document.createElement("option");
+        option.value = m.campaign_id;
+        option.textContent = `${m.campaigns?.name || "Unnamed Campaign"} (${m.role.toUpperCase()})`;
+        gameSelect.appendChild(option);
+      });
+
+      await loadGameDetails();
+    }
+
+    async function loadGameDetails() {
+      const campaignId = selectedGameId();
+      if (!campaignId) return;
+
+      const membership = memberships.find(m => String(m.campaign_id) === String(campaignId));
+      const isGm = membership?.role === "gm";
+      gmControls.classList.toggle("hidden", !isGm);
+      gameStatus.textContent = isGm ? "You are the GM for this game." : "You are a player in this game.";
+
+      const { data: members, error: membersError } = await sb
+        .from("campaign_members")
+        .select("user_id, role")
+        .eq("campaign_id", campaignId)
+        .order("joined_at", { ascending: true });
+
+      if (membersError) {
+        memberList.textContent = `Failed to load players: ${membersError.message}`;
+      } else {
+        const ids = (members || []).map(m => m.user_id);
+        let profiles = [];
+        if (ids.length) {
+          const { data: pData } = await sb.from("profiles").select("id, username").in("id", ids);
+          profiles = pData || [];
+        }
+        const byId = Object.fromEntries(profiles.map(p => [p.id, p.username || "(no username)"]));
+        memberList.innerHTML = (members || []).map(m => {
+          const role = m.role === "gm" ? "GM" : "Player";
+          return `<div>• ${byId[m.user_id] || m.user_id} — ${role}</div>`;
+        }).join("") || "No members yet.";
+      }
+
+      const { data: assignments, error: assignmentError } = await sb
+        .from("campaign_character_assignments")
+        .select("character_id, user_id, webrunning_characters(id, name, base_stats)")
+        .eq("campaign_id", campaignId)
+        .order("assigned_at", { ascending: true });
+
+      if (assignmentError) {
+        characterList.textContent = `Failed to load characters: ${assignmentError.message}`;
+      } else if (!(assignments || []).length) {
+        characterList.textContent = "No characters assigned to this game yet.";
+      } else {
+        characterList.innerHTML = assignments.map(row => {
+          const c = row.webrunning_characters;
+          const link = `/webrunning-2.0/webrunning-character.html?id=${row.character_id}&campaign_id=${campaignId}&readonly=1`;
+          return `<div>• <a href="${link}">${c?.name || "Unnamed character"}</a> (Lv ${c?.base_stats?.level || 1})</div>`;
+        }).join("");
+      }
+    }
+
+    invitePlayerBtn.onclick = async () => {
+      const campaignId = selectedGameId();
+      const username = inviteUsername.value.trim();
+      if (!campaignId || !username) {
+        gameStatus.textContent = "Pick a game and enter a username.";
+        return;
+      }
+
+      const { data: profile, error: profileError } = await sb
+        .from("profiles")
+        .select("id, username")
+        .eq("username", username)
+        .maybeSingle();
+
+      if (profileError || !profile) {
+        gameStatus.textContent = "Could not find that username.";
+        return;
+      }
+
+      const { error: inviteError } = await sb.from("campaign_invites").insert({
+        campaign_id: campaignId,
+        inviter_user_id: currentUser.id,
+        invitee_user_id: profile.id,
+        status: "pending"
+      });
+
+      if (inviteError) {
+        gameStatus.textContent = `Failed to invite: ${inviteError.message}`;
+        return;
+      }
+
+      await sb.from("notifications").insert({
+        user_id: profile.id,
+        type: "campaign_invite",
+        status: "pending",
+        payload: { campaign_id: campaignId, inviter_user_id: currentUser.id }
+      });
+
+      gameStatus.textContent = `Sent campaign invite to ${profile.username}.`;
+      inviteUsername.value = "";
+    };
+
+    gameSelect.addEventListener("change", loadGameDetails);
+    loadGames();
+  </script>
+</body>
+</html>

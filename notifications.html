@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>XR Notifications</title>
+  <link rel="stylesheet" href="/shared/style.css">
+</head>
+<body class="wr-scope">
+  <div id="nav"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/shared/auth.js"></script>
+  <script src="/shared/nav.js"></script>
+
+  <main class="wrap">
+    <h1>Notifications</h1>
+    <p class="muted">Friend requests and campaign invites appear here.</p>
+    <section class="card wr-mt-1">
+      <div id="notificationsList" class="mono muted">Loading notifications...</div>
+    </section>
+  </main>
+
+  <script>
+    const sb = window.supabaseClient;
+    const notificationsList = document.getElementById("notificationsList");
+    let currentUser;
+
+    async function requireUser() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) {
+        window.location.href = "/login.html";
+        throw new Error("No user");
+      }
+      return user;
+    }
+
+    async function updateNotificationStatus(notificationId, status) {
+      await sb.from("notifications").update({ status }).eq("id", notificationId);
+    }
+
+    async function acceptFriend(notification) {
+      const requesterId = notification.payload?.requester_user_id;
+      if (!requesterId) throw new Error("Missing requester");
+
+      const [a, b] = [currentUser.id, requesterId].sort();
+      const { error: friendError } = await sb.from("friendships").upsert({
+        user_a: a,
+        user_b: b
+      }, { onConflict: "user_a,user_b" });
+      if (friendError) throw friendError;
+
+      await sb.from("friend_requests")
+        .update({ status: "accepted" })
+        .eq("requester_user_id", requesterId)
+        .eq("target_user_id", currentUser.id)
+        .eq("status", "pending");
+
+      await updateNotificationStatus(notification.id, "accepted");
+    }
+
+    async function rejectFriend(notification) {
+      const requesterId = notification.payload?.requester_user_id;
+      await sb.from("friend_requests")
+        .update({ status: "declined" })
+        .eq("requester_user_id", requesterId)
+        .eq("target_user_id", currentUser.id)
+        .eq("status", "pending");
+      await updateNotificationStatus(notification.id, "rejected");
+    }
+
+    async function acceptGameInvite(notification) {
+      const campaignId = notification.payload?.campaign_id;
+      if (!campaignId) throw new Error("Missing campaign id");
+
+      const { error: memberError } = await sb.from("campaign_members").upsert({
+        campaign_id: campaignId,
+        user_id: currentUser.id,
+        role: "player"
+      }, { onConflict: "campaign_id,user_id" });
+      if (memberError) throw memberError;
+
+      await sb.from("campaign_invites")
+        .update({ status: "accepted" })
+        .eq("campaign_id", campaignId)
+        .eq("invitee_user_id", currentUser.id)
+        .eq("status", "pending");
+
+      await updateNotificationStatus(notification.id, "accepted");
+    }
+
+    async function rejectGameInvite(notification) {
+      const campaignId = notification.payload?.campaign_id;
+      await sb.from("campaign_invites")
+        .update({ status: "declined" })
+        .eq("campaign_id", campaignId)
+        .eq("invitee_user_id", currentUser.id)
+        .eq("status", "pending");
+      await updateNotificationStatus(notification.id, "rejected");
+    }
+
+    async function loadNotifications() {
+      const { data, error } = await sb
+        .from("notifications")
+        .select("id, type, status, payload, created_at")
+        .eq("user_id", currentUser.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        notificationsList.textContent = `Failed to load notifications: ${error.message}`;
+        return;
+      }
+
+      if (!data?.length) {
+        notificationsList.textContent = "No pending notifications.";
+        return;
+      }
+
+      notificationsList.innerHTML = "";
+      data.forEach(notification => {
+        const row = document.createElement("div");
+        row.className = "card wr-mt-0-5";
+        row.style.padding = "0.8rem";
+
+        const title = document.createElement("div");
+        title.textContent = notification.type === "friend_request" ? "Friend request" : "Campaign invite";
+        title.style.fontWeight = "700";
+
+        const details = document.createElement("div");
+        details.className = "muted";
+        details.textContent = notification.type === "friend_request"
+          ? "Someone invited you as a friend."
+          : "You were invited to join a campaign.";
+
+        const actions = document.createElement("div");
+        actions.className = "wr-inline-flex wr-mt-0-5";
+        const acceptBtn = document.createElement("button");
+        acceptBtn.textContent = "Accept";
+        const rejectBtn = document.createElement("button");
+        rejectBtn.textContent = "Reject";
+
+        acceptBtn.onclick = async () => {
+          try {
+            if (notification.type === "friend_request") {
+              await acceptFriend(notification);
+            } else if (notification.type === "campaign_invite") {
+              await acceptGameInvite(notification);
+            }
+            await loadNotifications();
+          } catch (error) {
+            details.textContent = `Failed: ${error.message}`;
+          }
+        };
+
+        rejectBtn.onclick = async () => {
+          try {
+            if (notification.type === "friend_request") {
+              await rejectFriend(notification);
+            } else if (notification.type === "campaign_invite") {
+              await rejectGameInvite(notification);
+            }
+            await loadNotifications();
+          } catch (error) {
+            details.textContent = `Failed: ${error.message}`;
+          }
+        };
+
+        actions.append(acceptBtn, rejectBtn);
+        row.append(title, details, actions);
+        notificationsList.appendChild(row);
+      });
+    }
+
+    (async () => {
+      currentUser = await requireUser();
+      await loadNotifications();
+    })();
+  </script>
+</body>
+</html>
