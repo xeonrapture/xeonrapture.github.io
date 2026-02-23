@@ -59,6 +59,19 @@
       el.style.display = loggedIn ? "none" : "";
     });
 
+    const badge = host.querySelector("#nav-notification-count");
+    if (loggedIn && badge) {
+      const { count, error: notificationError } = await sb
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", data.session.user.id)
+        .eq("status", "pending");
+      if (!notificationError && count > 0) {
+        badge.textContent = String(count > 99 ? "99+" : count);
+        badge.classList.remove("hidden");
+      }
+    }
+
     // 🚪 Logout
     const logoutBtn = host.querySelector("#logoutBtn");
     if (logoutBtn) {

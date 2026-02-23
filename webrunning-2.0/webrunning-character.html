@@ -22,6 +22,7 @@
       </div>
       <h1>Webrunning Character Sheet</h1>
       <p>Use this page to track your character stats, gear, and progression.</p>
+      <p id="readOnlyBanner" class="muted hidden">Viewing this character in read-only mode.</p>
     </header>
 
     <section class="card">
@@ -907,6 +908,8 @@
     let pendingModificationRecord = null;
     let activeConsumableGearMod = null;
     let historyRedoStack = [];
+    let readOnlyMode = false;
+    let canEditCharacter = true;
 
     const elements = {
       nameInput: document.getElementById("characterName"),
@@ -970,7 +973,8 @@
       gearModTierLabel: document.getElementById("gearModTierLabel"),
       gearModDiscountLabel: document.getElementById("gearModDiscountLabel"),
       gearModUpgradeStatus: document.getElementById("gearModUpgradeStatus"),
-      openHotkeysHelp: document.getElementById("openHotkeysHelp")
+      openHotkeysHelp: document.getElementById("openHotkeysHelp"),
+      readOnlyBanner: document.getElementById("readOnlyBanner")
     };
 
     const hotkeySections = {
@@ -5361,6 +5365,7 @@
     }
 
     async function deleteGear({ mode = "delete", details = [] } = {}) {
+      if (readOnlyMode) return;
       if (!activeGearRow) return;
       const gear = activeGearRow.gear;
       const historyDetails = Array.isArray(details) && details.length
@@ -5426,6 +5431,7 @@
     }
 
     async function updateGearSlot(entry, slot) {
+      if (readOnlyMode) return;
       const equipped = slot !== "inventory" && slot !== "local_node";
       const { error } = await sb
         .from("webrunning_character_gear")
@@ -5723,6 +5729,50 @@
       isDirty = true;
     }
 
+    function applyReadOnlyMode(enabled) {
+      readOnlyMode = !!enabled;
+      canEditCharacter = !readOnlyMode;
+      if (elements.readOnlyBanner) {
+        elements.readOnlyBanner.classList.toggle("hidden", !readOnlyMode);
+      }
+
+      if (!readOnlyMode) return;
+
+      if (elements.saveButton) elements.saveButton.classList.add("hidden");
+      const levelButton = document.getElementById("levelUpButton");
+      if (levelButton) levelButton.classList.add("hidden");
+
+      const controls = [
+        "openGearGenerator",
+        "openGearModificationHub",
+        "clearTempBuffs",
+        "saveGearName",
+        "deleteGearButton",
+        "dissolveGearButton",
+        "addPastedGear",
+        "addManualGearButton",
+        "addManualGearStat",
+        "addManualGearAbility",
+        "confirmLevelUp"
+      ];
+      controls.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.disabled = true;
+          el.classList.add("hidden");
+        }
+      });
+
+      document.querySelectorAll("input, textarea, select").forEach(el => {
+        el.setAttribute("readonly", "readonly");
+        el.setAttribute("disabled", "disabled");
+      });
+
+      document.querySelectorAll("button[data-action], .gear-slot button, .actions button").forEach(btn => {
+        btn.disabled = true;
+      });
+    }
+
     async function autoSaveCharacter() {
       if (!isDirty || isSaving) return;
       await saveCharacter({ mode: "auto" });
@@ -5742,13 +5792,12 @@
         const characterId = params.get("id");
         let query = sb
           .from("webrunning_characters")
-          .select("id, name, base_stats, status_effects, notes, edit_history")
-          .eq("user_id", currentUser.id);
+          .select("id, user_id, name, base_stats, status_effects, notes, edit_history");
 
         if (characterId) {
           query = query.eq("id", characterId);
         } else {
-          query = query.order("created_at", { ascending: true }).limit(1);
+          query = query.eq("user_id", currentUser.id).order("created_at", { ascending: true }).limit(1);
         }
 
         const { data, error } = await query.maybeSingle();
@@ -5762,6 +5811,12 @@
           status_effects: null,
           edit_history: []
         };
+
+        const requestedReadOnly = params.get("read_only") === "1" || params.get("readonly") === "1";
+        if (activeCharacter?.id) {
+          const isOwner = String(activeCharacter.user_id) === String(currentUser.id);
+          applyReadOnlyMode(requestedReadOnly || !isOwner);
+        }
 
         if (activeCharacter.status_effects) {
           activeCharacter.status_effects = normalizeStatusEffects(activeCharacter.status_effects);
@@ -5831,6 +5886,7 @@
     }
 
     async function setGearModificationTier(tierValue) {
+      if (readOnlyMode) return;
       if (!activeCharacter?.id || !currentUser?.id) return;
       const nextTier = Math.max(0, Math.min(5, Number(tierValue) || 0));
       const stats = currentStats();
@@ -5861,6 +5917,7 @@
     }
 
     async function saveCharacter({ mode = "manual" } = {}) {
+      if (readOnlyMode) return;
       if (isSaving) return;
       const name = elements.nameInput.value.trim();
       if (!name) {
@@ -6233,6 +6290,7 @@
     }
 
     async function applyLevelUp() {
+      if (readOnlyMode) return;
       const stats = currentStats();
       const targetLevel = Number(targetLevelSelect.value);
       const entry = getLevelEntry(targetLevel);

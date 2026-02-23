@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>XR Friends</title>
+  <link rel="stylesheet" href="/shared/style.css">
+</head>
+<body class="wr-scope">
+  <div id="nav"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/shared/auth.js"></script>
+  <script src="/shared/nav.js"></script>
+
+  <main class="wrap">
+    <h1>Friends</h1>
+    <p class="muted">Add friends by username, and block users if needed.</p>
+
+    <section class="card wr-mt-1">
+      <h2>Send Friend Invite</h2>
+      <label>Username
+        <input id="friendUsername" type="text" maxlength="24" placeholder="username" />
+      </label>
+      <button id="sendInviteBtn" type="button">Send Invite</button>
+      <div id="friendMsg" class="mono muted wr-mt-0-5"></div>
+    </section>
+
+    <section class="card wr-mt-1">
+      <h2>Block User</h2>
+      <label>Username
+        <input id="blockUsername" type="text" maxlength="24" placeholder="username" />
+      </label>
+      <button id="blockUserBtn" type="button">Block User</button>
+      <div id="blockMsg" class="mono muted wr-mt-0-5"></div>
+    </section>
+
+    <section class="card wr-mt-1">
+      <h2>Your Friends</h2>
+      <div id="friendsList" class="mono muted">Loading...</div>
+    </section>
+  </main>
+
+  <script>
+    const sb = window.supabaseClient;
+    const friendUsername = document.getElementById("friendUsername");
+    const sendInviteBtn = document.getElementById("sendInviteBtn");
+    const friendMsg = document.getElementById("friendMsg");
+    const blockUsername = document.getElementById("blockUsername");
+    const blockUserBtn = document.getElementById("blockUserBtn");
+    const blockMsg = document.getElementById("blockMsg");
+    const friendsList = document.getElementById("friendsList");
+
+    let currentUser;
+
+    async function requireUser() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) {
+        window.location.href = "/login.html";
+        throw new Error("No user");
+      }
+      return user;
+    }
+
+    async function findUserByUsername(username) {
+      const { data, error } = await sb
+        .from("profiles")
+        .select("id, username")
+        .eq("username", username)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    }
+
+    async function loadFriends() {
+      const { data, error } = await sb
+        .from("friendships")
+        .select("user_a, user_b, created_at")
+        .or(`user_a.eq.${currentUser.id},user_b.eq.${currentUser.id}`)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        friendsList.textContent = `Failed to load friends: ${error.message}`;
+        return;
+      }
+
+      const otherIds = (data || []).map(row => row.user_a === currentUser.id ? row.user_b : row.user_a);
+      if (!otherIds.length) {
+        friendsList.textContent = "No friends yet.";
+        return;
+      }
+
+      const { data: profiles } = await sb.from("profiles").select("id, username").in("id", otherIds);
+      const byId = Object.fromEntries((profiles || []).map(p => [p.id, p.username || p.id]));
+      friendsList.innerHTML = otherIds.map(id => `<div>• ${byId[id] || id}</div>`).join("");
+    }
+
+    sendInviteBtn.onclick = async () => {
+      const username = friendUsername.value.trim();
+      if (!username) {
+        friendMsg.textContent = "Enter a username.";
+        return;
+      }
+
+      try {
+        const target = await findUserByUsername(username);
+        if (!target) {
+          friendMsg.textContent = "No user found by that username.";
+          return;
+        }
+        if (target.id === currentUser.id) {
+          friendMsg.textContent = "You cannot friend yourself.";
+          return;
+        }
+
+        const { error } = await sb.from("friend_requests").insert({
+          requester_user_id: currentUser.id,
+          target_user_id: target.id,
+          status: "pending"
+        });
+        if (error) throw error;
+
+        await sb.from("notifications").insert({
+          user_id: target.id,
+          type: "friend_request",
+          status: "pending",
+          payload: { requester_user_id: currentUser.id }
+        });
+
+        friendMsg.textContent = `Sent friend invite to ${target.username}.`;
+        friendUsername.value = "";
+      } catch (error) {
+        friendMsg.textContent = `Could not send friend invite: ${error.message}`;
+      }
+    };
+
+    blockUserBtn.onclick = async () => {
+      const username = blockUsername.value.trim();
+      if (!username) {
+        blockMsg.textContent = "Enter a username.";
+        return;
+      }
+
+      try {
+        const target = await findUserByUsername(username);
+        if (!target) {
+          blockMsg.textContent = "No user found by that username.";
+          return;
+        }
+        if (target.id === currentUser.id) {
+          blockMsg.textContent = "You cannot block yourself.";
+          return;
+        }
+
+        const { error } = await sb.from("blocked_users").upsert({
+          blocker_user_id: currentUser.id,
+          blocked_user_id: target.id
+        }, { onConflict: "blocker_user_id,blocked_user_id" });
+        if (error) throw error;
+
+        blockMsg.textContent = `${target.username} has been blocked.`;
+        blockUsername.value = "";
+      } catch (error) {
+        blockMsg.textContent = `Could not block user: ${error.message}`;
+      }
+    };
+
+    (async () => {
+      currentUser = await requireUser();
+      await loadFriends();
+    })();
+  </script>
+</body>
+</html>
