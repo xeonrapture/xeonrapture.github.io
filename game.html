@@ -47,6 +47,16 @@
       <h2>Assigned Characters (Read-only)</h2>
       <div id="characterList" class="mono muted">No characters assigned yet.</div>
     </section>
+
+    <section id="playerCharacterControls" class="card wr-mt-1 hidden">
+      <h2>Your Character for this Campaign</h2>
+      <p class="muted">Pick which of your webrunning characters you are playing in this campaign.</p>
+      <label>Character
+        <select id="playerCharacterSelect"></select>
+      </label>
+      <button id="savePlayerCharacterBtn" type="button">Save Character Selection</button>
+      <div id="playerCharacterStatus" class="mono muted wr-mt-0-5"></div>
+    </section>
   </main>
 
   <script>
@@ -58,11 +68,16 @@
     const memberList = document.getElementById("memberList");
     const characterList = document.getElementById("characterList");
     const gmControls = document.getElementById("gmControls");
+    const playerCharacterControls = document.getElementById("playerCharacterControls");
+    const playerCharacterSelect = document.getElementById("playerCharacterSelect");
+    const savePlayerCharacterBtn = document.getElementById("savePlayerCharacterBtn");
+    const playerCharacterStatus = document.getElementById("playerCharacterStatus");
     const invitePlayerBtn = document.getElementById("invitePlayerBtn");
     const inviteUsername = document.getElementById("inviteUsername");
 
     let currentUser = null;
     let memberships = [];
+    let playerCharacters = [];
 
     async function requireUser() {
       const { data: { user } } = await sb.auth.getUser();
@@ -97,6 +112,9 @@
         gameStatus.textContent = "Accept a campaign invite from Notifications to join.";
         memberList.textContent = "No game selected.";
         characterList.textContent = "No game selected.";
+        playerCharacterControls.classList.add("hidden");
+        playerCharacterSelect.innerHTML = "";
+        playerCharacterStatus.textContent = "";
         return;
       }
 
@@ -131,8 +149,17 @@
 
       const membership = memberships.find(m => String(m.campaign_id) === String(campaignId));
       const isGm = membership?.role === "gm";
+      const isPlayer = membership?.role === "player";
       gmControls.classList.toggle("hidden", !isGm);
+      playerCharacterControls.classList.toggle("hidden", !isPlayer);
       gameStatus.textContent = isGm ? "You are the GM for this game." : "You are a player in this game.";
+
+      if (isPlayer) {
+        await loadPlayerCharacterOptions(campaignId);
+      } else {
+        playerCharacterSelect.innerHTML = "";
+        playerCharacterStatus.textContent = "";
+      }
 
       const { data: members, error: membersError } = await sb
         .from("campaign_members")
@@ -173,6 +200,58 @@
           return `<div>• <a href="${link}">${c?.name || "Unnamed character"}</a> (Lv ${c?.base_stats?.level || 1})</div>`;
         }).join("");
       }
+    }
+
+    async function loadPlayerCharacterOptions(campaignId) {
+      const [{ data: chars, error: charsError }, { data: assignment, error: assignmentError }] = await Promise.all([
+        sb
+          .from("webrunning_characters")
+          .select("id, name, base_stats")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: true }),
+        sb
+          .from("campaign_character_assignments")
+          .select("id, character_id")
+          .eq("campaign_id", campaignId)
+          .eq("user_id", currentUser.id)
+          .maybeSingle()
+      ]);
+
+      if (charsError) {
+        playerCharacterStatus.textContent = `Failed to load your characters: ${charsError.message}`;
+        return;
+      }
+
+      if (assignmentError) {
+        playerCharacterStatus.textContent = `Failed to load your assignment: ${assignmentError.message}`;
+        return;
+      }
+
+      playerCharacters = chars || [];
+      playerCharacterSelect.innerHTML = "";
+
+      const noneOption = document.createElement("option");
+      noneOption.value = "";
+      noneOption.textContent = "-- No character selected --";
+      playerCharacterSelect.appendChild(noneOption);
+
+      playerCharacters.forEach(character => {
+        const option = document.createElement("option");
+        option.value = character.id;
+        option.textContent = `${character.name || "Unnamed character"} (Lv ${character.base_stats?.level || 1})`;
+        playerCharacterSelect.appendChild(option);
+      });
+
+      playerCharacterSelect.value = assignment?.character_id || "";
+
+      if (!playerCharacters.length) {
+        playerCharacterStatus.textContent = "You have no webrunning characters yet. Create one in Character Manager first.";
+        return;
+      }
+
+      playerCharacterStatus.textContent = assignment?.character_id
+        ? "Your current campaign character is selected below."
+        : "No campaign character selected yet.";
     }
 
     invitePlayerBtn.onclick = async () => {
@@ -266,6 +345,64 @@
       newCampaignName.value = "";
       await loadGames();
       gameSelect.value = insertedCampaign.id;
+      await loadGameDetails();
+    };
+
+    savePlayerCharacterBtn.onclick = async () => {
+      const campaignId = selectedGameId();
+      if (!campaignId) {
+        playerCharacterStatus.textContent = "Select a campaign first.";
+        return;
+      }
+
+      const selectedCharacterId = playerCharacterSelect.value || null;
+
+      if (!selectedCharacterId) {
+        const { error } = await sb
+          .from("campaign_character_assignments")
+          .delete()
+          .eq("campaign_id", campaignId)
+          .eq("user_id", currentUser.id);
+
+        if (error) {
+          playerCharacterStatus.textContent = `Failed to clear selection: ${error.message}`;
+          return;
+        }
+
+        playerCharacterStatus.textContent = "Cleared your character selection for this campaign.";
+        await loadGameDetails();
+        return;
+      }
+
+      const selectedCharacter = playerCharacters.find(character => String(character.id) === String(selectedCharacterId));
+      if (!selectedCharacter) {
+        playerCharacterStatus.textContent = "Invalid character selection.";
+        return;
+      }
+
+      const { error: deleteError } = await sb
+        .from("campaign_character_assignments")
+        .delete()
+        .eq("campaign_id", campaignId)
+        .eq("user_id", currentUser.id);
+
+      if (deleteError) {
+        playerCharacterStatus.textContent = `Failed to save character selection: ${deleteError.message}`;
+        return;
+      }
+
+      const { error: insertError } = await sb.from("campaign_character_assignments").insert({
+        campaign_id: campaignId,
+        user_id: currentUser.id,
+        character_id: selectedCharacterId
+      });
+
+      if (insertError) {
+        playerCharacterStatus.textContent = `Failed to save character selection: ${insertError.message}`;
+        return;
+      }
+
+      playerCharacterStatus.textContent = `Selected ${selectedCharacter.name || "your character"} for this campaign.`;
       await loadGameDetails();
     };
 
