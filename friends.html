@@ -113,6 +113,38 @@
           return;
         }
 
+        const { data: existingDirected, error: existingDirectedError } = await sb
+          .from("friend_requests")
+          .select("id, status")
+          .eq("requester_user_id", currentUser.id)
+          .eq("target_user_id", target.id)
+          .in("status", ["pending", "accepted"])
+          .limit(1)
+          .maybeSingle();
+        if (existingDirectedError) throw existingDirectedError;
+        if (existingDirected?.status === "pending") {
+          friendMsg.textContent = `You already have a pending invite to ${target.username}.`;
+          return;
+        }
+        if (existingDirected?.status === "accepted") {
+          friendMsg.textContent = `${target.username} is already your friend.`;
+          return;
+        }
+
+        const { data: existingReverse, error: existingReverseError } = await sb
+          .from("friend_requests")
+          .select("id, status")
+          .eq("requester_user_id", target.id)
+          .eq("target_user_id", currentUser.id)
+          .eq("status", "pending")
+          .limit(1)
+          .maybeSingle();
+        if (existingReverseError) throw existingReverseError;
+        if (existingReverse) {
+          friendMsg.textContent = `${target.username} already sent you a request. Open Notifications to accept it.`;
+          return;
+        }
+
         const { error } = await sb.from("friend_requests").insert({
           requester_user_id: currentUser.id,
           target_user_id: target.id,
