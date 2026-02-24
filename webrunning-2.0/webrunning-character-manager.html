@@ -15,6 +15,8 @@
 
     <div class="character-actions">
       <button id="newCharacterBtn" aria-label="New character" title="New character"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
+      <button id="importCharacterBtn" aria-label="Import character" title="Import character JSON"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="M8 11l4 4 4-4"></path><path d="M4 20h16"></path></svg></button>
+      <input id="importCharacterInput" type="file" accept="application/json,.json" class="hidden" />
     </div>
 
     <table class="table-full">
@@ -191,11 +193,119 @@
           <td>${s(c,"inventory_slots")}</td>
           <td class="actions">
             <a class="action-btn" href="/webrunning-2.0/webrunning-character.html?id=${c.id}" title="Edit" aria-label="Edit"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 9-9-3-3-9 9-1 4z"></path><path d="M13 7l3 3"></path></svg></a>
+            <button class="action-btn" onclick="exportCharacter('${c.id}')" title="Export" aria-label="Export"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14V3"></path><path d="M8 7l4-4 4 4"></path><path d="M4 14v6h16v-6"></path></svg></button>
             <button class="action-btn" onclick="openDeleteModal('${c.id}')"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
           </td>
         `;
         table.appendChild(row);
       }
+    }
+
+    function cleanFileName(name) {
+      return String(name || "character")
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "character";
+    }
+
+    function triggerJsonDownload(filename, dataObj) {
+      const blob = new Blob([JSON.stringify(dataObj, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    async function exportCharacter(characterId) {
+      try {
+        if (!currentUser) currentUser = await requireUser();
+        const character = characters.find(c => c.id === characterId);
+        if (!character) throw new Error("Character not found.");
+
+        const { data: gearLinks, error: gearError } = await sb
+          .from("webrunning_character_gear")
+          .select("equipped, gear_slot, gear:webrunning_gear(*)")
+          .eq("character_id", characterId);
+        if (gearError) throw gearError;
+
+        const payload = {
+          export_version: 1,
+          exported_at: new Date().toISOString(),
+          character: {
+            name: character.name,
+            base_stats: character.base_stats || {},
+            gear: (gearLinks || []).map(link => ({
+              equipped: !!link.equipped,
+              gear_slot: link.gear_slot || null,
+              data: link.gear || {}
+            }))
+          }
+        };
+
+        triggerJsonDownload(`${cleanFileName(character.name)}.json`, payload);
+      } catch (e) {
+        console.error("Export failed:", e);
+        alert(`Export failed: ${e.message}`);
+      }
+    }
+
+    async function importCharacterFromPayload(payload) {
+      const importedCharacter = payload?.character;
+      if (!importedCharacter || typeof importedCharacter !== "object") {
+        throw new Error("Invalid character JSON. Expected a character object.");
+      }
+
+      const importedName = String(importedCharacter.name || "").trim();
+      if (!importedName) {
+        throw new Error("Imported character must include a name.");
+      }
+
+      const baseStats = importedCharacter.base_stats && typeof importedCharacter.base_stats === "object"
+        ? importedCharacter.base_stats
+        : {};
+
+      const { data: insertedCharacter, error: characterError } = await sb
+        .from("webrunning_characters")
+        .insert({ user_id: currentUser.id, name: importedName, base_stats: baseStats })
+        .select("id")
+        .single();
+      if (characterError) throw characterError;
+
+      const importedGear = Array.isArray(importedCharacter.gear) ? importedCharacter.gear : [];
+      if (!importedGear.length) return;
+
+      const gearRows = importedGear
+        .map(entry => entry?.data)
+        .filter(entry => entry && typeof entry === "object")
+        .map(entry => {
+          const clone = { ...entry };
+          delete clone.id;
+          delete clone.created_at;
+          return clone;
+        });
+      if (!gearRows.length) return;
+
+      const { data: insertedGearRows, error: insertedGearError } = await sb
+        .from("webrunning_gear")
+        .insert(gearRows)
+        .select("id");
+      if (insertedGearError) throw insertedGearError;
+
+      const linkRows = insertedGearRows.map((row, index) => ({
+        character_id: insertedCharacter.id,
+        gear_id: row.id,
+        equipped: !!importedGear[index]?.equipped,
+        gear_slot: importedGear[index]?.gear_slot || null
+      }));
+
+      const { error: linkError } = await sb
+        .from("webrunning_character_gear")
+        .insert(linkRows);
+      if (linkError) throw linkError;
     }
 
     // ===== Unified Create / Rename modal =====
@@ -563,6 +673,37 @@
 
 
     document.getElementById("newCharacterBtn").onclick = openCreateModal;
+    const importCharacterBtn = document.getElementById("importCharacterBtn");
+    const importCharacterInput = document.getElementById("importCharacterInput");
+
+    importCharacterBtn.onclick = async () => {
+      if (!currentUser) {
+        try {
+          currentUser = await requireUser();
+        } catch (_) {
+          return;
+        }
+      }
+      importCharacterInput.value = "";
+      importCharacterInput.click();
+    };
+
+    importCharacterInput.onchange = async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      try {
+        if (!currentUser) currentUser = await requireUser();
+        const text = await file.text();
+        const payload = JSON.parse(text);
+        await importCharacterFromPayload(payload);
+        await loadCharacters();
+      } catch (e) {
+        console.error("Import failed:", e);
+        alert(`Import failed: ${e.message}`);
+      }
+    };
+
     window.addEventListener("DOMContentLoaded", () => {
       loadCharacters();
     });

@@ -30,6 +30,13 @@
   </div>
 
   <div class="wr-mt-1">
+    <label>
+      <input id="acceptLegal" type="checkbox" />
+      I agree to the <a href="/terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.
+    </label>
+  </div>
+
+  <div class="wr-mt-1">
     <a href="/login.html">Already have an account? Log in</a>
   </div>
 
@@ -44,6 +51,7 @@
   const confirmPasswordInput = document.getElementById("confirmPassword");
   const msg = document.getElementById("msg");
   const signupBtn = document.getElementById("signup");
+  const acceptLegal = document.getElementById("acceptLegal");
 
   function showMessage(text, isError = false) {
     msg.textContent = text;
@@ -73,6 +81,11 @@
 
     if (password !== confirmPassword) {
       showMessage("Passwords do not match.", true);
+      return null;
+    }
+
+    if (!acceptLegal.checked) {
+      showMessage("You must accept the Terms and Privacy Policy to sign up.", true);
       return null;
     }
 
