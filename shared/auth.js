@@ -1,6 +1,16 @@
+const SUPABASE_URL = "https://tustchcydbvipwcxeqfq.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ce_C2Te3RZZKszXfn91OSA_kpUalPnB";
+
 window.supabaseClient = window.supabase.createClient(
-  "https://tustchcydbvipwcxeqfq.supabase.co",
-  "sb_publishable_ce_C2Te3RZZKszXfn91OSA_kpUalPnB"
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    global: {
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY
+      }
+    }
+  }
 );
 
 async function signIn(email, password) {
