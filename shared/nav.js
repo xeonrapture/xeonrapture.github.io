@@ -61,14 +61,24 @@
 
     const badge = host.querySelector("#nav-notification-count");
     if (loggedIn && badge) {
-      const { count, error: notificationError } = await sb
-        .from("notifications")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", data.session.user.id)
-        .eq("status", "pending");
-      if (!notificationError && count > 0) {
-        badge.textContent = String(count > 99 ? "99+" : count);
-        badge.classList.remove("hidden");
+      const userId = data.session.user.id;
+      const [friendCountResult, campaignCountResult] = await Promise.all([
+        sb.from("friend_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("target_user_id", userId)
+          .eq("status", "pending"),
+        sb.from("campaign_invites")
+          .select("id", { count: "exact", head: true })
+          .eq("invitee_user_id", userId)
+          .eq("status", "pending")
+      ]);
+
+      if (!friendCountResult.error && !campaignCountResult.error) {
+        const totalCount = (friendCountResult.count || 0) + (campaignCountResult.count || 0);
+        if (totalCount > 0) {
+          badge.textContent = String(totalCount > 99 ? "99+" : totalCount);
+          badge.classList.remove("hidden");
+        }
       }
     }
 

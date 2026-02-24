@@ -181,13 +181,6 @@
         return;
       }
 
-      await sb.from("notifications").insert({
-        user_id: profile.id,
-        type: "campaign_invite",
-        status: "pending",
-        payload: { campaign_id: campaignId, inviter_user_id: currentUser.id }
-      });
-
       gameStatus.textContent = `Sent campaign invite to ${profile.username}.`;
       inviteUsername.value = "";
     };

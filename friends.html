@@ -120,13 +120,6 @@
         });
         if (error) throw error;
 
-        await sb.from("notifications").insert({
-          user_id: target.id,
-          type: "friend_request",
-          status: "pending",
-          payload: { requester_user_id: currentUser.id }
-        });
-
         friendMsg.textContent = `Sent friend invite to ${target.username}.`;
         friendUsername.value = "";
       } catch (error) {
