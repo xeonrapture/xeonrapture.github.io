@@ -52,6 +52,7 @@
     const friendsList = document.getElementById("friendsList");
 
     let currentUser;
+    let friendsChannel;
 
     async function requireUser() {
       const { data: { user } } = await sb.auth.getUser();
@@ -190,10 +191,34 @@
       }
     };
 
+
+    function subscribeFriendUpdates() {
+      if (!currentUser?.id) return;
+      if (friendsChannel) {
+        sb.removeChannel(friendsChannel);
+      }
+
+      friendsChannel = sb
+        .channel(`friends-live-${currentUser.id}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "friendships"
+        }, () => loadFriends())
+        .subscribe();
+    }
+
     (async () => {
       currentUser = await requireUser();
       await loadFriends();
+      subscribeFriendUpdates();
     })();
+
+    window.addEventListener("beforeunload", () => {
+      if (friendsChannel) {
+        sb.removeChannel(friendsChannel);
+      }
+    });
   </script>
 </body>
 </html>

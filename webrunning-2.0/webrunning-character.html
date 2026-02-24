@@ -909,6 +909,7 @@
     let activeConsumableGearMod = null;
     let historyRedoStack = [];
     let readOnlyMode = false;
+    let characterRealtimeChannel = null;
     let canEditCharacter = true;
 
     const elements = {
@@ -5738,6 +5739,8 @@
 
       if (!readOnlyMode) return;
 
+      if (sections.g) sections.g.classList.add("hidden");
+      if (sections.h) sections.h.classList.add("hidden");
       if (elements.saveButton) elements.saveButton.classList.add("hidden");
       const levelButton = document.getElementById("levelUpButton");
       if (levelButton) levelButton.classList.add("hidden");
@@ -5790,9 +5793,13 @@
         currentUser = await requireUser();
         const params = new URLSearchParams(window.location.search);
         const characterId = params.get("id");
+        const requestedReadOnly = params.get("read_only") === "1" || params.get("readonly") === "1";
+        const selectFields = requestedReadOnly
+          ? "id, user_id, name, base_stats, status_effects, notes"
+          : "id, user_id, name, base_stats, status_effects, notes, edit_history";
         let query = sb
           .from("webrunning_characters")
-          .select("id, user_id, name, base_stats, status_effects, notes, edit_history");
+          .select(selectFields);
 
         if (characterId) {
           query = query.eq("id", characterId);
@@ -5812,7 +5819,6 @@
           edit_history: []
         };
 
-        const requestedReadOnly = params.get("read_only") === "1" || params.get("readonly") === "1";
         if (activeCharacter?.id) {
           const isOwner = String(activeCharacter.user_id) === String(currentUser.id);
           applyReadOnlyMode(requestedReadOnly || !isOwner);
@@ -5828,7 +5834,9 @@
           );
         }
 
-        editHistory = Array.isArray(activeCharacter.edit_history) ? activeCharacter.edit_history.map(normalizeHistoryRecord) : [];
+        editHistory = readOnlyMode
+          ? []
+          : (Array.isArray(activeCharacter.edit_history) ? activeCharacter.edit_history.map(normalizeHistoryRecord) : []);
         gearHistory = editHistory.filter(item => ["delete", "modify"].includes(item.type));
 
         elements.nameInput.value = activeCharacter.name || "";
@@ -5836,13 +5844,31 @@
           elements.notesInput.value = activeCharacter.notes || "";
         }
         render();
-        if (activeCharacter.id) {
+        if (activeCharacter.id && !readOnlyMode) {
           await loadCharacterGear();
         }
+        subscribeToCharacterRealtime();
       } catch (e) {
         console.error(e);
         pushStatus("Failed to load character.", { tone: "error" });
       }
+    }
+
+    function subscribeToCharacterRealtime() {
+      if (characterRealtimeChannel) {
+        sb.removeChannel(characterRealtimeChannel);
+        characterRealtimeChannel = null;
+      }
+      if (!activeCharacter?.id) return;
+      characterRealtimeChannel = sb
+        .channel(`character-live-${activeCharacter.id}`)
+        .on("postgres_changes", {
+          event: "UPDATE",
+          schema: "public",
+          table: "webrunning_characters",
+          filter: `id=eq.${activeCharacter.id}`
+        }, () => loadCharacter())
+        .subscribe();
     }
 
     async function loadCharacterGear() {
@@ -6655,6 +6681,11 @@
       if (manualGearAbilitiesList && !manualGearAbilitiesList.children.length) {
         createManualAbilityRow();
       }
+      window.addEventListener("beforeunload", () => {
+        if (characterRealtimeChannel) {
+          sb.removeChannel(characterRealtimeChannel);
+        }
+      });
       loadCharacter();
       initCollapsibles();
       startAutosave();

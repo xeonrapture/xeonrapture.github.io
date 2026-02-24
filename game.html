@@ -81,6 +81,7 @@
     let memberships = [];
     let playerCharacters = [];
     let friends = [];
+    let realtimeChannels = [];
 
     async function requireUser() {
       const { data: { user } } = await sb.auth.getUser();
@@ -244,9 +245,87 @@
         characterList.innerHTML = assignments.map(row => {
           const c = row.webrunning_characters;
           const link = `/webrunning-2.0/webrunning-character.html?id=${row.character_id}&campaign_id=${campaignId}&readonly=1`;
-          return `<div>• <a href="${link}">${c?.name || "Unnamed character"}</a> (Lv ${c?.base_stats?.level || 1})</div>`;
+          const stats = c?.base_stats || {};
+          const basicStats = [
+            `P ${stats.power ?? 0}`,
+            `D ${stats.defense ?? 0}`,
+            `S ${stats.speed ?? 0}`,
+            `I ${stats.intelligence ?? 0}`
+          ].join(" | ");
+          const blurb = [
+            `Lv ${stats.level ?? 1}`,
+            `XP ${stats.xp ?? 0}`,
+            `Luck ${stats.luck ?? 0}`,
+            `HP ${stats.current_hp ?? stats.hp ?? 0}/${stats.hp ?? 0}`,
+            `Energy Cap ${stats.energy_cap ?? 0}`,
+            `Essence ${stats.essence ?? 0}`,
+            basicStats
+          ].join(" • ");
+          return `<div>• <a href="${link}">${c?.name || "Unnamed character"}</a><div class="muted">${blurb}</div></div>`;
         }).join("");
       }
+    }
+
+    function clearRealtimeSubscriptions() {
+      realtimeChannels.forEach(channel => sb.removeChannel(channel));
+      realtimeChannels = [];
+    }
+
+    function subscribeCampaignRealtime() {
+      clearRealtimeSubscriptions();
+      if (!currentUser?.id) return;
+
+      const refreshAll = () => {
+        loadGames();
+        loadFriendInviteOptions();
+      };
+
+      const membershipChannel = sb
+        .channel(`campaign-members-${currentUser.id}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "campaign_members"
+        }, refreshAll)
+        .subscribe();
+
+      const inviteChannel = sb
+        .channel(`campaign-invites-${currentUser.id}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "campaign_invites"
+        }, refreshAll)
+        .subscribe();
+
+      const assignmentChannel = sb
+        .channel(`campaign-assignments-${currentUser.id}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "campaign_character_assignments"
+        }, () => loadGameDetails())
+        .subscribe();
+
+      const charactersChannel = sb
+        .channel(`webrunning-characters-${currentUser.id}`)
+        .on("postgres_changes", {
+          event: "UPDATE",
+          schema: "public",
+          table: "webrunning_characters"
+        }, () => loadGameDetails())
+        .subscribe();
+
+      const friendshipsChannel = sb
+        .channel(`friendships-${currentUser.id}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "friendships"
+        }, () => loadFriendInviteOptions())
+        .subscribe();
+
+      realtimeChannels.push(membershipChannel, inviteChannel, assignmentChannel, charactersChannel, friendshipsChannel);
     }
 
     async function loadPlayerCharacterOptions(campaignId) {
@@ -453,7 +532,10 @@
     async function initializePage() {
       await loadGames();
       await loadFriendInviteOptions();
+      subscribeCampaignRealtime();
     }
+
+    window.addEventListener("beforeunload", clearRealtimeSubscriptions);
 
     initializePage();
   </script>
