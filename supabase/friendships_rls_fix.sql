@@ -10,7 +10,19 @@ drop policy if exists friendships_insert_participants on public.friendships;
 
 drop policy if exists friend_requests_select_participants on public.friend_requests;
 drop policy if exists friend_requests_insert_requester on public.friend_requests;
+drop policy if exists friend_requests_insert_sender on public.friend_requests;
 drop policy if exists friend_requests_update_target on public.friend_requests;
+drop policy if exists friend_requests_update_sender_cancel on public.friend_requests;
+
+-- Normalize uniqueness so only one pending request per directed pair is allowed.
+alter table public.friend_requests
+  drop constraint if exists friend_requests_requester_user_id_target_user_id_status_key;
+
+drop index if exists public.friend_requests_requester_user_id_target_user_id_status_key;
+
+create unique index if not exists idx_friend_requests_pending_unique
+  on public.friend_requests(requester_user_id, target_user_id)
+  where status = 'pending';
 
 -- Any participant can see the friendship row.
 create policy friendships_select_participants
@@ -37,11 +49,28 @@ create policy friend_requests_select_participants
 create policy friend_requests_insert_requester
   on public.friend_requests
   for insert
-  with check (auth.uid() = requester_user_id);
+  with check (
+    auth.uid() = requester_user_id
+    and requester_user_id <> target_user_id
+    and status = 'pending'
+  );
 
--- Only target can accept/decline/cancel their pending request row in this flow.
+-- Sender can cancel their own request.
+create policy friend_requests_update_sender_cancel
+  on public.friend_requests
+  for update
+  using (auth.uid() = requester_user_id)
+  with check (
+    auth.uid() = requester_user_id
+    and status = 'cancelled'
+  );
+
+-- Target can accept/decline requests sent to them.
 create policy friend_requests_update_target
   on public.friend_requests
   for update
   using (auth.uid() = target_user_id)
-  with check (auth.uid() = target_user_id);
+  with check (
+    auth.uid() = target_user_id
+    and status in ('accepted', 'declined')
+  );
