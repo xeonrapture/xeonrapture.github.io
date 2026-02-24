@@ -40,23 +40,27 @@
       if (!requesterId) throw new Error("Missing requester");
 
       const [a, b] = [currentUser.id, requesterId].sort();
-      const { error: friendError } = await sb.from("friendships").upsert({
+      const { error: friendshipError } = await sb.from("friendships").upsert({
         user_a: a,
         user_b: b
       }, { onConflict: "user_a,user_b" });
-      if (friendError) throw friendError;
+      if (friendshipError) throw friendshipError;
 
-      await sb.from("friend_requests")
+      const { error } = await sb.from("friend_requests")
         .update({ status: "accepted" })
         .eq("id", notification.id)
+        .eq("target_user_id", currentUser.id)
         .eq("status", "pending");
+      if (error) throw error;
     }
 
     async function rejectFriend(notification) {
-      await sb.from("friend_requests")
+      const { error } = await sb.from("friend_requests")
         .update({ status: "declined" })
         .eq("id", notification.id)
+        .eq("target_user_id", currentUser.id)
         .eq("status", "pending");
+      if (error) throw error;
     }
 
     async function acceptGameInvite(notification) {
@@ -81,6 +85,20 @@
         .update({ status: "declined" })
         .eq("id", notification.id)
         .eq("status", "pending");
+    }
+
+    async function loadUsernamesById(userIds) {
+      const uniqueIds = [...new Set((userIds || []).filter(Boolean))];
+      if (!uniqueIds.length) return {};
+
+      const { data, error } = await sb
+        .from("profile_directory")
+        .select("id, username")
+        .in("id", uniqueIds);
+
+      if (error) throw error;
+
+      return Object.fromEntries((data || []).map(profile => [profile.id, profile.username || profile.id]));
     }
 
     async function loadNotifications() {
@@ -116,6 +134,16 @@
         }))
       ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
+      let usernamesById = {};
+      try {
+        usernamesById = await loadUsernamesById(data.map(notification => {
+          if (notification.type === "friend_request") return notification.payload?.requester_user_id;
+          return notification.payload?.inviter_user_id;
+        }));
+      } catch (error) {
+        console.warn("Failed to resolve inviter usernames", error);
+      }
+
       if (!data.length) {
         notificationsList.textContent = "No pending notifications.";
         return;
@@ -133,9 +161,13 @@
 
         const details = document.createElement("div");
         details.className = "muted";
+        const inviterId = notification.type === "friend_request"
+          ? notification.payload?.requester_user_id
+          : notification.payload?.inviter_user_id;
+        const inviterName = usernamesById[inviterId] || "Someone";
         details.textContent = notification.type === "friend_request"
-          ? "Someone invited you as a friend."
-          : "You were invited to join a campaign.";
+          ? `${inviterName} invited you to be friends.`
+          : `${inviterName} invited you to join a party.`;
 
         const actions = document.createElement("div");
         actions.className = "wr-inline-flex wr-mt-0-5";
