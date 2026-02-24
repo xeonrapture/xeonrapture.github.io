@@ -60,8 +60,9 @@
     });
 
     const badge = host.querySelector("#nav-notification-count");
-    if (loggedIn && badge) {
-      const userId = data.session.user.id;
+    let badgeChannel = null;
+    async function refreshNotificationBadge(userId) {
+      if (!badge || !userId) return;
       const [friendCountResult, campaignCountResult] = await Promise.all([
         sb.from("friend_requests")
           .select("id", { count: "exact", head: true })
@@ -73,13 +74,31 @@
           .eq("status", "pending")
       ]);
 
-      if (!friendCountResult.error && !campaignCountResult.error) {
-        const totalCount = (friendCountResult.count || 0) + (campaignCountResult.count || 0);
-        if (totalCount > 0) {
-          badge.textContent = String(totalCount > 99 ? "99+" : totalCount);
-          badge.classList.remove("hidden");
-        }
+      if (friendCountResult.error || campaignCountResult.error) return;
+      const totalCount = (friendCountResult.count || 0) + (campaignCountResult.count || 0);
+      if (totalCount > 0) {
+        badge.textContent = String(totalCount > 99 ? "99+" : totalCount);
+        badge.classList.remove("hidden");
+      } else {
+        badge.textContent = "0";
+        badge.classList.add("hidden");
       }
+    }
+
+    if (loggedIn && badge) {
+      const userId = data.session.user.id;
+      await refreshNotificationBadge(userId);
+      badgeChannel = sb
+        .channel(`nav-notifications-${userId}`)
+        .on("postgres_changes", { event: "*", schema: "public", table: "friend_requests" }, () => refreshNotificationBadge(userId))
+        .on("postgres_changes", { event: "*", schema: "public", table: "campaign_invites" }, () => refreshNotificationBadge(userId))
+        .subscribe();
+
+      window.addEventListener("beforeunload", () => {
+        if (badgeChannel) {
+          sb.removeChannel(badgeChannel);
+        }
+      });
     }
 
     // 🚪 Logout

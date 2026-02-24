@@ -25,6 +25,7 @@
     const sb = window.supabaseClient;
     const notificationsList = document.getElementById("notificationsList");
     let currentUser;
+    let notificationChannel;
 
     async function requireUser() {
       const { data: { user } } = await sb.auth.getUser();
@@ -208,10 +209,38 @@
       });
     }
 
+    function subscribeNotificationUpdates() {
+      if (!currentUser?.id) return;
+      if (notificationChannel) {
+        sb.removeChannel(notificationChannel);
+      }
+
+      notificationChannel = sb
+        .channel(`notifications-live-${currentUser.id}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "friend_requests"
+        }, () => loadNotifications())
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "campaign_invites"
+        }, () => loadNotifications())
+        .subscribe();
+    }
+
     (async () => {
       currentUser = await requireUser();
       await loadNotifications();
+      subscribeNotificationUpdates();
     })();
+
+    window.addEventListener("beforeunload", () => {
+      if (notificationChannel) {
+        sb.removeChannel(notificationChannel);
+      }
+    });
   </script>
 </body>
 </html>
