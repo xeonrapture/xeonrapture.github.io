@@ -5,68 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>XR Campaigns</title>
   <link rel="stylesheet" href="/shared/style.css">
-  <style>
-    .assigned-character-list {
-      display: grid;
-      gap: 0.75rem;
-    }
 
-    .assigned-character-card {
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      padding: 0.8rem 0.9rem;
-      background: rgba(12, 19, 36, 0.75);
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
-    }
-
-    .assigned-character-header {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 0.5rem;
-      margin-bottom: 0.55rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding-bottom: 0.45rem;
-    }
-
-    .assigned-character-name {
-      font-weight: 700;
-      text-decoration: none;
-    }
-
-    .assigned-character-role {
-      font-size: 0.75rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      opacity: 0.8;
-    }
-
-    .assigned-character-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
-      gap: 0.45rem;
-    }
-
-    .assigned-stat {
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 9px;
-      padding: 0.35rem 0.45rem;
-      background: rgba(255, 255, 255, 0.04);
-      display: flex;
-      justify-content: space-between;
-      gap: 0.35rem;
-      font-size: 0.84rem;
-    }
-
-    .assigned-stat-label {
-      opacity: 0.72;
-    }
-
-    .assigned-stat-value {
-      font-weight: 700;
-      font-family: var(--mono-font, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
-    }
-  </style>
 </head>
 <body class="wr-scope">
   <div id="nav"></div>
@@ -308,17 +247,23 @@
           const c = row.webrunning_characters;
           const link = `/webrunning-2.0/webrunning-character.html?id=${row.character_id}&campaign_id=${campaignId}&readonly=1`;
           const stats = c?.base_stats || {};
-          const statTiles = [
-            ["Lv", stats.level ?? 1],
-            ["XP", stats.xp ?? 0],
-            ["Luck", stats.luck ?? 0],
-            ["HP", `${stats.current_hp ?? stats.hp ?? 0}/${stats.hp ?? 0}`],
-            ["Energy", stats.energy_cap ?? 0],
-            ["Essence", stats.essence ?? 0],
-            ["Power", stats.power ?? 0],
-            ["Defense", stats.defense ?? 0],
-            ["Speed", stats.speed ?? 0],
-            ["Int", stats.intelligence ?? 0]
+          const statRows = [
+            [
+              ["Lv", stats.level ?? 1],
+              ["XP", stats.xp ?? 0],
+              ["Luck", stats.luck ?? 0]
+            ],
+            [
+              ["HP", `${stats.current_hp ?? stats.hp ?? 0}/${stats.hp ?? 0}`],
+              ["Energy Cap", stats.energy_cap ?? 0],
+              ["Essence", stats.essence ?? 0]
+            ],
+            [
+              ["Power", stats.power ?? 0],
+              ["Defense", stats.defense ?? 0],
+              ["Speed", stats.speed ?? 0],
+              ["Int", stats.intelligence ?? 0]
+            ]
           ];
           return `
             <article class="assigned-character-card">
@@ -327,7 +272,11 @@
                 <span class="assigned-character-role muted">Read-only</span>
               </div>
               <div class="assigned-character-stats">
-                ${statTiles.map(([label, value]) => `<div class="assigned-stat"><span class="assigned-stat-label">${label}</span><span class="assigned-stat-value">${value}</span></div>`).join("")}
+                ${statRows.map((row) => `
+                  <div class="assigned-character-stats-row">
+                    ${row.map(([label, value]) => `<div class="assigned-stat"><span class="assigned-stat-label">${label}</span><span class="assigned-stat-value">${value}</span></div>`).join("")}
+                  </div>
+                `).join("")}
               </div>
             </article>
           `;
