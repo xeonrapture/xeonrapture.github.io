@@ -36,8 +36,10 @@
       <div id="memberList" class="mono muted">Loading members...</div>
       <div id="gmControls" class="wr-mt-1 hidden">
         <h3>GM Campaign Controls</h3>
-        <label>Invite player by username
-          <input id="inviteUsername" type="text" maxlength="24" placeholder="username" />
+        <label>Invite player from friends list
+          <select id="inviteFriendSelect">
+            <option value="">-- Select friend --</option>
+          </select>
         </label>
         <button id="invitePlayerBtn" type="button">Invite to Campaign</button>
       </div>
@@ -73,11 +75,12 @@
     const savePlayerCharacterBtn = document.getElementById("savePlayerCharacterBtn");
     const playerCharacterStatus = document.getElementById("playerCharacterStatus");
     const invitePlayerBtn = document.getElementById("invitePlayerBtn");
-    const inviteUsername = document.getElementById("inviteUsername");
+    const inviteFriendSelect = document.getElementById("inviteFriendSelect");
 
     let currentUser = null;
     let memberships = [];
     let playerCharacters = [];
+    let friends = [];
 
     async function requireUser() {
       const { data: { user } } = await sb.auth.getUser();
@@ -141,6 +144,50 @@
         throw error;
       }
       return !!data;
+    }
+
+    async function loadFriendInviteOptions() {
+      currentUser = currentUser || await requireUser();
+      const { data, error } = await sb
+        .from("friendships")
+        .select("user_a, user_b, created_at")
+        .or(`user_a.eq.${currentUser.id},user_b.eq.${currentUser.id}`)
+        .order("created_at", { ascending: false });
+
+      inviteFriendSelect.innerHTML = "<option value=''>-- Select friend --</option>";
+
+      if (error) {
+        gameStatus.textContent = `Failed to load friends: ${error.message}`;
+        return;
+      }
+
+      const friendIds = (data || []).map(row => row.user_a === currentUser.id ? row.user_b : row.user_a);
+      if (!friendIds.length) {
+        friends = [];
+        return;
+      }
+
+      const { data: profiles, error: profileError } = await sb
+        .from("profile_directory")
+        .select("id, username")
+        .in("id", friendIds);
+
+      if (profileError) {
+        gameStatus.textContent = `Failed to load friend usernames: ${profileError.message}`;
+        return;
+      }
+
+      const byId = Object.fromEntries((profiles || []).map(profile => [profile.id, profile]));
+      friends = friendIds
+        .map(id => byId[id])
+        .filter(Boolean);
+
+      friends.forEach(friend => {
+        const option = document.createElement("option");
+        option.value = friend.id;
+        option.textContent = friend.username || friend.id;
+        inviteFriendSelect.appendChild(option);
+      });
     }
 
     async function loadGameDetails() {
@@ -256,30 +303,25 @@
 
     invitePlayerBtn.onclick = async () => {
       const campaignId = selectedGameId();
-      const username = inviteUsername.value.trim();
-      if (!campaignId || !username) {
-        gameStatus.textContent = "Pick a game and enter a username.";
+      const inviteeId = inviteFriendSelect.value;
+      if (!campaignId || !inviteeId) {
+        gameStatus.textContent = "Pick a game and select a friend to invite.";
         return;
       }
 
-      const { data: profile, error: profileError } = await sb
-        .from("profile_directory")
-        .select("id, username")
-        .eq("username", username)
-        .maybeSingle();
-
-      if (profileError || !profile) {
-        gameStatus.textContent = "Could not find that username.";
+      const friendProfile = friends.find(friend => String(friend.id) === String(inviteeId));
+      if (!friendProfile) {
+        gameStatus.textContent = "Selected friend was not found. Refresh and try again.";
         return;
       }
 
-      if (profile.id === currentUser.id) {
+      if (friendProfile.id === currentUser.id) {
         gameStatus.textContent = "You are already in this campaign as the GM.";
         return;
       }
 
       try {
-        const friendMatch = await areFriends(currentUser.id, profile.id);
+        const friendMatch = await areFriends(currentUser.id, friendProfile.id);
         if (!friendMatch) {
           gameStatus.textContent = "You can only invite users who are already your friend.";
           return;
@@ -292,7 +334,7 @@
       const { error: inviteError } = await sb.from("campaign_invites").insert({
         campaign_id: campaignId,
         inviter_user_id: currentUser.id,
-        invitee_user_id: profile.id,
+        invitee_user_id: friendProfile.id,
         status: "pending"
       });
 
@@ -301,8 +343,8 @@
         return;
       }
 
-      gameStatus.textContent = `Sent campaign invite to ${profile.username}.`;
-      inviteUsername.value = "";
+      gameStatus.textContent = `Sent campaign invite to ${friendProfile.username || "your friend"}.`;
+      inviteFriendSelect.value = "";
     };
 
     createCampaignBtn.onclick = async () => {
@@ -407,7 +449,13 @@
     };
 
     gameSelect.addEventListener("change", loadGameDetails);
-    loadGames();
+
+    async function initializePage() {
+      await loadGames();
+      await loadFriendInviteOptions();
+    }
+
+    initializePage();
   </script>
 </body>
 </html>
