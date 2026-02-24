@@ -18,6 +18,17 @@
     <p class="muted">This page is shared between GMs and players. Everyone can view party characters in read-only mode.</p>
 
     <section class="card wr-mt-1">
+      <h2>Create Campaign</h2>
+      <label>Campaign name
+        <input id="newCampaignName" type="text" maxlength="80" placeholder="Weekend Run" />
+      </label>
+      <label>Max players
+        <input id="newCampaignMaxPlayers" type="number" min="2" max="12" value="6" />
+      </label>
+      <button id="createCampaignBtn" type="button">Create Campaign</button>
+    </section>
+
+    <section class="card wr-mt-1">
       <h2>Your Campaigns</h2>
       <select id="gameSelect"></select>
       <div id="gameStatus" class="mono muted wr-mt-0-5"></div>
@@ -45,6 +56,9 @@
     const sb = window.supabaseClient;
     const gameSelect = document.getElementById("gameSelect");
     const gameStatus = document.getElementById("gameStatus");
+    const createCampaignBtn = document.getElementById("createCampaignBtn");
+    const newCampaignName = document.getElementById("newCampaignName");
+    const newCampaignMaxPlayers = document.getElementById("newCampaignMaxPlayers");
     const memberList = document.getElementById("memberList");
     const characterList = document.getElementById("characterList");
     const gmControls = document.getElementById("gmControls");
@@ -98,6 +112,21 @@
       });
 
       await loadGameDetails();
+    }
+
+    async function areFriends(userIdA, userIdB) {
+      const [a, b] = [userIdA, userIdB].sort();
+      const { data, error } = await sb
+        .from("friendships")
+        .select("id")
+        .eq("user_a", a)
+        .eq("user_b", b)
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+      return !!data;
     }
 
     async function loadGameDetails() {
@@ -169,6 +198,22 @@
         return;
       }
 
+      if (profile.id === currentUser.id) {
+        gameStatus.textContent = "You are already in this campaign as the GM.";
+        return;
+      }
+
+      try {
+        const friendMatch = await areFriends(currentUser.id, profile.id);
+        if (!friendMatch) {
+          gameStatus.textContent = "You can only invite users who are already your friend.";
+          return;
+        }
+      } catch (error) {
+        gameStatus.textContent = `Failed to verify friendship: ${error.message}`;
+        return;
+      }
+
       const { error: inviteError } = await sb.from("campaign_invites").insert({
         campaign_id: campaignId,
         inviter_user_id: currentUser.id,
@@ -183,6 +228,57 @@
 
       gameStatus.textContent = `Sent campaign invite to ${profile.username}.`;
       inviteUsername.value = "";
+    };
+
+    createCampaignBtn.onclick = async () => {
+      const name = newCampaignName.value.trim();
+      const maxPlayers = Number(newCampaignMaxPlayers.value || 0);
+
+      if (!name) {
+        gameStatus.textContent = "Enter a campaign name first.";
+        return;
+      }
+
+      if (!Number.isInteger(maxPlayers) || maxPlayers < 2 || maxPlayers > 12) {
+        gameStatus.textContent = "Max players must be a whole number between 2 and 12.";
+        return;
+      }
+
+      const { data: insertedCampaign, error: campaignError } = await sb
+        .from("campaigns")
+        .insert({
+          name,
+          gm_user_id: currentUser.id,
+          max_players: maxPlayers,
+          status: "active"
+        })
+        .select("id, name")
+        .single();
+
+      if (campaignError || !insertedCampaign) {
+        gameStatus.textContent = `Failed to create campaign: ${campaignError?.message || "Unknown error"}`;
+        return;
+      }
+
+      const { error: gmMembershipError } = await sb
+        .from("campaign_members")
+        .insert({
+          campaign_id: insertedCampaign.id,
+          user_id: currentUser.id,
+          role: "gm"
+        });
+
+      if (gmMembershipError) {
+        gameStatus.textContent = `Campaign created, but failed to register you as GM: ${gmMembershipError.message}`;
+        return;
+      }
+
+      gameStatus.textContent = `Campaign "${insertedCampaign.name}" created.`;
+      newCampaignName.value = "";
+      newCampaignMaxPlayers.value = "6";
+      await loadGames();
+      gameSelect.value = insertedCampaign.id;
+      await loadGameDetails();
     };
 
     gameSelect.addEventListener("change", loadGameDetails);
