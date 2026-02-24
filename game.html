@@ -22,9 +22,6 @@
       <label>Campaign name
         <input id="newCampaignName" type="text" maxlength="80" placeholder="Weekend Run" />
       </label>
-      <label>Max players
-        <input id="newCampaignMaxPlayers" type="number" min="2" max="12" value="6" />
-      </label>
       <button id="createCampaignBtn" type="button">Create Campaign</button>
     </section>
 
@@ -58,7 +55,6 @@
     const gameStatus = document.getElementById("gameStatus");
     const createCampaignBtn = document.getElementById("createCampaignBtn");
     const newCampaignName = document.getElementById("newCampaignName");
-    const newCampaignMaxPlayers = document.getElementById("newCampaignMaxPlayers");
     const memberList = document.getElementById("memberList");
     const characterList = document.getElementById("characterList");
     const gmControls = document.getElementById("gmControls");
@@ -232,15 +228,9 @@
 
     createCampaignBtn.onclick = async () => {
       const name = newCampaignName.value.trim();
-      const maxPlayers = Number(newCampaignMaxPlayers.value || 0);
 
       if (!name) {
         gameStatus.textContent = "Enter a campaign name first.";
-        return;
-      }
-
-      if (!Number.isInteger(maxPlayers) || maxPlayers < 2 || maxPlayers > 12) {
-        gameStatus.textContent = "Max players must be a whole number between 2 and 12.";
         return;
       }
 
@@ -249,7 +239,6 @@
         .insert({
           name,
           gm_user_id: currentUser.id,
-          max_players: maxPlayers,
           status: "active"
         })
         .select("id, name")
@@ -275,7 +264,6 @@
 
       gameStatus.textContent = `Campaign "${insertedCampaign.name}" created.`;
       newCampaignName.value = "";
-      newCampaignMaxPlayers.value = "6";
       await loadGames();
       gameSelect.value = insertedCampaign.id;
       await loadGameDetails();
