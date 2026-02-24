@@ -64,7 +64,7 @@
 
     async function findUserByUsername(username) {
       const { data, error } = await sb
-        .from("profiles")
+        .from("profile_directory")
         .select("id, username")
         .eq("username", username)
         .maybeSingle();
@@ -90,7 +90,7 @@
         return;
       }
 
-      const { data: profiles } = await sb.from("profiles").select("id, username").in("id", otherIds);
+      const { data: profiles } = await sb.from("profile_directory").select("id, username").in("id", otherIds);
       const byId = Object.fromEntries((profiles || []).map(p => [p.id, p.username || p.id]));
       friendsList.innerHTML = otherIds.map(id => `<div>• ${byId[id] || id}</div>`).join("");
     }
