@@ -35,10 +35,6 @@
       return user;
     }
 
-    async function updateNotificationStatus(notificationId, status) {
-      await sb.from("notifications").update({ status }).eq("id", notificationId);
-    }
-
     async function acceptFriend(notification) {
       const requesterId = notification.payload?.requester_user_id;
       if (!requesterId) throw new Error("Missing requester");
@@ -52,21 +48,15 @@
 
       await sb.from("friend_requests")
         .update({ status: "accepted" })
-        .eq("requester_user_id", requesterId)
-        .eq("target_user_id", currentUser.id)
+        .eq("id", notification.id)
         .eq("status", "pending");
-
-      await updateNotificationStatus(notification.id, "accepted");
     }
 
     async function rejectFriend(notification) {
-      const requesterId = notification.payload?.requester_user_id;
       await sb.from("friend_requests")
         .update({ status: "declined" })
-        .eq("requester_user_id", requesterId)
-        .eq("target_user_id", currentUser.id)
+        .eq("id", notification.id)
         .eq("status", "pending");
-      await updateNotificationStatus(notification.id, "rejected");
     }
 
     async function acceptGameInvite(notification) {
@@ -82,37 +72,51 @@
 
       await sb.from("campaign_invites")
         .update({ status: "accepted" })
-        .eq("campaign_id", campaignId)
-        .eq("invitee_user_id", currentUser.id)
+        .eq("id", notification.id)
         .eq("status", "pending");
-
-      await updateNotificationStatus(notification.id, "accepted");
     }
 
     async function rejectGameInvite(notification) {
-      const campaignId = notification.payload?.campaign_id;
       await sb.from("campaign_invites")
         .update({ status: "declined" })
-        .eq("campaign_id", campaignId)
-        .eq("invitee_user_id", currentUser.id)
+        .eq("id", notification.id)
         .eq("status", "pending");
-      await updateNotificationStatus(notification.id, "rejected");
     }
 
     async function loadNotifications() {
-      const { data, error } = await sb
-        .from("notifications")
-        .select("id, type, status, payload, created_at")
-        .eq("user_id", currentUser.id)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
+      const [friendResult, campaignResult] = await Promise.all([
+        sb.from("friend_requests")
+          .select("id, requester_user_id, created_at")
+          .eq("target_user_id", currentUser.id)
+          .eq("status", "pending"),
+        sb.from("campaign_invites")
+          .select("id, campaign_id, inviter_user_id, created_at")
+          .eq("invitee_user_id", currentUser.id)
+          .eq("status", "pending")
+      ]);
 
-      if (error) {
-        notificationsList.textContent = `Failed to load notifications: ${error.message}`;
+      if (friendResult.error || campaignResult.error) {
+        const message = friendResult.error?.message || campaignResult.error?.message;
+        notificationsList.textContent = `Failed to load notifications: ${message}`;
         return;
       }
 
-      if (!data?.length) {
+      const data = [
+        ...(friendResult.data || []).map(row => ({
+          id: row.id,
+          type: "friend_request",
+          payload: { requester_user_id: row.requester_user_id },
+          created_at: row.created_at
+        })),
+        ...(campaignResult.data || []).map(row => ({
+          id: row.id,
+          type: "campaign_invite",
+          payload: { campaign_id: row.campaign_id, inviter_user_id: row.inviter_user_id },
+          created_at: row.created_at
+        }))
+      ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      if (!data.length) {
         notificationsList.textContent = "No pending notifications.";
         return;
       }
