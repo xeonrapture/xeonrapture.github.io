@@ -46,6 +46,15 @@
   }
 
   // 🔐 Auth-aware nav
+
+  const existingLegal = document.querySelector(".xr-site-legal");
+  if (!existingLegal) {
+    const legal = document.createElement("footer");
+    legal.className = "xr-site-legal";
+    legal.innerHTML = 'By using this site, you agree to our <a href="/terms.html">Terms of Service</a> and <a href="/privacy.html">Privacy Policy</a>.';
+    document.body.appendChild(legal);
+  }
+
   const sb = window.supabaseClient;
   if (sb) {
     const { data } = await sb.auth.getSession();
