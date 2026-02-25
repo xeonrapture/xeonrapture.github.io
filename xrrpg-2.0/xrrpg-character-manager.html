@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XRRPG Characters</title>
+  <link rel="stylesheet" href="/shared/style.css">
+</head>
+<body class="wr-scope">
+  <div id="nav"></div>
+  <main class="wrap">
+    <h1>XRRPG Character Manager</h1>
+    <div class="character-actions">
+      <button id="newCharacterBtn" title="New character">New Character</button>
+    </div>
+    <table class="table-full">
+      <thead>
+        <tr>
+          <th><button type="button" class="table-sort" data-sort="name">Name</button></th>
+          <th><button type="button" class="table-sort" data-sort="level">Lvl</button></th>
+          <th><button type="button" class="table-sort" data-sort="class">Class Path</button></th>
+          <th><button type="button" class="table-sort" data-sort="vigor">Vig</button></th>
+          <th><button type="button" class="table-sort" data-sort="endurance">End</button></th>
+          <th><button type="button" class="table-sort" data-sort="intuition">Intu</button></th>
+          <th><button type="button" class="table-sort" data-sort="wit">Wit</button></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="charTable"><tr><td colspan="8">Loading…</td></tr></tbody>
+    </table>
+  </main>
+
+  <div id="charModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Create XRRPG Character</h2>
+      <p id="wizardStepLabel" class="muted">Step 1 / 3</p>
+
+      <div data-step="1" class="wizard-step">
+        <label>Name <input id="nameInput" maxlength="48" /></label>
+        <label>Species <input id="speciesInput" maxlength="48" placeholder="Human, Fey, etc." /></label>
+        <label>Chroma
+          <select id="chromaInput">
+            <option>Red</option><option>Blue</option><option>Green</option><option>Grey</option><option>Clear</option>
+          </select>
+        </label>
+      </div>
+
+      <div data-step="2" class="wizard-step hidden">
+        <strong>Stat Setup (from XRRPG 2.0 Quick Start)</strong>
+        <label><input type="radio" name="statPreset" value="plus2" checked> +2 chroma stat and +1 to one other stat</label>
+        <label><input type="radio" name="statPreset" value="plus3"> +3 chroma stat, +1 to one stat, and -1 to another stat</label>
+        <label><input type="radio" name="statPreset" value="dual2"> +2 to two stats, -1 to one stat (multi chroma)</label>
+        <label><input type="radio" name="statPreset" value="clear"> Clear chroma (+1 to three stats)</label>
+        <div class="stat-inputs">
+          <label>Bonus stat <select id="bonusStat"></select></label>
+          <label>Penalty stat <select id="penaltyStat"></select></label>
+          <label>Second +2 stat <select id="secondBonusStat"></select></label>
+        </div>
+      </div>
+
+      <div data-step="3" class="wizard-step hidden">
+        <label>Starting class
+          <select id="classInput"></select>
+        </label>
+        <label>Skill 1 <input id="skill1" maxlength="48" placeholder="Stealth" /></label>
+        <label>Skill 2 <input id="skill2" maxlength="48" placeholder="Investigation" /></label>
+      </div>
+
+      <div class="xr-modal-actions">
+        <button id="prevStepBtn" type="button">Back</button>
+        <button id="nextStepBtn" type="button">Next</button>
+        <button id="saveBtn" type="button" class="hidden">Save</button>
+      </div>
+      <div id="modalMsg" class="mono muted"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/shared/auth.js"></script>
+  <script src="/shared/nav.js"></script>
+  <script>
+    const sb = window.supabaseClient;
+    const table = document.getElementById('charTable');
+    const classNames = [
+      'Warrior','Mentalist','Tank','Druid','Elementalist','Summoner','Mystic','Alchemist','Physic','Possessor','Bard','Enchanter','Sorcerer','Warlock','Cleric','Demititan','Emitter Specialist','Dronemaster','Brawler','Explosives Expert','Gunslinger','Swordmaster'
+    ];
+    let currentUser = null;
+    let characters = [];
+    let sortState = { key: 'name', direction: 'asc' };
+
+    const stats = ['vigor','endurance','intuition','wit'];
+    const bonusStat = document.getElementById('bonusStat');
+    const penaltyStat = document.getElementById('penaltyStat');
+    const secondBonusStat = document.getElementById('secondBonusStat');
+    [bonusStat, penaltyStat, secondBonusStat].forEach(select => {
+      stats.forEach(stat => {
+        const opt = document.createElement('option');
+        opt.value = stat;
+        opt.textContent = stat[0].toUpperCase() + stat.slice(1);
+        select.appendChild(opt);
+      });
+    });
+    penaltyStat.value = 'wit';
+    secondBonusStat.value = 'endurance';
+
+    const classInput = document.getElementById('classInput');
+    classNames.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      classInput.appendChild(opt);
+    });
+
+    async function requireUser() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) throw new Error('No user');
+      return user;
+    }
+
+    function valueForSort(character, key) {
+      const s = character.base_stats || {};
+      if (key === 'name') return (character.name || '').toLowerCase();
+      if (key === 'level') return Number(s.level || 1);
+      if (key === 'class') return (character.class_progression?.map(c => c.class).join(' / ') || '').toLowerCase();
+      return Number(s[key] || 0);
+    }
+
+    function sortedCharacters() {
+      const dir = sortState.direction === 'asc' ? 1 : -1;
+      return [...characters].sort((a, b) => {
+        const av = valueForSort(a, sortState.key);
+        const bv = valueForSort(b, sortState.key);
+        if (av < bv) return -1 * dir;
+        if (av > bv) return 1 * dir;
+        return 0;
+      });
+    }
+
+    function render() {
+      if (!characters.length) {
+        table.innerHTML = "<tr><td colspan='8'>No XRRPG characters yet.</td></tr>";
+        return;
+      }
+      table.innerHTML = '';
+      sortedCharacters().forEach(c => {
+        const s = c.base_stats || {};
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${c.name}</td>
+          <td>${s.level || 1}</td>
+          <td>${(c.class_progression || []).map(p => `${p.class} T${p.tier}`).join(', ') || '—'}</td>
+          <td>${s.vigor || 0}</td>
+          <td>${s.endurance || 0}</td>
+          <td>${s.intuition || 0}</td>
+          <td>${s.wit || 0}</td>
+          <td><a class="action-btn" href="/xrrpg-2.0/xrrpg-character.html?id=${c.id}">Open</a></td>
+        `;
+        table.appendChild(row);
+      });
+    }
+
+    async function loadCharacters() {
+      try {
+        currentUser = await requireUser();
+        const { data, error } = await sb.from('xrrpg_characters')
+          .select('id, name, base_stats, class_progression, created_at')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: true });
+        if (error) throw error;
+        characters = data || [];
+        render();
+      } catch (error) {
+        table.innerHTML = `<tr><td colspan='8'>Failed to load: ${error.message}</td></tr>`;
+      }
+    }
+
+    function buildStatsFromWizard() {
+      const chroma = document.getElementById('chromaInput').value;
+      const chromaMap = { Red: 'vigor', Blue: 'endurance', Green: 'intuition', Grey: 'wit' };
+      const main = chromaMap[chroma] || 'vigor';
+      const preset = document.querySelector('input[name="statPreset"]:checked').value;
+      const result = { vigor: 0, endurance: 0, intuition: 0, wit: 0 };
+      if (preset === 'plus2') {
+        result[main] += 2;
+        result[bonusStat.value] += 1;
+      } else if (preset === 'plus3') {
+        result[main] += 3;
+        result[bonusStat.value] += 1;
+        result[penaltyStat.value] -= 1;
+      } else if (preset === 'dual2') {
+        result[main] += 2;
+        result[secondBonusStat.value] += 2;
+        result[penaltyStat.value] -= 1;
+      } else {
+        result.vigor += 1; result.endurance += 1; result.intuition += 1;
+      }
+      const hp = 10 + result.vigor + (2 * result.endurance);
+      return { ...result, level: 1, hp, current_hp: hp, mastery_die: 'd4', stamina_used: 0, stamina_max: 12 + result.wit + result.intuition };
+    }
+
+    let wizardStep = 1;
+    const modal = document.getElementById('charModal');
+    const wizardStepLabel = document.getElementById('wizardStepLabel');
+    function setStep(step) {
+      wizardStep = Math.max(1, Math.min(3, step));
+      wizardStepLabel.textContent = `Step ${wizardStep} / 3`;
+      document.querySelectorAll('.wizard-step').forEach(el => {
+        el.classList.toggle('hidden', Number(el.dataset.step) !== wizardStep);
+      });
+      document.getElementById('prevStepBtn').classList.toggle('hidden', wizardStep === 1);
+      document.getElementById('nextStepBtn').classList.toggle('hidden', wizardStep === 3);
+      document.getElementById('saveBtn').classList.toggle('hidden', wizardStep !== 3);
+    }
+
+    document.getElementById('newCharacterBtn').onclick = () => { modal.classList.remove('hidden'); setStep(1); };
+    modal.querySelector('.xr-modal-backdrop').onclick = () => modal.classList.add('hidden');
+    document.getElementById('prevStepBtn').onclick = () => setStep(wizardStep - 1);
+    document.getElementById('nextStepBtn').onclick = () => setStep(wizardStep + 1);
+
+    document.querySelectorAll('.table-sort').forEach(button => {
+      button.onclick = () => {
+        const key = button.dataset.sort;
+        if (sortState.key === key) {
+          sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+          sortState = { key, direction: 'asc' };
+        }
+        render();
+      };
+    });
+
+    document.getElementById('saveBtn').onclick = async () => {
+      const name = document.getElementById('nameInput').value.trim();
+      const species = document.getElementById('speciesInput').value.trim();
+      const chroma = document.getElementById('chromaInput').value;
+      const skill1 = document.getElementById('skill1').value.trim();
+      const skill2 = document.getElementById('skill2').value.trim();
+      const cls = classInput.value;
+      const msg = document.getElementById('modalMsg');
+      msg.textContent = '';
+      if (!name) { msg.textContent = 'Name required.'; return; }
+      try {
+        currentUser = currentUser || await requireUser();
+        const base_stats = buildStatsFromWizard();
+        const class_progression = [{ class: cls, tier: 1, level_acquired: 1 }];
+        const skills = [skill1, skill2].filter(Boolean).map(skill => ({ name: skill, bonus: 2 }));
+        const { error } = await sb.from('xrrpg_characters').insert({
+          user_id: currentUser.id,
+          name,
+          base_stats: { ...base_stats, species, chroma },
+          class_progression,
+          skills
+        });
+        if (error) throw error;
+        modal.classList.add('hidden');
+        await loadCharacters();
+      } catch (error) {
+        msg.textContent = error.message;
+      }
+    };
+
+    loadCharacters();
+  </script>
+</body>
+</html>
