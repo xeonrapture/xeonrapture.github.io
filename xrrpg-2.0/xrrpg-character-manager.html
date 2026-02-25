@@ -12,6 +12,8 @@
     <h1>XRRPG Character Manager</h1>
     <div class="character-actions">
       <button id="newCharacterBtn" title="New character">New Character</button>
+      <button id="importCharacterBtn" title="Import character JSON">Import</button>
+      <input id="importCharacterInput" type="file" accept="application/json,.json" class="hidden" />
     </div>
     <table class="table-full">
       <thead>
@@ -231,7 +233,11 @@
           <td>${s.endurance || 0}</td>
           <td>${s.intuition || 0}</td>
           <td>${s.wit || 0}</td>
-          <td><a class="action-btn" href="/xrrpg-2.0/xrrpg-character.html?id=${c.id}">Open</a></td>
+          <td class="actions">
+            <a class="action-btn" href="/xrrpg-2.0/xrrpg-character.html?id=${c.id}">Edit</a>
+            <button class="action-btn" onclick="exportCharacter('${c.id}')">Export</button>
+            <button class="action-btn" onclick="deleteCharacter('${c.id}')">Delete</button>
+          </td>
         `;
         table.appendChild(row);
       });
@@ -251,6 +257,61 @@
         table.innerHTML = `<tr><td colspan='8'>Failed to load: ${error.message}</td></tr>`;
       }
     }
+
+    function cleanFileName(name) {
+      return String(name || 'xrrpg-character').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'xrrpg-character';
+    }
+
+    function triggerJsonDownload(filename, dataObj) {
+      const blob = new Blob([JSON.stringify(dataObj, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    async function exportCharacter(characterId) {
+      const char = characters.find(item => item.id === characterId);
+      if (!char) return;
+      triggerJsonDownload(`${cleanFileName(char.name)}.json`, {
+        export_version: 1,
+        exported_at: new Date().toISOString(),
+        character: char
+      });
+    }
+
+    async function importCharacterFromPayload(payload) {
+      const importedCharacter = payload?.character;
+      if (!importedCharacter || typeof importedCharacter !== 'object') throw new Error('Invalid character payload.');
+      const name = String(importedCharacter.name || '').trim();
+      if (!name) throw new Error('Imported character needs a name.');
+      const base_stats = importedCharacter.base_stats && typeof importedCharacter.base_stats === 'object' ? importedCharacter.base_stats : {};
+      const class_progression = Array.isArray(importedCharacter.class_progression) ? importedCharacter.class_progression : [];
+      const skills = Array.isArray(importedCharacter.skills) ? importedCharacter.skills : [];
+      const notes = typeof importedCharacter.notes === 'string' ? importedCharacter.notes : '';
+      const { error } = await sb.from('xrrpg_characters').insert({ user_id: currentUser.id, name, base_stats, class_progression, skills, notes });
+      if (error) throw error;
+      await loadCharacters();
+    }
+
+    async function deleteCharacter(characterId) {
+      const char = characters.find(item => item.id === characterId);
+      if (!char) return;
+      if (!window.confirm(`Delete ${char.name || 'this character'}? This cannot be undone.`)) return;
+      const { error } = await sb.from('xrrpg_characters').delete().eq('id', characterId).eq('user_id', currentUser.id);
+      if (error) {
+        alert(error.message);
+        return;
+      }
+      await loadCharacters();
+    }
+
+    window.exportCharacter = exportCharacter;
+    window.deleteCharacter = deleteCharacter;
 
     function buildStatsFromWizard() {
       const chroma = document.getElementById('chromaInput').value;
@@ -284,6 +345,7 @@
         mastery_die: 'd4',
         injuries: [],
         stamina_used: 0,
+        stamina_max: stamina_total,
         stamina_total,
         stamina_exhaustion_limit: stamina_total,
         powerful_item_limit: chroma === 'Clear' ? 2 : 0,
@@ -370,6 +432,31 @@
         window.location.href = `/xrrpg-2.0/xrrpg-character.html?id=${data.id}`;
       } catch (error) {
         msg.textContent = error.message;
+      }
+    };
+
+    const importCharacterBtn = document.getElementById('importCharacterBtn');
+    const importCharacterInput = document.getElementById('importCharacterInput');
+
+    importCharacterBtn.onclick = async () => {
+      try {
+        currentUser = currentUser || await requireUser();
+      } catch (_error) {
+        return;
+      }
+      importCharacterInput.value = "";
+      importCharacterInput.click();
+    };
+
+    importCharacterInput.onchange = async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        currentUser = currentUser || await requireUser();
+        const payload = JSON.parse(await file.text());
+        await importCharacterFromPayload(payload);
+      } catch (error) {
+        alert(error.message || 'Failed to import character.');
       }
     };
 
