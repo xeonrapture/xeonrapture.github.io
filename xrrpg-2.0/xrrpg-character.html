@@ -35,16 +35,18 @@
         <label title="Character level from 1 to 9.">Level <input id="levelInput" type="number" min="1" max="9" /></label>
         <label title="Mastery die used for class actions.">Mastery Die <input id="masteryDieInput" /></label>
       </div>
+      <h3>Basic Stats</h3>
       <div class="xrrpg-stat-line">
-        <label title="Total stamina available for class abilities.">Total Stamina <input id="staminaTotalInput" type="number" min="0" /></label>
-        <label title="How much stamina has been used.">Stamina Used <input id="staminaUsedInput" type="number" min="0" /></label>
-        <label title="Stamina exhaustion threshold before forced checks.">Stamina Exhaustion Limit <input id="staminaLimitInput" type="number" min="0" /></label>
-      </div>
-      <div class="xrrpg-stat-line xrrpg-stat-column">
         <label title="Vigor supports movement, power, and will.">Vigor <input id="vigorInput" type="number" /></label>
         <label title="Endurance supports resilience and toughness.">Endurance <input id="enduranceInput" type="number" /></label>
         <label title="Intuition supports dexterity, perception, and charisma.">Intuition <input id="intuitionInput" type="number" /></label>
         <label title="Wit supports logic, innovation, and memory.">Wit <input id="witInput" type="number" /></label>
+      </div>
+      <h3>Stamina</h3>
+      <div class="xrrpg-stat-line">
+        <label title="Maximum stamina available for class abilities.">Stamina Max <input id="staminaTotalInput" type="number" min="0" /></label>
+        <label title="How much stamina has been used.">Stamina Used <input id="staminaUsedInput" type="number" min="0" /></label>
+        <label title="Stamina exhaustion threshold before forced checks.">Stamina Exhaustion Limit <input id="staminaLimitInput" type="number" min="0" /></label>
       </div>
       <div class="xrrpg-row" style="margin-top:0.8rem;">
         <button id="levelUpBtn" type="button">Level Up (Class/Tier)</button>
@@ -67,19 +69,37 @@
     <section class="card">
       <h2>Resource Tracking</h2>
       <div class="xrrpg-stat-line">
-        <label title="Max number of powerful items you can actively use.">Powerful Item Limit <input id="powerfulItemLimitInput" type="number" min="0" /></label>
-        <label title="Absolute cap for powerful item upgrades.">Powerful Item Max <input id="powerfulItemMaxInput" type="number" min="0" /></label>
-      </div>
-      <div class="xrrpg-stat-line">
-        <label title="Party progression tier used for group actions.">Party Tier <input id="partyTierInput" type="number" min="1" /></label>
-        <label title="Current xenic decay level.">Xenic Decay Level <input id="xenicDecayInput" type="number" min="0" /></label>
-        <label title="Total number of decay cleanses.">Times Cleansed <input id="timesCleansedInput" type="number" min="0" /></label>
+        <div>
+          <h3>Powerful Items</h3>
+          <div class="xrrpg-stat-line">
+            <label title="Max number of powerful items you can actively use.">Powerful Item Limit <input id="powerfulItemLimitInput" type="number" min="0" /></label>
+            <label title="Absolute cap for powerful item upgrades.">Powerful Item Max Tier <input id="powerfulItemMaxInput" type="number" min="0" /></label>
+          </div>
+        </div>
+        <div>
+          <h3>Xenic Decay</h3>
+          <div class="xrrpg-stat-line">
+            <label title="Current xenic decay level.">Xenic Decay Level <input id="xenicDecayInput" type="number" min="0" /></label>
+            <label title="Total number of decay cleanses.">Times Cleansed <input id="timesCleansedInput" type="number" min="0" /></label>
+          </div>
+        </div>
+        <div>
+          <h3>Party</h3>
+          <div class="xrrpg-stat-line">
+            <label title="Party progression tier used for group actions.">Party Tier <input id="partyTierInput" type="number" min="1" /></label>
+          </div>
+        </div>
       </div>
     </section>
 
     <section class="card">
       <h2>Skills</h2>
       <div id="skillList" class="mono muted">No skills saved.</div>
+      <div class="xrrpg-row" style="margin-top:0.5rem; gap:0.5rem;">
+        <input id="newSkillName" maxlength="48" placeholder="New skill name" />
+        <select id="newSkillBonus"><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option></select>
+        <button id="addSkillBtn" type="button">Add Skill</button>
+      </div>
     </section>
 
     <section class="card">
@@ -108,9 +128,10 @@
             <th><button type="button" class="table-sort" data-sort="created_at">Date</button></th>
             <th><button type="button" class="table-sort" data-sort="event_type">Type</button></th>
             <th><button type="button" class="table-sort" data-sort="event_label">Event</button></th>
+            <th>Actions</th>
           </tr>
         </thead>
-        <tbody id="historyTable"><tr><td colspan="3">Loading…</td></tr></tbody>
+        <tbody id="historyTable"><tr><td colspan="4">Loading…</td></tr></tbody>
       </table>
     </section>
   </main>
@@ -129,6 +150,14 @@
         <button id="addLevelAbilityBtn" type="button" class="wr-mt-0-5">Add Ability Choice</button>
       </div>
       <p class="muted">Pick abilities here while leveling up. The Abilities area lists these choices automatically.</p>
+      <div class="xrrpg-notes-stack">
+        <label>Stat increases (comma-separated: vigor,endurance,intuition,wit)
+          <input id="levelStatBoostInput" placeholder="vigor" />
+        </label>
+        <label>Skill update target (existing skill name or new skill)
+          <input id="levelSkillTargetInput" placeholder="Stealth" />
+        </label>
+      </div>
       <div class="xr-modal-actions">
         <button id="confirmLevelBtn" type="button">Apply</button>
         <button id="cancelLevelBtn" type="button">Cancel</button>
@@ -165,6 +194,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/shared/auth.js"></script>
   <script src="/shared/nav.js"></script>
+  <script src="/xrrpg-2.0/class-abilities.js"></script>
   <script>
     const sb = window.supabaseClient;
     const params = new URLSearchParams(window.location.search);
@@ -177,6 +207,18 @@
     let character = null;
     let history = [];
     let historySort = { key: 'created_at', direction: 'desc' };
+    const classAbilities = window.XRRPG_CLASS_ABILITIES || {};
+    const LEVELING_RULES = {
+      1: { stamina_base: 12, skill_mode: 'add_or_plus1', stat_points: 0, skill_points: 0, powerful_item_limit: 2, powerful_item_max: 1 },
+      2: { stamina_base: 14, skill_mode: 'stat', stat_points: 1, skill_points: 0, powerful_item_limit: 3, powerful_item_max: 1 },
+      3: { stamina_base: 16, skill_mode: 'skill_plus2', stat_points: 0, skill_points: 2, powerful_item_limit: 3, powerful_item_max: 1 },
+      4: { stamina_base: 18, skill_mode: 'stat', stat_points: 1, skill_points: 0, powerful_item_limit: 4, powerful_item_max: 2 },
+      5: { stamina_base: 20, skill_mode: 'add_or_plus1', stat_points: 0, skill_points: 0, powerful_item_limit: 5, powerful_item_max: 2 },
+      6: { stamina_base: 22, skill_mode: 'stat', stat_points: 1, skill_points: 0, powerful_item_limit: 6, powerful_item_max: 2 },
+      7: { stamina_base: 24, skill_mode: 'skill_plus2', stat_points: 0, skill_points: 2, powerful_item_limit: 7, powerful_item_max: 3 },
+      8: { stamina_base: 25, skill_mode: 'stat', stat_points: 1, skill_points: 0, powerful_item_limit: 8, powerful_item_max: 3 },
+      9: { stamina_base: 30, skill_mode: 'stat', stat_points: 2, skill_points: 0, powerful_item_limit: 9, powerful_item_max: 3 }
+    };
 
     classNames.forEach(name => {
       const opt = document.createElement('option');
@@ -231,6 +273,7 @@
         intuition: Number(document.getElementById('intuitionInput').value) || 0,
         wit: Number(document.getElementById('witInput').value) || 0,
         mastery_die: document.getElementById('masteryDieInput').value.trim() || 'd4',
+        stamina_max: Number(document.getElementById('staminaTotalInput').value) || 0,
         stamina_total: Number(document.getElementById('staminaTotalInput').value) || 0,
         stamina_used: Number(document.getElementById('staminaUsedInput').value) || 0,
         stamina_exhaustion_limit: Number(document.getElementById('staminaLimitInput').value) || 0,
@@ -271,6 +314,70 @@
         .map(input => input.value.trim())
         .filter(Boolean);
     }
+    function cloneCharacterState() {
+      return {
+        name: character.name,
+        notes: character.notes,
+        base_stats: JSON.parse(JSON.stringify(character.base_stats || {})),
+        class_progression: JSON.parse(JSON.stringify(character.class_progression || [])),
+        skills: JSON.parse(JSON.stringify(character.skills || []))
+      };
+    }
+
+    function levelRule(level) {
+      return LEVELING_RULES[level] || LEVELING_RULES[9];
+    }
+
+    function staminaMaxForLevel(level, intuition, wit) {
+      const base = levelRule(level).stamina_base;
+      return base + Number(intuition || 0) + Number(wit || 0);
+    }
+
+    function renderLevelAbilityOptions() {
+      const cls = document.getElementById('levelClassSelect').value;
+      const progression = character.class_progression || [];
+      const level = Math.min(9, Number(character.base_stats?.level || 1) + 1);
+      const tier = Math.min(3, progression.filter(item => item.class === cls).length + 1);
+      const abilities = (classAbilities[cls] || []).filter(item => Number(item.tiers?.[String(tier)]) || item.tiers?.[String(tier)] === '');
+      const choiceWrap = document.getElementById('levelAbilityChoices');
+      if (!abilities.length) {
+        choiceWrap.innerHTML = '<div class="muted">No parsed class abilities found for this class/tier. Add manual ability entries below.</div>';
+        addLevelAbilityChoice();
+        return;
+      }
+      choiceWrap.innerHTML = abilities.map(item => `<label><input type="checkbox" class="level-ability-option" value="${item.name.replace(/"/g,'&quot;')}" /> ${item.name} <span class="muted">${item.tiers[String(tier)] || ''}</span></label>`).join('');
+      addLevelAbilityChoice();
+      document.getElementById('levelMsg').textContent = `Level ${level} grants ${levelRule(level).skill_mode.replaceAll('_', ' ')}.`;
+    }
+
+    function gatherLevelChoices() {
+      const checked = Array.from(document.querySelectorAll('.level-ability-option:checked')).map(input => input.value.trim()).filter(Boolean);
+      const typed = readLevelAbilityChoices();
+      return [...new Set([...checked, ...typed])];
+    }
+
+    function renderSkillList() {
+      const skills = character.skills || [];
+      const wrap = document.getElementById('skillList');
+      if (!skills.length) {
+        wrap.innerHTML = 'No skills saved.';
+        return;
+      }
+      wrap.innerHTML = skills.map((skill, index) => `
+        <div class="xrrpg-row" style="gap:0.5rem; align-items:center; margin-bottom:0.3rem;">
+          <input data-skill-name="${index}" value="${(skill.name || '').replace(/"/g, '&quot;')}" maxlength="48" />
+          <input data-skill-bonus="${index}" type="number" min="0" max="9" value="${Number(skill.bonus || 0)}" style="width:70px;" />
+          <button type="button" data-skill-save="${index}">Update</button>
+          <button type="button" data-skill-delete="${index}">Delete</button>
+        </div>
+      `).join('');
+      wrap.querySelectorAll('[data-skill-save]').forEach(btn => {
+        btn.onclick = () => updateSkill(Number(btn.dataset.skillSave));
+      });
+      wrap.querySelectorAll('[data-skill-delete]').forEach(btn => {
+        btn.onclick = () => removeSkill(Number(btn.dataset.skillDelete));
+      });
+    }
 
     function renderInjuryTracker() {
       const injuries = Array.isArray(character?.base_stats?.injuries) ? character.base_stats.injuries : [];
@@ -278,13 +385,22 @@
       const wrap = document.getElementById('injuryTracker');
       wrap.innerHTML = ['minor', 'severe', 'critical'].map(type => {
         const rows = grouped[type].length
-          ? grouped[type].map((injury, idx) => `<div class="xrrpg-injury-item"><div><strong>${injury.label || 'Unnamed injury'}</strong><div class="muted">${injuryDebuff(type)}</div></div><button type="button" data-heal-type="${type}" data-heal-index="${idx}">Heal</button></div>`).join('')
+          ? grouped[type].map((injury, idx) => {
+            const resolveBtn = (type === 'minor' || type === 'severe') && !injury.debuff_resolved
+              ? `<button type="button" data-resolve-type="${type}" data-resolve-index="${idx}">Resolve Debuff</button>`
+              : '';
+            const debuffText = (type === 'minor' || type === 'severe') && injury.debuff_resolved ? 'Debuff resolved.' : injuryDebuff(type);
+            return `<div class="xrrpg-injury-item"><div><strong>${injury.label || 'Unnamed injury'}</strong><div class="muted">${debuffText}</div></div><div class="xrrpg-row"><button type="button" data-heal-type="${type}" data-heal-index="${idx}">Heal</button>${resolveBtn}</div></div>`;
+          }).join('')
           : '<div class="muted">None</div>';
         return `<div class="xrrpg-injury-group"><h3>${type[0].toUpperCase() + type.slice(1)}</h3>${rows}</div>`;
       }).join('');
 
       wrap.querySelectorAll('[data-heal-type]').forEach(button => {
         button.onclick = () => healInjury(button.dataset.healType, Number(button.dataset.healIndex));
+      });
+      wrap.querySelectorAll('[data-resolve-type]').forEach(button => {
+        button.onclick = () => resolveInjuryDebuff(button.dataset.resolveType, Number(button.dataset.resolveIndex));
       });
     }
 
@@ -302,7 +418,7 @@
       document.getElementById('intuitionInput').value = s.intuition || 0;
       document.getElementById('witInput').value = s.wit || 0;
       document.getElementById('masteryDieInput').value = s.mastery_die || 'd4';
-      document.getElementById('staminaTotalInput').value = s.stamina_total ?? (10 + (s.intuition || 0) + (s.wit || 0));
+      document.getElementById('staminaTotalInput').value = s.stamina_max ?? s.stamina_total ?? (10 + (s.intuition || 0) + (s.wit || 0));
       document.getElementById('staminaUsedInput').value = s.stamina_used || 0;
       document.getElementById('staminaLimitInput').value = s.stamina_exhaustion_limit ?? (s.stamina_total || 0);
       document.getElementById('powerfulItemLimitInput').value = s.powerful_item_limit || 0;
@@ -333,19 +449,18 @@
           const chosen = Array.isArray(chosenAbilities[key]) && chosenAbilities[key].length
             ? `<div class="muted">Chosen on level up: ${chosenAbilities[key].join(', ')}</div>`
             : '<div class="muted">Chosen on level up: none recorded</div>';
-          return `<div><strong>${entry.class} Tier ${entry.tier} Abilities</strong>${chosen}</div>`;
+          const available = (classAbilities[entry.class] || []).filter(ability => ability.tiers?.[String(entry.tier)]).map(ability => `${ability.name}: ${ability.tiers[String(entry.tier)] || ''}`);
+          const availableHtml = available.length ? `<div class="muted">Available: ${available.join(' • ')}</div>` : '<div class="muted">Available: add manually for this class tier.</div>';
+          return `<div><strong>${entry.class} Tier ${entry.tier} Abilities</strong>${chosen}${availableHtml}</div>`;
         }).join('');
       }
 
-      const skills = character.skills || [];
-      document.getElementById('skillList').innerHTML = skills.length
-        ? skills.map(skill => `• ${skill.name || 'Unnamed skill'} (+${Number(skill.bonus || 0)})`).join('<br>')
-        : 'No skills saved.';
+      renderSkillList();
     }
 
     function renderHistory() {
       if (!history.length) {
-        historyTable.innerHTML = '<tr><td colspan="3">No history yet.</td></tr>';
+        historyTable.innerHTML = '<tr><td colspan="4">No history yet.</td></tr>';
         return;
       }
       const dir = historySort.direction === 'asc' ? 1 : -1;
@@ -361,6 +476,7 @@
           <td>${new Date(row.created_at).toLocaleString()}</td>
           <td>${row.event_type}</td>
           <td>${row.event_label}</td>
+          <td><button type="button" data-undo-id="${row.id}" ${row.event_payload?.undo ? '' : 'disabled'}>Undo</button></td>
         </tr>
       `).join('');
     }
@@ -378,7 +494,7 @@
 
     async function loadHistory() {
       const { data, error } = await sb.from('xrrpg_history')
-        .select('id, event_type, event_label, created_at')
+        .select('id, event_type, event_label, created_at, event_payload')
         .eq('character_id', characterId)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -401,6 +517,7 @@
       const name = document.getElementById('nameInput').value.trim();
       const base_stats = readStatsFromInputs();
       const notes = readNotesFromInputs();
+      const previousState = cloneCharacterState();
       const { error } = await sb.from('xrrpg_characters')
         .update({ name, notes, base_stats, updated_at: new Date().toISOString() })
         .eq('id', characterId)
@@ -409,7 +526,7 @@
         document.getElementById('status').textContent = error.message;
         return;
       }
-      await addHistory('edit', `Saved character ${name}.`, { level: base_stats.level });
+      await addHistory('edit', `Saved character ${name}.`, { level: base_stats.level, undo: { character: previousState } });
       document.getElementById('status').textContent = 'Saved.';
       await loadCharacter();
     };
@@ -419,10 +536,13 @@
       levelModal.classList.remove('hidden');
       document.getElementById('levelMsg').textContent = '';
       document.getElementById('levelAbilityChoices').innerHTML = '';
-      addLevelAbilityChoice();
+      document.getElementById('levelStatBoostInput').value = '';
+      document.getElementById('levelSkillTargetInput').value = '';
+      renderLevelAbilityOptions();
     };
     levelModal.querySelector('.xr-modal-backdrop').onclick = () => levelModal.classList.add('hidden');
     document.getElementById('cancelLevelBtn').onclick = () => levelModal.classList.add('hidden');
+    document.getElementById('levelClassSelect').onchange = () => renderLevelAbilityOptions();
 
     document.getElementById('confirmLevelBtn').onclick = async () => {
       const cls = document.getElementById('levelClassSelect').value;
@@ -432,24 +552,63 @@
       const entryCount = progression.filter(item => item.class === cls).length;
       const tier = Math.min(3, entryCount + 1);
       progression.push({ class: cls, tier, level_acquired: level });
-      const choices = readLevelAbilityChoices();
+      const choices = gatherLevelChoices();
       if (!choices.length) {
         document.getElementById('levelMsg').textContent = 'Add at least one ability choice for this level.';
         return;
       }
       const key = `${cls}-T${tier}-L${level}-${progression.length - 1}`;
 
+      const prevState = cloneCharacterState();
+      const before = character.base_stats || {};
+      const rule = levelRule(level);
       const base_stats = {
-        ...character.base_stats,
+        ...before,
         level,
         mastery_die: toMasteryDie(level),
+        stamina_max: staminaMaxForLevel(level, before.intuition, before.wit),
+        stamina_total: staminaMaxForLevel(level, before.intuition, before.wit),
+        stamina_exhaustion_limit: staminaMaxForLevel(level, before.intuition, before.wit),
+        powerful_item_limit: rule.powerful_item_limit,
+        powerful_item_max: rule.powerful_item_max,
         class_ability_choices: {
           ...(character.base_stats?.class_ability_choices || {}),
           [key]: choices
         }
       };
+      const skills = [...(character.skills || [])];
+      const levelSkillTarget = document.getElementById('levelSkillTargetInput').value.trim();
+      if (rule.skill_mode === 'add_or_plus1' && levelSkillTarget) {
+        const idx = skills.findIndex(skill => (skill.name || '').toLowerCase() === levelSkillTarget.toLowerCase());
+        if (idx >= 0) {
+          skills[idx] = { ...skills[idx], bonus: Number(skills[idx].bonus || 0) + 1 };
+        } else {
+          skills.push({ name: levelSkillTarget, bonus: 2 });
+        }
+      }
+      if (rule.skill_mode === 'skill_plus2' && levelSkillTarget) {
+        const idx = skills.findIndex(skill => (skill.name || '').toLowerCase() === levelSkillTarget.toLowerCase());
+        if (idx >= 0) {
+          skills[idx] = { ...skills[idx], bonus: Number(skills[idx].bonus || 0) + 2 };
+        }
+      }
+      if (rule.stat_points > 0) {
+        const statTargets = document.getElementById('levelStatBoostInput').value.split(',').map(item => item.trim().toLowerCase()).filter(Boolean);
+        if (statTargets.length < rule.stat_points) {
+          document.getElementById('levelMsg').textContent = `This level needs ${rule.stat_points} stat increase(s).`;
+          return;
+        }
+        for (let i = 0; i < rule.stat_points; i += 1) {
+          const stat = statTargets[i];
+          if (!['vigor', 'endurance', 'intuition', 'wit'].includes(stat)) continue;
+          base_stats[stat] = Math.min(5, Number(base_stats[stat] || 0) + 1);
+        }
+        base_stats.stamina_max = staminaMaxForLevel(level, base_stats.intuition, base_stats.wit);
+        base_stats.stamina_total = base_stats.stamina_max;
+        base_stats.stamina_exhaustion_limit = base_stats.stamina_max;
+      }
       const { error } = await sb.from('xrrpg_characters')
-        .update({ class_progression: progression, base_stats, updated_at: new Date().toISOString() })
+        .update({ class_progression: progression, base_stats, skills, updated_at: new Date().toISOString() })
         .eq('id', characterId)
         .eq('user_id', currentUser.id);
       if (error) {
@@ -457,12 +616,31 @@
         return;
       }
 
-      await addHistory('level_up', `Level ${level}: ${cls} advanced to Tier ${tier}.`, { class: cls, tier, level, abilities: choices });
+      await addHistory('level_up', `Level ${level}: ${cls} advanced to Tier ${tier}.`, { class: cls, tier, level, abilities: choices, undo: { character: prevState } });
       levelModal.classList.add('hidden');
       document.getElementById('levelAbilityChoices').innerHTML = '';
       await loadCharacter();
       document.getElementById('status').textContent = `Level up applied: ${cls} Tier ${tier}.`;
     };
+
+    async function resolveInjuryDebuff(type, index) {
+      const base_stats = { ...(character.base_stats || {}) };
+      const injuries = Array.isArray(base_stats.injuries) ? [...base_stats.injuries] : [];
+      const matchingIndexes = injuries.map((injury, injuryIndex) => ({ injury, injuryIndex })).filter(row => row.injury.type === type);
+      const target = matchingIndexes[index];
+      if (!target) return;
+      injuries[target.injuryIndex] = { ...injuries[target.injuryIndex], debuff_resolved: true };
+      base_stats.injuries = injuries;
+      const previousState = cloneCharacterState();
+      const { error } = await sb.from('xrrpg_characters').update({ base_stats, updated_at: new Date().toISOString() }).eq('id', characterId).eq('user_id', currentUser.id);
+      if (error) {
+        document.getElementById('status').textContent = error.message;
+        return;
+      }
+      await addHistory('resolve_debuff', `Resolved ${type} injury debuff.`, { type, undo: { character: previousState } });
+      await loadCharacter();
+      document.getElementById('status').textContent = `${type} debuff resolved.`;
+    }
 
     async function healInjury(type, index) {
       const base_stats = { ...(character.base_stats || {}) };
@@ -479,6 +657,7 @@
       const currentHp = Number(base_stats.current_hp ?? maxHp);
       base_stats.current_hp = Math.min(maxHp, currentHp + healedAmount);
 
+      const previousState = cloneCharacterState();
       const { error } = await sb.from('xrrpg_characters')
         .update({ base_stats, updated_at: new Date().toISOString() })
         .eq('id', characterId)
@@ -487,7 +666,7 @@
         document.getElementById('status').textContent = error.message;
         return;
       }
-      await addHistory('heal_injury', `Healed ${type} injury: ${removed.label || 'unnamed'} (+${Number(removed.damage || 0)} HP).`, { type, label: removed.label || '', healed_hp: Number(removed.damage || 0) });
+      await addHistory('heal_injury', `Healed ${type} injury: ${removed.label || 'unnamed'} (+${Number(removed.damage || 0)} HP).`, { type, label: removed.label || '', healed_hp: Number(removed.damage || 0), undo: { character: previousState } });
       await loadCharacter();
       document.getElementById('status').textContent = `Healed ${type} injury.`;
     }
@@ -510,9 +689,7 @@
       if (!Array.isArray(base_stats.injuries)) base_stats.injuries = [];
       base_stats.injuries.push({ type, label, damage, at: new Date().toISOString() });
 
-      if (type === 'severe') {
-        base_stats.stamina_used = Number(base_stats.stamina_used || 0) + 1;
-      }
+      const previousState = cloneCharacterState();
       const { error } = await sb.from('xrrpg_characters')
         .update({ base_stats, updated_at: new Date().toISOString() })
         .eq('id', characterId)
@@ -522,11 +699,73 @@
         return;
       }
 
-      await addHistory('injury', `${type.toUpperCase()} injury: ${label || 'unnamed'} (${damage} dmg). ${injuryDebuff(type)}`, { type, label, damage, debuff: injuryDebuff(type) });
+      await addHistory('injury', `${type.toUpperCase()} injury: ${label || 'unnamed'} (${damage} dmg). ${injuryDebuff(type)}`, { type, label, damage, debuff: injuryDebuff(type), undo: { character: previousState } });
       injuryModal.classList.add('hidden');
       await loadCharacter();
       document.getElementById('status').textContent = `Applied ${type} injury (${damage} dmg).`;
     };
+
+
+    async function persistSkills(nextSkills, historyLabel) {
+      const previousState = cloneCharacterState();
+      const { error } = await sb.from('xrrpg_characters')
+        .update({ skills: nextSkills, updated_at: new Date().toISOString() })
+        .eq('id', characterId)
+        .eq('user_id', currentUser.id);
+      if (error) {
+        document.getElementById('status').textContent = error.message;
+        return;
+      }
+      await addHistory('skills', historyLabel, { undo: { character: previousState } });
+      await loadCharacter();
+    }
+
+    async function updateSkill(index) {
+      const skills = [...(character.skills || [])];
+      if (!skills[index]) return;
+      const name = document.querySelector(`[data-skill-name="${index}"]`).value.trim();
+      const bonus = Number(document.querySelector(`[data-skill-bonus="${index}"]`).value) || 0;
+      if (!name) return;
+      skills[index] = { name, bonus };
+      await persistSkills(skills, `Updated skill ${name} (+${bonus}).`);
+    }
+
+    async function removeSkill(index) {
+      const skills = [...(character.skills || [])];
+      const removed = skills.splice(index, 1)[0];
+      await persistSkills(skills, `Removed skill ${removed?.name || 'unnamed'}.`);
+    }
+
+    document.getElementById('addSkillBtn').onclick = async () => {
+      const name = document.getElementById('newSkillName').value.trim();
+      const bonus = Number(document.getElementById('newSkillBonus').value) || 2;
+      if (!name) return;
+      const skills = [...(character.skills || []), { name, bonus }];
+      await persistSkills(skills, `Added skill ${name} (+${bonus}).`);
+      document.getElementById('newSkillName').value = '';
+      document.getElementById('newSkillBonus').value = '2';
+    };
+
+    async function undoHistoryEvent(historyId) {
+      const row = history.find(item => item.id === historyId);
+      const snapshot = row?.event_payload?.undo?.character;
+      if (!snapshot) return;
+      const { error } = await sb.from('xrrpg_characters').update({
+        name: snapshot.name,
+        notes: snapshot.notes,
+        base_stats: snapshot.base_stats,
+        class_progression: snapshot.class_progression,
+        skills: snapshot.skills,
+        updated_at: new Date().toISOString()
+      }).eq('id', characterId).eq('user_id', currentUser.id);
+      if (error) {
+        document.getElementById('status').textContent = error.message;
+        return;
+      }
+      await addHistory('undo', `Undid: ${row.event_label}`, {});
+      await loadCharacter();
+      document.getElementById('status').textContent = 'Undo applied.';
+    }
 
     document.querySelectorAll('.table-sort').forEach(button => {
       button.onclick = () => {

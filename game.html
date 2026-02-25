@@ -174,7 +174,8 @@
     }
 
     function xrrpgStatBlurb(baseStats = {}) {
-      return `Lv ${baseStats.level || 1} • Vig ${baseStats.vigor || 0} End ${baseStats.endurance || 0} Intu ${baseStats.intuition || 0} Wit ${baseStats.wit || 0}`;
+      const staminaMax = baseStats.stamina_max ?? baseStats.stamina_total ?? (10 + Number(baseStats.wit || 0) + Number(baseStats.intuition || 0));
+      return `Lv ${baseStats.level || 1} • Vig ${baseStats.vigor || 0} End ${baseStats.endurance || 0} Intu ${baseStats.intuition || 0} Wit ${baseStats.wit || 0} • Stam ${staminaMax}`;
     }
 
     async function loadGameDetails() {
