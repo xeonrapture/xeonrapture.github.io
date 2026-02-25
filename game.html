@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>XR Campaigns</title>
   <link rel="stylesheet" href="/shared/style.css">
-
 </head>
 <body class="wr-scope">
   <div id="nav"></div>
@@ -16,12 +15,18 @@
 
   <main class="wrap">
     <h1>Campaigns</h1>
-    <p class="muted">This page is shared between GMs and players. Everyone can view party characters in read-only mode.</p>
+    <p class="muted">Campaigns are now system-specific. A campaign can be Webrunning or XRRPG, and assigned characters must match.</p>
 
     <section class="card wr-mt-1">
       <h2>Create Campaign</h2>
       <label>Campaign name
         <input id="newCampaignName" type="text" maxlength="80" placeholder="Weekend Run" />
+      </label>
+      <label>System
+        <select id="newCampaignSystem">
+          <option value="webrunning">Webrunning</option>
+          <option value="xrrpg">XRRPG</option>
+        </select>
       </label>
       <button id="createCampaignBtn" type="button">Create Campaign</button>
     </section>
@@ -38,8 +43,12 @@
       <div id="gmControls" class="wr-mt-1 hidden">
         <h3>GM Campaign Controls</h3>
         <label>Invite player from friends list
-          <select id="inviteFriendSelect">
-            <option value="">-- Select friend --</option>
+          <select id="inviteFriendSelect"><option value="">-- Select friend --</option></select>
+        </label>
+        <label>Required character system
+          <select id="inviteSystemSelect">
+            <option value="webrunning">Webrunning</option>
+            <option value="xrrpg">XRRPG</option>
           </select>
         </label>
         <button id="invitePlayerBtn" type="button">Invite to Campaign</button>
@@ -53,7 +62,7 @@
 
     <section id="playerCharacterControls" class="card wr-mt-1 hidden">
       <h2>Your Character for this Campaign</h2>
-      <p class="muted">Pick which of your webrunning characters you are playing in this campaign.</p>
+      <p id="playerSystemHint" class="muted"></p>
       <label>Character
         <select id="playerCharacterSelect"></select>
       </label>
@@ -68,6 +77,7 @@
     const gameStatus = document.getElementById("gameStatus");
     const createCampaignBtn = document.getElementById("createCampaignBtn");
     const newCampaignName = document.getElementById("newCampaignName");
+    const newCampaignSystem = document.getElementById("newCampaignSystem");
     const memberList = document.getElementById("memberList");
     const characterList = document.getElementById("characterList");
     const gmControls = document.getElementById("gmControls");
@@ -75,14 +85,15 @@
     const playerCharacterSelect = document.getElementById("playerCharacterSelect");
     const savePlayerCharacterBtn = document.getElementById("savePlayerCharacterBtn");
     const playerCharacterStatus = document.getElementById("playerCharacterStatus");
+    const playerSystemHint = document.getElementById("playerSystemHint");
     const invitePlayerBtn = document.getElementById("invitePlayerBtn");
     const inviteFriendSelect = document.getElementById("inviteFriendSelect");
+    const inviteSystemSelect = document.getElementById("inviteSystemSelect");
 
     let currentUser = null;
     let memberships = [];
     let playerCharacters = [];
     let friends = [];
-    let realtimeChannels = [];
 
     async function requireUser() {
       const { data: { user } } = await sb.auth.getUser();
@@ -93,15 +104,15 @@
       return user;
     }
 
-    function selectedGameId() {
-      return gameSelect.value || null;
-    }
+    function selectedGameId() { return gameSelect.value || null; }
+    function selectedMembership() { return memberships.find(m => String(m.campaign_id) === String(selectedGameId())); }
+    function selectedCampaignSystem() { return selectedMembership()?.campaigns?.system || 'webrunning'; }
 
     async function loadGames() {
       currentUser = await requireUser();
       const { data, error } = await sb
         .from("campaign_members")
-        .select("campaign_id, role, campaigns(id, name, gm_user_id)")
+        .select("campaign_id, role, campaigns(id, name, gm_user_id, system)")
         .eq("user_id", currentUser.id)
         .order("joined_at", { ascending: true });
 
@@ -118,34 +129,18 @@
         memberList.textContent = "No game selected.";
         characterList.textContent = "No game selected.";
         playerCharacterControls.classList.add("hidden");
-        playerCharacterSelect.innerHTML = "";
-        playerCharacterStatus.textContent = "";
         return;
       }
 
       memberships.forEach(m => {
         const option = document.createElement("option");
         option.value = m.campaign_id;
-        option.textContent = `${m.campaigns?.name || "Unnamed Campaign"} (${m.role.toUpperCase()})`;
+        const systemLabel = (m.campaigns?.system || 'webrunning').toUpperCase();
+        option.textContent = `${m.campaigns?.name || "Unnamed Campaign"} [${systemLabel}] (${m.role.toUpperCase()})`;
         gameSelect.appendChild(option);
       });
 
       await loadGameDetails();
-    }
-
-    async function areFriends(userIdA, userIdB) {
-      const [a, b] = [userIdA, userIdB].sort();
-      const { data, error } = await sb
-        .from("friendships")
-        .select("id")
-        .eq("user_a", a)
-        .eq("user_b", b)
-        .maybeSingle();
-
-      if (error) {
-        throw error;
-      }
-      return !!data;
     }
 
     async function loadFriendInviteOptions() {
@@ -157,32 +152,14 @@
         .order("created_at", { ascending: false });
 
       inviteFriendSelect.innerHTML = "<option value=''>-- Select friend --</option>";
-
-      if (error) {
-        gameStatus.textContent = `Failed to load friends: ${error.message}`;
-        return;
-      }
+      if (error) return;
 
       const friendIds = (data || []).map(row => row.user_a === currentUser.id ? row.user_b : row.user_a);
-      if (!friendIds.length) {
-        friends = [];
-        return;
-      }
+      if (!friendIds.length) return;
 
-      const { data: profiles, error: profileError } = await sb
-        .from("profile_directory")
-        .select("id, username")
-        .in("id", friendIds);
-
-      if (profileError) {
-        gameStatus.textContent = `Failed to load friend usernames: ${profileError.message}`;
-        return;
-      }
-
+      const { data: profiles } = await sb.from("profile_directory").select("id, username").in("id", friendIds);
       const byId = Object.fromEntries((profiles || []).map(profile => [profile.id, profile]));
-      friends = friendIds
-        .map(id => byId[id])
-        .filter(Boolean);
+      friends = friendIds.map(id => byId[id]).filter(Boolean);
 
       friends.forEach(friend => {
         const option = document.createElement("option");
@@ -192,23 +169,25 @@
       });
     }
 
+    function assignmentCharacterId(row) {
+      return row.character_system === 'xrrpg' ? row.xrrpg_character_id : row.webrunning_character_id;
+    }
+
     async function loadGameDetails() {
       const campaignId = selectedGameId();
       if (!campaignId) return;
-
-      const membership = memberships.find(m => String(m.campaign_id) === String(campaignId));
+      const membership = selectedMembership();
+      const system = selectedCampaignSystem();
       const isGm = membership?.role === "gm";
       const isPlayer = membership?.role === "player";
+
       gmControls.classList.toggle("hidden", !isGm);
       playerCharacterControls.classList.toggle("hidden", !isPlayer);
-      gameStatus.textContent = isGm ? "You are the GM for this game." : "You are a player in this game.";
+      playerSystemHint.textContent = `This campaign uses ${system.toUpperCase()} characters.`;
+      inviteSystemSelect.value = system;
+      gameStatus.textContent = `${isGm ? 'You are the GM' : 'You are a player'} for this ${system.toUpperCase()} game.`;
 
-      if (isPlayer) {
-        await loadPlayerCharacterOptions(campaignId);
-      } else {
-        playerCharacterSelect.innerHTML = "";
-        playerCharacterStatus.textContent = "";
-      }
+      if (isPlayer) await loadPlayerCharacterOptions(campaignId, system);
 
       const { data: members, error: membersError } = await sb
         .from("campaign_members")
@@ -220,165 +199,58 @@
         memberList.textContent = `Failed to load players: ${membersError.message}`;
       } else {
         const ids = (members || []).map(m => m.user_id);
-        let profiles = [];
-        if (ids.length) {
-          const { data: pData } = await sb.from("profile_directory").select("id, username").in("id", ids);
-          profiles = pData || [];
-        }
-        const byId = Object.fromEntries(profiles.map(p => [p.id, p.username || "(no username)"]));
-        memberList.innerHTML = (members || []).map(m => {
-          const role = m.role === "gm" ? "GM" : "Player";
-          return `<div>• ${byId[m.user_id] || m.user_id} — ${role}</div>`;
-        }).join("") || "No members yet.";
+        const { data: profiles } = ids.length
+          ? await sb.from("profile_directory").select("id, username").in("id", ids)
+          : { data: [] };
+        const byId = Object.fromEntries((profiles || []).map(p => [p.id, p.username || "(no username)"]));
+        memberList.innerHTML = (members || []).map(m => `<div>• ${byId[m.user_id] || m.user_id} — ${m.role === 'gm' ? 'GM' : 'Player'}</div>`).join('') || 'No members yet.';
       }
 
       const { data: assignments, error: assignmentError } = await sb
         .from("campaign_character_assignments")
-        .select("character_id, user_id, webrunning_characters(id, name, base_stats)")
+        .select("user_id, character_system, webrunning_character_id, xrrpg_character_id, webrunning_characters(id, name, base_stats), xrrpg_characters(id, name, base_stats)")
         .eq("campaign_id", campaignId)
         .order("assigned_at", { ascending: true });
 
       if (assignmentError) {
         characterList.textContent = `Failed to load characters: ${assignmentError.message}`;
-      } else if (!(assignments || []).length) {
-        characterList.textContent = "No characters assigned to this game yet.";
-      } else {
-        characterList.innerHTML = assignments.map(row => {
-          const c = row.webrunning_characters;
-          const link = `/webrunning-2.0/webrunning-character.html?id=${row.character_id}&campaign_id=${campaignId}&readonly=1`;
-          const stats = c?.base_stats || {};
-          const statRows = [
-            [
-              ["Lv", stats.level ?? 1],
-              ["XP", stats.xp ?? 0],
-              ["Luck", stats.luck ?? 0]
-            ],
-            [
-              ["HP", `${stats.current_hp ?? stats.hp ?? 0}/${stats.hp ?? 0}`],
-              ["Energy Cap", stats.energy_cap ?? 0],
-              ["Essence", stats.essence ?? 0]
-            ],
-            [
-              ["Power", stats.power ?? 0],
-              ["Defense", stats.defense ?? 0],
-              ["Speed", stats.speed ?? 0],
-              ["Int", stats.intelligence ?? 0]
-            ]
-          ];
-          return `
-            <article class="assigned-character-card">
-              <div class="assigned-character-header">
-                <a class="assigned-character-name" href="${link}">${c?.name || "Unnamed character"}</a>
-                <span class="assigned-character-role muted">Read-only</span>
-              </div>
-              <div class="assigned-character-stats">
-                ${statRows.map((row) => `
-                  <div class="assigned-character-stats-row">
-                    ${row.map(([label, value]) => `<div class="assigned-stat"><span class="assigned-stat-label">${label}</span><span class="assigned-stat-value">${value}</span></div>`).join("")}
-                  </div>
-                `).join("")}
-              </div>
-            </article>
-          `;
-        }).join("");
+        return;
       }
-    }
-
-    function clearRealtimeSubscriptions() {
-      realtimeChannels.forEach(channel => sb.removeChannel(channel));
-      realtimeChannels = [];
-    }
-
-    function subscribeCampaignRealtime() {
-      clearRealtimeSubscriptions();
-      if (!currentUser?.id) return;
-
-      const refreshAll = () => {
-        loadGames();
-        loadFriendInviteOptions();
-      };
-
-      const membershipChannel = sb
-        .channel(`campaign-members-${currentUser.id}`)
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "campaign_members"
-        }, refreshAll)
-        .subscribe();
-
-      const inviteChannel = sb
-        .channel(`campaign-invites-${currentUser.id}`)
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "campaign_invites"
-        }, refreshAll)
-        .subscribe();
-
-      const assignmentChannel = sb
-        .channel(`campaign-assignments-${currentUser.id}`)
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "campaign_character_assignments"
-        }, () => loadGameDetails())
-        .subscribe();
-
-      const charactersChannel = sb
-        .channel(`webrunning-characters-${currentUser.id}`)
-        .on("postgres_changes", {
-          event: "UPDATE",
-          schema: "public",
-          table: "webrunning_characters"
-        }, () => loadGameDetails())
-        .subscribe();
-
-      const friendshipsChannel = sb
-        .channel(`friendships-${currentUser.id}`)
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "friendships"
-        }, () => loadFriendInviteOptions())
-        .subscribe();
-
-      realtimeChannels.push(membershipChannel, inviteChannel, assignmentChannel, charactersChannel, friendshipsChannel);
-    }
-
-    async function loadPlayerCharacterOptions(campaignId) {
-      const [{ data: chars, error: charsError }, { data: assignment, error: assignmentError }] = await Promise.all([
-        sb
-          .from("webrunning_characters")
-          .select("id, name, base_stats")
-          .eq("user_id", currentUser.id)
-          .order("created_at", { ascending: true }),
-        sb
-          .from("campaign_character_assignments")
-          .select("id, character_id")
-          .eq("campaign_id", campaignId)
-          .eq("user_id", currentUser.id)
-          .maybeSingle()
-      ]);
-
-      if (charsError) {
-        playerCharacterStatus.textContent = `Failed to load your characters: ${charsError.message}`;
+      if (!(assignments || []).length) {
+        characterList.textContent = "No characters assigned to this game yet.";
         return;
       }
 
-      if (assignmentError) {
-        playerCharacterStatus.textContent = `Failed to load your assignment: ${assignmentError.message}`;
+      characterList.innerHTML = assignments.map(row => {
+        const char = row.character_system === 'xrrpg' ? row.xrrpg_characters : row.webrunning_characters;
+        const id = assignmentCharacterId(row);
+        const link = row.character_system === 'xrrpg'
+          ? `/xrrpg-2.0/xrrpg-character.html?id=${id}&campaign_id=${campaignId}&readonly=1`
+          : `/webrunning-2.0/webrunning-character.html?id=${id}&campaign_id=${campaignId}&readonly=1`;
+        return `<article class="assigned-character-card"><div class="assigned-character-header"><a class="assigned-character-name" href="${link}">${char?.name || 'Unnamed character'}</a><span class="assigned-character-role muted">${row.character_system.toUpperCase()}</span></div></article>`;
+      }).join('');
+    }
+
+    async function loadPlayerCharacterOptions(campaignId, system) {
+      const characterTable = system === 'xrrpg' ? 'xrrpg_characters' : 'webrunning_characters';
+      const characterIdColumn = system === 'xrrpg' ? 'xrrpg_character_id' : 'webrunning_character_id';
+      const [{ data: chars, error: charsError }, { data: assignment, error: assignmentError }] = await Promise.all([
+        sb.from(characterTable).select("id, name, base_stats").eq("user_id", currentUser.id).order("created_at", { ascending: true }),
+        sb.from("campaign_character_assignments")
+          .select(`id, ${characterIdColumn}`)
+          .eq("campaign_id", campaignId)
+          .eq("user_id", currentUser.id)
+          .eq("character_system", system)
+          .maybeSingle()
+      ]);
+
+      if (charsError || assignmentError) {
+        playerCharacterStatus.textContent = `Failed to load your characters.`;
         return;
       }
 
       playerCharacters = chars || [];
-      playerCharacterSelect.innerHTML = "";
-
-      const noneOption = document.createElement("option");
-      noneOption.value = "";
-      noneOption.textContent = "-- No character selected --";
-      playerCharacterSelect.appendChild(noneOption);
-
+      playerCharacterSelect.innerHTML = "<option value=''>-- No character selected --</option>";
       playerCharacters.forEach(character => {
         const option = document.createElement("option");
         option.value = character.id;
@@ -386,79 +258,49 @@
         playerCharacterSelect.appendChild(option);
       });
 
-      playerCharacterSelect.value = assignment?.character_id || "";
-
+      playerCharacterSelect.value = assignment?.[characterIdColumn] || "";
       if (!playerCharacters.length) {
-        playerCharacterStatus.textContent = "You have no webrunning characters yet. Create one in Character Manager first.";
-        return;
+        playerCharacterStatus.textContent = `You have no ${system.toUpperCase()} characters yet.`;
+      } else {
+        playerCharacterStatus.textContent = assignment ? "Your current campaign character is selected below." : "No campaign character selected yet.";
       }
-
-      playerCharacterStatus.textContent = assignment?.character_id
-        ? "Your current campaign character is selected below."
-        : "No campaign character selected yet.";
     }
 
     invitePlayerBtn.onclick = async () => {
       const campaignId = selectedGameId();
       const inviteeId = inviteFriendSelect.value;
+      const system = selectedCampaignSystem();
       if (!campaignId || !inviteeId) {
         gameStatus.textContent = "Pick a game and select a friend to invite.";
-        return;
-      }
-
-      const friendProfile = friends.find(friend => String(friend.id) === String(inviteeId));
-      if (!friendProfile) {
-        gameStatus.textContent = "Selected friend was not found. Refresh and try again.";
-        return;
-      }
-
-      if (friendProfile.id === currentUser.id) {
-        gameStatus.textContent = "You are already in this campaign as the GM.";
-        return;
-      }
-
-      try {
-        const friendMatch = await areFriends(currentUser.id, friendProfile.id);
-        if (!friendMatch) {
-          gameStatus.textContent = "You can only invite users who are already your friend.";
-          return;
-        }
-      } catch (error) {
-        gameStatus.textContent = `Failed to verify friendship: ${error.message}`;
         return;
       }
 
       const { error: inviteError } = await sb.from("campaign_invites").insert({
         campaign_id: campaignId,
         inviter_user_id: currentUser.id,
-        invitee_user_id: friendProfile.id,
-        status: "pending"
+        invitee_user_id: inviteeId,
+        status: "pending",
+        required_character_system: system
       });
 
       if (inviteError) {
         gameStatus.textContent = `Failed to invite: ${inviteError.message}`;
         return;
       }
-
-      gameStatus.textContent = `Sent campaign invite to ${friendProfile.username || "your friend"}.`;
+      gameStatus.textContent = `Sent ${system.toUpperCase()} campaign invite.`;
       inviteFriendSelect.value = "";
     };
 
     createCampaignBtn.onclick = async () => {
       const name = newCampaignName.value.trim();
-
+      const system = newCampaignSystem.value;
       if (!name) {
         gameStatus.textContent = "Enter a campaign name first.";
         return;
       }
 
-      const { data: insertedCampaign, error: campaignError } = await sb
-        .from("campaigns")
-        .insert({
-          name,
-          gm_user_id: currentUser.id,
-          status: "active"
-        })
+      const { data: insertedCampaign, error: campaignError } = await sb.from("campaigns")
+        .insert({ name, gm_user_id: currentUser.id, status: "active", system })
         .select("id, name")
         .single();
 
@@ -467,14 +309,11 @@
         return;
       }
 
-      const { error: gmMembershipError } = await sb
-        .from("campaign_members")
-        .insert({
-          campaign_id: insertedCampaign.id,
-          user_id: currentUser.id,
-          role: "gm"
-        });
-
+      const { error: gmMembershipError } = await sb.from("campaign_members").insert({
+        campaign_id: insertedCampaign.id,
+        user_id: currentUser.id,
+        role: "gm"
+      });
       if (gmMembershipError) {
         gameStatus.textContent = `Campaign created, but failed to register you as GM: ${gmMembershipError.message}`;
         return;
@@ -489,6 +328,7 @@
 
     savePlayerCharacterBtn.onclick = async () => {
       const campaignId = selectedGameId();
+      const system = selectedCampaignSystem();
       if (!campaignId) {
         playerCharacterStatus.textContent = "Select a campaign first.";
         return;
@@ -496,66 +336,41 @@
 
       const selectedCharacterId = playerCharacterSelect.value || null;
 
+      await sb.from("campaign_character_assignments")
+        .delete()
+        .eq("campaign_id", campaignId)
+        .eq("user_id", currentUser.id);
+
       if (!selectedCharacterId) {
-        const { error } = await sb
-          .from("campaign_character_assignments")
-          .delete()
-          .eq("campaign_id", campaignId)
-          .eq("user_id", currentUser.id);
-
-        if (error) {
-          playerCharacterStatus.textContent = `Failed to clear selection: ${error.message}`;
-          return;
-        }
-
         playerCharacterStatus.textContent = "Cleared your character selection for this campaign.";
         await loadGameDetails();
         return;
       }
 
-      const selectedCharacter = playerCharacters.find(character => String(character.id) === String(selectedCharacterId));
-      if (!selectedCharacter) {
-        playerCharacterStatus.textContent = "Invalid character selection.";
-        return;
-      }
-
-      const { error: deleteError } = await sb
-        .from("campaign_character_assignments")
-        .delete()
-        .eq("campaign_id", campaignId)
-        .eq("user_id", currentUser.id);
-
-      if (deleteError) {
-        playerCharacterStatus.textContent = `Failed to save character selection: ${deleteError.message}`;
-        return;
-      }
-
-      const { error: insertError } = await sb.from("campaign_character_assignments").insert({
+      const payload = {
         campaign_id: campaignId,
         user_id: currentUser.id,
-        character_id: selectedCharacterId
-      });
-
+        character_system: system,
+        webrunning_character_id: system === 'webrunning' ? selectedCharacterId : null,
+        xrrpg_character_id: system === 'xrrpg' ? selectedCharacterId : null
+      };
+      const { error: insertError } = await sb.from("campaign_character_assignments").insert(payload);
       if (insertError) {
         playerCharacterStatus.textContent = `Failed to save character selection: ${insertError.message}`;
         return;
       }
 
-      playerCharacterStatus.textContent = `Selected ${selectedCharacter.name || "your character"} for this campaign.`;
+      const selectedCharacter = playerCharacters.find(character => String(character.id) === String(selectedCharacterId));
+      playerCharacterStatus.textContent = `Selected ${selectedCharacter?.name || "your character"} for this campaign.`;
       await loadGameDetails();
     };
 
     gameSelect.addEventListener("change", loadGameDetails);
 
-    async function initializePage() {
+    (async function initializePage() {
       await loadGames();
       await loadFriendInviteOptions();
-      subscribeCampaignRealtime();
-    }
-
-    window.addEventListener("beforeunload", clearRealtimeSubscriptions);
-
-    initializePage();
+    })();
   </script>
 </body>
 </html>

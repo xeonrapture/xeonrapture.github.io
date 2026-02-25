@@ -22,17 +22,17 @@
     <table class="table-full">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Lvl</th>
-          <th>HP</th>
-          <th>XP</th>
-          <th>Luck</th>
-          <th>Ess</th>
-          <th>P</th>
-          <th>D</th>
-          <th>S</th>
-          <th>I</th>
-          <th>Slots</th>
+          <th><button type="button" class="table-sort" data-sort="name">Name</button></th>
+          <th><button type="button" class="table-sort" data-sort="level">Lvl</button></th>
+          <th><button type="button" class="table-sort" data-sort="hp">HP</button></th>
+          <th><button type="button" class="table-sort" data-sort="xp">XP</button></th>
+          <th><button type="button" class="table-sort" data-sort="luck">Luck</button></th>
+          <th><button type="button" class="table-sort" data-sort="essence">Ess</button></th>
+          <th><button type="button" class="table-sort" data-sort="power">P</button></th>
+          <th><button type="button" class="table-sort" data-sort="defense">D</button></th>
+          <th><button type="button" class="table-sort" data-sort="speed">S</button></th>
+          <th><button type="button" class="table-sort" data-sort="intelligence">I</button></th>
+          <th><button type="button" class="table-sort" data-sort="inventory_slots">Slots</button></th>
           <th></th>
         </tr>
       </thead>
@@ -136,6 +136,7 @@
     let characters = [];
     let activeCharId = null;
     let currentUser = null;
+    let sortState = { key: "name", direction: "asc" };
 
     async function requireUser() {
       const { data: { user } } = await sb.auth.getUser();
@@ -176,8 +177,17 @@
         return;
       }
 
+      const sorted = [...characters].sort((a, b) => {
+        const dir = sortState.direction === "asc" ? 1 : -1;
+        const key = sortState.key;
+        const av = key === "name" ? (a.name || "").toLowerCase() : Number(s(a, key) || 0);
+        const bv = key === "name" ? (b.name || "").toLowerCase() : Number(s(b, key) || 0);
+        if (av < bv) return -1 * dir;
+        if (av > bv) return 1 * dir;
+        return 0;
+      });
       table.innerHTML = "";
-      for (const c of characters) {
+      for (const c of sorted) {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${c.name}</td>
@@ -703,6 +713,19 @@
         alert(`Import failed: ${e.message}`);
       }
     };
+
+
+    document.querySelectorAll(".table-sort").forEach(button => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.sort;
+        if (sortState.key === key) {
+          sortState.direction = sortState.direction === "asc" ? "desc" : "asc";
+        } else {
+          sortState = { key, direction: "asc" };
+        }
+        render();
+      });
+    });
 
     window.addEventListener("DOMContentLoaded", () => {
       loadCharacters();

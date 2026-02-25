@@ -109,7 +109,7 @@
           .eq("target_user_id", currentUser.id)
           .eq("status", "pending"),
         sb.from("campaign_invites")
-          .select("id, campaign_id, inviter_user_id, created_at")
+          .select("id, campaign_id, inviter_user_id, required_character_system, created_at")
           .eq("invitee_user_id", currentUser.id)
           .eq("status", "pending")
       ]);
@@ -130,7 +130,7 @@
         ...(campaignResult.data || []).map(row => ({
           id: row.id,
           type: "campaign_invite",
-          payload: { campaign_id: row.campaign_id, inviter_user_id: row.inviter_user_id },
+          payload: { campaign_id: row.campaign_id, inviter_user_id: row.inviter_user_id, required_character_system: row.required_character_system || "webrunning" },
           created_at: row.created_at
         }))
       ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -168,7 +168,7 @@
         const inviterName = usernamesById[inviterId] || "Someone";
         details.textContent = notification.type === "friend_request"
           ? `${inviterName} invited you to be friends.`
-          : `${inviterName} invited you to join a party.`;
+          : `${inviterName} invited you to join a ${String(notification.payload?.required_character_system || 'webrunning').toUpperCase()} party.`;
 
         const actions = document.createElement("div");
         actions.className = "wr-inline-flex wr-mt-0-5";

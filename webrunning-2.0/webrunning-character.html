@@ -439,6 +439,11 @@
         <button class="collapse-toggle" type="button" aria-label="Show section" title="Show section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button>
       </div>
       <div class="collapsible-body">
+        <div class="wr-inline-flex" style="gap:0.5rem; margin-bottom:0.5rem;">
+          <button type="button" class="table-sort" data-history-sort="createdAt">Sort by Date</button>
+          <button type="button" class="table-sort" data-history-sort="label">Sort by Label</button>
+          <button type="button" class="table-sort" data-history-sort="type">Sort by Type</button>
+        </div>
         <div id="deletedGearHistory" class="deletion-history"></div>
       </div>
     </section>
@@ -908,6 +913,7 @@
     let pendingModificationRecord = null;
     let activeConsumableGearMod = null;
     let historyRedoStack = [];
+    let historySortState = { key: "createdAt", direction: "desc" };
     let readOnlyMode = false;
     let characterRealtimeChannel = null;
     let canEditCharacter = true;
@@ -5258,7 +5264,16 @@
         elements.deletedGearHistory.innerHTML = `<span class="muted">No edit history yet.</span>`;
         return;
       }
-      elements.deletedGearHistory.innerHTML = editHistory
+      const sortedHistory = [...editHistory].sort((a, b) => {
+        const dir = historySortState.direction === "asc" ? 1 : -1;
+        const key = historySortState.key;
+        const av = key === "createdAt" ? Number(new Date(a.createdAt || 0)) : String(a[key] || "").toLowerCase();
+        const bv = key === "createdAt" ? Number(new Date(b.createdAt || 0)) : String(b[key] || "").toLowerCase();
+        if (av < bv) return -1 * dir;
+        if (av > bv) return 1 * dir;
+        return 0;
+      });
+      elements.deletedGearHistory.innerHTML = sortedHistory
         .map(record => {
           const title = record.label || formatGearName(record.entry?.gear || {});
           const kind = record.type === "modify"
@@ -6538,6 +6553,17 @@
 
     elements.equippedSlots.addEventListener("click", handleGearListClick);
     elements.inventorySlots.addEventListener("click", handleGearListClick);
+    document.querySelectorAll("[data-history-sort]").forEach(button => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.historySort;
+        if (historySortState.key === key) {
+          historySortState.direction = historySortState.direction === "asc" ? "desc" : "asc";
+        } else {
+          historySortState = { key, direction: "asc" };
+        }
+        renderGearHistory();
+      });
+    });
     elements.localNodeSlots.addEventListener("click", handleGearListClick);
 
     if (elements.clearTempBuffs) {
