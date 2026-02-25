@@ -17,6 +17,7 @@
         </a>
       </div>
       <h1>XRRPG Character Sheet</h1>
+      <div id="ownershipNotice" class="mono muted hidden"></div>
     </header>
 
     <section class="card">
@@ -140,6 +141,11 @@
     </section>
   </main>
 
+  <div id="loadingOverlay" class="xr-loading-overlay hidden" aria-live="polite" aria-busy="true">
+    <div class="xr-loading-spinner" aria-hidden="true"></div>
+    <div id="loadingOverlayText" class="mono">Loading character sheet…</div>
+  </div>
+
   <div id="levelModal" class="xr-modal hidden">
     <div class="xr-modal-backdrop"></div>
     <div class="xr-modal-card">
@@ -250,6 +256,7 @@
   <script src="/shared/nav.js"></script>
   <script src="/xrrpg-2.0/class-abilities.js"></script>
   <script>
+    window.__useLocalLoadingOverlay = true;
     const sb = window.supabaseClient;
     const params = new URLSearchParams(window.location.search);
     const characterId = params.get('id');
@@ -263,6 +270,7 @@
     let historySort = { key: 'created_at', direction: 'desc' };
     let isRendering = false;
     let autosaveTimer = null;
+    let canEdit = false;
     const classAbilities = window.XRRPG_CLASS_ABILITIES || {};
     const ADEPT_CLASSES = new Set(['Warrior', 'Mentalist', 'Tank', 'Druid']);
     const CLASS_SUMMARIES = {
@@ -300,6 +308,45 @@
       8: { stamina_base: 25, skill_mode: 'stat', stat_points: 1, stat_bonus: 1, skill_points: 0, powerful_item_limit: 8, powerful_item_max: 3 },
       9: { stamina_base: 30, skill_mode: 'stat', stat_points: 1, stat_bonus: 2, skill_points: 0, powerful_item_limit: 9, powerful_item_max: 3 }
     };
+
+    function setLoading(message = 'Loading…') {
+      const overlay = document.getElementById('loadingOverlay');
+      const text = document.getElementById('loadingOverlayText');
+      if (text) text.textContent = message;
+      if (overlay) overlay.classList.remove('hidden');
+    }
+
+    function clearLoading() {
+      const overlay = document.getElementById('loadingOverlay');
+      if (overlay) overlay.classList.add('hidden');
+    }
+
+    async function withLoading(message, task) {
+      setLoading(message);
+      try {
+        return await task();
+      } finally {
+        clearLoading();
+      }
+    }
+
+    function applyOwnershipPermissions() {
+      const ownershipNotice = document.getElementById('ownershipNotice');
+      const readOnly = !canEdit;
+      ownershipNotice.classList.toggle('hidden', !readOnly);
+      ownershipNotice.textContent = readOnly ? 'Read-only mode: You can view this character, but only the owner can edit it.' : '';
+
+      const editableIds = [
+        'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
+        'staminaTotalInput','staminaUsedInput','staminaLimitInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
+        'partyTierInput','xenicDecayInput','timesCleansedInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput',
+        'levelUpBtn','takeInjuryBtn','addSkillBtn','confirmLevelBtn','confirmInjuryBtn','saveSkillModalBtn','addLevelAbilityBtn'
+      ];
+      editableIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = readOnly;
+      });
+    }
 
     classNames.forEach(name => {
       const opt = document.createElement('option');
@@ -539,9 +586,11 @@
         </div>
       `).join('');
       wrap.querySelectorAll('[data-skill-name], [data-skill-bonus]').forEach(input => {
+        input.disabled = !canEdit;
         input.oninput = () => updateSkill(Number(input.dataset.skillName ?? input.dataset.skillBonus));
       });
       wrap.querySelectorAll('[data-skill-delete]').forEach(btn => {
+        btn.disabled = !canEdit;
         btn.onclick = () => removeSkill(Number(btn.dataset.skillDelete));
       });
     }
@@ -564,9 +613,11 @@
       }).join('');
 
       wrap.querySelectorAll('[data-heal-type]').forEach(button => {
+        button.disabled = !canEdit;
         button.onclick = () => healInjury(button.dataset.healType, Number(button.dataset.healIndex));
       });
       wrap.querySelectorAll('[data-resolve-type]').forEach(button => {
+        button.disabled = !canEdit;
         button.onclick = () => resolveInjuryDebuff(button.dataset.resolveType, Number(button.dataset.resolveIndex));
       });
     }
@@ -626,6 +677,7 @@
       }
 
       renderSkillList();
+      applyOwnershipPermissions();
       isRendering = false;
     }
 
@@ -647,7 +699,7 @@
           <td>${new Date(row.created_at).toLocaleString()}</td>
           <td>${row.event_type}</td>
           <td>${row.event_label}</td>
-          <td><button type="button" data-undo-id="${row.id}" ${row.event_payload?.undo ? '' : 'disabled'}>Undo</button></td>
+          <td><button type="button" data-undo-id="${row.id}" ${row.event_payload?.undo && canEdit ? '' : 'disabled'}>Undo</button></td>
         </tr>
       `).join('');
     }
@@ -660,6 +712,7 @@
         .single();
       if (error) throw error;
       character = data;
+      canEdit = character.user_id === currentUser.id;
       renderCharacter();
     }
 
@@ -674,6 +727,7 @@
     }
 
     async function addHistory(eventType, eventLabel, eventPayload = {}) {
+      if (!canEdit) return;
       await sb.from('xrrpg_history').insert({
         character_id: characterId,
         user_id: currentUser.id,
@@ -685,6 +739,7 @@
     }
 
     async function persistCharacterDraft() {
+      if (!canEdit) return;
       const name = document.getElementById('nameInput').value.trim();
       const base_stats = readStatsFromInputs();
       const notes = readNotesFromInputs();
@@ -703,13 +758,14 @@
     }
 
     function scheduleAutosave() {
-      if (isRendering || !character) return;
+      if (!canEdit || isRendering || !character) return;
       if (autosaveTimer) window.clearTimeout(autosaveTimer);
       autosaveTimer = window.setTimeout(() => { persistCharacterDraft(); }, 350);
     }
 
     const levelModal = document.getElementById('levelModal');
     document.getElementById('levelUpBtn').onclick = () => {
+      if (!canEdit) return;
       levelModal.classList.remove('hidden');
       document.getElementById('levelMsg').textContent = '';
       document.getElementById('levelAbilityChoices').innerHTML = '';
@@ -726,6 +782,8 @@
     document.getElementById('levelSkillModeSelect').onchange = () => syncSkillUpgradeUi(levelRule(Math.min(9, Number(character.base_stats?.level || 1) + 1)).skill_mode);
 
     document.getElementById('confirmLevelBtn').onclick = async () => {
+      if (!canEdit) return;
+      await withLoading('Applying level up…', async () => {
       const cls = document.getElementById('levelClassSelect').value;
       const progression = [...(character.class_progression || [])];
       const currentLevel = Number(character.base_stats?.level || 1);
@@ -834,9 +892,12 @@
       document.getElementById('levelAbilityChoices').innerHTML = '';
       await loadCharacter();
       document.getElementById('status').textContent = `Level up applied: ${cls} Tier ${tier}.`;
+      });
     };
 
     async function resolveInjuryDebuff(type, index) {
+      if (!canEdit) return;
+      return withLoading('Updating injury…', async () => {
       const base_stats = { ...(character.base_stats || {}) };
       const injuries = Array.isArray(base_stats.injuries) ? [...base_stats.injuries] : [];
       const matchingIndexes = injuries.map((injury, injuryIndex) => ({ injury, injuryIndex })).filter(row => row.injury.type === type);
@@ -853,9 +914,12 @@
       await addHistory('resolve_debuff', `Resolved ${type} injury debuff.`, { type, undo: { character: previousState } });
       await loadCharacter();
       document.getElementById('status').textContent = `${type} debuff resolved.`;
+      });
     }
 
     async function healInjury(type, index) {
+      if (!canEdit) return;
+      return withLoading('Healing injury…', async () => {
       const base_stats = { ...(character.base_stats || {}) };
       const injuries = Array.isArray(base_stats.injuries) ? [...base_stats.injuries] : [];
       const matchingIndexes = injuries
@@ -882,16 +946,22 @@
       await addHistory('heal_injury', `Healed ${type} injury: ${removed.label || 'unnamed'} (+${Number(removed.damage || 0)} HP).`, { type, label: removed.label || '', healed_hp: Number(removed.damage || 0), undo: { character: previousState } });
       await loadCharacter();
       document.getElementById('status').textContent = `Healed ${type} injury.`;
+      });
     }
 
     document.getElementById('addLevelAbilityBtn').onclick = () => addLevelAbilityChoice();
 
     const injuryModal = document.getElementById('injuryModal');
-    document.getElementById('takeInjuryBtn').onclick = () => injuryModal.classList.remove('hidden');
+    document.getElementById('takeInjuryBtn').onclick = () => {
+      if (!canEdit) return;
+      injuryModal.classList.remove('hidden');
+    };
     injuryModal.querySelector('.xr-modal-backdrop').onclick = () => injuryModal.classList.add('hidden');
     document.getElementById('cancelInjuryBtn').onclick = () => injuryModal.classList.add('hidden');
 
     document.getElementById('confirmInjuryBtn').onclick = async () => {
+      if (!canEdit) return;
+      await withLoading('Applying injury…', async () => {
       const type = document.getElementById('injuryTypeInput').value;
       const label = document.getElementById('injuryLabelInput').value.trim();
       const damageByType = { minor: 1, severe: 2, critical: 3 };
@@ -916,10 +986,12 @@
       injuryModal.classList.add('hidden');
       await loadCharacter();
       document.getElementById('status').textContent = `Applied ${type} injury (${damage} dmg).`;
+      });
     };
 
 
     async function persistSkills(nextSkills, historyLabel, trackHistory = true) {
+      if (!canEdit) return;
       const previousState = cloneCharacterState();
       const { error } = await sb.from('xrrpg_characters')
         .update({ skills: nextSkills, updated_at: new Date().toISOString() })
@@ -940,6 +1012,7 @@
     const skillUpdateTimers = {};
 
     async function updateSkill(index) {
+      if (!canEdit) return;
       const skills = [...(character.skills || [])];
       if (!skills[index]) return;
       const name = document.querySelector(`[data-skill-name="${index}"]`).value.trim();
@@ -953,13 +1026,17 @@
     }
 
     async function removeSkill(index) {
+      if (!canEdit) return;
       const skills = [...(character.skills || [])];
       const removed = skills.splice(index, 1)[0];
-      await persistSkills(skills, `Removed skill ${removed?.name || 'unnamed'}.`);
+      await withLoading('Removing skill…', async () => {
+        await persistSkills(skills, `Removed skill ${removed?.name || 'unnamed'}.`);
+      });
     }
 
     const skillModal = document.getElementById('skillModal');
     document.getElementById('addSkillBtn').onclick = () => {
+      if (!canEdit) return;
       document.getElementById('skillModalMsg').textContent = '';
       document.getElementById('skillModalName').value = '';
       document.getElementById('skillModalBonus').value = '2';
@@ -968,6 +1045,7 @@
     skillModal.querySelector('.xr-modal-backdrop').onclick = () => skillModal.classList.add('hidden');
     document.getElementById('cancelSkillModalBtn').onclick = () => skillModal.classList.add('hidden');
     document.getElementById('saveSkillModalBtn').onclick = async () => {
+      if (!canEdit) return;
       const name = document.getElementById('skillModalName').value.trim();
       const bonus = Number(document.getElementById('skillModalBonus').value) || 2;
       if (!name) {
@@ -975,11 +1053,15 @@
         return;
       }
       const skills = [...(character.skills || []), { name, bonus }];
-      await persistSkills(skills, `Added skill ${name} (+${bonus}).`);
+      await withLoading('Saving skill…', async () => {
+        await persistSkills(skills, `Added skill ${name} (+${bonus}).`);
+      });
       skillModal.classList.add('hidden');
     };
 
     async function undoHistoryEvent(historyId) {
+      if (!canEdit) return;
+      return withLoading('Undoing history event…', async () => {
       const row = history.find(item => item.id === historyId);
       const snapshot = row?.event_payload?.undo?.character;
       if (!snapshot) return;
@@ -998,6 +1080,7 @@
       await addHistory('undo', `Undid: ${row.event_label}`, {});
       await loadCharacter();
       document.getElementById('status').textContent = 'Undo applied.';
+      });
     }
 
     document.querySelectorAll('.table-sort').forEach(button => {
@@ -1014,8 +1097,10 @@
 
     (async () => {
       try {
-        await loadCharacter();
-        await loadHistory();
+        await withLoading('Loading character sheet…', async () => {
+          await loadCharacter();
+          await loadHistory();
+        });
         const autosaveTargets = [
           'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
           'staminaTotalInput','staminaUsedInput','staminaLimitInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
