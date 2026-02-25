@@ -20,19 +20,36 @@ where cca.id = r.id
 create unique index if not exists idx_campaign_character_assignments_campaign_user_unique
   on public.campaign_character_assignments(campaign_id, user_id);
 
--- 3) Enforce ownership: a player can only select one of their own webrunning characters.
+-- 3) Enforce ownership for both legacy (character_id) and system-specific assignment columns.
 create or replace function public.enforce_campaign_assignment_character_owner()
 returns trigger
 language plpgsql
 as $$
 begin
-  if not exists (
-    select 1
-    from public.webrunning_characters wc
-    where wc.id = new.character_id
-      and wc.user_id = new.user_id
-  ) then
-    raise exception 'campaign assignment user_id must own character_id';
+  if coalesce(new.character_system, 'webrunning') = 'xrrpg' then
+    if new.xrrpg_character_id is null then
+      raise exception 'campaign assignment missing xrrpg_character_id';
+    end if;
+    if not exists (
+      select 1
+      from public.xrrpg_characters xc
+      where xc.id = new.xrrpg_character_id
+        and xc.user_id = new.user_id
+    ) then
+      raise exception 'assignment user must own selected xrrpg character';
+    end if;
+  else
+    if coalesce(new.webrunning_character_id, new.character_id) is null then
+      raise exception 'campaign assignment missing webrunning character id';
+    end if;
+    if not exists (
+      select 1
+      from public.webrunning_characters wc
+      where wc.id = coalesce(new.webrunning_character_id, new.character_id)
+        and wc.user_id = new.user_id
+    ) then
+      raise exception 'campaign assignment user_id must own character_id';
+    end if;
   end if;
 
   return new;
