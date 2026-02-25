@@ -36,10 +36,12 @@
       <h2>Create XRRPG Character</h2>
       <p id="wizardStepLabel" class="muted">Step 1 / 3</p>
 
-      <div data-step="1" class="wizard-step">
+      <div data-step="1" class="wizard-step xrrpg-form-grid">
         <label>Name <input id="nameInput" maxlength="48" /></label>
-        <label>Species <input id="speciesInput" maxlength="48" placeholder="Human, Fey, etc." /></label>
-        <label>Chroma
+        <label>Species <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Species" target="_blank" rel="noopener noreferrer">rules</a>
+          <select id="speciesInput"></select>
+        </label>
+        <label>Chroma <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Chroma" target="_blank" rel="noopener noreferrer">rules</a>
           <select id="chromaInput">
             <option>Red</option><option>Blue</option><option>Green</option><option>Grey</option><option>Clear</option>
           </select>
@@ -47,30 +49,49 @@
       </div>
 
       <div data-step="2" class="wizard-step hidden">
-        <strong>Stat Setup (from XRRPG 2.0 Quick Start)</strong>
-        <label><input type="radio" name="statPreset" value="plus2" checked> +2 chroma stat and +1 to one other stat</label>
-        <label><input type="radio" name="statPreset" value="plus3"> +3 chroma stat, +1 to one stat, and -1 to another stat</label>
-        <label><input type="radio" name="statPreset" value="dual2"> +2 to two stats, -1 to one stat (multi chroma)</label>
-        <label><input type="radio" name="statPreset" value="clear"> Clear chroma (+1 to three stats)</label>
-        <div class="stat-inputs">
-          <label>Bonus stat <select id="bonusStat"></select></label>
-          <label>Penalty stat <select id="penaltyStat"></select></label>
-          <label>Second +2 stat <select id="secondBonusStat"></select></label>
+        <div class="xrrpg-row">
+          <strong>Stat Setup</strong>
+          <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Stats" target="_blank" rel="noopener noreferrer">rules</a>
+        </div>
+        <p class="muted xrrpg-subtitle">Choose a setup from the Quick Start options.</p>
+        <div class="xrrpg-inline-fields">
+          <label>Preset
+            <select id="statPresetSelect">
+              <option value="plus2">+2 chroma stat and +1 to one other stat</option>
+              <option value="plus3">+3 chroma stat, +1 to one stat, and -1 to one stat</option>
+              <option value="dual2">+2 to two stats and -1 to one stat</option>
+              <option value="clear">Clear chroma (+1 to three stats)</option>
+            </select>
+          </label>
+          <label id="bonusStatWrap">Bonus stat <select id="bonusStat"></select></label>
+          <label id="secondBonusStatWrap">Second plus stat <select id="secondBonusStat"></select></label>
+          <label id="thirdBonusStatWrap" class="hidden">Third +1 stat <select id="thirdBonusStat"></select></label>
+          <label id="penaltyStatWrap">Penalty stat <select id="penaltyStat"></select></label>
         </div>
       </div>
 
-      <div data-step="3" class="wizard-step hidden">
-        <label>Starting class
+      <div data-step="3" class="wizard-step xrrpg-form-grid hidden">
+        <label>Starting class <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Classes" target="_blank" rel="noopener noreferrer">rules</a>
           <select id="classInput"></select>
         </label>
-        <label>Skill 1 <input id="skill1" maxlength="48" placeholder="Stealth" /></label>
-        <label>Skill 2 <input id="skill2" maxlength="48" placeholder="Investigation" /></label>
+        <label>Skill 1 <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Skills" target="_blank" rel="noopener noreferrer">rules</a>
+          <input id="skill1" maxlength="48" placeholder="Stealth" />
+        </label>
+        <label>Skill 1 Plus
+          <select id="skill1Bonus"><option value="2">+2 (General)</option><option value="3">+3 (Specific)</option></select>
+        </label>
+        <label>Skill 2
+          <input id="skill2" maxlength="48" placeholder="Investigation" />
+        </label>
+        <label>Skill 2 Plus
+          <select id="skill2Bonus"><option value="2">+2 (General)</option><option value="3">+3 (Specific)</option></select>
+        </label>
       </div>
 
       <div class="xr-modal-actions">
         <button id="prevStepBtn" type="button">Back</button>
         <button id="nextStepBtn" type="button">Next</button>
-        <button id="saveBtn" type="button" class="hidden">Save</button>
+        <button id="saveBtn" type="button" class="hidden">Create</button>
       </div>
       <div id="modalMsg" class="mono muted"></div>
     </div>
@@ -85,6 +106,7 @@
     const classNames = [
       'Warrior','Mentalist','Tank','Druid','Elementalist','Summoner','Mystic','Alchemist','Physic','Possessor','Bard','Enchanter','Sorcerer','Warlock','Cleric','Demititan','Emitter Specialist','Dronemaster','Brawler','Explosives Expert','Gunslinger','Swordmaster'
     ];
+    const speciesOptions = ['Humans','Drokk','Exoziniks','Kaldi','Pbosh','Rtolka','Cyclops','Walua','Osadona','Oro'];
     let currentUser = null;
     let characters = [];
     let sortState = { key: 'name', direction: 'asc' };
@@ -93,7 +115,9 @@
     const bonusStat = document.getElementById('bonusStat');
     const penaltyStat = document.getElementById('penaltyStat');
     const secondBonusStat = document.getElementById('secondBonusStat');
-    [bonusStat, penaltyStat, secondBonusStat].forEach(select => {
+    const thirdBonusStat = document.getElementById('thirdBonusStat');
+    const statPresetSelect = document.getElementById('statPresetSelect');
+    [bonusStat, penaltyStat, secondBonusStat, thirdBonusStat].forEach(select => {
       stats.forEach(stat => {
         const opt = document.createElement('option');
         opt.value = stat;
@@ -101,8 +125,23 @@
         select.appendChild(opt);
       });
     });
-    penaltyStat.value = 'wit';
-    secondBonusStat.value = 'endurance';
+
+    const speciesInput = document.getElementById('speciesInput');
+    speciesOptions.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      speciesInput.appendChild(opt);
+    });
+
+    function updateStatSetupVisibility() {
+      const preset = statPresetSelect.value;
+      document.getElementById('penaltyStatWrap').classList.toggle('hidden', !(preset === 'plus3' || preset === 'dual2'));
+      document.getElementById('secondBonusStatWrap').classList.toggle('hidden', !(preset === 'dual2' || preset === 'clear'));
+      document.getElementById('thirdBonusStatWrap').classList.toggle('hidden', preset !== 'clear');
+    }
+    statPresetSelect.addEventListener('change', updateStatSetupVisibility);
+    updateStatSetupVisibility();
 
     const classInput = document.getElementById('classInput');
     classNames.forEach(name => {
@@ -179,7 +218,7 @@
       const chroma = document.getElementById('chromaInput').value;
       const chromaMap = { Red: 'vigor', Blue: 'endurance', Green: 'intuition', Grey: 'wit' };
       const main = chromaMap[chroma] || 'vigor';
-      const preset = document.querySelector('input[name="statPreset"]:checked').value;
+      const preset = statPresetSelect.value;
       const result = { vigor: 0, endurance: 0, intuition: 0, wit: 0 };
       if (preset === 'plus2') {
         result[main] += 2;
@@ -193,10 +232,28 @@
         result[secondBonusStat.value] += 2;
         result[penaltyStat.value] -= 1;
       } else {
-        result.vigor += 1; result.endurance += 1; result.intuition += 1;
+        result[bonusStat.value] += 1;
+        result[secondBonusStat.value] += 1;
+        result[thirdBonusStat.value] += 1;
       }
-      const hp = 10 + result.vigor + (2 * result.endurance);
-      return { ...result, level: 1, hp, current_hp: hp, mastery_die: 'd4', stamina_used: 0, stamina_max: 12 + result.wit + result.intuition };
+      const max_hp = 10 + result.vigor + (2 * result.endurance);
+      const stamina_total = 10 + result.intuition + result.wit;
+      return {
+        ...result,
+        level: 1,
+        hp: max_hp,
+        current_hp: max_hp,
+        mastery_die: 'd4',
+        injuries: [],
+        stamina_used: 0,
+        stamina_total,
+        stamina_exhaustion_limit: stamina_total,
+        powerful_item_limit: chroma === 'Clear' ? 2 : 0,
+        powerful_item_max: chroma === 'Clear' ? 2 : 0,
+        party_tier: 1,
+        xenic_decay_level: 0,
+        times_cleansed: 0
+      };
     }
 
     let wizardStep = 1;
@@ -244,17 +301,22 @@
         currentUser = currentUser || await requireUser();
         const base_stats = buildStatsFromWizard();
         const class_progression = [{ class: cls, tier: 1, level_acquired: 1 }];
-        const skills = [skill1, skill2].filter(Boolean).map(skill => ({ name: skill, bonus: 2 }));
-        const { error } = await sb.from('xrrpg_characters').insert({
+        const skills = [];
+        if (skill1) skills.push({ name: skill1, bonus: Number(document.getElementById('skill1Bonus').value) });
+        if (skill2) skills.push({ name: skill2, bonus: Number(document.getElementById('skill2Bonus').value) });
+
+        const { data, error } = await sb.from('xrrpg_characters').insert({
           user_id: currentUser.id,
           name,
           base_stats: { ...base_stats, species, chroma },
           class_progression,
           skills
-        });
+        }).select('id').single();
         if (error) throw error;
+
         modal.classList.add('hidden');
         await loadCharacters();
+        window.location.href = `/xrrpg-2.0/xrrpg-character.html?id=${data.id}`;
       } catch (error) {
         msg.textContent = error.message;
       }
