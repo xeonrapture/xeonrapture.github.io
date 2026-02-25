@@ -25,7 +25,6 @@
         <label>Name <input id="nameInput" maxlength="48" /></label>
         <label>Species <input id="speciesInput" maxlength="48" /></label>
         <label>Chroma <input id="chromaInput" maxlength="16" /></label>
-        <button id="saveBtn" type="button">Save</button>
       </div>
     </section>
 
@@ -95,11 +94,7 @@
     <section class="card">
       <h2>Skills</h2>
       <div id="skillList" class="mono muted">No skills saved.</div>
-      <div class="xrrpg-row" style="margin-top:0.5rem; gap:0.5rem;">
-        <input id="newSkillName" maxlength="48" placeholder="New skill name" />
-        <select id="newSkillBonus"><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option></select>
-        <button id="addSkillBtn" type="button">Add Skill</button>
-      </div>
+      <div class="xrrpg-row" style="margin-top:0.5rem; gap:0.5rem;"><button id="addSkillBtn" type="button">Add Skill</button></div>
     </section>
 
     <section class="card">
@@ -144,16 +139,20 @@
       <label>Class
         <select id="levelClassSelect"></select>
       </label>
+      <div id="levelClassSummary" class="muted"></div>
+      <div id="levelBenefitSummary" class="muted"></div>
       <div>
         <label>Ability choices for this level</label>
         <div id="levelAbilityChoices" class="xrrpg-notes-stack"></div>
         <button id="addLevelAbilityBtn" type="button" class="wr-mt-0-5">Add Ability Choice</button>
       </div>
       <p class="muted">Pick abilities here while leveling up. The Abilities area lists these choices automatically.</p>
-      <div class="xrrpg-notes-stack">
+      <div id="levelStatRow" class="xrrpg-notes-stack">
         <label>Stat increases (comma-separated: vigor,endurance,intuition,wit)
           <input id="levelStatBoostInput" placeholder="vigor" />
         </label>
+      </div>
+      <div id="levelSkillRow" class="xrrpg-notes-stack">
         <label>Skill update target (existing skill name or new skill)
           <input id="levelSkillTargetInput" placeholder="Stealth" />
         </label>
@@ -191,6 +190,26 @@
     </div>
   </div>
 
+  <div id="skillModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Add Skill</h2>
+      <div class="xrrpg-notes-stack">
+        <label>Skill name
+          <input id="skillModalName" maxlength="48" placeholder="Stealth" />
+        </label>
+        <label>Skill bonus
+          <select id="skillModalBonus"><option value="2">+2 (General)</option><option value="3">+3 (Specific)</option></select>
+        </label>
+      </div>
+      <div class="xr-modal-actions">
+        <button id="saveSkillModalBtn" type="button">Save Skill</button>
+        <button id="cancelSkillModalBtn" type="button">Cancel</button>
+      </div>
+      <div id="skillModalMsg" class="mono muted"></div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/shared/auth.js"></script>
   <script src="/shared/nav.js"></script>
@@ -207,7 +226,33 @@
     let character = null;
     let history = [];
     let historySort = { key: 'created_at', direction: 'desc' };
+    let isRendering = false;
+    let autosaveTimer = null;
     const classAbilities = window.XRRPG_CLASS_ABILITIES || {};
+    const CLASS_SUMMARIES = {
+      'Warrior': 'Adept frontline striker. Tiered basic/advanced powers; each class level raises your power tiers.',
+      'Mentalist': 'Adept mind specialist. Tiered control/mental powers that scale by class tier.',
+      'Tank': 'Adept defender with scaling mitigation and control powers.',
+      'Druid': 'Adept nature/healing specialist with escalating support and survivability powers.',
+      'Elementalist': 'Spiritualist element manipulator. Class levels unlock higher technique tiers and longer range.',
+      'Summoner': 'Spiritualist spirit commander. Class levels increase spirit options and summons.',
+      'Mystic': 'Spiritualist with spirit roster upgrades and broader spirit spell access as levels increase.',
+      'Alchemist': 'Magician potion specialist. More brews/day, known recipes, and mixes per class level.',
+      'Physic': 'Magician spellcaster. Class level raises max spell tier, known spells, and concentration limits.',
+      'Possessor': 'Magician taboo caster with servants. Class levels increase spell tier and servant options.',
+      'Bard': 'Magician support caster with scaling spell tier, spell count, and concentration.',
+      'Enchanter': 'Magician substance mage. Class level raises spell tier and chaos/concentration features.',
+      'Sorcerer': 'Mage specialization path. Higher class levels unlock more specialization powers.',
+      'Warlock': 'Mage pact caster with risky dark powers split by level bands.',
+      'Cleric': 'Mage pact support class with healing/protection powers split by level bands.',
+      'Demititan': 'Mage element body-shifter with explicit multi-level element progression.',
+      'Emitter Specialist': 'Technologist zoning/shielding expert. Higher class level raises emitter limits.',
+      'Dronemaster': 'Technologist drone commander. Higher class level boosts drone count/durability.',
+      'Brawler': 'Technologist suit brawler. Higher class level increases installed and known effects.',
+      'Explosives Expert': 'Technologist AOE bomber. Higher class level increases blast scale and output/day.',
+      'Gunslinger': 'Technologist firearm crafter. Higher class level raises gadget tier and gun effects.',
+      'Swordmaster': 'Technologist melee/beam fighter. Higher class level raises damage and attack shapes.'
+    };
     const LEVELING_RULES = {
       1: { stamina_base: 12, skill_mode: 'add_or_plus1', stat_points: 0, skill_points: 0, powerful_item_limit: 2, powerful_item_max: 1 },
       2: { stamina_base: 14, skill_mode: 'stat', stat_points: 1, skill_points: 0, powerful_item_limit: 3, powerful_item_max: 1 },
@@ -338,6 +383,15 @@
       const progression = character.class_progression || [];
       const level = Math.min(9, Number(character.base_stats?.level || 1) + 1);
       const tier = Math.min(3, progression.filter(item => item.class === cls).length + 1);
+      const rule = levelRule(level);
+      const benefitBits = [];
+      if (rule.stat_points > 0) benefitBits.push(`+${rule.stat_points} stat`);
+      if (rule.skill_mode === 'add_or_plus1') benefitBits.push('add a skill or +1 to an existing skill');
+      if (rule.skill_mode === 'skill_plus2') benefitBits.push('+2 to one skill');
+      document.getElementById('levelClassSummary').textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
+      document.getElementById('levelBenefitSummary').textContent = `This level up goes to Character Level ${level} and grants: ${benefitBits.join(', ') || 'class progression only'}.`;
+      document.getElementById('levelStatRow').classList.toggle('hidden', rule.stat_points === 0);
+      document.getElementById('levelSkillRow').classList.toggle('hidden', !['add_or_plus1', 'skill_plus2'].includes(rule.skill_mode));
       const abilities = (classAbilities[cls] || []).filter(item => Number(item.tiers?.[String(tier)]) || item.tiers?.[String(tier)] === '');
       const choiceWrap = document.getElementById('levelAbilityChoices');
       if (!abilities.length) {
@@ -347,7 +401,7 @@
       }
       choiceWrap.innerHTML = abilities.map(item => `<label><input type="checkbox" class="level-ability-option" value="${item.name.replace(/"/g,'&quot;')}" /> ${item.name} <span class="muted">${item.tiers[String(tier)] || ''}</span></label>`).join('');
       addLevelAbilityChoice();
-      document.getElementById('levelMsg').textContent = `Level ${level} grants ${levelRule(level).skill_mode.replaceAll('_', ' ')}.`;
+      document.getElementById('levelMsg').textContent = `Advancing ${cls} to Tier ${tier}.`;
     }
 
     function gatherLevelChoices() {
@@ -367,12 +421,11 @@
         <div class="xrrpg-row" style="gap:0.5rem; align-items:center; margin-bottom:0.3rem;">
           <input data-skill-name="${index}" value="${(skill.name || '').replace(/"/g, '&quot;')}" maxlength="48" />
           <input data-skill-bonus="${index}" type="number" min="0" max="9" value="${Number(skill.bonus || 0)}" style="width:70px;" />
-          <button type="button" data-skill-save="${index}">Update</button>
           <button type="button" data-skill-delete="${index}">Delete</button>
         </div>
       `).join('');
-      wrap.querySelectorAll('[data-skill-save]').forEach(btn => {
-        btn.onclick = () => updateSkill(Number(btn.dataset.skillSave));
+      wrap.querySelectorAll('[data-skill-name], [data-skill-bonus]').forEach(input => {
+        input.oninput = () => updateSkill(Number(input.dataset.skillName ?? input.dataset.skillBonus));
       });
       wrap.querySelectorAll('[data-skill-delete]').forEach(btn => {
         btn.onclick = () => removeSkill(Number(btn.dataset.skillDelete));
@@ -405,6 +458,7 @@
     }
 
     function renderCharacter() {
+      isRendering = true;
       const s = character.base_stats || {};
       const notes = parseNotes();
       document.getElementById('nameInput').value = character.name || '';
@@ -456,6 +510,7 @@
       }
 
       renderSkillList();
+      isRendering = false;
     }
 
     function renderHistory() {
@@ -513,11 +568,10 @@
       await loadHistory();
     }
 
-    document.getElementById('saveBtn').onclick = async () => {
+    async function persistCharacterDraft() {
       const name = document.getElementById('nameInput').value.trim();
       const base_stats = readStatsFromInputs();
       const notes = readNotesFromInputs();
-      const previousState = cloneCharacterState();
       const { error } = await sb.from('xrrpg_characters')
         .update({ name, notes, base_stats, updated_at: new Date().toISOString() })
         .eq('id', characterId)
@@ -526,10 +580,17 @@
         document.getElementById('status').textContent = error.message;
         return;
       }
-      await addHistory('edit', `Saved character ${name}.`, { level: base_stats.level, undo: { character: previousState } });
-      document.getElementById('status').textContent = 'Saved.';
-      await loadCharacter();
-    };
+      character.name = name;
+      character.base_stats = base_stats;
+      character.notes = notes;
+      document.getElementById('status').textContent = 'Saved automatically.';
+    }
+
+    function scheduleAutosave() {
+      if (isRendering || !character) return;
+      if (autosaveTimer) window.clearTimeout(autosaveTimer);
+      autosaveTimer = window.setTimeout(() => { persistCharacterDraft(); }, 350);
+    }
 
     const levelModal = document.getElementById('levelModal');
     document.getElementById('levelUpBtn').onclick = () => {
@@ -578,7 +639,11 @@
       };
       const skills = [...(character.skills || [])];
       const levelSkillTarget = document.getElementById('levelSkillTargetInput').value.trim();
-      if (rule.skill_mode === 'add_or_plus1' && levelSkillTarget) {
+      if (rule.skill_mode === 'add_or_plus1') {
+        if (!levelSkillTarget) {
+          document.getElementById('levelMsg').textContent = 'This level requires a skill target for add/+1.';
+          return;
+        }
         const idx = skills.findIndex(skill => (skill.name || '').toLowerCase() === levelSkillTarget.toLowerCase());
         if (idx >= 0) {
           skills[idx] = { ...skills[idx], bonus: Number(skills[idx].bonus || 0) + 1 };
@@ -586,11 +651,17 @@
           skills.push({ name: levelSkillTarget, bonus: 2 });
         }
       }
-      if (rule.skill_mode === 'skill_plus2' && levelSkillTarget) {
-        const idx = skills.findIndex(skill => (skill.name || '').toLowerCase() === levelSkillTarget.toLowerCase());
-        if (idx >= 0) {
-          skills[idx] = { ...skills[idx], bonus: Number(skills[idx].bonus || 0) + 2 };
+      if (rule.skill_mode === 'skill_plus2') {
+        if (!levelSkillTarget) {
+          document.getElementById('levelMsg').textContent = 'This level requires a skill target to receive +2.';
+          return;
         }
+        const idx = skills.findIndex(skill => (skill.name || '').toLowerCase() === levelSkillTarget.toLowerCase());
+        if (idx < 0) {
+          document.getElementById('levelMsg').textContent = 'Skill +2 levels require an existing skill name.';
+          return;
+        }
+        skills[idx] = { ...skills[idx], bonus: Number(skills[idx].bonus || 0) + 2 };
       }
       if (rule.stat_points > 0) {
         const statTargets = document.getElementById('levelStatBoostInput').value.split(',').map(item => item.trim().toLowerCase()).filter(Boolean);
@@ -706,7 +777,7 @@
     };
 
 
-    async function persistSkills(nextSkills, historyLabel) {
+    async function persistSkills(nextSkills, historyLabel, trackHistory = true) {
       const previousState = cloneCharacterState();
       const { error } = await sb.from('xrrpg_characters')
         .update({ skills: nextSkills, updated_at: new Date().toISOString() })
@@ -716,9 +787,15 @@
         document.getElementById('status').textContent = error.message;
         return;
       }
-      await addHistory('skills', historyLabel, { undo: { character: previousState } });
-      await loadCharacter();
+      character.skills = nextSkills;
+      renderSkillList();
+      if (trackHistory) {
+        await addHistory('skills', historyLabel, { undo: { character: previousState } });
+      }
+      document.getElementById('status').textContent = 'Saved automatically.';
     }
+
+    const skillUpdateTimers = {};
 
     async function updateSkill(index) {
       const skills = [...(character.skills || [])];
@@ -727,7 +804,10 @@
       const bonus = Number(document.querySelector(`[data-skill-bonus="${index}"]`).value) || 0;
       if (!name) return;
       skills[index] = { name, bonus };
-      await persistSkills(skills, `Updated skill ${name} (+${bonus}).`);
+      if (skillUpdateTimers[index]) window.clearTimeout(skillUpdateTimers[index]);
+      skillUpdateTimers[index] = window.setTimeout(() => {
+        persistSkills(skills, `Updated skill ${name} (+${bonus}).`, false);
+      }, 300);
     }
 
     async function removeSkill(index) {
@@ -736,14 +816,25 @@
       await persistSkills(skills, `Removed skill ${removed?.name || 'unnamed'}.`);
     }
 
-    document.getElementById('addSkillBtn').onclick = async () => {
-      const name = document.getElementById('newSkillName').value.trim();
-      const bonus = Number(document.getElementById('newSkillBonus').value) || 2;
-      if (!name) return;
+    const skillModal = document.getElementById('skillModal');
+    document.getElementById('addSkillBtn').onclick = () => {
+      document.getElementById('skillModalMsg').textContent = '';
+      document.getElementById('skillModalName').value = '';
+      document.getElementById('skillModalBonus').value = '2';
+      skillModal.classList.remove('hidden');
+    };
+    skillModal.querySelector('.xr-modal-backdrop').onclick = () => skillModal.classList.add('hidden');
+    document.getElementById('cancelSkillModalBtn').onclick = () => skillModal.classList.add('hidden');
+    document.getElementById('saveSkillModalBtn').onclick = async () => {
+      const name = document.getElementById('skillModalName').value.trim();
+      const bonus = Number(document.getElementById('skillModalBonus').value) || 2;
+      if (!name) {
+        document.getElementById('skillModalMsg').textContent = 'Skill name is required.';
+        return;
+      }
       const skills = [...(character.skills || []), { name, bonus }];
       await persistSkills(skills, `Added skill ${name} (+${bonus}).`);
-      document.getElementById('newSkillName').value = '';
-      document.getElementById('newSkillBonus').value = '2';
+      skillModal.classList.add('hidden');
     };
 
     async function undoHistoryEvent(historyId) {
@@ -783,6 +874,17 @@
       try {
         await loadCharacter();
         await loadHistory();
+        const autosaveTargets = [
+          'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
+          'staminaTotalInput','staminaUsedInput','staminaLimitInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
+          'xenicDecayInput','timesCleansedInput','partyTierInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput'
+        ];
+        autosaveTargets.forEach(id => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.addEventListener('input', scheduleAutosave);
+          el.addEventListener('change', scheduleAutosave);
+        });
       } catch (error) {
         document.getElementById('status').textContent = error.message;
       }

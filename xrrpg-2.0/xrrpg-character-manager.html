@@ -76,6 +76,12 @@
         <label>Starting class <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Classes" target="_blank" rel="noopener noreferrer">rules</a>
           <select id="classInput"></select>
         </label>
+        <div id="classIntro" class="muted"></div>
+        <div>
+          <label>Starting class ability choices</label>
+          <div id="startingAbilityChoices" class="xrrpg-notes-stack"></div>
+          <button id="addStartingAbilityBtn" type="button" class="wr-mt-0-5">Add custom ability choice</button>
+        </div>
         <label>Skill 1 <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Skills" target="_blank" rel="noopener noreferrer">rules</a>
           <input id="skill1" maxlength="48" placeholder="Stealth" />
         </label>
@@ -102,12 +108,38 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/shared/auth.js"></script>
   <script src="/shared/nav.js"></script>
+  <script src="/xrrpg-2.0/class-abilities.js"></script>
   <script>
     const sb = window.supabaseClient;
     const table = document.getElementById('charTable');
     const classNames = [
       'Warrior','Mentalist','Tank','Druid','Elementalist','Summoner','Mystic','Alchemist','Physic','Possessor','Bard','Enchanter','Sorcerer','Warlock','Cleric','Demititan','Emitter Specialist','Dronemaster','Brawler','Explosives Expert','Gunslinger','Swordmaster'
     ];
+    const classAbilities = window.XRRPG_CLASS_ABILITIES || {};
+    const CLASS_SUMMARIES = {
+      'Warrior': 'Adept frontline striker with tiered basic/advanced powers.',
+      'Mentalist': 'Adept mind specialist with scaling control powers.',
+      'Tank': 'Adept defender with strong mitigation at higher tiers.',
+      'Druid': 'Adept nature/healing specialist with escalating support.',
+      'Elementalist': 'Spiritualist element manipulator with tier and range scaling.',
+      'Summoner': 'Spiritualist summoner who grows spirit options each level.',
+      'Mystic': 'Spiritualist with spirit roster upgrades and more spirit spells.',
+      'Alchemist': 'Magician potion specialist scaling brews and mixes.',
+      'Physic': 'Magician spellcaster with increasing spell tier and concentration.',
+      'Possessor': 'Magician spirit-servant caster with increasing spell access.',
+      'Bard': 'Magician support caster with scaling spells and concentration.',
+      'Enchanter': 'Magician substance mage with chaos/concentration scaling.',
+      'Sorcerer': 'Mage specialization path that unlocks more powers by class level.',
+      'Warlock': 'Mage pact caster with dark, risky tiered powers.',
+      'Cleric': 'Mage pact support/healer with tiered utility powers.',
+      'Demititan': 'Mage element shifter with explicit multi-level element upgrades.',
+      'Emitter Specialist': 'Technologist area-control specialist with higher emitter limits.',
+      'Dronemaster': 'Technologist drone commander with stronger drone scaling.',
+      'Brawler': 'Technologist suit brawler with more installed effects per level.',
+      'Explosives Expert': 'Technologist bomber with larger blasts and output/day.',
+      'Gunslinger': 'Technologist gun crafter with more effects per gun per level.',
+      'Swordmaster': 'Technologist sword/beam fighter with stronger attack scaling.'
+    };
     const speciesOptions = ['Humans','Drokk','Exoziniks','Kaldi','Pbosh','Rtolka','Cyclops','Walua','Osadona','Oro'];
     let currentUser = null;
     let characters = [];
@@ -190,6 +222,37 @@
       opt.textContent = name;
       classInput.appendChild(opt);
     });
+
+
+    function addStartingAbilityChoice(value = '') {
+      const wrap = document.getElementById('startingAbilityChoices');
+      const row = document.createElement('label');
+      row.className = 'xrrpg-row';
+      row.innerHTML = '<input class="starting-ability-choice" maxlength="80" placeholder="Ability name" /> <button type="button" class="remove-starting-ability-btn">Remove</button>';
+      row.querySelector('.starting-ability-choice').value = value;
+      row.querySelector('.remove-starting-ability-btn').onclick = () => row.remove();
+      wrap.appendChild(row);
+    }
+
+    function renderStartingClassDetails() {
+      const cls = classInput.value;
+      document.getElementById('classIntro').textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
+      const abilities = (classAbilities[cls] || []).filter(item => Number(item.tiers?.['1']) || item.tiers?.['1'] === '');
+      const wrap = document.getElementById('startingAbilityChoices');
+      if (!abilities.length) {
+        wrap.innerHTML = '<div class="muted">No parsed tier-1 abilities for this class. Add your choice manually.</div>';
+        addStartingAbilityChoice();
+        return;
+      }
+      wrap.innerHTML = abilities.map(item => `<label><input type="checkbox" class="starting-ability-option" value="${item.name.replace(/"/g, '&quot;')}" /> ${item.name} <span class="muted">${item.tiers['1'] || ''}</span></label>`).join('');
+      addStartingAbilityChoice();
+    }
+
+    function gatherStartingAbilityChoices() {
+      const checked = Array.from(document.querySelectorAll('.starting-ability-option:checked')).map(input => input.value.trim()).filter(Boolean);
+      const typed = Array.from(document.querySelectorAll('.starting-ability-choice')).map(input => input.value.trim()).filter(Boolean);
+      return [...new Set([...checked, ...typed])];
+    }
 
     async function requireUser() {
       const { data: { user } } = await sb.auth.getUser();
@@ -368,13 +431,20 @@
       document.getElementById('prevStepBtn').classList.toggle('hidden', wizardStep === 1);
       document.getElementById('nextStepBtn').classList.toggle('hidden', wizardStep === 3);
       document.getElementById('saveBtn').classList.toggle('hidden', wizardStep !== 3);
+      if (wizardStep === 3) renderStartingClassDetails();
     }
 
     document.getElementById('newCharacterBtn').onclick = () => { modal.classList.remove('hidden'); setStep(1); };
+    classInput.onchange = () => renderStartingClassDetails();
+    document.getElementById('addStartingAbilityBtn').onclick = () => addStartingAbilityChoice();
     modal.querySelector('.xr-modal-backdrop').onclick = () => modal.classList.add('hidden');
     document.getElementById('prevStepBtn').onclick = () => setStep(wizardStep - 1);
     document.getElementById('nextStepBtn').onclick = () => {
       const msg = document.getElementById('modalMsg');
+      if (wizardStep === 1 && !document.getElementById('nameInput').value.trim()) {
+        msg.textContent = 'Name required before continuing.';
+        return;
+      }
       if (wizardStep === 2) {
         const validation = validateStatSelections();
         if (!validation.valid) {
@@ -414,6 +484,11 @@
         currentUser = currentUser || await requireUser();
         const base_stats = buildStatsFromWizard();
         const class_progression = [{ class: cls, tier: 1, level_acquired: 1 }];
+        const startingChoices = gatherStartingAbilityChoices();
+        if (!startingChoices.length) {
+          msg.textContent = 'Pick at least one starting class ability choice.';
+          return;
+        }
         const skills = [];
         if (skill1) skills.push({ name: skill1, bonus: Number(document.getElementById('skill1Bonus').value) });
         if (skill2) skills.push({ name: skill2, bonus: Number(document.getElementById('skill2Bonus').value) });
@@ -421,7 +496,14 @@
         const { data, error } = await sb.from('xrrpg_characters').insert({
           user_id: currentUser.id,
           name,
-          base_stats: { ...base_stats, species, chroma },
+          base_stats: {
+            ...base_stats,
+            species,
+            chroma,
+            class_ability_choices: {
+              [`${cls}-T1-L1-0`]: startingChoices
+            }
+          },
           class_progression,
           skills
         }).select('id').single();
