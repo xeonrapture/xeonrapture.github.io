@@ -138,6 +138,20 @@ p {
   color: #e3dd6f
 }
 
+.xr-nav-group-toggle {
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  padding: 0;
+  font: inherit;
+}
+
+.xr-nav-group-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
 /* Mobile dropdown */
 @media (max-width: 900px) {
   .xr-nav-toggle { display: inline-block; }
@@ -1869,6 +1883,40 @@ select,
 
 .wr-scope .xrrpg-subtitle {
   margin: 0.2rem 0 0.8rem;
+}
+
+.wr-scope .xrrpg-notes-stack {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.wr-scope .xrrpg-notes-stack textarea {
+  min-height: 5rem;
+}
+
+.wr-scope .xrrpg-injury-tracker {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.wr-scope .xrrpg-injury-group {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.wr-scope .xrrpg-injury-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.wr-scope .xrrpg-stat-column {
+  display: grid;
+  grid-template-columns: 1fr;
 }
 
 .wr-scope .xrrpg-text-grid {

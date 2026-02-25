@@ -45,12 +45,6 @@
         <label>Invite player from friends list
           <select id="inviteFriendSelect"><option value="">-- Select friend --</option></select>
         </label>
-        <label>Required character system
-          <select id="inviteSystemSelect">
-            <option value="webrunning">Webrunning</option>
-            <option value="xrrpg">XRRPG</option>
-          </select>
-        </label>
         <button id="invitePlayerBtn" type="button">Invite to Campaign</button>
       </div>
     </section>
@@ -88,7 +82,6 @@
     const playerSystemHint = document.getElementById("playerSystemHint");
     const invitePlayerBtn = document.getElementById("invitePlayerBtn");
     const inviteFriendSelect = document.getElementById("inviteFriendSelect");
-    const inviteSystemSelect = document.getElementById("inviteSystemSelect");
 
     let currentUser = null;
     let memberships = [];
@@ -184,7 +177,6 @@
       gmControls.classList.toggle("hidden", !isGm);
       playerCharacterControls.classList.toggle("hidden", !isPlayer);
       playerSystemHint.textContent = `This campaign uses ${system.toUpperCase()} characters.`;
-      inviteSystemSelect.value = system;
       gameStatus.textContent = `${isGm ? 'You are the GM' : 'You are a player'} for this ${system.toUpperCase()} game.`;
 
       if (isPlayer) await loadPlayerCharacterOptions(campaignId, system);
@@ -208,7 +200,7 @@
 
       const { data: assignments, error: assignmentError } = await sb
         .from("campaign_character_assignments")
-        .select("user_id, character_system, webrunning_character_id, xrrpg_character_id, webrunning_characters(id, name, base_stats), xrrpg_characters(id, name, base_stats)")
+        .select("user_id, character_system, webrunning_character_id, xrrpg_character_id")
         .eq("campaign_id", campaignId)
         .order("assigned_at", { ascending: true });
 
@@ -221,8 +213,17 @@
         return;
       }
 
+      const webrunningIds = assignments.filter(row => row.character_system === 'webrunning' && row.webrunning_character_id).map(row => row.webrunning_character_id);
+      const xrrpgIds = assignments.filter(row => row.character_system === 'xrrpg' && row.xrrpg_character_id).map(row => row.xrrpg_character_id);
+      const [{ data: webrunningChars = [] }, { data: xrrpgChars = [] }] = await Promise.all([
+        webrunningIds.length ? sb.from('webrunning_characters').select('id, name').in('id', webrunningIds) : Promise.resolve({ data: [] }),
+        xrrpgIds.length ? sb.from('xrrpg_characters').select('id, name').in('id', xrrpgIds) : Promise.resolve({ data: [] })
+      ]);
+      const webrunningById = Object.fromEntries(webrunningChars.map(char => [char.id, char]));
+      const xrrpgById = Object.fromEntries(xrrpgChars.map(char => [char.id, char]));
+
       characterList.innerHTML = assignments.map(row => {
-        const char = row.character_system === 'xrrpg' ? row.xrrpg_characters : row.webrunning_characters;
+        const char = row.character_system === 'xrrpg' ? xrrpgById[row.xrrpg_character_id] : webrunningById[row.webrunning_character_id];
         const id = assignmentCharacterId(row);
         const link = row.character_system === 'xrrpg'
           ? `/xrrpg-2.0/xrrpg-character.html?id=${id}&campaign_id=${campaignId}&readonly=1`
