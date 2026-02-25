@@ -170,7 +170,9 @@
     }
 
     function assignmentCharacterId(row) {
-      return row.character_system === 'xrrpg' ? row.xrrpg_character_id : row.webrunning_character_id;
+      if (!row) return null;
+      if (row.character_system === 'xrrpg') return row.xrrpg_character_id || row.character_id || null;
+      return row.webrunning_character_id || row.character_id || null;
     }
 
     function xrrpgStatBlurb(baseStats = {}) {
@@ -181,16 +183,32 @@
     function webrunningStatBlurb(baseStats = {}, notes = null) {
       const level = Number(baseStats.level || 1);
       const hp = Number(baseStats.hp || 0);
+      const xp = Number(baseStats.xp || 0);
+      const luck = Number(baseStats.luck || 0);
+      const essence = Number(baseStats.essence || 0);
       const power = Number(baseStats.power || 0);
       const defense = Number(baseStats.defense || 0);
       const speed = Number(baseStats.speed || 0);
       const intelligence = Number(baseStats.intelligence || 0);
+      const slots = Number(baseStats.inventory_slots || 0);
       let blurb = '';
-      if (typeof notes === 'string' && notes.trim()) blurb = notes.trim();
-      if (!blurb && notes && typeof notes === 'object') {
-        blurb = String(notes.blurb || notes.summary || notes.bio || notes.description || notes.extra || '').trim();
+      if (typeof notes === 'string' && notes.trim()) {
+        blurb = notes.trim();
+      } else if (notes && typeof notes === 'object') {
+        const detailFields = [
+          notes.blurb,
+          notes.summary,
+          notes.bio,
+          notes.description,
+          notes.personality,
+          notes.motivation,
+          notes.appearance,
+          notes.backstory,
+          notes.extra
+        ].map(value => String(value || '').trim()).filter(Boolean);
+        blurb = Array.from(new Set(detailFields)).join(' • ');
       }
-      const statLine = `Lv ${level} • HP ${hp} • P ${power} D ${defense} S ${speed} I ${intelligence}`;
+      const statLine = `Lv ${level} • HP ${hp} • XP ${xp} • Luck ${luck} • Ess ${essence} • P ${power} D ${defense} S ${speed} I ${intelligence} • Slots ${slots}`;
       return blurb ? `${statLine} • ${blurb}` : statLine;
     }
 
@@ -228,7 +246,7 @@
 
       const { data: assignments, error: assignmentError } = await sb
         .from("campaign_character_assignments")
-        .select("user_id, character_system, webrunning_character_id, xrrpg_character_id")
+        .select("user_id, character_system, character_id, webrunning_character_id, xrrpg_character_id")
         .eq("campaign_id", campaignId)
         .order("assigned_at", { ascending: true });
 
@@ -241,8 +259,8 @@
         return;
       }
 
-      const webrunningIds = assignments.filter(row => row.character_system === 'webrunning' && row.webrunning_character_id).map(row => row.webrunning_character_id);
-      const xrrpgIds = assignments.filter(row => row.character_system === 'xrrpg' && row.xrrpg_character_id).map(row => row.xrrpg_character_id);
+      const webrunningIds = assignments.filter(row => row.character_system === 'webrunning').map(assignmentCharacterId).filter(Boolean);
+      const xrrpgIds = assignments.filter(row => row.character_system === 'xrrpg').map(assignmentCharacterId).filter(Boolean);
       const [{ data: webrunningChars = [] }, { data: xrrpgChars = [] }] = await Promise.all([
         webrunningIds.length ? sb.from('webrunning_characters').select('id, name, base_stats, notes').in('id', webrunningIds) : Promise.resolve({ data: [] }),
         xrrpgIds.length ? sb.from('xrrpg_characters').select('id, name, base_stats').in('id', xrrpgIds) : Promise.resolve({ data: [] })
@@ -269,7 +287,7 @@
       const [{ data: chars, error: charsError }, { data: assignment, error: assignmentError }] = await Promise.all([
         sb.from(characterTable).select("id, name, base_stats").eq("user_id", currentUser.id).order("created_at", { ascending: true }),
         sb.from("campaign_character_assignments")
-          .select(`id, ${characterIdColumn}`)
+          .select(`id, character_id, ${characterIdColumn}`)
           .eq("campaign_id", campaignId)
           .eq("user_id", currentUser.id)
           .eq("character_system", system)
@@ -290,7 +308,7 @@
         playerCharacterSelect.appendChild(option);
       });
 
-      playerCharacterSelect.value = assignment?.[characterIdColumn] || "";
+      playerCharacterSelect.value = assignment?.[characterIdColumn] || assignment?.character_id || "";
       if (!playerCharacters.length) {
         playerCharacterStatus.textContent = `You have no ${system.toUpperCase()} characters yet.`;
       } else {
@@ -383,6 +401,7 @@
       const payload = {
         campaign_id: campaignId,
         user_id: currentUser.id,
+        character_id: selectedCharacterId,
         character_system: system,
         webrunning_character_id: system === 'webrunning' ? selectedCharacterId : null,
         xrrpg_character_id: system === 'xrrpg' ? selectedCharacterId : null

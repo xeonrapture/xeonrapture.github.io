@@ -11,8 +11,8 @@
   <main class="wrap">
     <h1>XRRPG Character Manager</h1>
     <div class="character-actions">
-      <button id="newCharacterBtn" title="New character">New Character</button>
-      <button id="importCharacterBtn" title="Import character JSON">Import</button>
+      <button id="newCharacterBtn" aria-label="New character" title="New character"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
+      <button id="importCharacterBtn" aria-label="Import character" title="Import character JSON"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="M8 11l4 4 4-4"></path><path d="M4 20h16"></path></svg></button>
       <input id="importCharacterInput" type="file" accept="application/json,.json" class="hidden" />
     </div>
     <table class="table-full">
@@ -234,17 +234,41 @@
       wrap.appendChild(row);
     }
 
+    function tierText(tiers = {}, tier) {
+      const tierNum = Number(tier);
+      const candidates = [
+        String(tierNum),
+        `tier_${tierNum}`,
+        `tier${tierNum}`,
+        `tier ${tierNum}`,
+        `Tier ${tierNum}`,
+        `Tier ${['I', 'II', 'III'][tierNum - 1] || tierNum}`,
+        ['I', 'II', 'III'][tierNum - 1] || String(tierNum)
+      ];
+      const keys = Object.keys(tiers || {});
+      const match = keys.find(key => candidates.some(candidate => key.toLowerCase() === String(candidate).toLowerCase()));
+      return String(match ? tiers[match] : '').trim();
+    }
+
+    function parsedTierAbilities(cls, tier) {
+      return (classAbilities[cls] || []).filter(item => {
+        const name = String(item?.name || '').trim();
+        if (!name || /^\d+$/.test(name)) return false;
+        return !!tierText(item?.tiers || {}, tier) || Object.keys(item?.tiers || {}).some(key => String(key).replace(/\D/g, '') === String(tier));
+      });
+    }
+
     function renderStartingClassDetails() {
       const cls = classInput.value;
       document.getElementById('classIntro').textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
-      const abilities = (classAbilities[cls] || []).filter(item => Number(item.tiers?.['1']) || item.tiers?.['1'] === '');
+      const abilities = parsedTierAbilities(cls, 1);
       const wrap = document.getElementById('startingAbilityChoices');
       if (!abilities.length) {
         wrap.innerHTML = '<div class="muted">No parsed tier-1 abilities for this class. Add your choice manually.</div>';
         addStartingAbilityChoice();
         return;
       }
-      wrap.innerHTML = abilities.map(item => `<label><input type="checkbox" class="starting-ability-option" value="${item.name.replace(/"/g, '&quot;')}" /> ${item.name} <span class="muted">${item.tiers['1'] || ''}</span></label>`).join('');
+      wrap.innerHTML = abilities.map(item => `<label><input type="checkbox" class="starting-ability-option" value="${item.name.replace(/"/g, '&quot;')}" /> ${item.name} <span class="muted">${tierText(item.tiers || {}, 1)}</span></label>`).join('');
       addStartingAbilityChoice();
     }
 
@@ -297,9 +321,9 @@
           <td>${s.intuition || 0}</td>
           <td>${s.wit || 0}</td>
           <td class="actions">
-            <a class="action-btn" href="/xrrpg-2.0/xrrpg-character.html?id=${c.id}">Edit</a>
-            <button class="action-btn" onclick="exportCharacter('${c.id}')">Export</button>
-            <button class="action-btn" onclick="deleteCharacter('${c.id}')">Delete</button>
+            <a class="action-btn" href="/xrrpg-2.0/xrrpg-character.html?id=${c.id}" title="Edit" aria-label="Edit"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 9-9-3-3-9 9-1 4z"></path><path d="M13 7l3 3"></path></svg></a>
+            <button class="action-btn" onclick="exportCharacter('${c.id}')" title="Export" aria-label="Export"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14V3"></path><path d="M8 7l4-4 4 4"></path><path d="M4 14v6h16v-6"></path></svg></button>
+            <button class="action-btn" onclick="deleteCharacter('${c.id}')" title="Delete" aria-label="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
           </td>
         `;
         table.appendChild(row);
