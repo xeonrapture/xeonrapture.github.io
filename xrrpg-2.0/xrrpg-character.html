@@ -35,6 +35,11 @@
         <label title="Character level from 1 to 9.">Level <input id="levelInput" type="number" min="1" max="9" /></label>
         <label title="Mastery die used for class actions.">Mastery Die <input id="masteryDieInput" /></label>
       </div>
+      <div class="xrrpg-stat-line">
+        <label title="Total stamina available for class abilities.">Total Stamina <input id="staminaTotalInput" type="number" min="0" /></label>
+        <label title="How much stamina has been used.">Stamina Used <input id="staminaUsedInput" type="number" min="0" /></label>
+        <label title="Stamina exhaustion threshold before forced checks.">Stamina Exhaustion Limit <input id="staminaLimitInput" type="number" min="0" /></label>
+      </div>
       <div class="xrrpg-stat-line xrrpg-stat-column">
         <label title="Vigor supports movement, power, and will.">Vigor <input id="vigorInput" type="number" /></label>
         <label title="Endurance supports resilience and toughness.">Endurance <input id="enduranceInput" type="number" /></label>
@@ -43,7 +48,6 @@
       </div>
       <div class="xrrpg-row" style="margin-top:0.8rem;">
         <button id="levelUpBtn" type="button">Level Up (Class/Tier)</button>
-        <button id="takeInjuryBtn" type="button">Take Injury</button>
       </div>
       <div id="status" class="mono muted"></div>
     </section>
@@ -54,17 +58,19 @@
         <label title="Maximum HP from your build and progression.">Max HP <input id="hpInput" type="number" /></label>
         <label title="Current HP after damage/healing.">Current HP <input id="currentHpInput" type="number" /></label>
       </div>
+      <div class="xrrpg-row" style="margin-top:0.8rem;">
+        <button id="takeInjuryBtn" type="button">Take Injury</button>
+      </div>
       <div id="injuryTracker" class="xrrpg-injury-tracker"></div>
     </section>
 
     <section class="card">
       <h2>Resource Tracking</h2>
-      <div class="stat-inputs">
-        <label title="Total stamina available for class abilities.">Total Stamina <input id="staminaTotalInput" type="number" min="0" /></label>
-        <label title="How much stamina has been used.">Stamina Used <input id="staminaUsedInput" type="number" min="0" /></label>
-        <label title="Stamina exhaustion threshold before forced checks.">Stamina Exhaustion Limit <input id="staminaLimitInput" type="number" min="0" /></label>
+      <div class="xrrpg-stat-line">
         <label title="Max number of powerful items you can actively use.">Powerful Item Limit <input id="powerfulItemLimitInput" type="number" min="0" /></label>
         <label title="Absolute cap for powerful item upgrades.">Powerful Item Max <input id="powerfulItemMaxInput" type="number" min="0" /></label>
+      </div>
+      <div class="xrrpg-stat-line">
         <label title="Party progression tier used for group actions.">Party Tier <input id="partyTierInput" type="number" min="1" /></label>
         <label title="Current xenic decay level.">Xenic Decay Level <input id="xenicDecayInput" type="number" min="0" /></label>
         <label title="Total number of decay cleanses.">Times Cleansed <input id="timesCleansedInput" type="number" min="0" /></label>
@@ -117,10 +123,12 @@
       <label>Class
         <select id="levelClassSelect"></select>
       </label>
-      <label>Ability choices for this level
-        <textarea id="levelAbilityInput" placeholder="Add the abilities you took (one per line or comma-separated)"></textarea>
-      </label>
-      <p class="muted">Class abilities reference files live in <code>XRRPG-2.0-reference/Classes/</code>. Add the abilities you choose here when leveling.</p>
+      <div>
+        <label>Ability choices for this level</label>
+        <div id="levelAbilityChoices" class="xrrpg-notes-stack"></div>
+        <button id="addLevelAbilityBtn" type="button" class="wr-mt-0-5">Add Ability Choice</button>
+      </div>
+      <p class="muted">Pick abilities here while leveling up. The Abilities area lists these choices automatically.</p>
       <div class="xr-modal-actions">
         <button id="confirmLevelBtn" type="button">Apply</button>
         <button id="cancelLevelBtn" type="button">Cancel</button>
@@ -210,14 +218,6 @@
       });
     }
 
-    function readClassAbilities() {
-      const abilities = {};
-      document.querySelectorAll('[data-ability-key]').forEach(textarea => {
-        abilities[textarea.dataset.abilityKey] = textarea.value.trim();
-      });
-      return abilities;
-    }
-
     function readStatsFromInputs() {
       return {
         ...character.base_stats,
@@ -238,8 +238,7 @@
         powerful_item_max: Number(document.getElementById('powerfulItemMaxInput').value) || 0,
         party_tier: Number(document.getElementById('partyTierInput').value) || 1,
         xenic_decay_level: Number(document.getElementById('xenicDecayInput').value) || 0,
-        times_cleansed: Number(document.getElementById('timesCleansedInput').value) || 0,
-        class_abilities: readClassAbilities()
+        times_cleansed: Number(document.getElementById('timesCleansedInput').value) || 0
       };
     }
 
@@ -251,10 +250,25 @@
       };
     }
 
-    function normalizeAbilityChoices(raw) {
-      return raw
-        .split(/\n|,/)
-        .map(item => item.trim())
+    function injuryDebuff(type) {
+      if (type === 'minor') return 'Debuff: next Action is -2.';
+      if (type === 'severe') return 'Debuff: lose 1 Stamina.';
+      return 'Debuff: -1 to all Actions until healed.';
+    }
+
+    function addLevelAbilityChoice(value = '') {
+      const wrap = document.getElementById('levelAbilityChoices');
+      const row = document.createElement('label');
+      row.className = 'xrrpg-row';
+      row.innerHTML = '<input class="level-ability-choice" maxlength="80" placeholder="Ability name" /> <button type="button" class="remove-level-ability-btn">Remove</button>';
+      row.querySelector('.level-ability-choice').value = value;
+      row.querySelector('.remove-level-ability-btn').onclick = () => row.remove();
+      wrap.appendChild(row);
+    }
+
+    function readLevelAbilityChoices() {
+      return Array.from(document.querySelectorAll('.level-ability-choice'))
+        .map(input => input.value.trim())
         .filter(Boolean);
     }
 
@@ -264,7 +278,7 @@
       const wrap = document.getElementById('injuryTracker');
       wrap.innerHTML = ['minor', 'severe', 'critical'].map(type => {
         const rows = grouped[type].length
-          ? grouped[type].map((injury, idx) => `<div class="xrrpg-injury-item">${injury.label || 'Unnamed injury'} <button type="button" data-heal-type="${type}" data-heal-index="${idx}">Heal</button></div>`).join('')
+          ? grouped[type].map((injury, idx) => `<div class="xrrpg-injury-item"><div><strong>${injury.label || 'Unnamed injury'}</strong><div class="muted">${injuryDebuff(type)}</div></div><button type="button" data-heal-type="${type}" data-heal-index="${idx}">Heal</button></div>`).join('')
           : '<div class="muted">None</div>';
         return `<div class="xrrpg-injury-group"><h3>${type[0].toUpperCase() + type.slice(1)}</h3>${rows}</div>`;
       }).join('');
@@ -309,7 +323,6 @@
 
       renderInjuryTracker();
 
-      const abilities = s.class_abilities || {};
       const chosenAbilities = s.class_ability_choices || {};
       const abilityWrap = document.getElementById('classAbilityList');
       if (!(character.class_progression || []).length) {
@@ -320,7 +333,7 @@
           const chosen = Array.isArray(chosenAbilities[key]) && chosenAbilities[key].length
             ? `<div class="muted">Chosen on level up: ${chosenAbilities[key].join(', ')}</div>`
             : '<div class="muted">Chosen on level up: none recorded</div>';
-          return `<label>${entry.class} Tier ${entry.tier} Abilities<textarea data-ability-key="${key}" placeholder="List abilities from the core rules for this class tier...">${abilities[key] || ''}</textarea>${chosen}</label>`;
+          return `<div><strong>${entry.class} Tier ${entry.tier} Abilities</strong>${chosen}</div>`;
         }).join('');
       }
 
@@ -402,7 +415,12 @@
     };
 
     const levelModal = document.getElementById('levelModal');
-    document.getElementById('levelUpBtn').onclick = () => levelModal.classList.remove('hidden');
+    document.getElementById('levelUpBtn').onclick = () => {
+      levelModal.classList.remove('hidden');
+      document.getElementById('levelMsg').textContent = '';
+      document.getElementById('levelAbilityChoices').innerHTML = '';
+      addLevelAbilityChoice();
+    };
     levelModal.querySelector('.xr-modal-backdrop').onclick = () => levelModal.classList.add('hidden');
     document.getElementById('cancelLevelBtn').onclick = () => levelModal.classList.add('hidden');
 
@@ -414,7 +432,11 @@
       const entryCount = progression.filter(item => item.class === cls).length;
       const tier = Math.min(3, entryCount + 1);
       progression.push({ class: cls, tier, level_acquired: level });
-      const choices = normalizeAbilityChoices(document.getElementById('levelAbilityInput').value.trim());
+      const choices = readLevelAbilityChoices();
+      if (!choices.length) {
+        document.getElementById('levelMsg').textContent = 'Add at least one ability choice for this level.';
+        return;
+      }
       const key = `${cls}-T${tier}-L${level}-${progression.length - 1}`;
 
       const base_stats = {
@@ -435,9 +457,9 @@
         return;
       }
 
-      await addHistory('level_up', `Level ${level}: ${cls} advanced to Tier ${tier}.`, { class: cls, tier, level });
+      await addHistory('level_up', `Level ${level}: ${cls} advanced to Tier ${tier}.`, { class: cls, tier, level, abilities: choices });
       levelModal.classList.add('hidden');
-      document.getElementById('levelAbilityInput').value = '';
+      document.getElementById('levelAbilityChoices').innerHTML = '';
       await loadCharacter();
       document.getElementById('status').textContent = `Level up applied: ${cls} Tier ${tier}.`;
     };
@@ -452,6 +474,10 @@
       if (!target) return;
       const [removed] = injuries.splice(target.injuryIndex, 1);
       base_stats.injuries = injuries;
+      const healedAmount = Number(removed?.damage || 0);
+      const maxHp = Number(base_stats.hp || 0);
+      const currentHp = Number(base_stats.current_hp ?? maxHp);
+      base_stats.current_hp = Math.min(maxHp, currentHp + healedAmount);
 
       const { error } = await sb.from('xrrpg_characters')
         .update({ base_stats, updated_at: new Date().toISOString() })
@@ -461,10 +487,12 @@
         document.getElementById('status').textContent = error.message;
         return;
       }
-      await addHistory('heal_injury', `Healed ${type} injury: ${removed.label || 'unnamed'}.`, { type, label: removed.label || '' });
+      await addHistory('heal_injury', `Healed ${type} injury: ${removed.label || 'unnamed'} (+${Number(removed.damage || 0)} HP).`, { type, label: removed.label || '', healed_hp: Number(removed.damage || 0) });
       await loadCharacter();
       document.getElementById('status').textContent = `Healed ${type} injury.`;
     }
+
+    document.getElementById('addLevelAbilityBtn').onclick = () => addLevelAbilityChoice();
 
     const injuryModal = document.getElementById('injuryModal');
     document.getElementById('takeInjuryBtn').onclick = () => injuryModal.classList.remove('hidden');
@@ -485,10 +513,6 @@
       if (type === 'severe') {
         base_stats.stamina_used = Number(base_stats.stamina_used || 0) + 1;
       }
-      if (type === 'critical') {
-        base_stats.critical_action_penalty = Number(base_stats.critical_action_penalty || 0) - 1;
-      }
-
       const { error } = await sb.from('xrrpg_characters')
         .update({ base_stats, updated_at: new Date().toISOString() })
         .eq('id', characterId)
@@ -498,7 +522,7 @@
         return;
       }
 
-      await addHistory('injury', `${type.toUpperCase()} injury: ${label || 'unnamed'} (${damage} dmg).`, { type, label, damage });
+      await addHistory('injury', `${type.toUpperCase()} injury: ${label || 'unnamed'} (${damage} dmg). ${injuryDebuff(type)}`, { type, label, damage, debuff: injuryDebuff(type) });
       injuryModal.classList.add('hidden');
       await loadCharacter();
       document.getElementById('status').textContent = `Applied ${type} injury (${damage} dmg).`;

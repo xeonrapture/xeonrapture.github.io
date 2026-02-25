@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>XR Campaigns</title>
   <link rel="stylesheet" href="/shared/style.css">
+  <style>
+    .campaign-top-grid { display:grid; gap:1rem; grid-template-columns:1fr; }
+    @media (min-width: 980px) { .campaign-top-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items:start; } }
+  </style>
 </head>
 <body class="wr-scope">
   <div id="nav"></div>
@@ -17,36 +21,39 @@
     <h1>Campaigns</h1>
     <p class="muted">Campaigns are now system-specific. A campaign can be Webrunning or XRRPG, and assigned characters must match.</p>
 
-    <section class="card wr-mt-1">
-      <h2>Create Campaign</h2>
-      <label>Campaign name
-        <input id="newCampaignName" type="text" maxlength="80" placeholder="Weekend Run" />
-      </label>
-      <label>System
-        <select id="newCampaignSystem">
-          <option value="webrunning">Webrunning</option>
-          <option value="xrrpg">XRRPG</option>
-        </select>
-      </label>
-      <button id="createCampaignBtn" type="button">Create Campaign</button>
-    </section>
+    <div class="campaign-top-grid wr-mt-1">
+      <section class="card">
+        <h2>Create Campaign</h2>
+        <label>Campaign name
+          <input id="newCampaignName" type="text" maxlength="80" placeholder="Weekend Run" />
+        </label>
+        <label>System
+          <select id="newCampaignSystem">
+            <option value="webrunning">Webrunning</option>
+            <option value="xrrpg">XRRPG</option>
+          </select>
+        </label>
+        <button id="createCampaignBtn" type="button">Create Campaign</button>
+      </section>
 
-    <section class="card wr-mt-1">
-      <h2>Your Campaigns</h2>
-      <select id="gameSelect"></select>
-      <div id="gameStatus" class="mono muted wr-mt-0-5"></div>
-    </section>
+      <section class="card">
+        <h2>Your Campaigns</h2>
+        <select id="gameSelect"></select>
+        <div id="gameStatus" class="mono muted wr-mt-0-5"></div>
+      </section>
 
-    <section class="card wr-mt-1">
-      <h2>Players</h2>
-      <div id="memberList" class="mono muted">Loading members...</div>
-      <div id="gmControls" class="wr-mt-1 hidden">
-        <h3>GM Campaign Controls</h3>
+      <section id="gmControls" class="card hidden">
+        <h2>Invite a Player</h2>
         <label>Invite player from friends list
           <select id="inviteFriendSelect"><option value="">-- Select friend --</option></select>
         </label>
         <button id="invitePlayerBtn" type="button">Invite to Campaign</button>
-      </div>
+      </section>
+    </div>
+
+    <section class="card wr-mt-1">
+      <h2>Players</h2>
+      <div id="memberList" class="mono muted">Loading members...</div>
     </section>
 
     <section class="card wr-mt-1">
@@ -166,6 +173,10 @@
       return row.character_system === 'xrrpg' ? row.xrrpg_character_id : row.webrunning_character_id;
     }
 
+    function xrrpgStatBlurb(baseStats = {}) {
+      return `Lv ${baseStats.level || 1} • Vig ${baseStats.vigor || 0} End ${baseStats.endurance || 0} Intu ${baseStats.intuition || 0} Wit ${baseStats.wit || 0}`;
+    }
+
     async function loadGameDetails() {
       const campaignId = selectedGameId();
       if (!campaignId) return;
@@ -217,7 +228,7 @@
       const xrrpgIds = assignments.filter(row => row.character_system === 'xrrpg' && row.xrrpg_character_id).map(row => row.xrrpg_character_id);
       const [{ data: webrunningChars = [] }, { data: xrrpgChars = [] }] = await Promise.all([
         webrunningIds.length ? sb.from('webrunning_characters').select('id, name').in('id', webrunningIds) : Promise.resolve({ data: [] }),
-        xrrpgIds.length ? sb.from('xrrpg_characters').select('id, name').in('id', xrrpgIds) : Promise.resolve({ data: [] })
+        xrrpgIds.length ? sb.from('xrrpg_characters').select('id, name, base_stats').in('id', xrrpgIds) : Promise.resolve({ data: [] })
       ]);
       const webrunningById = Object.fromEntries(webrunningChars.map(char => [char.id, char]));
       const xrrpgById = Object.fromEntries(xrrpgChars.map(char => [char.id, char]));
@@ -228,7 +239,8 @@
         const link = row.character_system === 'xrrpg'
           ? `/xrrpg-2.0/xrrpg-character.html?id=${id}&campaign_id=${campaignId}&readonly=1`
           : `/webrunning-2.0/webrunning-character.html?id=${id}&campaign_id=${campaignId}&readonly=1`;
-        return `<article class="assigned-character-card"><div class="assigned-character-header"><a class="assigned-character-name" href="${link}">${char?.name || 'Unnamed character'}</a><span class="assigned-character-role muted">${row.character_system.toUpperCase()}</span></div></article>`;
+        const statBlurb = row.character_system === 'xrrpg' ? `<div class="muted">${xrrpgStatBlurb(char?.base_stats || {})}</div>` : '';
+        return `<article class="assigned-character-card"><div class="assigned-character-header"><a class="assigned-character-name" href="${link}">${char?.name || 'Unnamed character'}</a><span class="assigned-character-role muted">${row.character_system.toUpperCase()}</span></div>${statBlurb}</article>`;
       }).join('');
     }
 

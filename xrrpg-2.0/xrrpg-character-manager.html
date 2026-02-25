@@ -41,11 +41,6 @@
         <label>Species <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Species" target="_blank" rel="noopener noreferrer">rules</a>
           <select id="speciesInput"></select>
         </label>
-        <label>Chroma <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Chroma" target="_blank" rel="noopener noreferrer">rules</a>
-          <select id="chromaInput">
-            <option>Red</option><option>Blue</option><option>Green</option><option>Grey</option><option>Clear</option>
-          </select>
-        </label>
       </div>
 
       <div data-step="2" class="wizard-step hidden">
@@ -53,8 +48,13 @@
           <strong>Stat Setup</strong>
           <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Stats" target="_blank" rel="noopener noreferrer">rules</a>
         </div>
-        <p class="muted xrrpg-subtitle">Choose a setup from the Quick Start options.</p>
+        <p class="muted xrrpg-subtitle">Pick chroma first. For non-Clear chroma, your main bonus stat is automatic: Red → Vigor, Blue → Endurance, Green → Intuition, Grey → Wit.</p>
         <div class="xrrpg-inline-fields">
+          <label>Chroma <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Chroma" target="_blank" rel="noopener noreferrer">rules</a>
+            <select id="chromaInput">
+              <option>Red</option><option>Blue</option><option>Green</option><option>Grey</option><option>Clear</option>
+            </select>
+          </label>
           <label>Preset
             <select id="statPresetSelect">
               <option value="plus2">+2 to one stat and +1 to one different stat</option>
@@ -127,6 +127,7 @@
     });
 
     const speciesInput = document.getElementById('speciesInput');
+    const chromaInput = document.getElementById('chromaInput');
     speciesOptions.forEach(name => {
       const opt = document.createElement('option');
       opt.value = name;
@@ -144,34 +145,30 @@
     updateStatSetupVisibility();
 
     function validateStatSelections() {
-      const chroma = document.getElementById('chromaInput').value;
+      const chroma = chromaInput.value;
       const chromaMap = { Red: 'vigor', Blue: 'endurance', Green: 'intuition', Grey: 'wit' };
       const preset = statPresetSelect.value;
       const usedStats = [];
-      const duplicateSource = [];
-      if (chromaMap[chroma]) {
-        usedStats.push(chromaMap[chroma]);
-        duplicateSource.push(`Chroma (${chromaMap[chroma]})`);
-      }
-      const take = (value, label) => {
+      const take = (value) => {
         if (!value) return;
         usedStats.push(value);
-        duplicateSource.push(label);
       };
+      if (preset !== 'clear' && chromaMap[chroma]) {
+        take(chromaMap[chroma]);
+      }
       if (preset === 'plus2') {
-        take(bonusStat.value, '+1 bonus stat');
+        take(bonusStat.value);
       } else if (preset === 'plus3') {
-        take(bonusStat.value, '+1 bonus stat');
-        take(penaltyStat.value, '-1 penalty stat');
+        take(bonusStat.value);
+        take(penaltyStat.value);
       } else if (preset === 'dual2') {
-        take(secondBonusStat.value, 'second +2 stat');
-        take(penaltyStat.value, '-1 penalty stat');
+        take(secondBonusStat.value);
+        take(penaltyStat.value);
       } else {
         usedStats.length = 0;
-        duplicateSource.length = 0;
-        take(bonusStat.value, 'first +1 stat');
-        take(secondBonusStat.value, 'second +1 stat');
-        take(thirdBonusStat.value, 'third +1 stat');
+        take(bonusStat.value);
+        take(secondBonusStat.value);
+        take(thirdBonusStat.value);
       }
 
       const seen = new Set();
