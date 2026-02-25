@@ -30,22 +30,31 @@
 
     <section class="card">
       <h2>Core Stats</h2>
-      <div class="xrrpg-stat-line">
-        <label title="Character level from 1 to 9.">Level <input id="levelInput" type="number" min="1" max="9" /></label>
-        <label title="Mastery die used for class actions.">Mastery Die <input id="masteryDieInput" /></label>
+      <div class="xrrpg-core-stats-grid">
+        <div class="xrrpg-core-stats-card">
+          <h3>Level & Mastery</h3>
+          <div class="xrrpg-stat-line xrrpg-stat-line--compact">
+            <label title="Character level from 1 to 9.">Level <input id="levelInput" type="number" min="1" max="9" /></label>
+            <label title="Mastery die used for class actions.">Mastery Die <input id="masteryDieInput" /></label>
+          </div>
+        </div>
+        <div class="xrrpg-core-stats-card">
+          <h3>Stamina</h3>
+          <div class="xrrpg-stat-line xrrpg-stat-line--compact">
+            <label title="Maximum stamina available for class abilities.">Stamina Max <input id="staminaTotalInput" type="number" min="0" /></label>
+            <label title="How much stamina has been used.">Stamina Used <input id="staminaUsedInput" type="number" min="0" /></label>
+            <label title="Stamina exhaustion threshold before forced checks.">Stamina Exhaustion Limit <input id="staminaLimitInput" type="number" min="0" /></label>
+          </div>
+        </div>
       </div>
-      <h3>Basic Stats</h3>
-      <div class="xrrpg-stat-line">
-        <label title="Vigor supports movement, power, and will.">Vigor <input id="vigorInput" type="number" /></label>
-        <label title="Endurance supports resilience and toughness.">Endurance <input id="enduranceInput" type="number" /></label>
-        <label title="Intuition supports dexterity, perception, and charisma.">Intuition <input id="intuitionInput" type="number" /></label>
-        <label title="Wit supports logic, innovation, and memory.">Wit <input id="witInput" type="number" /></label>
-      </div>
-      <h3>Stamina</h3>
-      <div class="xrrpg-stat-line">
-        <label title="Maximum stamina available for class abilities.">Stamina Max <input id="staminaTotalInput" type="number" min="0" /></label>
-        <label title="How much stamina has been used.">Stamina Used <input id="staminaUsedInput" type="number" min="0" /></label>
-        <label title="Stamina exhaustion threshold before forced checks.">Stamina Exhaustion Limit <input id="staminaLimitInput" type="number" min="0" /></label>
+      <div class="xrrpg-core-stats-card xrrpg-core-stats-card--full">
+        <h3>Basic Stats</h3>
+        <div class="xrrpg-stat-line xrrpg-stat-line--compact">
+          <label title="Vigor supports movement, power, and will.">Vigor <input id="vigorInput" type="number" /></label>
+          <label title="Endurance supports resilience and toughness.">Endurance <input id="enduranceInput" type="number" /></label>
+          <label title="Intuition supports dexterity, perception, and charisma.">Intuition <input id="intuitionInput" type="number" /></label>
+          <label title="Wit supports logic, innovation, and memory.">Wit <input id="witInput" type="number" /></label>
+        </div>
       </div>
       <div class="xrrpg-row" style="margin-top:0.8rem;">
         <button id="levelUpBtn" type="button">Level Up (Class/Tier)</button>
@@ -255,6 +264,7 @@
     let isRendering = false;
     let autosaveTimer = null;
     const classAbilities = window.XRRPG_CLASS_ABILITIES || {};
+    const ADEPT_CLASSES = new Set(['Warrior', 'Mentalist', 'Tank', 'Druid']);
     const CLASS_SUMMARIES = {
       'Warrior': 'Adept frontline striker. Tiered basic/advanced powers; each class level raises your power tiers.',
       'Mentalist': 'Adept mind specialist. Tiered control/mental powers that scale by class tier.',
@@ -428,12 +438,23 @@
       return base + Number(intuition || 0) + Number(wit || 0);
     }
 
+    function isAdeptClass(cls) {
+      return ADEPT_CLASSES.has(String(cls || '').trim());
+    }
+
+    function requiredAdeptAbilityChoices(tier) {
+      if (tier === 1) return 1;
+      if (tier >= 4) return 1;
+      return 0;
+    }
+
     function renderLevelAbilityOptions() {
       const cls = document.getElementById('levelClassSelect').value;
       const progression = character.class_progression || [];
       const level = Math.min(9, Number(character.base_stats?.level || 1) + 1);
-      const tier = Math.min(3, progression.filter(item => item.class === cls).length + 1);
+      const tier = progression.filter(item => item.class === cls).length + 1;
       const rule = levelRule(level);
+      const adeptClass = isAdeptClass(cls);
       const benefitBits = [];
       if (rule.stat_points > 0) {
         const totalStatGain = Number(rule.stat_points || 0) * Number(rule.stat_bonus || 1);
@@ -445,6 +466,11 @@
       }
       if (rule.skill_mode === 'add_or_plus1') benefitBits.push('add a skill or +1 to an existing skill');
       if (rule.skill_mode === 'skill_plus2') benefitBits.push('+2 to one skill');
+      if (adeptClass && tier === 1) {
+        benefitBits.push('Adept basic ability (auto) + choose 1 advanced ability');
+      } else if (adeptClass && tier >= 4) {
+        benefitBits.push('choose 1 advanced adept ability/tier upgrade');
+      }
       document.getElementById('levelClassSummary').textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
       document.getElementById('levelBenefitSummary').textContent = `This level up goes to Character Level ${level} and grants: ${benefitBits.join(', ') || 'class progression only'}.`;
       document.getElementById('levelStatRow').classList.toggle('hidden', rule.stat_points === 0);
@@ -453,6 +479,12 @@
       syncSkillUpgradeUi(rule.skill_mode);
       const abilities = parsedTierAbilities(cls, tier);
       const choiceWrap = document.getElementById('levelAbilityChoices');
+      const requiredChoices = adeptClass ? requiredAdeptAbilityChoices(tier) : 1;
+      if (adeptClass && requiredChoices === 0) {
+        choiceWrap.innerHTML = '<div class="muted">Adept progression at Tiers 2-3 does not grant a new advanced ability pick.</div>';
+        document.getElementById('levelMsg').textContent = `Advancing ${cls} to Tier ${tier}.`;
+        return;
+      }
       if (!abilities.length) {
         choiceWrap.innerHTML = '<div class="muted">No parsed class abilities found for this class/tier. Add manual ability entries below.</div>';
         addLevelAbilityChoice();
@@ -699,14 +731,22 @@
       const currentLevel = Number(character.base_stats?.level || 1);
       const level = Math.min(9, currentLevel + 1);
       const entryCount = progression.filter(item => item.class === cls).length;
-      const tier = Math.min(3, entryCount + 1);
+      const tier = entryCount + 1;
       progression.push({ class: cls, tier, level_acquired: level });
       const choices = gatherLevelChoices();
-      if (!choices.length) {
-        document.getElementById('levelMsg').textContent = 'Add at least one ability choice for this level.';
+      const adeptClass = isAdeptClass(cls);
+      const requiredChoices = adeptClass ? requiredAdeptAbilityChoices(tier) : 1;
+      if (choices.length < requiredChoices) {
+        const msg = requiredChoices === 1
+          ? 'Add at least one ability choice for this level.'
+          : `Add at least ${requiredChoices} ability choices for this level.`;
+        document.getElementById('levelMsg').textContent = msg;
         return;
       }
       const key = `${cls}-T${tier}-L${level}-${progression.length - 1}`;
+      const savedChoices = adeptClass && tier === 1
+        ? ['Basic Ability (auto)', ...choices]
+        : choices;
 
       const prevState = cloneCharacterState();
       const before = character.base_stats || {};
@@ -722,7 +762,7 @@
         powerful_item_max: rule.powerful_item_max,
         class_ability_choices: {
           ...(character.base_stats?.class_ability_choices || {}),
-          [key]: choices
+          [key]: savedChoices
         }
       };
       const skills = [...(character.skills || [])];
@@ -789,7 +829,7 @@
         return;
       }
 
-      await addHistory('level_up', `Level ${level}: ${cls} advanced to Tier ${tier}.`, { class: cls, tier, level, abilities: choices, undo: { character: prevState } });
+      await addHistory('level_up', `Level ${level}: ${cls} advanced to Tier ${tier}.`, { class: cls, tier, level, abilities: savedChoices, undo: { character: prevState } });
       levelModal.classList.add('hidden');
       document.getElementById('levelAbilityChoices').innerHTML = '';
       await loadCharacter();
