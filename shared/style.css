@@ -1881,6 +1881,29 @@ select,
   gap: 0.7rem;
 }
 
+.wr-scope .xrrpg-resource-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.9rem;
+}
+
+.wr-scope .xrrpg-resource-card {
+  border: 1px solid var(--border, #333);
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: color-mix(in srgb, var(--panel, #161821) 85%, #000 15%);
+}
+
+.wr-scope .xrrpg-resource-card h3 {
+  margin: 0 0 0.55rem;
+}
+
+.wr-scope .xrrpg-resource-fields {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
 .wr-scope .xrrpg-subtitle {
   margin: 0.2rem 0 0.8rem;
 }

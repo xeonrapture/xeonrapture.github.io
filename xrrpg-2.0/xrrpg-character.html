@@ -67,24 +67,24 @@
 
     <section class="card">
       <h2>Resource Tracking</h2>
-      <div class="xrrpg-stat-line">
-        <div>
+      <div class="xrrpg-resource-grid">
+        <div class="xrrpg-resource-card">
           <h3>Powerful Items</h3>
-          <div class="xrrpg-stat-line">
+          <div class="xrrpg-resource-fields">
             <label title="Max number of powerful items you can actively use.">Powerful Item Limit <input id="powerfulItemLimitInput" type="number" min="0" /></label>
             <label title="Absolute cap for powerful item upgrades.">Powerful Item Max Tier <input id="powerfulItemMaxInput" type="number" min="0" /></label>
           </div>
         </div>
-        <div>
+        <div class="xrrpg-resource-card">
           <h3>Xenic Decay</h3>
-          <div class="xrrpg-stat-line">
+          <div class="xrrpg-resource-fields">
             <label title="Current xenic decay level.">Xenic Decay Level <input id="xenicDecayInput" type="number" min="0" /></label>
             <label title="Total number of decay cleanses.">Times Cleansed <input id="timesCleansedInput" type="number" min="0" /></label>
           </div>
         </div>
-        <div>
+        <div class="xrrpg-resource-card">
           <h3>Party</h3>
-          <div class="xrrpg-stat-line">
+          <div class="xrrpg-resource-fields">
             <label title="Party progression tier used for group actions.">Party Tier <input id="partyTierInput" type="number" min="1" /></label>
           </div>
         </div>
@@ -399,6 +399,30 @@
       return LEVELING_RULES[level] || LEVELING_RULES[9];
     }
 
+    function tierText(tiers = {}, tier) {
+      const tierNum = Number(tier);
+      const candidates = [
+        String(tierNum),
+        `tier_${tierNum}`,
+        `tier${tierNum}`,
+        `tier ${tierNum}`,
+        `Tier ${tierNum}`,
+        `Tier ${['I', 'II', 'III'][tierNum - 1] || tierNum}`,
+        ['I', 'II', 'III'][tierNum - 1] || String(tierNum)
+      ];
+      const keys = Object.keys(tiers || {});
+      const match = keys.find(key => candidates.some(candidate => key.toLowerCase() === String(candidate).toLowerCase()));
+      return String(match ? tiers[match] : '').trim();
+    }
+
+    function parsedTierAbilities(cls, tier) {
+      return (classAbilities[cls] || []).filter(item => {
+        const name = String(item?.name || '').trim();
+        if (!name || /^\d+$/.test(name)) return false;
+        return !!tierText(item?.tiers || {}, tier) || Object.keys(item?.tiers || {}).some(key => String(key).replace(/\D/g, '') === String(tier));
+      });
+    }
+
     function staminaMaxForLevel(level, intuition, wit) {
       const base = levelRule(level).stamina_base;
       return base + Number(intuition || 0) + Number(wit || 0);
@@ -427,14 +451,14 @@
       document.getElementById('levelSkillRow').classList.toggle('hidden', !['add_or_plus1', 'skill_plus2'].includes(rule.skill_mode));
       document.getElementById('levelStatBoostSelect2Wrap').classList.toggle('hidden', rule.stat_points < 2);
       syncSkillUpgradeUi(rule.skill_mode);
-      const abilities = (classAbilities[cls] || []).filter(item => item.tiers && Object.prototype.hasOwnProperty.call(item.tiers, String(tier)));
+      const abilities = parsedTierAbilities(cls, tier);
       const choiceWrap = document.getElementById('levelAbilityChoices');
       if (!abilities.length) {
         choiceWrap.innerHTML = '<div class="muted">No parsed class abilities found for this class/tier. Add manual ability entries below.</div>';
         addLevelAbilityChoice();
         return;
       }
-      choiceWrap.innerHTML = abilities.map(item => `<label><input type="checkbox" class="level-ability-option" value="${item.name.replace(/"/g,'&quot;')}" /> ${item.name} <span class="muted">${item.tiers[String(tier)] || ''}</span></label>`).join('');
+      choiceWrap.innerHTML = abilities.map(item => `<label><input type="checkbox" class="level-ability-option" value="${item.name.replace(/"/g,'&quot;')}" /> ${item.name} <span class="muted">${tierText(item.tiers || {}, tier)}</span></label>`).join('');
       addLevelAbilityChoice();
       document.getElementById('levelMsg').textContent = `Advancing ${cls} to Tier ${tier}.`;
     }
