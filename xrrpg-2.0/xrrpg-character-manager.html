@@ -105,11 +105,17 @@
     </div>
   </div>
 
+  <div id="loadingOverlay" class="xr-loading-overlay hidden" aria-live="polite" aria-busy="true">
+    <div class="xr-loading-spinner" aria-hidden="true"></div>
+    <div id="loadingOverlayText" class="mono">Loading characters…</div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/shared/auth.js"></script>
   <script src="/shared/nav.js"></script>
   <script src="/xrrpg-2.0/class-abilities.js"></script>
   <script>
+    window.__useLocalLoadingOverlay = true;
     const sb = window.supabaseClient;
     const table = document.getElementById('charTable');
     const classNames = [
@@ -144,6 +150,27 @@
     let currentUser = null;
     let characters = [];
     let sortState = { key: 'name', direction: 'asc' };
+
+    function setLoading(message = 'Loading…') {
+      const overlay = document.getElementById('loadingOverlay');
+      const text = document.getElementById('loadingOverlayText');
+      if (text) text.textContent = message;
+      if (overlay) overlay.classList.remove('hidden');
+    }
+
+    function clearLoading() {
+      const overlay = document.getElementById('loadingOverlay');
+      if (overlay) overlay.classList.add('hidden');
+    }
+
+    async function withLoading(message, task) {
+      setLoading(message);
+      try {
+        return await task();
+      } finally {
+        clearLoading();
+      }
+    }
 
     const stats = ['vigor','endurance','intuition','wit'];
     const bonusStat = document.getElementById('bonusStat');
@@ -382,7 +409,7 @@
       const notes = typeof importedCharacter.notes === 'string' ? importedCharacter.notes : '';
       const { error } = await sb.from('xrrpg_characters').insert({ user_id: currentUser.id, name, base_stats, class_progression, skills, notes });
       if (error) throw error;
-      await loadCharacters();
+      await withLoading('Refreshing character list…', loadCharacters);
     }
 
     async function deleteCharacter(characterId) {
@@ -394,7 +421,7 @@
         alert(error.message);
         return;
       }
-      await loadCharacters();
+      await withLoading('Refreshing character list…', loadCharacters);
     }
 
     window.exportCharacter = exportCharacter;
@@ -534,7 +561,7 @@
         if (error) throw error;
 
         modal.classList.add('hidden');
-        await loadCharacters();
+        await withLoading('Refreshing character list…', loadCharacters);
         window.location.href = `/xrrpg-2.0/xrrpg-character.html?id=${data.id}`;
       } catch (error) {
         msg.textContent = error.message;
@@ -566,7 +593,7 @@
       }
     };
 
-    loadCharacters();
+    withLoading('Loading characters…', loadCharacters);
   </script>
 </body>
 </html>
