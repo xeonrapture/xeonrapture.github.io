@@ -33,9 +33,9 @@
       <h2>Core Stats</h2>
       <div class="xrrpg-stat-line">
         <label title="Character level from 1 to 9.">Level <input id="levelInput" type="number" min="1" max="9" /></label>
-        <label title="Maximum HP from your build and progression.">Max HP <input id="hpInput" type="number" /></label>
-        <label title="Current HP after damage/healing.">Current HP <input id="currentHpInput" type="number" /></label>
         <label title="Mastery die used for class actions.">Mastery Die <input id="masteryDieInput" /></label>
+      </div>
+      <div class="xrrpg-stat-line xrrpg-stat-column">
         <label title="Vigor supports movement, power, and will.">Vigor <input id="vigorInput" type="number" /></label>
         <label title="Endurance supports resilience and toughness.">Endurance <input id="enduranceInput" type="number" /></label>
         <label title="Intuition supports dexterity, perception, and charisma.">Intuition <input id="intuitionInput" type="number" /></label>
@@ -46,6 +46,15 @@
         <button id="takeInjuryBtn" type="button">Take Injury</button>
       </div>
       <div id="status" class="mono muted"></div>
+    </section>
+
+    <section class="card">
+      <h2>Health & Injuries</h2>
+      <div class="stat-inputs">
+        <label title="Maximum HP from your build and progression.">Max HP <input id="hpInput" type="number" /></label>
+        <label title="Current HP after damage/healing.">Current HP <input id="currentHpInput" type="number" /></label>
+      </div>
+      <div id="injuryTracker" class="xrrpg-injury-tracker"></div>
     </section>
 
     <section class="card">
@@ -76,22 +85,12 @@
 
     <section class="card">
       <h2>Character Notes</h2>
-      <div class="xrrpg-text-grid">
-        <label>Appearance
-          <textarea id="appearanceInput"></textarea>
-        </label>
-        <label>Personality
-          <textarea id="personalityInput"></textarea>
-        </label>
-        <label>Motivation
-          <textarea id="motivationInput"></textarea>
-        </label>
-        <label>BACKSTORY
-          <textarea id="backstoryInput"></textarea>
-        </label>
-        <label class="xrrpg-note-full">Extra Notes
-          <textarea id="extraNotesInput"></textarea>
-        </label>
+      <div class="xrrpg-notes-stack">
+        <label>Appearance<textarea id="appearanceInput"></textarea></label>
+        <label>Personality<textarea id="personalityInput"></textarea></label>
+        <label>Motivation<textarea id="motivationInput"></textarea></label>
+        <label>BACKSTORY<textarea id="backstoryInput"></textarea></label>
+        <label>Extra Notes<textarea id="extraNotesInput"></textarea></label>
       </div>
     </section>
 
@@ -118,6 +117,10 @@
       <label>Class
         <select id="levelClassSelect"></select>
       </label>
+      <label>Ability choices for this level
+        <textarea id="levelAbilityInput" placeholder="Add the abilities you took (one per line or comma-separated)"></textarea>
+      </label>
+      <p class="muted">Class abilities reference files live in <code>XRRPG-2.0-reference/Classes/</code>. Add the abilities you choose here when leveling.</p>
       <div class="xr-modal-actions">
         <button id="confirmLevelBtn" type="button">Apply</button>
         <button id="cancelLevelBtn" type="button">Cancel</button>
@@ -240,6 +243,37 @@
       };
     }
 
+    function injurySummary(injuries) {
+      return {
+        minor: injuries.filter(injury => injury.type === 'minor'),
+        severe: injuries.filter(injury => injury.type === 'severe'),
+        critical: injuries.filter(injury => injury.type === 'critical')
+      };
+    }
+
+    function normalizeAbilityChoices(raw) {
+      return raw
+        .split(/\n|,/)
+        .map(item => item.trim())
+        .filter(Boolean);
+    }
+
+    function renderInjuryTracker() {
+      const injuries = Array.isArray(character?.base_stats?.injuries) ? character.base_stats.injuries : [];
+      const grouped = injurySummary(injuries);
+      const wrap = document.getElementById('injuryTracker');
+      wrap.innerHTML = ['minor', 'severe', 'critical'].map(type => {
+        const rows = grouped[type].length
+          ? grouped[type].map((injury, idx) => `<div class="xrrpg-injury-item">${injury.label || 'Unnamed injury'} <button type="button" data-heal-type="${type}" data-heal-index="${idx}">Heal</button></div>`).join('')
+          : '<div class="muted">None</div>';
+        return `<div class="xrrpg-injury-group"><h3>${type[0].toUpperCase() + type.slice(1)}</h3>${rows}</div>`;
+      }).join('');
+
+      wrap.querySelectorAll('[data-heal-type]').forEach(button => {
+        button.onclick = () => healInjury(button.dataset.healType, Number(button.dataset.healIndex));
+      });
+    }
+
     function renderCharacter() {
       const s = character.base_stats || {};
       const notes = parseNotes();
@@ -273,20 +307,20 @@
         ? character.class_progression.map(row => `• Lv ${row.level_acquired}: ${row.class} (Tier ${row.tier})`).join('<br>')
         : 'No classes selected yet.';
 
-      const injuries = s.injuries || [];
-      const injuryLine = injuries.length
-        ? `<br><span>Injuries: ${injuries.map(i => `${i.type}:${i.label || 'unnamed'}`).join(', ')}</span>`
-        : '<br><span>Injuries: none</span>';
-      document.getElementById('classList').innerHTML += injuryLine;
+      renderInjuryTracker();
 
       const abilities = s.class_abilities || {};
+      const chosenAbilities = s.class_ability_choices || {};
       const abilityWrap = document.getElementById('classAbilityList');
       if (!(character.class_progression || []).length) {
         abilityWrap.innerHTML = '<div class="muted">No class abilities yet.</div>';
       } else {
         abilityWrap.innerHTML = character.class_progression.map((entry, idx) => {
           const key = `${entry.class}-T${entry.tier}-L${entry.level_acquired}-${idx}`;
-          return `<label>${entry.class} Tier ${entry.tier} Abilities<textarea data-ability-key="${key}" placeholder="List abilities from the core rules for this class tier...">${abilities[key] || ''}</textarea></label>`;
+          const chosen = Array.isArray(chosenAbilities[key]) && chosenAbilities[key].length
+            ? `<div class="muted">Chosen on level up: ${chosenAbilities[key].join(', ')}</div>`
+            : '<div class="muted">Chosen on level up: none recorded</div>';
+          return `<label>${entry.class} Tier ${entry.tier} Abilities<textarea data-ability-key="${key}" placeholder="List abilities from the core rules for this class tier...">${abilities[key] || ''}</textarea>${chosen}</label>`;
         }).join('');
       }
 
@@ -380,8 +414,18 @@
       const entryCount = progression.filter(item => item.class === cls).length;
       const tier = Math.min(3, entryCount + 1);
       progression.push({ class: cls, tier, level_acquired: level });
+      const choices = normalizeAbilityChoices(document.getElementById('levelAbilityInput').value.trim());
+      const key = `${cls}-T${tier}-L${level}-${progression.length - 1}`;
 
-      const base_stats = { ...character.base_stats, level, mastery_die: toMasteryDie(level) };
+      const base_stats = {
+        ...character.base_stats,
+        level,
+        mastery_die: toMasteryDie(level),
+        class_ability_choices: {
+          ...(character.base_stats?.class_ability_choices || {}),
+          [key]: choices
+        }
+      };
       const { error } = await sb.from('xrrpg_characters')
         .update({ class_progression: progression, base_stats, updated_at: new Date().toISOString() })
         .eq('id', characterId)
@@ -393,9 +437,34 @@
 
       await addHistory('level_up', `Level ${level}: ${cls} advanced to Tier ${tier}.`, { class: cls, tier, level });
       levelModal.classList.add('hidden');
+      document.getElementById('levelAbilityInput').value = '';
       await loadCharacter();
       document.getElementById('status').textContent = `Level up applied: ${cls} Tier ${tier}.`;
     };
+
+    async function healInjury(type, index) {
+      const base_stats = { ...(character.base_stats || {}) };
+      const injuries = Array.isArray(base_stats.injuries) ? [...base_stats.injuries] : [];
+      const matchingIndexes = injuries
+        .map((injury, injuryIndex) => ({ injury, injuryIndex }))
+        .filter(row => row.injury.type === type);
+      const target = matchingIndexes[index];
+      if (!target) return;
+      const [removed] = injuries.splice(target.injuryIndex, 1);
+      base_stats.injuries = injuries;
+
+      const { error } = await sb.from('xrrpg_characters')
+        .update({ base_stats, updated_at: new Date().toISOString() })
+        .eq('id', characterId)
+        .eq('user_id', currentUser.id);
+      if (error) {
+        document.getElementById('status').textContent = error.message;
+        return;
+      }
+      await addHistory('heal_injury', `Healed ${type} injury: ${removed.label || 'unnamed'}.`, { type, label: removed.label || '' });
+      await loadCharacter();
+      document.getElementById('status').textContent = `Healed ${type} injury.`;
+    }
 
     const injuryModal = document.getElementById('injuryModal');
     document.getElementById('takeInjuryBtn').onclick = () => injuryModal.classList.remove('hidden');

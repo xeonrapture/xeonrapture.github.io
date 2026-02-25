@@ -57,14 +57,14 @@
         <div class="xrrpg-inline-fields">
           <label>Preset
             <select id="statPresetSelect">
-              <option value="plus2">+2 chroma stat and +1 to one other stat</option>
+              <option value="plus2">+2 to one stat and +1 to one different stat</option>
               <option value="plus3">+3 chroma stat, +1 to one stat, and -1 to one stat</option>
               <option value="dual2">+2 to two stats and -1 to one stat</option>
               <option value="clear">Clear chroma (+1 to three stats)</option>
             </select>
           </label>
-          <label id="bonusStatWrap">Bonus stat <select id="bonusStat"></select></label>
-          <label id="secondBonusStatWrap">Second plus stat <select id="secondBonusStat"></select></label>
+          <label id="bonusStatWrap">+1 bonus stat <select id="bonusStat"></select></label>
+          <label id="secondBonusStatWrap">Second +2 stat <select id="secondBonusStat"></select></label>
           <label id="thirdBonusStatWrap" class="hidden">Third +1 stat <select id="thirdBonusStat"></select></label>
           <label id="penaltyStatWrap">Penalty stat <select id="penaltyStat"></select></label>
         </div>
@@ -142,6 +142,47 @@
     }
     statPresetSelect.addEventListener('change', updateStatSetupVisibility);
     updateStatSetupVisibility();
+
+    function validateStatSelections() {
+      const chroma = document.getElementById('chromaInput').value;
+      const chromaMap = { Red: 'vigor', Blue: 'endurance', Green: 'intuition', Grey: 'wit' };
+      const preset = statPresetSelect.value;
+      const usedStats = [];
+      const duplicateSource = [];
+      if (chromaMap[chroma]) {
+        usedStats.push(chromaMap[chroma]);
+        duplicateSource.push(`Chroma (${chromaMap[chroma]})`);
+      }
+      const take = (value, label) => {
+        if (!value) return;
+        usedStats.push(value);
+        duplicateSource.push(label);
+      };
+      if (preset === 'plus2') {
+        take(bonusStat.value, '+1 bonus stat');
+      } else if (preset === 'plus3') {
+        take(bonusStat.value, '+1 bonus stat');
+        take(penaltyStat.value, '-1 penalty stat');
+      } else if (preset === 'dual2') {
+        take(secondBonusStat.value, 'second +2 stat');
+        take(penaltyStat.value, '-1 penalty stat');
+      } else {
+        usedStats.length = 0;
+        duplicateSource.length = 0;
+        take(bonusStat.value, 'first +1 stat');
+        take(secondBonusStat.value, 'second +1 stat');
+        take(thirdBonusStat.value, 'third +1 stat');
+      }
+
+      const seen = new Set();
+      for (const stat of usedStats) {
+        if (seen.has(stat)) {
+          return { valid: false, message: 'Each stat choice must be unique. Remove duplicate stat selections before continuing.' };
+        }
+        seen.add(stat);
+      }
+      return { valid: true, message: '' };
+    }
 
     const classInput = document.getElementById('classInput');
     classNames.forEach(name => {
@@ -273,7 +314,18 @@
     document.getElementById('newCharacterBtn').onclick = () => { modal.classList.remove('hidden'); setStep(1); };
     modal.querySelector('.xr-modal-backdrop').onclick = () => modal.classList.add('hidden');
     document.getElementById('prevStepBtn').onclick = () => setStep(wizardStep - 1);
-    document.getElementById('nextStepBtn').onclick = () => setStep(wizardStep + 1);
+    document.getElementById('nextStepBtn').onclick = () => {
+      const msg = document.getElementById('modalMsg');
+      if (wizardStep === 2) {
+        const validation = validateStatSelections();
+        if (!validation.valid) {
+          msg.textContent = validation.message;
+          return;
+        }
+      }
+      msg.textContent = '';
+      setStep(wizardStep + 1);
+    };
 
     document.querySelectorAll('.table-sort').forEach(button => {
       button.onclick = () => {
@@ -298,6 +350,8 @@
       msg.textContent = '';
       if (!name) { msg.textContent = 'Name required.'; return; }
       try {
+        const validation = validateStatSelections();
+        if (!validation.valid) { msg.textContent = validation.message; return; }
         currentUser = currentUser || await requireUser();
         const base_stats = buildStatsFromWizard();
         const class_progression = [{ class: cls, tier: 1, level_acquired: 1 }];

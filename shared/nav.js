@@ -10,6 +10,15 @@
   const nav = host.querySelector(".xr-nav");
   const btn = host.querySelector(".xr-nav-toggle");
 
+  host.querySelectorAll('.xr-nav-group-toggle').forEach(toggle => {
+    const links = toggle.parentElement.querySelector('.xr-nav-group-links');
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+      links?.classList.toggle('hidden', expanded);
+    });
+  });
+
   // Mobile toggle
   if (nav && btn) {
     const closeNav = () => {

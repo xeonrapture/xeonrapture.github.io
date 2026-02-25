@@ -35,6 +35,15 @@
       <div id="blockMsg" class="mono muted wr-mt-0-5"></div>
     </section>
 
+
+    <section class="card wr-mt-1">
+      <h2>Campaign Invites</h2>
+      <label>Your GM campaign
+        <select id="campaignInviteSelect"><option value="">-- Select campaign --</option></select>
+      </label>
+      <div id="campaignInviteMsg" class="mono muted wr-mt-0-5"></div>
+    </section>
+
     <section class="card wr-mt-1">
       <h2>Your Friends</h2>
       <div id="friendsList" class="mono muted">Loading...</div>
@@ -50,6 +59,8 @@
     const blockUserBtn = document.getElementById("blockUserBtn");
     const blockMsg = document.getElementById("blockMsg");
     const friendsList = document.getElementById("friendsList");
+    const campaignInviteSelect = document.getElementById("campaignInviteSelect");
+    const campaignInviteMsg = document.getElementById("campaignInviteMsg");
 
     let currentUser;
     let friendsChannel;
@@ -73,6 +84,56 @@
       return data;
     }
 
+    async function inviteFriendToCampaign(friendId, friendName) {
+      const campaignId = campaignInviteSelect.value;
+      if (!campaignId) {
+        campaignInviteMsg.textContent = "Select a campaign first.";
+        return;
+      }
+
+      const { data: membership } = await sb.from('campaign_members')
+        .select('campaign_id, campaigns(system)')
+        .eq('campaign_id', campaignId)
+        .eq('user_id', currentUser.id)
+        .eq('role', 'gm')
+        .maybeSingle();
+      if (!membership) {
+        campaignInviteMsg.textContent = 'Only the GM can send campaign invites for that campaign.';
+        return;
+      }
+      const system = membership.campaigns?.system || 'webrunning';
+
+      const { error } = await sb.from('campaign_invites').insert({
+        campaign_id: campaignId,
+        inviter_user_id: currentUser.id,
+        invitee_user_id: friendId,
+        status: 'pending',
+        required_character_system: system
+      });
+      campaignInviteMsg.textContent = error
+        ? `Could not invite ${friendName}: ${error.message}`
+        : `Sent ${system.toUpperCase()} invite to ${friendName}.`;
+    }
+
+    async function loadInviteableCampaigns() {
+      const { data, error } = await sb.from('campaign_members')
+        .select('campaign_id, campaigns(name, system)')
+        .eq('user_id', currentUser.id)
+        .eq('role', 'gm')
+        .order('joined_at', { ascending: true });
+      campaignInviteSelect.innerHTML = '<option value="">-- Select campaign --</option>';
+      if (error) {
+        campaignInviteMsg.textContent = `Could not load campaigns: ${error.message}`;
+        return;
+      }
+      (data || []).forEach(row => {
+        const option = document.createElement('option');
+        option.value = row.campaign_id;
+        option.textContent = `${row.campaigns?.name || 'Unnamed'} [${(row.campaigns?.system || 'webrunning').toUpperCase()}]`;
+        campaignInviteSelect.appendChild(option);
+      });
+    }
+
     async function loadFriends() {
       const { data, error } = await sb
         .from("friendships")
@@ -93,7 +154,24 @@
 
       const { data: profiles } = await sb.from("profile_directory").select("id, username").in("id", otherIds);
       const byId = Object.fromEntries((profiles || []).map(p => [p.id, p.username || p.id]));
-      friendsList.innerHTML = otherIds.map(id => `<div>• ${byId[id] || id}</div>`).join("");
+      friendsList.innerHTML = otherIds.map(id => {
+        const friendName = byId[id] || id;
+        return `<div class="friend-row">• ${friendName} <button type="button" data-invite-friend="${id}" data-friend-name="${friendName}">Invite to Campaign</button> <button type="button" data-block-friend="${id}" data-friend-name="${friendName}">Block</button></div>`;
+      }).join("");
+
+      friendsList.querySelectorAll('[data-invite-friend]').forEach(button => {
+        button.onclick = () => inviteFriendToCampaign(button.dataset.inviteFriend, button.dataset.friendName || 'friend');
+      });
+      friendsList.querySelectorAll('[data-block-friend]').forEach(button => {
+        button.onclick = async () => {
+          const friendName = button.dataset.friendName || 'friend';
+          const { error: blockError } = await sb.from('blocked_users').upsert({
+            blocker_user_id: currentUser.id,
+            blocked_user_id: button.dataset.blockFriend
+          }, { onConflict: 'blocker_user_id,blocked_user_id' });
+          blockMsg.textContent = blockError ? `Could not block ${friendName}: ${blockError.message}` : `${friendName} has been blocked.`;
+        };
+      });
     }
 
     sendInviteBtn.onclick = async () => {
@@ -210,6 +288,7 @@
 
     (async () => {
       currentUser = await requireUser();
+      await loadInviteableCampaigns();
       await loadFriends();
       subscribeFriendUpdates();
     })();
