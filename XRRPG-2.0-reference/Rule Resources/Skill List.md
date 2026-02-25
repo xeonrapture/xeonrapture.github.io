@@ -1,0 +1,37 @@
+The more specific or rare ones will give you a +3, and the more general or common ones you'll only get a +2.
+
+- sleight of hand
+- stealth
+- history
+- investigation
+- nature
+- animal handling
+- insight
+- mining
+- deception
+- intimidation
+- crafting
+- performance
+- persuasion
+- yelling really loud
+- hacking
+- mechanics
+- plumbing
+- climbing
+- diving
+- swimming
+- lassoing
+- slinging
+- swinging
+- stinging
+- singing
+- cooking
+- gambling
+- medicine
+- navigating
+- pushing/pulling
+- wrastling
+- swoon
+- suave
+- mambo
+- animal handling (2)

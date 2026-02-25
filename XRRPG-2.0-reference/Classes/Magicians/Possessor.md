@@ -1,0 +1,64 @@
+# Intro
+
+Possessors are very similar to physics but without a lot of the spells that inflict a condition. They get their power from harnessing the spirits of the mortal dead, and as such their magic is taboo and often corrupts the user. It's also more powerful than standard physic magic, and possessors have access to some spookier spells.
+
+Really the only way to be a possessor without becoming evil is to develop relationships with the spirits you've chosen to control, or even better, make relationships with the spirits first and then make pacts with them so that they get something out of the deal.
+
+# Spellcasting
+
+| Class Level | Max <br>Spell Tier | Total <br>Spells Known | Basic Range<br>(r) | Max <br>Concentration | Max Concentration Time |
+| ----------- | ------------------ | ---------------------- | ------------------ | --------------------- | ---------------------- |
+| 1           | I                  | 7                      | 20                 | 2                     | 10 min                 |
+| 2           | II                 | 11                     | 30                 | 3                     | 30 min                 |
+| 3           | III                | 15                     | 50                 | 4                     | 1 hr                   |
+| 4           | III                | All                    | 50                 | 5                     | 3 hr                   |
+
+Max Concentration means how many spells you can have up at the same time and still cast other spells, and Max Concentration Time is how long any given Concentration spell can be up. Concentration spells are ones that can be kept up for a period of time but there are several things that will probably break your Concentration:
+- A Failure on a Medium Risk Action
+- A Mixed Success or worse on a High Risk Action
+- Taking a Severe Injury or worse
+
+Getting a Success on an Extreme Risk Action or doing a Suicidal Risk Action at all might even break your Concentration, so try to avoid risky Actions entirely if you want to keep you Concentration up.
+
+**Possessors can't use the same spell more than once in a row! Otherwise they tire out their thrall spirits.**
+
+Servants (undead and constructs) have more health the more skilled and higher level their master is. Undead do +1 damage and constructs have +2 HP.
+
+When a Possessor attacks or does something through their Servants they do the Action Roll and if they fail often the Servant takes the damage instead of them. If a Possessor has multiple Servants doing different things in combat then they'll do an Action Roll for each separate Action they are doing.
+
+Servants don't contribute to Group Actions (a Possessor can't do Group Actions with only themselves and their Servants).
+
+For each given Action you can combine multiple spells together if it makes sense to do them together (though this doesn't add their damage together). An Action including multiple spells only costs 1 Stamina! 
+
+Any time you level up you can replace 2 of your known spells with a new one.
+
+# Spell List
+
+| Spell                                   | Tier | Con? | AOE? | Range | Effect                                                                                                                                                                                                                                                                               |
+| --------------------------------------- | ---- | ---- | ---- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Red Spells**                          | ---  | ---  | ---  | ---   |                                                                                                                                                                                                                                                                                      |
+| Heat Ray                                | I    |      |      | r x 2 | Deals massive damage but you can't use any red spell next turn (3 dmg on Success)                                                                                                                                                                                                    |
+| Scorching Bomb                          | I    |      | X    | r     | No special effect, just does AOE (2 dmg on Success)<br>Can cast at Tier II, in which case it does massive damage but you can't use any red spell next turn (3 dmg on Success)                                                                                                        |
+| Flash Heat Trigger                      | III  | X    | X    | r     | You specify the triggering conditions; the trigger can also be manual, and the range for manually triggering is r x 2. The spell expires after a day.<br>Deals massive damage but you can't use any red spell next turn (3 dmg on Success)                                           |
+| Heat Wall                               | III  | X    | X    | r     | Wall can be 40 ft long, can bend, one side of it exudes heat and damage in 10 ft radius<br>Deals massive damage but you can't use any red spell next turn (3 dmg on Success)                                                                                                         |
+| Percussive Bomb                         | II   |      | X    | r x 2 | Do dmg in a 15 ft radius, enemies who are overcome are pushed back to the edge of the radius (2 dmg on Success)                                                                                                                                                                      |
+| **Blue Spells**                         | ---  | ---  | ---  | ---   |                                                                                                                                                                                                                                                                                      |
+| Cold Ray                                | I    |      |      | r x 2 | Inflicts the Frozen debuff, which means the next attack on the same target is more effective than usual (grants +1d Master Die on next Action against them, 2 dmg on Success)                                                                                                        |
+| Freezing Bomb                           | I    |      | X    | r     | No special effect, just does AOE (2 dmg on Success)<br>Can cast at Tier II, in which case it inflicts the Frozen debuff, which means the next attack on the same target does more damage than usual (2 dmg on Success)                                                               |
+| Flash Cold Trigger                      | III  | X    | X    | r     | You specify the triggering conditions; the trigger can also be manual, and the range for manually triggering is r x 2. The spell expires after a day (2 dmg on Success)<br>Inflicts Advanced Frozen debuff, next _two_ attacks against the same target are more effective than usual |
+| Cold Wall                               | III  | X    | X    | r     | Wall can be 40 ft long, can bend, one side of it exudes cold and damage in 10 ft radius<br>Inflicts the Frozen debuff, which means the next attack on the same target does more damage than usual (2 dmg on Success)                                                                 |
+| **Gray Spells**                         | ---  | ---  | ---  | ---   |                                                                                                                                                                                                                                                                                      |
+| Create Darkness                         | II   | X    | X    | r     | No one can see in the range unless they have heat vision or xeon sensing                                                                                                                                                                                                             |
+| Shade                                   | III  | X    |      | 0     | Make someone a stealthy shade                                                                                                                                                                                                                                                        |
+| Xeon Sensing                            | I    | X    |      | r x 2 | For 10 min you can see xenic spirits and other sources of xeon, including technology and magic items.                                                                                                                                                                                |
+| **Dark Spells**                         | ---  | ---  | ---  | ---   |                                                                                                                                                                                                                                                                                      |
+| Wither Flesh                            | I    |      |      | r     | The spirits under your command suck the life force out of a creature, damaging them (3 dmg on Success)                                                                                                                                                                               |
+| Corporealize Spirit                     | I    | X    |      | r / 2 | Give a spirit physical form; not enough to do damage, they can speak simple sentences and interact with the physical world.<br>You can give them simple commands and they'll execute them. They last for up to an hour.                                                              |
+| Take Spirit Appearance                  | II   |      |      | 0     | You can take the appearance of one of the spirits in your service for up to 2 hours.                                                                                                                                                                                                 |
+| Raise Hoard                             | II   | X    |      | r / 2 | You raise a hoard of servants. The hoard as a whole has the health of a single strong servant. The hoard can't do damage but it can break down doors and walls, restrain enemies, block spaces and doorways, etc.                                                                    |
+| Physical Thrall                         | III  | X    |      | r / 2 | A spirit attempts to inhabit the body of a mortal. Attempt to take over their body for about a minute. Every time they're hurt they can try to force their way out of your control.                                                                                                  |
+| Haunting Figures                        | II   | X    |      | r     | Your spirits torment a target, distracting them and damaging them for 2 dmg per 10 seconds on a Success. Can last up to 5 minutes, but the target can keep attempting to escape.                                                                                                     |
+| Necrotic Beam                           | III  |      | X    | r     | Hits everyone on the line in a 60 ft range (5 dmg on Success).                                                                                                                                                                                                                       |
+| Raise Dead/Create Construct             | I    | X    |      | r / 2 | Servant HP: 3<br>A spirit under the control of a possessor inhabits the body of a deceased creature or person, or animates some non-living matter. It's not extremely strong but is very determined, and has a base damage of 2 on a Success. (3/day)                                |
+| Raise Dead/Create Construct II          | II   | X    |      | r / 2 | Servant HP: 5<br>The servant is Special and imbued with one Lvl 1 Adept Basic and Advanced power. Base damage on Success depends on what Adept powers they have. (3/day)                                                                                                             |
+| Raise Dead/Create Construct III (Elite) | III  | X    |      | r / 2 | Servant HP: 7<br>The servant is Elite and imbued with one Lvl 2 Adept Basic and Advanced power. Servant is extremely strong and very hard to take down. (2/day)                                                                                                                      |
