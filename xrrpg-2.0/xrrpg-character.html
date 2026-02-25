@@ -148,13 +148,39 @@
       </div>
       <p class="muted">Pick abilities here while leveling up. The Abilities area lists these choices automatically.</p>
       <div id="levelStatRow" class="xrrpg-notes-stack">
-        <label>Stat increases (comma-separated: vigor,endurance,intuition,wit)
-          <input id="levelStatBoostInput" placeholder="vigor" />
+        <label>Stat increase target #1
+          <select id="levelStatBoostSelect1">
+            <option value="">-- Select stat --</option>
+            <option value="vigor">Vigor</option>
+            <option value="endurance">Endurance</option>
+            <option value="intuition">Intuition</option>
+            <option value="wit">Wit</option>
+          </select>
+        </label>
+        <label id="levelStatBoostSelect2Wrap" class="hidden">Stat increase target #2
+          <select id="levelStatBoostSelect2">
+            <option value="">-- Select stat --</option>
+            <option value="vigor">Vigor</option>
+            <option value="endurance">Endurance</option>
+            <option value="intuition">Intuition</option>
+            <option value="wit">Wit</option>
+          </select>
         </label>
       </div>
       <div id="levelSkillRow" class="xrrpg-notes-stack">
-        <label>Skill update target (existing skill name or new skill)
-          <input id="levelSkillTargetInput" placeholder="Stealth" />
+        <label>Skill upgrade type
+          <select id="levelSkillModeSelect">
+            <option value="add">Add new skill</option>
+            <option value="plus1">+1 to existing skill</option>
+          </select>
+        </label>
+        <label id="levelSkillNewWrap">New skill name
+          <input id="levelSkillNewInput" placeholder="Stealth" maxlength="48" />
+        </label>
+        <label id="levelSkillExistingWrap" class="hidden">Existing skill
+          <select id="levelSkillExistingSelect">
+            <option value="">-- Select existing skill --</option>
+          </select>
         </label>
       </div>
       <div class="xr-modal-actions">
@@ -254,15 +280,15 @@
       'Swordmaster': 'Technologist melee/beam fighter. Higher class level raises damage and attack shapes.'
     };
     const LEVELING_RULES = {
-      1: { stamina_base: 12, skill_mode: 'add_or_plus1', stat_points: 0, skill_points: 0, powerful_item_limit: 2, powerful_item_max: 1 },
-      2: { stamina_base: 14, skill_mode: 'stat', stat_points: 1, skill_points: 0, powerful_item_limit: 3, powerful_item_max: 1 },
-      3: { stamina_base: 16, skill_mode: 'skill_plus2', stat_points: 0, skill_points: 2, powerful_item_limit: 3, powerful_item_max: 1 },
-      4: { stamina_base: 18, skill_mode: 'stat', stat_points: 1, skill_points: 0, powerful_item_limit: 4, powerful_item_max: 2 },
-      5: { stamina_base: 20, skill_mode: 'add_or_plus1', stat_points: 0, skill_points: 0, powerful_item_limit: 5, powerful_item_max: 2 },
-      6: { stamina_base: 22, skill_mode: 'stat', stat_points: 1, skill_points: 0, powerful_item_limit: 6, powerful_item_max: 2 },
-      7: { stamina_base: 24, skill_mode: 'skill_plus2', stat_points: 0, skill_points: 2, powerful_item_limit: 7, powerful_item_max: 3 },
-      8: { stamina_base: 25, skill_mode: 'stat', stat_points: 1, skill_points: 0, powerful_item_limit: 8, powerful_item_max: 3 },
-      9: { stamina_base: 30, skill_mode: 'stat', stat_points: 2, skill_points: 0, powerful_item_limit: 9, powerful_item_max: 3 }
+      1: { stamina_base: 12, skill_mode: 'add_or_plus1', stat_points: 0, stat_bonus: 1, skill_points: 0, powerful_item_limit: 2, powerful_item_max: 1 },
+      2: { stamina_base: 14, skill_mode: 'stat', stat_points: 1, stat_bonus: 1, skill_points: 0, powerful_item_limit: 3, powerful_item_max: 1 },
+      3: { stamina_base: 16, skill_mode: 'skill_plus2', stat_points: 0, stat_bonus: 1, skill_points: 2, powerful_item_limit: 3, powerful_item_max: 1 },
+      4: { stamina_base: 18, skill_mode: 'stat', stat_points: 1, stat_bonus: 1, skill_points: 0, powerful_item_limit: 4, powerful_item_max: 2 },
+      5: { stamina_base: 20, skill_mode: 'add_or_plus1', stat_points: 0, stat_bonus: 1, skill_points: 0, powerful_item_limit: 5, powerful_item_max: 2 },
+      6: { stamina_base: 22, skill_mode: 'stat', stat_points: 1, stat_bonus: 1, skill_points: 0, powerful_item_limit: 6, powerful_item_max: 2 },
+      7: { stamina_base: 24, skill_mode: 'skill_plus2', stat_points: 0, stat_bonus: 1, skill_points: 2, powerful_item_limit: 7, powerful_item_max: 3 },
+      8: { stamina_base: 25, skill_mode: 'stat', stat_points: 1, stat_bonus: 1, skill_points: 0, powerful_item_limit: 8, powerful_item_max: 3 },
+      9: { stamina_base: 30, skill_mode: 'stat', stat_points: 1, stat_bonus: 2, skill_points: 0, powerful_item_limit: 9, powerful_item_max: 3 }
     };
 
     classNames.forEach(name => {
@@ -385,14 +411,23 @@
       const tier = Math.min(3, progression.filter(item => item.class === cls).length + 1);
       const rule = levelRule(level);
       const benefitBits = [];
-      if (rule.stat_points > 0) benefitBits.push(`+${rule.stat_points} stat`);
+      if (rule.stat_points > 0) {
+        const totalStatGain = Number(rule.stat_points || 0) * Number(rule.stat_bonus || 1);
+        if (Number(rule.stat_bonus || 1) > 1 && Number(rule.stat_points || 0) === 1) {
+          benefitBits.push(`+${totalStatGain} to one stat`);
+        } else {
+          benefitBits.push(`+${totalStatGain} stat`);
+        }
+      }
       if (rule.skill_mode === 'add_or_plus1') benefitBits.push('add a skill or +1 to an existing skill');
       if (rule.skill_mode === 'skill_plus2') benefitBits.push('+2 to one skill');
       document.getElementById('levelClassSummary').textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
       document.getElementById('levelBenefitSummary').textContent = `This level up goes to Character Level ${level} and grants: ${benefitBits.join(', ') || 'class progression only'}.`;
       document.getElementById('levelStatRow').classList.toggle('hidden', rule.stat_points === 0);
       document.getElementById('levelSkillRow').classList.toggle('hidden', !['add_or_plus1', 'skill_plus2'].includes(rule.skill_mode));
-      const abilities = (classAbilities[cls] || []).filter(item => Number(item.tiers?.[String(tier)]) || item.tiers?.[String(tier)] === '');
+      document.getElementById('levelStatBoostSelect2Wrap').classList.toggle('hidden', rule.stat_points < 2);
+      syncSkillUpgradeUi(rule.skill_mode);
+      const abilities = (classAbilities[cls] || []).filter(item => item.tiers && Object.prototype.hasOwnProperty.call(item.tiers, String(tier)));
       const choiceWrap = document.getElementById('levelAbilityChoices');
       if (!abilities.length) {
         choiceWrap.innerHTML = '<div class="muted">No parsed class abilities found for this class/tier. Add manual ability entries below.</div>';
@@ -404,11 +439,34 @@
       document.getElementById('levelMsg').textContent = `Advancing ${cls} to Tier ${tier}.`;
     }
 
+    function syncSkillUpgradeUi(skillMode) {
+      const isVisible = ['add_or_plus1', 'skill_plus2'].includes(skillMode);
+      if (!isVisible) return;
+      const skills = character.skills || [];
+      const existingSelect = document.getElementById('levelSkillExistingSelect');
+      const modeSelect = document.getElementById('levelSkillModeSelect');
+      const newWrap = document.getElementById('levelSkillNewWrap');
+      const existingWrap = document.getElementById('levelSkillExistingWrap');
+      const mode = skillMode === 'skill_plus2' ? 'plus1' : modeSelect.value;
+      modeSelect.value = mode;
+      existingSelect.innerHTML = '<option value="">-- Select existing skill --</option>';
+      skills.forEach(skill => {
+        const option = document.createElement('option');
+        option.value = skill.name || '';
+        option.textContent = `${skill.name || 'Unnamed Skill'} (+${Number(skill.bonus || 0)})`;
+        existingSelect.appendChild(option);
+      });
+      modeSelect.disabled = skillMode === 'skill_plus2';
+      newWrap.classList.toggle('hidden', mode !== 'add');
+      existingWrap.classList.toggle('hidden', mode === 'add');
+    }
+
     function gatherLevelChoices() {
       const checked = Array.from(document.querySelectorAll('.level-ability-option:checked')).map(input => input.value.trim()).filter(Boolean);
       const typed = readLevelAbilityChoices();
       return [...new Set([...checked, ...typed])];
     }
+
 
     function renderSkillList() {
       const skills = character.skills || [];
@@ -503,7 +561,9 @@
           const chosen = Array.isArray(chosenAbilities[key]) && chosenAbilities[key].length
             ? `<div class="muted">Chosen on level up: ${chosenAbilities[key].join(', ')}</div>`
             : '<div class="muted">Chosen on level up: none recorded</div>';
-          const available = (classAbilities[entry.class] || []).filter(ability => ability.tiers?.[String(entry.tier)]).map(ability => `${ability.name}: ${ability.tiers[String(entry.tier)] || ''}`);
+          const available = (classAbilities[entry.class] || [])
+            .filter(ability => ability.tiers && Object.prototype.hasOwnProperty.call(ability.tiers, String(entry.tier)))
+            .map(ability => `${ability.name}: ${ability.tiers[String(entry.tier)] || '(no description)'}`);
           const availableHtml = available.length ? `<div class="muted">Available: ${available.join(' • ')}</div>` : '<div class="muted">Available: add manually for this class tier.</div>';
           return `<div><strong>${entry.class} Tier ${entry.tier} Abilities</strong>${chosen}${availableHtml}</div>`;
         }).join('');
@@ -597,13 +657,17 @@
       levelModal.classList.remove('hidden');
       document.getElementById('levelMsg').textContent = '';
       document.getElementById('levelAbilityChoices').innerHTML = '';
-      document.getElementById('levelStatBoostInput').value = '';
-      document.getElementById('levelSkillTargetInput').value = '';
+      document.getElementById('levelStatBoostSelect1').value = '';
+      document.getElementById('levelStatBoostSelect2').value = '';
+      document.getElementById('levelSkillModeSelect').value = 'add';
+      document.getElementById('levelSkillNewInput').value = '';
+      document.getElementById('levelSkillExistingSelect').value = '';
       renderLevelAbilityOptions();
     };
     levelModal.querySelector('.xr-modal-backdrop').onclick = () => levelModal.classList.add('hidden');
     document.getElementById('cancelLevelBtn').onclick = () => levelModal.classList.add('hidden');
     document.getElementById('levelClassSelect').onchange = () => renderLevelAbilityOptions();
+    document.getElementById('levelSkillModeSelect').onchange = () => syncSkillUpgradeUi(levelRule(Math.min(9, Number(character.base_stats?.level || 1) + 1)).skill_mode);
 
     document.getElementById('confirmLevelBtn').onclick = async () => {
       const cls = document.getElementById('levelClassSelect').value;
@@ -638,16 +702,27 @@
         }
       };
       const skills = [...(character.skills || [])];
-      const levelSkillTarget = document.getElementById('levelSkillTargetInput').value.trim();
+      const skillUpgradeMode = document.getElementById('levelSkillModeSelect').value;
+      const levelSkillTarget = skillUpgradeMode === 'add'
+        ? document.getElementById('levelSkillNewInput').value.trim()
+        : document.getElementById('levelSkillExistingSelect').value.trim();
       if (rule.skill_mode === 'add_or_plus1') {
         if (!levelSkillTarget) {
           document.getElementById('levelMsg').textContent = 'This level requires a skill target for add/+1.';
           return;
         }
         const idx = skills.findIndex(skill => (skill.name || '').toLowerCase() === levelSkillTarget.toLowerCase());
-        if (idx >= 0) {
+        if (skillUpgradeMode === 'plus1') {
+          if (idx < 0) {
+            document.getElementById('levelMsg').textContent = 'Choose an existing skill for +1.';
+            return;
+          }
           skills[idx] = { ...skills[idx], bonus: Number(skills[idx].bonus || 0) + 1 };
         } else {
+          if (idx >= 0) {
+            document.getElementById('levelMsg').textContent = 'That skill already exists. Use +1 instead.';
+            return;
+          }
           skills.push({ name: levelSkillTarget, bonus: 2 });
         }
       }
@@ -664,7 +739,10 @@
         skills[idx] = { ...skills[idx], bonus: Number(skills[idx].bonus || 0) + 2 };
       }
       if (rule.stat_points > 0) {
-        const statTargets = document.getElementById('levelStatBoostInput').value.split(',').map(item => item.trim().toLowerCase()).filter(Boolean);
+        const statTargets = [
+          document.getElementById('levelStatBoostSelect1').value,
+          document.getElementById('levelStatBoostSelect2').value
+        ].filter(Boolean);
         if (statTargets.length < rule.stat_points) {
           document.getElementById('levelMsg').textContent = `This level needs ${rule.stat_points} stat increase(s).`;
           return;
@@ -672,7 +750,7 @@
         for (let i = 0; i < rule.stat_points; i += 1) {
           const stat = statTargets[i];
           if (!['vigor', 'endurance', 'intuition', 'wit'].includes(stat)) continue;
-          base_stats[stat] = Math.min(5, Number(base_stats[stat] || 0) + 1);
+          base_stats[stat] = Math.min(5, Number(base_stats[stat] || 0) + Number(rule.stat_bonus || 1));
         }
         base_stats.stamina_max = staminaMaxForLevel(level, base_stats.intuition, base_stats.wit);
         base_stats.stamina_total = base_stats.stamina_max;

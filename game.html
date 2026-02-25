@@ -178,6 +178,22 @@
       return `Lv ${baseStats.level || 1} • Vig ${baseStats.vigor || 0} End ${baseStats.endurance || 0} Intu ${baseStats.intuition || 0} Wit ${baseStats.wit || 0} • Stam ${staminaMax}`;
     }
 
+    function webrunningStatBlurb(baseStats = {}, notes = null) {
+      const level = Number(baseStats.level || 1);
+      const hp = Number(baseStats.hp || 0);
+      const power = Number(baseStats.power || 0);
+      const defense = Number(baseStats.defense || 0);
+      const speed = Number(baseStats.speed || 0);
+      const intelligence = Number(baseStats.intelligence || 0);
+      let blurb = '';
+      if (typeof notes === 'string' && notes.trim()) blurb = notes.trim();
+      if (!blurb && notes && typeof notes === 'object') {
+        blurb = String(notes.blurb || notes.summary || notes.bio || notes.description || notes.extra || '').trim();
+      }
+      const statLine = `Lv ${level} • HP ${hp} • P ${power} D ${defense} S ${speed} I ${intelligence}`;
+      return blurb ? `${statLine} • ${blurb}` : statLine;
+    }
+
     async function loadGameDetails() {
       const campaignId = selectedGameId();
       if (!campaignId) return;
@@ -228,7 +244,7 @@
       const webrunningIds = assignments.filter(row => row.character_system === 'webrunning' && row.webrunning_character_id).map(row => row.webrunning_character_id);
       const xrrpgIds = assignments.filter(row => row.character_system === 'xrrpg' && row.xrrpg_character_id).map(row => row.xrrpg_character_id);
       const [{ data: webrunningChars = [] }, { data: xrrpgChars = [] }] = await Promise.all([
-        webrunningIds.length ? sb.from('webrunning_characters').select('id, name').in('id', webrunningIds) : Promise.resolve({ data: [] }),
+        webrunningIds.length ? sb.from('webrunning_characters').select('id, name, base_stats, notes').in('id', webrunningIds) : Promise.resolve({ data: [] }),
         xrrpgIds.length ? sb.from('xrrpg_characters').select('id, name, base_stats').in('id', xrrpgIds) : Promise.resolve({ data: [] })
       ]);
       const webrunningById = Object.fromEntries(webrunningChars.map(char => [char.id, char]));
@@ -240,7 +256,9 @@
         const link = row.character_system === 'xrrpg'
           ? `/xrrpg-2.0/xrrpg-character.html?id=${id}&campaign_id=${campaignId}&readonly=1`
           : `/webrunning-2.0/webrunning-character.html?id=${id}&campaign_id=${campaignId}&readonly=1`;
-        const statBlurb = row.character_system === 'xrrpg' ? `<div class="muted">${xrrpgStatBlurb(char?.base_stats || {})}</div>` : '';
+        const statBlurb = row.character_system === 'xrrpg'
+          ? `<div class="muted">${xrrpgStatBlurb(char?.base_stats || {})}</div>`
+          : `<div class="muted">${webrunningStatBlurb(char?.base_stats || {}, char?.notes || null)}</div>`;
         return `<article class="assigned-character-card"><div class="assigned-character-header"><a class="assigned-character-name" href="${link}">${char?.name || 'Unnamed character'}</a><span class="assigned-character-role muted">${row.character_system.toUpperCase()}</span></div>${statBlurb}</article>`;
       }).join('');
     }
@@ -353,7 +371,8 @@
       await sb.from("campaign_character_assignments")
         .delete()
         .eq("campaign_id", campaignId)
-        .eq("user_id", currentUser.id);
+        .eq("user_id", currentUser.id)
+        .eq("character_system", system);
 
       if (!selectedCharacterId) {
         playerCharacterStatus.textContent = "Cleared your character selection for this campaign.";
