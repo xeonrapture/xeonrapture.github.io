@@ -9,8 +9,15 @@
 <body class="wr-scope">
   <div id="nav"></div>
   <main class="wrap sheet">
-    <a class="action-btn" href="/xrrpg-2.0/xrrpg-character-manager.html">← Back to XRRPG Character Manager</a>
-    <h1>XRRPG Character Sheet</h1>
+    <header>
+      <div style="display:flex; align-items:center; gap:0.5rem; justify-content:space-between; flex-wrap:wrap;">
+        <a class="action-btn" href="/xrrpg-2.0/xrrpg-character-manager.html" aria-label="Back to XRRPG character manager">
+          <span aria-hidden="true">←</span>
+          <span>Back to XRRPG Character Manager</span>
+        </a>
+      </div>
+      <h1>XRRPG Character Sheet</h1>
+    </header>
 
     <section class="card">
       <h2>Character</h2>
@@ -24,23 +31,68 @@
 
     <section class="card">
       <h2>Core Stats</h2>
-      <div class="stat-inputs">
-        <label>Level <input id="levelInput" type="number" min="1" max="9" /></label>
-        <label>HP <input id="hpInput" type="number" /></label>
-        <label>Current HP <input id="currentHpInput" type="number" /></label>
-        <label>Vigor <input id="vigorInput" type="number" /></label>
-        <label>Endurance <input id="enduranceInput" type="number" /></label>
-        <label>Intuition <input id="intuitionInput" type="number" /></label>
-        <label>Wit <input id="witInput" type="number" /></label>
-        <label>Mastery Die <input id="masteryDieInput" /></label>
+      <div class="xrrpg-stat-line">
+        <label title="Character level from 1 to 9.">Level <input id="levelInput" type="number" min="1" max="9" /></label>
+        <label title="Maximum HP from your build and progression.">Max HP <input id="hpInput" type="number" /></label>
+        <label title="Current HP after damage/healing.">Current HP <input id="currentHpInput" type="number" /></label>
+        <label title="Mastery die used for class actions.">Mastery Die <input id="masteryDieInput" /></label>
+        <label title="Vigor supports movement, power, and will.">Vigor <input id="vigorInput" type="number" /></label>
+        <label title="Endurance supports resilience and toughness.">Endurance <input id="enduranceInput" type="number" /></label>
+        <label title="Intuition supports dexterity, perception, and charisma.">Intuition <input id="intuitionInput" type="number" /></label>
+        <label title="Wit supports logic, innovation, and memory.">Wit <input id="witInput" type="number" /></label>
       </div>
-      <button id="levelUpBtn" type="button">Level Up (Class/Tier)</button>
+      <div class="xrrpg-row" style="margin-top:0.8rem;">
+        <button id="levelUpBtn" type="button">Level Up (Class/Tier)</button>
+        <button id="takeInjuryBtn" type="button">Take Injury</button>
+      </div>
       <div id="status" class="mono muted"></div>
+    </section>
+
+    <section class="card">
+      <h2>Resource Tracking</h2>
+      <div class="stat-inputs">
+        <label title="Total stamina available for class abilities.">Total Stamina <input id="staminaTotalInput" type="number" min="0" /></label>
+        <label title="How much stamina has been used.">Stamina Used <input id="staminaUsedInput" type="number" min="0" /></label>
+        <label title="Stamina exhaustion threshold before forced checks.">Stamina Exhaustion Limit <input id="staminaLimitInput" type="number" min="0" /></label>
+        <label title="Max number of powerful items you can actively use.">Powerful Item Limit <input id="powerfulItemLimitInput" type="number" min="0" /></label>
+        <label title="Absolute cap for powerful item upgrades.">Powerful Item Max <input id="powerfulItemMaxInput" type="number" min="0" /></label>
+        <label title="Party progression tier used for group actions.">Party Tier <input id="partyTierInput" type="number" min="1" /></label>
+        <label title="Current xenic decay level.">Xenic Decay Level <input id="xenicDecayInput" type="number" min="0" /></label>
+        <label title="Total number of decay cleanses.">Times Cleansed <input id="timesCleansedInput" type="number" min="0" /></label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Skills</h2>
+      <div id="skillList" class="mono muted">No skills saved.</div>
     </section>
 
     <section class="card">
       <h2>Class Progression</h2>
       <div id="classList" class="mono muted"></div>
+      <h3 style="margin-top:1rem;">Class Abilities</h3>
+      <div id="classAbilityList" class="ability-list"></div>
+    </section>
+
+    <section class="card">
+      <h2>Character Notes</h2>
+      <div class="xrrpg-text-grid">
+        <label>Appearance
+          <textarea id="appearanceInput"></textarea>
+        </label>
+        <label>Personality
+          <textarea id="personalityInput"></textarea>
+        </label>
+        <label>Motivation
+          <textarea id="motivationInput"></textarea>
+        </label>
+        <label>BACKSTORY
+          <textarea id="backstoryInput"></textarea>
+        </label>
+        <label class="xrrpg-note-full">Extra Notes
+          <textarea id="extraNotesInput"></textarea>
+        </label>
+      </div>
     </section>
 
     <section class="card">
@@ -71,6 +123,31 @@
         <button id="cancelLevelBtn" type="button">Cancel</button>
       </div>
       <div id="levelMsg" class="mono muted"></div>
+    </div>
+  </div>
+
+  <div id="injuryModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Take Injury</h2>
+      <p class="muted">Minor: 1 DMG + next Action -2. Severe: 2 DMG + lose 1 Stamina. Critical: 3 DMG + -1 all Actions until healed.</p>
+      <div class="stat-inputs">
+        <label>Injury type
+          <select id="injuryTypeInput">
+            <option value="minor">Minor</option>
+            <option value="severe">Severe</option>
+            <option value="critical">Critical</option>
+          </select>
+        </label>
+        <label>Injury label
+          <input id="injuryLabelInput" maxlength="64" placeholder="Bruised / Lacerated / Bleeding Out" />
+        </label>
+      </div>
+      <div class="xr-modal-actions">
+        <button id="confirmInjuryBtn" type="button">Apply Injury</button>
+        <button id="cancelInjuryBtn" type="button">Cancel</button>
+      </div>
+      <div id="injuryMsg" class="mono muted"></div>
     </div>
   </div>
 
@@ -111,6 +188,33 @@
       return 'd4';
     }
 
+    function parseNotes() {
+      if (!character?.notes) return {};
+      try {
+        return JSON.parse(character.notes);
+      } catch (_error) {
+        return { extra: character.notes };
+      }
+    }
+
+    function readNotesFromInputs() {
+      return JSON.stringify({
+        appearance: document.getElementById('appearanceInput').value.trim(),
+        personality: document.getElementById('personalityInput').value.trim(),
+        motivation: document.getElementById('motivationInput').value.trim(),
+        backstory: document.getElementById('backstoryInput').value.trim(),
+        extra: document.getElementById('extraNotesInput').value.trim()
+      });
+    }
+
+    function readClassAbilities() {
+      const abilities = {};
+      document.querySelectorAll('[data-ability-key]').forEach(textarea => {
+        abilities[textarea.dataset.abilityKey] = textarea.value.trim();
+      });
+      return abilities;
+    }
+
     function readStatsFromInputs() {
       return {
         ...character.base_stats,
@@ -123,12 +227,22 @@
         endurance: Number(document.getElementById('enduranceInput').value) || 0,
         intuition: Number(document.getElementById('intuitionInput').value) || 0,
         wit: Number(document.getElementById('witInput').value) || 0,
-        mastery_die: document.getElementById('masteryDieInput').value.trim() || 'd4'
+        mastery_die: document.getElementById('masteryDieInput').value.trim() || 'd4',
+        stamina_total: Number(document.getElementById('staminaTotalInput').value) || 0,
+        stamina_used: Number(document.getElementById('staminaUsedInput').value) || 0,
+        stamina_exhaustion_limit: Number(document.getElementById('staminaLimitInput').value) || 0,
+        powerful_item_limit: Number(document.getElementById('powerfulItemLimitInput').value) || 0,
+        powerful_item_max: Number(document.getElementById('powerfulItemMaxInput').value) || 0,
+        party_tier: Number(document.getElementById('partyTierInput').value) || 1,
+        xenic_decay_level: Number(document.getElementById('xenicDecayInput').value) || 0,
+        times_cleansed: Number(document.getElementById('timesCleansedInput').value) || 0,
+        class_abilities: readClassAbilities()
       };
     }
 
     function renderCharacter() {
       const s = character.base_stats || {};
+      const notes = parseNotes();
       document.getElementById('nameInput').value = character.name || '';
       document.getElementById('speciesInput').value = s.species || '';
       document.getElementById('chromaInput').value = s.chroma || '';
@@ -140,10 +254,46 @@
       document.getElementById('intuitionInput').value = s.intuition || 0;
       document.getElementById('witInput').value = s.wit || 0;
       document.getElementById('masteryDieInput').value = s.mastery_die || 'd4';
+      document.getElementById('staminaTotalInput').value = s.stamina_total ?? (10 + (s.intuition || 0) + (s.wit || 0));
+      document.getElementById('staminaUsedInput').value = s.stamina_used || 0;
+      document.getElementById('staminaLimitInput').value = s.stamina_exhaustion_limit ?? (s.stamina_total || 0);
+      document.getElementById('powerfulItemLimitInput').value = s.powerful_item_limit || 0;
+      document.getElementById('powerfulItemMaxInput').value = s.powerful_item_max || 0;
+      document.getElementById('partyTierInput').value = s.party_tier || 1;
+      document.getElementById('xenicDecayInput').value = s.xenic_decay_level || 0;
+      document.getElementById('timesCleansedInput').value = s.times_cleansed || 0;
+
+      document.getElementById('appearanceInput').value = notes.appearance || '';
+      document.getElementById('personalityInput').value = notes.personality || '';
+      document.getElementById('motivationInput').value = notes.motivation || '';
+      document.getElementById('backstoryInput').value = notes.backstory || '';
+      document.getElementById('extraNotesInput').value = notes.extra || '';
 
       document.getElementById('classList').innerHTML = (character.class_progression || []).length
         ? character.class_progression.map(row => `• Lv ${row.level_acquired}: ${row.class} (Tier ${row.tier})`).join('<br>')
         : 'No classes selected yet.';
+
+      const injuries = s.injuries || [];
+      const injuryLine = injuries.length
+        ? `<br><span>Injuries: ${injuries.map(i => `${i.type}:${i.label || 'unnamed'}`).join(', ')}</span>`
+        : '<br><span>Injuries: none</span>';
+      document.getElementById('classList').innerHTML += injuryLine;
+
+      const abilities = s.class_abilities || {};
+      const abilityWrap = document.getElementById('classAbilityList');
+      if (!(character.class_progression || []).length) {
+        abilityWrap.innerHTML = '<div class="muted">No class abilities yet.</div>';
+      } else {
+        abilityWrap.innerHTML = character.class_progression.map((entry, idx) => {
+          const key = `${entry.class}-T${entry.tier}-L${entry.level_acquired}-${idx}`;
+          return `<label>${entry.class} Tier ${entry.tier} Abilities<textarea data-ability-key="${key}" placeholder="List abilities from the core rules for this class tier...">${abilities[key] || ''}</textarea></label>`;
+        }).join('');
+      }
+
+      const skills = character.skills || [];
+      document.getElementById('skillList').innerHTML = skills.length
+        ? skills.map(skill => `• ${skill.name || 'Unnamed skill'} (+${Number(skill.bonus || 0)})`).join('<br>')
+        : 'No skills saved.';
     }
 
     function renderHistory() {
@@ -171,7 +321,7 @@
     async function loadCharacter() {
       currentUser = await requireUser();
       const { data, error } = await sb.from('xrrpg_characters')
-        .select('id, user_id, name, base_stats, class_progression')
+        .select('id, user_id, name, base_stats, class_progression, skills, notes')
         .eq('id', characterId)
         .single();
       if (error) throw error;
@@ -203,8 +353,9 @@
     document.getElementById('saveBtn').onclick = async () => {
       const name = document.getElementById('nameInput').value.trim();
       const base_stats = readStatsFromInputs();
+      const notes = readNotesFromInputs();
       const { error } = await sb.from('xrrpg_characters')
-        .update({ name, base_stats, updated_at: new Date().toISOString() })
+        .update({ name, notes, base_stats, updated_at: new Date().toISOString() })
         .eq('id', characterId)
         .eq('user_id', currentUser.id);
       if (error) {
@@ -244,6 +395,44 @@
       levelModal.classList.add('hidden');
       await loadCharacter();
       document.getElementById('status').textContent = `Level up applied: ${cls} Tier ${tier}.`;
+    };
+
+    const injuryModal = document.getElementById('injuryModal');
+    document.getElementById('takeInjuryBtn').onclick = () => injuryModal.classList.remove('hidden');
+    injuryModal.querySelector('.xr-modal-backdrop').onclick = () => injuryModal.classList.add('hidden');
+    document.getElementById('cancelInjuryBtn').onclick = () => injuryModal.classList.add('hidden');
+
+    document.getElementById('confirmInjuryBtn').onclick = async () => {
+      const type = document.getElementById('injuryTypeInput').value;
+      const label = document.getElementById('injuryLabelInput').value.trim();
+      const damageByType = { minor: 1, severe: 2, critical: 3 };
+      const damage = damageByType[type] || 1;
+      const base_stats = { ...(character.base_stats || {}) };
+      const currentHp = Number(base_stats.current_hp ?? base_stats.hp ?? 0);
+      base_stats.current_hp = Math.max(0, currentHp - damage);
+      if (!Array.isArray(base_stats.injuries)) base_stats.injuries = [];
+      base_stats.injuries.push({ type, label, damage, at: new Date().toISOString() });
+
+      if (type === 'severe') {
+        base_stats.stamina_used = Number(base_stats.stamina_used || 0) + 1;
+      }
+      if (type === 'critical') {
+        base_stats.critical_action_penalty = Number(base_stats.critical_action_penalty || 0) - 1;
+      }
+
+      const { error } = await sb.from('xrrpg_characters')
+        .update({ base_stats, updated_at: new Date().toISOString() })
+        .eq('id', characterId)
+        .eq('user_id', currentUser.id);
+      if (error) {
+        document.getElementById('injuryMsg').textContent = error.message;
+        return;
+      }
+
+      await addHistory('injury', `${type.toUpperCase()} injury: ${label || 'unnamed'} (${damage} dmg).`, { type, label, damage });
+      injuryModal.classList.add('hidden');
+      await loadCharacter();
+      document.getElementById('status').textContent = `Applied ${type} injury (${damage} dmg).`;
     };
 
     document.querySelectorAll('.table-sort').forEach(button => {

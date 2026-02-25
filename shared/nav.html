@@ -1,19 +1,21 @@
 <nav class="xr-nav">
   <a class="xr-brand" href="/index.html">XR Tools</a>
 
-  <div class="xr-nav-icons" data-auth="in">
-    <a class="xr-nav-icon-link" href="/dashboard.html" aria-label="Open dashboard" title="Dashboard">
-      <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"></path></svg>
-    </a>
-    <a class="xr-nav-icon-link" href="/notifications.html" aria-label="Open notifications" title="Notifications">
-      <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17h12"></path><path d="M8 17V11a4 4 0 1 1 8 0v6"></path><path d="M10 20a2 2 0 0 0 4 0"></path></svg>
-      <span id="nav-notification-count" class="xr-badge hidden">0</span>
-    </a>
-  </div>
+  <div class="xr-nav-right">
+    <button class="xr-nav-toggle" type="button" aria-expanded="false" aria-controls="xr-nav-groups" aria-label="Menu" title="Menu">
+      <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+    </button>
 
-  <button class="xr-nav-toggle" type="button" aria-expanded="false" aria-controls="xr-nav-groups" aria-label="Menu" title="Menu">
-    <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
-  </button>
+    <div class="xr-nav-icons" data-auth="in">
+      <a class="xr-nav-icon-link" href="/dashboard.html" aria-label="Open dashboard" title="Dashboard">
+        <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"></path></svg>
+      </a>
+      <a class="xr-nav-icon-link" href="/notifications.html" aria-label="Open notifications" title="Notifications">
+        <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17h12"></path><path d="M8 17V11a4 4 0 1 1 8 0v6"></path><path d="M10 20a2 2 0 0 0 4 0"></path></svg>
+        <span id="nav-notification-count" class="xr-badge hidden">0</span>
+      </a>
+    </div>
+  </div>
 
   <div id="xr-nav-groups" class="xr-nav-groups">
     <div class="xr-nav-group" data-group="Tools">
