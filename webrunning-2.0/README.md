@@ -11,7 +11,7 @@ Having everything but luck set to None means it randomizes everything. The luck 
 
 This is part of Webrunning 2.0, a loot-focused and video game-inspired TTRPG system based on traversing the internet through interconnected nodes of diverse genres.
 
-Go [here](https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Modules/Webrunning+2.0/Gear+Generation/Gear+Generation+and+Modification) to see all the Webrunning 2.0 Gear Generation rules and [here](https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Modules/Webrunning+2.0/Webrunning+2.0) to check out the rules as a whole.
+Go [here](https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear/Gear+Modification+and+the+Local+Shop) to see all the Webrunning 2.0 Gear Generation rules and [here](https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Modules/Webrunning+2.0/Webrunning+2.0) to check out the rules as a whole.
 
 This system is a sub-system of the [XRRPG](https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules), a sci-fantasy TTRPG built for flashy, narrative-focused anime fights where you manipulate the laws of physics.
 
