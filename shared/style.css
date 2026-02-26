@@ -322,9 +322,12 @@ textarea:focus {
   display: none !important;
   position: absolute;
   top: 56px;
-  left: 12px;
   right: 12px;
+  left: auto;
+  width: max-content;
+  max-width: calc(100vw - 24px);
   flex-direction: column;
+  align-items: flex-end;
   gap: 12px;
   padding: 12px;
   border: 1px solid var(--border);
@@ -339,13 +342,22 @@ textarea:focus {
 
 .xr-nav-group {
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: 8px;
+  width: max-content;
+  max-width: 100%;
 }
 
 .xr-nav-title {
   margin: 0 0 4px 0;
   opacity: 0.85;
+  text-align: right;
+  width: 100%;
+}
+
+.xr-nav-group-links {
+  align-items: flex-end;
+  text-align: right;
 }
 
 /* ===== modal styles ===== */
