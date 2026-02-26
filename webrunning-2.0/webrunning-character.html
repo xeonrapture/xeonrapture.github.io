@@ -246,7 +246,7 @@
             <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
           </div>
           <div class="collapsible-body">
-            <p class="muted">Click <a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Gear+Generation+and+Modification">here</a> for an explanation of gear generation.</p>
+            <p class="muted">Click <a href="https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear/Gear+Modification+and+the+Local+Shop">here</a> for an explanation of gear generation.</p>
             <p class="muted">Generate gear with your current luck plus a bonus and add it to your inventory or equip it.</p>
             <p class="muted">If luck goes over your level cap, generation still uses the cap and includes a luck-limit reminder.</p>
             <div class="gear-generator-actions">
@@ -4227,11 +4227,11 @@
               colors = ["Neutral", "Red", "Blue", "Green", "Gray"]
               color2_options = [None, "Neutral", "Red", "Blue", "Green", "Gray"]
               link_suffixes = {
-                  abilityCatalog.WeaponActiveCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Gear+Actives#",
-                  abilityCatalog.ClothingActiveCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Gear+Actives#",
-                  abilityCatalog.PassiveCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Kernels#",
-                  abilityCatalog.ConsumableEffectCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Consumables#",
-                  abilityCatalog.BaubleEffectCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear+Generation/Baubles#"
+                  abilityCatalog.WeaponActiveCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear/Gear+Actives#",
+                  abilityCatalog.ClothingActiveCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear/Gear+Actives#",
+                  abilityCatalog.PassiveCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear/Kernels#",
+                  abilityCatalog.ConsumableEffectCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear/Consumables#",
+                  abilityCatalog.BaubleEffectCatalog: "https://xeonrapture.com/xr/XRRPG+2.0/Sub-RPGs/Webrunning+2.0/Gear/Baubles#"
               }
               ability_map = {}
 
@@ -4646,21 +4646,54 @@
       renderGeneratedGear(applyGearBonuses(currentStats(), calculateGearBonuses(currentStats())));
     }
 
+    const legacyWebrunningLinkSegment = "/Gear+Generation/";
+    const canonicalWebrunningLinkSegment = "/Gear/";
+
+    function normalizeWebrunningAbilityLink(link) {
+      if (typeof link !== "string" || !link) return link;
+      if (!link.includes("xeonrapture.com") || !link.includes(legacyWebrunningLinkSegment)) {
+        return link;
+      }
+      return link.replace(legacyWebrunningLinkSegment, canonicalWebrunningLinkSegment);
+    }
+
+    function normalizeGearAbilityLinks(gear) {
+      if (!gear || typeof gear !== "object") {
+        return { gear, changed: false };
+      }
+      const clone = cloneJson(gear);
+      if (!Array.isArray(clone.abilities)) {
+        return { gear: clone, changed: false };
+      }
+      let changed = false;
+      clone.abilities = clone.abilities.map(ability => {
+        if (!ability || typeof ability !== "object") return ability;
+        const normalizedLink = normalizeWebrunningAbilityLink(ability.link);
+        if (normalizedLink !== ability.link) {
+          changed = true;
+          return { ...ability, link: normalizedLink };
+        }
+        return ability;
+      });
+      return { gear: clone, changed };
+    }
+
     function buildGearInsertPayload(gear) {
+      const normalizedGear = normalizeGearAbilityLinks(gear).gear;
       return {
-        name: gear.name || formatGearName(gear),
-        rarity: gear.rarity,
-        color: gear.color,
-        color2: gear.color2 || null,
-        gear_type: gear.gear_type || gear.gearType,
-        aesthetic: gear.aesthetic || null,
-        item_type: gear.item_type || gear.itemType || null,
-        stats: gear.stats || [],
-        essence_value: gear.essence_value || gear.essenceValue || 0,
-        credit_value: gear.credit_value || gear.creditValue || 0,
-        abilities: gear.abilities || [],
-        stat_modifiers: gear.stat_modifiers || gear.statModifiers || [],
-        notes: gear.notes || null
+        name: normalizedGear.name || formatGearName(normalizedGear),
+        rarity: normalizedGear.rarity,
+        color: normalizedGear.color,
+        color2: normalizedGear.color2 || null,
+        gear_type: normalizedGear.gear_type || normalizedGear.gearType,
+        aesthetic: normalizedGear.aesthetic || null,
+        item_type: normalizedGear.item_type || normalizedGear.itemType || null,
+        stats: normalizedGear.stats || [],
+        essence_value: normalizedGear.essence_value || normalizedGear.essenceValue || 0,
+        credit_value: normalizedGear.credit_value || normalizedGear.creditValue || 0,
+        abilities: normalizedGear.abilities || [],
+        stat_modifiers: normalizedGear.stat_modifiers || normalizedGear.statModifiers || [],
+        notes: normalizedGear.notes || null
       };
     }
 
@@ -5894,12 +5927,30 @@
           .select("gear_id, equipped, gear_slot, gear:webrunning_gear(*)")
           .eq("character_id", activeCharacter.id);
         if (error) throw error;
-        characterGear = (data || []).map(row => ({
-          gear_id: row.gear_id,
-          equipped: row.equipped,
-          gear_slot: row.gear_slot,
-          gear: row.gear
-        }));
+        const migratedGearRows = [];
+        characterGear = (data || []).map(row => {
+          const normalized = normalizeGearAbilityLinks(row.gear);
+          if (normalized.changed) {
+            migratedGearRows.push({ id: row.gear_id, abilities: normalized.gear.abilities || [] });
+          }
+          return {
+            gear_id: row.gear_id,
+            equipped: row.equipped,
+            gear_slot: row.gear_slot,
+            gear: normalized.gear
+          };
+        });
+        if (migratedGearRows.length && !readOnlyMode) {
+          for (const entry of migratedGearRows) {
+            const { error: migrationError } = await sb
+              .from("webrunning_gear")
+              .update({ abilities: entry.abilities })
+              .eq("id", entry.id);
+            if (migrationError) {
+              console.warn("Failed to migrate gear links for entry", entry.id, migrationError);
+            }
+          }
+        }
         render();
       } catch (error) {
         console.error(error);
