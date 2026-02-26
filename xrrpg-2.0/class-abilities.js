@@ -27,7 +27,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Devil Touch",
       "tiers": {
-        "1": "You take on a bit of the appearance of your devil or your devil's powers and are able to do harmless sensory effects related to that theme and your abilities. See the [[Magicians#Enchanter\\"
+        "1": "You take on a bit of the appearance of your devil or your devil's powers and are able to do harmless sensory effects related to that theme and your abilities.\nSee the [[Magicians#Enchanter\\"
       }
     },
     {
@@ -47,7 +47,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Dark Flame",
       "tiers": {
-        "1": "Deal yourself a Severe Injury as a Laceration appears on your body and you begin to bleed. Deal damage equal a fifth of the enemy's max HP."
+        "1": "Deal yourself a Severe Injury as a Laceration appears on your body and you begin to bleed.\nDeal damage equal a fifth of the enemy's max HP."
       }
     },
     {
@@ -65,7 +65,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Menonic Smite",
       "tiers": {
-        "2": "Empower your Attack Action to do +2 dmg; does +4 dmg to spirits and spiritual entities."
+        "2": "Empower your\nAttack Action to do +2 dmg; does +4 dmg to spirits and spiritual entities."
       }
     },
     {
@@ -83,13 +83,13 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Curse",
       "tiers": {
-        "3": "Curse an energy, giving all Actions against them +2d Mastery Dice for 1 minute and +1d Mastery Die after that and until they get the curse lifted. Deal yourself the Withering Critical Injury. (2/day, can't stack)"
+        "3": "Curse an energy, giving all Actions against them +2d Mastery Dice for 1 minute and +1d Mastery Die after that and until they get the curse lifted.\nDeal yourself the Withering Critical Injury. (2/day, can't stack)"
       }
     },
     {
       "name": "Invite Possession",
       "tiers": {
-        "3": "Invite an evil spirit into your body, giving you +3d Mastery Dice on your checks for the next 1 minute. Deal yourself the Withering Critical Injury and the Lacerated Severe Injury."
+        "3": "Invite an evil spirit into your body, giving you +3d Mastery Dice on your checks for the next 1 minute.\nDeal yourself the Withering Critical Injury and the Lacerated Severe Injury."
       }
     }
   ],
@@ -283,13 +283,13 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Constrict",
       "tiers": {
-        "2": "Shape biomass into vines or another type of plant that then constricts one humanoid target Can spend multiple Actions to shape more biomass to constrict a larger target"
+        "2": "Shape biomass into vines or another type of plant that then constricts one humanoid target\nCan spend multiple Actions to shape more biomass to constrict a larger target"
       }
     },
     {
       "name": "Create Plant",
       "tiers": {
-        "3": "Use biomass to create and control whatever plants you want Can be used for multiple Actions to create and shape bigger plants"
+        "3": "Use biomass to create and control whatever plants you want\nCan be used for multiple Actions to create and shape bigger plants"
       }
     },
     {
@@ -319,7 +319,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Lightshift",
       "tiers": {
-        "2": "Use light in a 30 ft square to create an illusion of the same size Can also suck all the light of that area to create deep darkness"
+        "2": "Use light in a 30 ft square to create an illusion of the same size\nCan also suck all the light of that area to create deep darkness"
       }
     },
     {
@@ -331,13 +331,13 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Chromespear",
       "tiers": {
-        "1": "Use metal to do 3 dmg to one target, can throw a spear of metal or have the metal appear from the terrain Can pin target if Successful"
+        "1": "Use metal to do 3 dmg to one target, can throw a spear of metal or have the metal appear from the terrain\nCan pin target if Successful"
       }
     },
     {
       "name": "Shardbomb",
       "tiers": {
-        "2": "Use metal to throw spears or create a sharp flower of metal that does 3 dmg in a 15 ft radius Can pin targets if Successful"
+        "2": "Use metal to throw spears or create a sharp flower of metal that does 3 dmg in a 15 ft radius\nCan pin targets if Successful"
       }
     },
     {
@@ -431,7 +431,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Scorching Bomb",
       "tiers": {
-        "1": "No special effect, just does AOE (2 dmg on Success) Can cast at Tier II, in which case it does massive damage but you can't use any red spell next turn (3 dmg on Success)"
+        "1": "No special effect, just does AOE (2 dmg on Success)\nCan cast at Tier II, in which case it does massive damage but you can't use any red spell next turn (3 dmg on Success)"
       }
     },
     {
@@ -461,7 +461,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Freezing Bomb",
       "tiers": {
-        "1": "No special effect, just does AOE (2 dmg on Success) Can cast at Tier II, in which case it inflicts the Frozen debuff, which means the next attack on the same target does more damage than usual (2 dmg on Success)"
+        "1": "No special effect, just does AOE (2 dmg on Success)\nCan cast at Tier II, in which case it inflicts the Frozen debuff, which means the next attack on the same target does more damage than usual (2 dmg on Success)"
       }
     },
     {
@@ -503,7 +503,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Corporealize Spirit",
       "tiers": {
-        "1": "Give a spirit physical form; not enough to do damage, they can speak simple sentences and interact with the physical world. You can give them simple commands and they'll execute them. They last for up to an hour."
+        "1": "Give a spirit physical form; not enough to do damage, they can speak simple sentences and interact with the physical world.\nYou can give them simple commands and they'll execute them. They last for up to an hour."
       }
     },
     {
@@ -527,7 +527,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Haunting Figures",
       "tiers": {
-        "2": "Your spirits torment a target, distracting them and damaging them for 2 dmg per 10 seconds on a Success. Can last up to 5 minutes, but the target can keep attempting to escape."
+        "2": "Your spirits torment a target, distracting them and damaging them for 2 dmg per 10 seconds on a Success.\nCan last up to 5 minutes, but the target can keep attempting to escape."
       }
     },
     {
@@ -571,7 +571,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Scorching Bomb",
       "tiers": {
-        "1": "No special effect, just does AOE (2 dmg on Success) Can cast at Tier II, in which case it does massive damage but you can't use any red spell next turn (3 dmg on Success)"
+        "1": "No special effect, just does AOE (2 dmg on Success)\nCan cast at Tier II, in which case it does massive damage but you can't use any red spell next turn (3 dmg on Success)"
       }
     },
     {
@@ -643,7 +643,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Freezing Bomb",
       "tiers": {
-        "1": "No special effect, just does AOE (2 dmg on Success) Can cast at Tier II, in which case it inflicts the Frozen debuff, which means the next attack on the same target does more damage than usual (grants +1d Mastery Die on next Action against them, 2 dmg on Success)"
+        "1": "No special effect, just does AOE (2 dmg on Success)\nCan cast at Tier II, in which case it inflicts the Frozen debuff, which means the next attack on the same target does more damage than usual (grants +1d Mastery Die on next Action against them, 2 dmg on Success)"
       }
     },
     {
@@ -679,13 +679,13 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Grippy Group",
       "tiers": {
-        "3": "Can climb with great proficiency Can inflict on a group of foes, they are stuck to the ground and can't move (gives a +1d Mastery Die on Actions against them while active)"
+        "3": "Can climb with great proficiency\nCan inflict on a group of foes, they are stuck to the ground and can't move (gives a +1d Mastery Die on Actions against them while active)"
       }
     },
     {
       "name": "Sense Up",
       "tiers": {
-        "1": "All the senses of a target are amplified. You can also nullify any of the senses of a willing person! At Tier II you can attempt to nullify the senses of an unwilling target"
+        "1": "All the senses of a target are amplified.\nYou can also nullify any of the senses of a willing person! At Tier II you can attempt to nullify the senses of an unwilling target"
       }
     },
     {
@@ -739,7 +739,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Binding",
       "tiers": {
-        "2": "A white, glowing tether of xeon connects two objects, or something to you. You can manipulate the length and direction of the connection. Get creative! Up to 400 lbs total split among up to 5 tethers Can last up to 5 min Tethers can break if you lose concentration or if an enemy breaks it"
+        "2": "A white, glowing tether of xeon connects two objects, or something to you.\nYou can manipulate the length and direction of the connection.\nGet creative! Up to 400 lbs total split among up to 5 tethers\nCan last up to 5 min Tethers can break if you lose concentration or if an enemy breaks it"
       }
     },
     {
@@ -916,17 +916,17 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Healing",
       "tiers": {
-        "1": "Heal surface wounds and deeper wounds with some time, can feel how a body is doing Can heal Minor Injuries All healing is on touch",
-        "2": "Heal deeper wounds quickly, heal diseases, can gain deep, nuanced feel into a body Can heal weaker xenic diseases Can heal Severe Injuries or up to 2 HP's worth of Injuries",
-        "3": "Heal maimings (grow eyes, limbs, etc.), heal nastier diseases, can heal some mental diseases and disorders Can heal some stronger xenic diseases (but not all) Can heal one Critical Injury per day, or up to 3 HP's worth of Injuries"
+        "1": "Heal surface wounds and deeper wounds with some time, can feel how a body is doing\nCan heal Minor Injuries All healing is on touch",
+        "2": "Heal deeper wounds quickly, heal diseases, can gain deep, nuanced feel into a body\nCan heal weaker xenic diseases\nCan heal Severe Injuries or up to 2 HP's worth of Injuries",
+        "3": "Heal maimings (grow eyes, limbs, etc.), heal nastier diseases, can heal some mental diseases and disorders\nCan heal some stronger xenic diseases (but not all)\nCan heal one Critical Injury per day, or up to 3 HP's worth of Injuries"
       }
     },
     {
       "name": "Turn into animals",
       "tiers": {
-        "1": "Only normal beasts and only normal sized; no huge beasts Can turn into swimming beasts Attacks can deal up to 3 dmg on Success",
-        "2": "More exotic (more complicated) beasts and can make them smaller or larger (fox or hippo) Can turn into flying beasts Attacks can deal up to 4 dmg on Success",
-        "3": "Xenic beasts, huge beasts Can scale down to an ant or up to the size of a small wyvern Attacks can deal up to 5 dmg on Success"
+        "1": "Only normal beasts and only normal sized; no huge beasts\nCan turn into swimming beasts\nAttacks can deal up to 3 dmg on Success",
+        "2": "More exotic (more complicated) beasts and can make them smaller or larger (fox or hippo)\nCan turn into flying beasts\nAttacks can deal up to 4 dmg on Success",
+        "3": "Xenic beasts, huge beasts\nCan scale down to an ant or up to the size of a small wyvern\nAttacks can deal up to 5 dmg on Success"
       }
     },
     {
@@ -940,24 +940,24 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Sight and hearing range up<br>Speak with animals",
       "tiers": {
-        "1": "Can understand and speak to animals Can see in the dark Can see through the eyes of animals (easier if they trust you) (range 5 miles) Can gently have them go places (is not absolute control, and they can force you out or just not follow you if they wish) Usually gets an animal companion at this point too",
-        "2": "See infrared and ultraviolet, can hear higher and lower tones Can understand plants and bugs Can sense through plants and bugs (range 50 miles)",
-        "3": "Can sense through huge amounts of living beings at the same time Can sense through any living being that's on the planet you're on (have to do an Action Roll if they're a person though to force your way into their senses) Also works through contiguous bodies of green xeon (which occur around any large body of plants or animals that span across an area, such as a jungle, forest, or ocean)"
+        "1": "Can understand and speak to animals\nCan see in the dark\nCan see through the eyes of animals (easier if they trust you) (range 5 miles)\nCan gently have them go places (is not absolute control, and they can force you out or just not follow you if they wish) Usually gets an animal companion at this point too",
+        "2": "See infrared and ultraviolet, can hear higher and lower tones\nCan understand plants and bugs\nCan sense through plants and bugs (range 50 miles)",
+        "3": "Can sense through huge amounts of living beings at the same time\nCan sense through any living being that's on the planet you're on (have to do an Action Roll if they're a person though to force your way into their senses) Also works through contiguous bodies of green xeon (which occur around any large body of plants or animals that span across an area, such as a jungle, forest, or ocean)"
       }
     },
     {
       "name": "Control metabolism",
       "tiers": {
-        "1": "Can slow or speed up your own metabolism, control your own pain response (when knocked out or incapacitated can defer that effect for one turn) Can make yourself or others become sick for a short amount of time on touch (next Action against them gets +1d Mastery Die) You can control your own sleep or attempt to make someone else sleep on touch (takes 3 Successful Actions and then they're asleep for 10 min) You don't need to sleep quite as much as normal people (Deep and Safe Rest last 4 hrs)",
-        "2": "Can slow down your own breathing and bloodflow, basically inducing a self-controlled coma Can become completely frozen this way and be fine You can cause or soothe pain or discomfort on touch (when knocked out or incapacitated can defer that effect in a target for one turn) Induce sickness is more potent (next Action against them gets +2d Mastery Die) Sleep is more potent (takes 2 Successful Action, asleep for 10 min) You need half the normal amount of sleep (Deep and Safe Rest last 3 hrs)",
-        "3": "You have absolute control over your own body (can defer getting knocked out or incapacitated for three turns) Your sickness, sleep, and pain control can be done in a range of 10ft of you (and AOE if you'd like) Induce sickness is extremely potent (next Action against them gets +3d Mastery Die) Sleep is very powerful (takes 2 Successful Action, asleep for 1 hr) You can forego sleep entirely and instead enter a state of meditation once in a while (Deep and Safe Rest last 1 hr)"
+        "1": "Can slow or speed up your own metabolism, control your own pain response (when knocked out or incapacitated can defer that effect for one turn)\nCan make yourself or others become sick for a short amount of time on touch (next Action against them gets +1d Mastery Die)\nYou can control your own sleep or attempt to make someone else sleep on touch (takes 3 Successful Actions and then they're asleep for 10 min) You don't need to sleep quite as much as normal people (Deep and Safe Rest last 4 hrs)",
+        "2": "Can slow down your own breathing and bloodflow, basically inducing a self-controlled coma\nCan become completely frozen this way and be fine\nYou can cause or soothe pain or discomfort on touch (when knocked out or incapacitated can defer that effect in a target for one turn)\nInduce sickness is more potent (next Action against them gets +2d Mastery Die)\nSleep is more potent (takes 2 Successful Action, asleep for 10 min) You need half the normal amount of sleep (Deep and Safe Rest last 3 hrs)",
+        "3": "You have absolute control over your own body (can defer getting knocked out or incapacitated for three turns) Your sickness, sleep, and pain control can be done in a range of 10ft of you (and AOE if you'd like)\nInduce sickness is extremely potent (next Action against them gets +3d Mastery Die)\nSleep is very powerful (takes 2 Successful Action, asleep for 1 hr)\nYou can forego sleep entirely and instead enter a state of meditation once in a while (Deep and Safe Rest last 1 hr)"
       }
     },
     {
       "name": "Atmosphere",
       "tiers": {
-        "1": "Can create an aura of atmosphere around you; 30 ft bubble Can create a bubble of non-breathable gas around yourself (15 ft radius) You can hold your breath for up to 10 min with no problem",
-        "2": "100 ft radius for atmosphere Non-breathable gas bubble goes up to 30 ft Can create poisonous gas bubble around yourself up to 15 ft radius (2 dmg) You can hold your breath for up to an hour",
+        "1": "Can create an aura of atmosphere around you; 30 ft bubble\nCan create a bubble of non-breathable gas around yourself (15 ft radius)\nYou can hold your breath for up to 10 min with no problem",
+        "2": "100 ft radius for atmosphere Non-breathable gas bubble goes up to 30 ft\nCan create poisonous gas bubble around yourself up to 15 ft radius (2 dmg)\nYou can hold your breath for up to an hour",
         "3": "5,000 ft range 50 ft non-breathable gas bubble 30 ft poisonous gas bubble 15 ft explosive gas bubble (4 dmg) 15 ft acidic gas bubble (3 dmg) Gas bubbles don't have to be centered on you and can be thrown up to 50 ft away You don't have to breathe, as you generate atmosphere within yourself"
       }
     }
@@ -967,49 +967,49 @@ window.XRRPG_CLASS_ABILITIES = {
       "name": "Burst strength",
       "tiers": {
         "0": "Naturally very strong and fast",
-        "1": "As strong and fast as the strongest and fastest of the species (that doesn't have powers) Can withstand their own strength but they're no harder to cut or hurt than anyone else Deal base 3 dmg on Success",
+        "1": "As strong and fast as the strongest and fastest of the species (that doesn't have powers)\nCan withstand their own strength but they're no harder to cut or hurt than anyone else\nDeal base 3 dmg on Success",
         "2": "Far stronger and faster than the strongest and fastest of the species",
-        "3": "So strong they can move many, many times their weight, absolutely devastating blows So fast you can barely see them move Deal base 4 dmg on Success"
+        "3": "So strong they can move many, many times their weight, absolutely devastating blows So fast you can barely see them move\nDeal base 4 dmg on Success"
       }
     },
     {
       "name": "Lightening",
       "tiers": {
         "1": "1/4 own weight -> 5 seconds",
-        "2": "1/8 own weight -> 5 seconds 1/4 own weight -> 1 minute Can touch someone and make them 1/4 their own weight for ~10 seconds",
-        "3": "Nullify their own weight -> 5 seconds 1/8 own weigh -> 1 minute 1/4 own weight -> unlimited Can touch someone and 1/8 their weight for ~10 seconds Can make everything in a 10 ft radius 1/4 weight for ~10 seconds"
+        "2": "1/8 own weight -> 5 seconds 1/4 own weight -> 1 minute\nCan touch someone and make them 1/4 their own weight for ~10 seconds",
+        "3": "Nullify their own weight -> 5 seconds 1/8 own weigh -> 1 minute 1/4 own weight -> unlimited\nCan touch someone and 1/8 their weight for ~10 seconds\nCan make everything in a 10 ft radius 1/4 weight for ~10 seconds"
       }
     },
     {
       "name": "Heat Control",
       "tiers": {
-        "1": "Temps up to 600 don't affect you Can heat self up enough to 2nd degree burn with a 5-second touch (3 dmg on Success) Heat aura of the hottest sauna (10 ft radius, decreases from there, lasts 10 min) (2 dmg on Success)",
-        "2": "Temps up to 3000 don't affect you (volcano) Can heat self up enough to 3rd degree burn with a 5-second touch (4 dmg on Success) Heat aura so hot people around get 1st degree burns (10 ft radius, lasts 10 min, 3 dmg on Success)",
-        "3": "Temps up to 10,000 don't affect you (star) Can heat self up enough to 4th degree burn with a 5-second touch (5 dmg on Success) Heat aura so hot people around get 2nd degree burns (10 ft radius, lasts 10 min, 4 dmg on Success)"
+        "1": "Temps up to 600 don't affect you\nCan heat self up enough to 2nd degree burn with a 5-second touch (3 dmg on Success) Heat aura of the hottest sauna (10 ft radius, decreases from there, lasts 10 min) (2 dmg on Success)",
+        "2": "Temps up to 3000 don't affect you (volcano)\nCan heat self up enough to 3rd degree burn with a 5-second touch (4 dmg on Success) Heat aura so hot people around get 1st degree burns (10 ft radius, lasts 10 min, 3 dmg on Success)",
+        "3": "Temps up to 10,000 don't affect you (star)\nCan heat self up enough to 4th degree burn with a 5-second touch (5 dmg on Success) Heat aura so hot people around get 2nd degree burns (10 ft radius, lasts 10 min, 4 dmg on Success)"
       }
     },
     {
       "name": "Decrease friction",
       "tiers": {
         "1": "Can up to halve the friction on any part of your body, enables you to slide around",
-        "2": "Can get rid of the friction on any part of your body Can touch an object or person and up to halve the friction on it for up to 1 min",
-        "3": "Can get rid of the friction on anything around you in a 10 ft radius for up to 10 minutes. Can be an AOE or selective"
+        "2": "Can get rid of the friction on any part of your body\nCan touch an object or person and up to halve the friction on it for up to 1 min",
+        "3": "Can get rid of the friction on anything around you in a 10 ft radius for up to 10 minutes.\nCan be an AOE or selective"
       }
     },
     {
       "name": "Propulsion",
       "tiers": {
-        "1": "Can launch yourself up to 50 ft from where you are Can expel force from your body strong enough to push up to 300 lbs from you in a one-directional push up to 30 ft",
-        "2": "Can fly freely for up to 10 minutes, up to 100 ft per turn Can expel force from your body strong enough to push up to 600 lbs from you in one push in one direction up to 50 ft or 400 lbs from you in a 30 ft AOE around you",
-        "3": "Can fly forever, up to 200 ft per turn Can expel force from your body strong enough to push up to 1500 lbs from you in a one-directional push up to 100 ft, 1000 lbs from you in a 50 ft distance cone, or 600 lbs from you in a 30 ft AOE around you"
+        "1": "Can launch yourself up to 50 ft from where you are\nCan expel force from your body strong enough to push up to 300 lbs from you in a one-directional push up to 30 ft",
+        "2": "Can fly freely for up to 10 minutes, up to 100 ft per turn\nCan expel force from your body strong enough to push up to 600 lbs from you in one push in one direction up to 50 ft or 400 lbs from you in a 30 ft AOE around you",
+        "3": "Can fly forever, up to 200 ft per turn\nCan expel force from your body strong enough to push up to 1500 lbs from you in a one-directional push up to 100 ft, 1000 lbs from you in a 50 ft distance cone, or 600 lbs from you in a 30 ft AOE around you"
       }
     },
     {
       "name": "Explosions",
       "tiers": {
         "1": "Can create explosions from their body up to 10 ft radius Touch or centered on themselves (4 dmg on Success)",
-        "2": "Can now create explosions up to 25 ft radius Can throw explosions up to 30 ft away from you",
-        "3": "70 ft radius explosions, intense heat and force Can throw explosions up to 50 ft away from you Can do a very focused blast in a 10 ft range cone that does 6 dmg and double dmg to structures"
+        "2": "Can now create explosions up to 25 ft radius\nCan throw explosions up to 30 ft away from you",
+        "3": "70 ft radius explosions, intense heat and force\nCan throw explosions up to 50 ft away from you\nCan do a very focused blast in a 10 ft range cone that does 6 dmg and double dmg to structures"
       }
     }
   ],
@@ -1018,7 +1018,7 @@ window.XRRPG_CLASS_ABILITIES = {
       "name": "Mind up",
       "tiers": {
         "0": "Some mind quickening and memory boosting",
-        "1": "More mind quickening and memory boosting Can learn skills quickly as a result (half the Decaying DRs) Roll double Mastery Dice on mental Action Rolls",
+        "1": "More mind quickening and memory boosting\nCan learn skills quickly as a result (half the Decaying DRs) Roll double Mastery Dice on mental Action Rolls",
         "2": "Photographic memory, can memorize and analyze in an instant",
         "3": "Basically instant memorization and analysis, you've entered immortal-level intelligence"
       }
@@ -1026,49 +1026,49 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Telepathy",
       "tiers": {
-        "1": "Can send simple ideas, words, basic images, recipient can send the same back Can attack people psychically (2 dmg on Success)",
+        "1": "Can send simple ideas, words, basic images, recipient can send the same back\nCan attack people psychically (2 dmg on Success)",
         "2": "Can send more complex strings of ideas, words, and complex images, and the recipient can send the same back Make a \"group chat\" with up to ~10 people, or send messages to ~10 people at once Psychic attack stronger (3 dmg on Success)",
-        "3": "Can send information in pure ideas very, very quickly You can force your way into someone's mind and gain information against their will \"Group chat\" or group send up to 100 people Psychic attack extremely strong (4 dmg on Success)"
+        "3": "Can send information in pure ideas very, very quickly\nYou can force your way into someone's mind and gain information against their will \"Group chat\" or group send up to 100 people Psychic attack extremely strong (4 dmg on Success)"
       }
     },
     {
       "name": "Xeon binding",
       "tiers": {
         "1": "Tether things to their own bodies with ghostly white xenic tethers and manipulate the link and the objects that are tethered to them Up to 400 lbs total, up to 5 tethers Tethers can last up to 5 min Range 25 ft Opponents can break tethers if they're strong",
-        "2": "Tether up to 700 lbs total, up to 10 tethers Can bind other things together for up to 10 min, can manipulate the length and direction of the tether remotely 50 ft range for tethers Tethers harder to break",
+        "2": "Tether up to 700 lbs total, up to 10 tethers\nCan bind other things together for up to 10 min, can manipulate the length and direction of the tether remotely 50 ft range for tethers Tethers harder to break",
         "3": "Unlimited tethers Unlimited time and count for remote tethers Extremely strong tethers, 4000 lb weight limit as sum of all tethers 200 ft range for tethers Tethers very hard to break"
       }
     },
     {
       "name": "Shade form",
       "tiers": {
-        "1": "Go semi-invisible, invisible in shadows, quite hard to hit even in light Can go ethereal for up to 1 min and go through walls up to a foot thick, can't attack or be attacked by anything but xenic effects",
+        "1": "Go semi-invisible, invisible in shadows, quite hard to hit even in light\nCan go ethereal for up to 1 min and go through walls up to a foot thick, can't attack or be attacked by anything but xenic effects",
         "2": "Can make a group of up to 10 around you go into shade form with you Self can go ethereal for up to 10 min, can travel through up to 10 ft of wall, can't attack or be attacked by anything but xenic effects",
-        "3": "Can travel between connected shadows, range 200 ft Can have a group of up to 10 around you go ethereal for up to 10 min, but they can only travel through up to 1 ft of material Self can go ethereal for up to an hour, can travel through as much solid material as you want; you can't attack and you can only be affected by certain spiritual effects, not all xenic effects"
+        "3": "Can travel between connected shadows, range 200 ft\nCan have a group of up to 10 around you go ethereal for up to 10 min, but they can only travel through up to 1 ft of material Self can go ethereal for up to an hour, can travel through as much solid material as you want; you can't attack and you can only be affected by certain spiritual effects, not all xenic effects"
       }
     },
     {
       "name": "Pointy, sharp xeon",
       "tiers": {
-        "1": "Can create black blades of xeon up to a couple inches long, pretty sharp but can't cut through armor or xenic force fields (3 dmg on Success) Can cut weak xenic tethers Can't cut through onyx (at all, like onyx nullifies obsidian sharpness)",
-        "2": "Blades can go up to 6 in and can slice through most armor easily, including xenic force fields (4 dmg on Success) Can cut and damage most other weapons Can cut stronger xenic tethers Can now throw the blades",
-        "3": "Blades can be up to 6 ft long Blades can now cut through almost anything as if it were butter, basically like an atom-level blade (5 dmg on Success) Cuts all but powerful weapons, like enchanted or very high-tech ones Can cut all xenic tethers (even industrial ones, with time) Still can't cut through onyx tho, and can be blocked by other obsidian blades"
+        "1": "Can create black blades of xeon up to a couple inches long, pretty sharp but can't cut through armor or xenic force fields (3 dmg on Success)\nCan cut weak xenic tethers Can't cut through onyx (at all, like onyx nullifies obsidian sharpness)",
+        "2": "Blades can go up to 6 in and can slice through most armor easily, including xenic force fields (4 dmg on Success)\nCan cut and damage most other weapons\nCan cut stronger xenic tethers\nCan now throw the blades",
+        "3": "Blades can be up to 6 ft long Blades can now cut through almost anything as if it were butter, basically like an atom-level blade (5 dmg on Success) Cuts all but powerful weapons, like enchanted or very high-tech ones\nCan cut all xenic tethers (even industrial ones, with time) Still can't cut through onyx tho, and can be blocked by other obsidian blades"
       }
     },
     {
       "name": "Seership",
       "tiers": {
-        "1": "Feel strong sources of xeon around you from up to 60 ft away Can see up to 100 ft away from any angle but must close your eyes and concentrate Can see possibilities for the future up to 3 sec from now but may get fake info if you fail an Action",
-        "2": "Can start to feel smaller, more subtle sources of xeon from up to 200 ft away Feel composition of xenic objects and can piece together how they work with some knowledge Can also be used to see in the dark, as everything has a xenic signature of some sort Can see up to 500 ft away from any angle but must close your eyes and concentrate Can see possibilities for the future up to 5 minutes from now but may get fake info if you fail an Action",
-        "3": "Can see xenic lay lines and the currents in the sky, can feel the mixture of xeon types around you, can feel the subtlest xeon sources from miles away The physical plane and the xenic plane are perpetually mixed for you unless you consciously turn it off Can also find both natural and artificial xenic portals from miles and miles away Can see up to 10 miles away from any angle but must close your eyes and concentrate Can see possibilities for the future up to a day from now but may get fake info if you fail an Action"
+        "1": "Feel strong sources of xeon around you from up to 60 ft away\nCan see up to 100 ft away from any angle but must close your eyes and concentrate\nCan see possibilities for the future up to 3 sec from now but may get fake info if you fail an Action",
+        "2": "Can start to feel smaller, more subtle sources of xeon from up to 200 ft away Feel composition of xenic objects and can piece together how they work with some knowledge\nCan also be used to see in the dark, as everything has a xenic signature of some sort\nCan see up to 500 ft away from any angle but must close your eyes and concentrate\nCan see possibilities for the future up to 5 minutes from now but may get fake info if you fail an Action",
+        "3": "Can see xenic lay lines and the currents in the sky, can feel the mixture of xeon types around you, can feel the subtlest xeon sources from miles away The physical plane and the xenic plane are perpetually mixed for you unless you consciously turn it off\nCan also find both natural and artificial xenic portals from miles and miles away\nCan see up to 10 miles away from any angle but must close your eyes and concentrate\nCan see possibilities for the future up to a day from now but may get fake info if you fail an Action"
       }
     },
     {
       "name": "Onyx shielding",
       "tiers": {
-        "1": "Make a hard shield of black xeon, max size 1 ft radius, can take quite a bit of physical force (ignore Minor Injuries from physical sources, lasts 10 min) Onyx shields must be completely flat Can also form the shield to body parts to make super-hard punch or kick (3 dmg on Success)",
-        "2": "Shield goes up to 3 ft radius, gets much stronger (ignore up to Severe Injuries from physical sources, lasts up to 10 min) Can now throw shields and onyx constructions (3 dmg on Success)",
-        "3": "Full box or polyhedral shield up to 6 ft radius, can take a massive beast's weight and attacks (ignore up to Critical Injuries but breaks on a Critical Injury, lasts up to 10 min) Can create onyx platforms that attach to walls or float and last for up to 10 seconds"
+        "1": "Make a hard shield of black xeon, max size 1 ft radius, can take quite a bit of physical force (ignore Minor Injuries from physical sources, lasts 10 min) Onyx shields must be completely flat\nCan also form the shield to body parts to make super-hard punch or kick (3 dmg on Success)",
+        "2": "Shield goes up to 3 ft radius, gets much stronger (ignore up to Severe Injuries from physical sources, lasts up to 10 min)\nCan now throw shields and onyx constructions (3 dmg on Success)",
+        "3": "Full box or polyhedral shield up to 6 ft radius, can take a massive beast's weight and attacks (ignore up to Critical Injuries but breaks on a Critical Injury, lasts up to 10 min)\nCan create onyx platforms that attach to walls or float and last for up to 10 seconds"
       }
     }
   ],
@@ -1086,16 +1086,16 @@ window.XRRPG_CLASS_ABILITIES = {
       "name": "Heavening",
       "tiers": {
         "1": "2x own weight -> 5 seconds",
-        "2": "5x own weight -> 5 seconds 2x own weight -> 1 minute Can touch someone and make them 2x their own weight for ~10 seconds (enough to hurt them)",
-        "3": "20x own weight -> 5 seconds 5x own weight -> 1 minute 2x own weight -> unlimited Can touch someone and 5x their weight for ~10 seconds Can make everything in a 10 ft radius 2x weight for ~10 seconds"
+        "2": "5x own weight -> 5 seconds 2x own weight -> 1 minute\nCan touch someone and make them 2x their own weight for ~10 seconds (enough to hurt them)",
+        "3": "20x own weight -> 5 seconds 5x own weight -> 1 minute 2x own weight -> unlimited\nCan touch someone and 5x their weight for ~10 seconds\nCan make everything in a 10 ft radius 2x weight for ~10 seconds"
       }
     },
     {
       "name": "Cold control",
       "tiers": {
-        "1": "Temps down to freezing point don't affect you Can freeze self down to freezing point, or just a hand below that (2 dmg on Success, touch attack) Hand attack inflicts Frozen (grants +1d Mastery Die on next Action against them) Cold aura of freezing point (lasts 10 min, 1 dmg on Success)",
-        "2": "Temps down to -200 F don't affect you Can freeze self down to -200 F (3 dmg on Success) Hand attack inflicts Advanced Frozen (grants +2d Mastery Die on next Action against them) Cold aura of -100 F (10 ft radius, lasts 10 min, 2 dmg on Success) Cold aura inflicts Frozen (grants +1d Mastery Die on next Action against them)",
-        "3": "Temps down to 1 K don't affect you Can freeze self down to 1 K (3 dmg on Success) Hand attack inflicts Extreme Frozen and liquifies the air around you (grants +3d Mastery Die on next Action against them) Cold aura of -200 F (10 ft radius, lasts 10 min, 2 dmg on Success) Cold aura inflicts Advanced Frozen (grants +2d Mastery Die on next Action against them)"
+        "1": "Temps down to freezing point don't affect you\nCan freeze self down to freezing point, or just a hand below that (2 dmg on Success, touch attack) Hand attack inflicts Frozen (grants +1d Mastery Die on next Action against them) Cold aura of freezing point (lasts 10 min, 1 dmg on Success)",
+        "2": "Temps down to -200 F don't affect you\nCan freeze self down to -200 F (3 dmg on Success) Hand attack inflicts Advanced Frozen (grants +2d Mastery Die on next Action against them) Cold aura of -100 F (10 ft radius, lasts 10 min, 2 dmg on Success) Cold aura inflicts Frozen (grants +1d Mastery Die on next Action against them)",
+        "3": "Temps down to 1 K don't affect you\nCan freeze self down to 1 K (3 dmg on Success) Hand attack inflicts Extreme Frozen and liquifies the air around you (grants +3d Mastery Die on next Action against them) Cold aura of -200 F (10 ft radius, lasts 10 min, 2 dmg on Success) Cold aura inflicts Advanced Frozen (grants +2d Mastery Die on next Action against them)"
       }
     },
     {
@@ -1110,15 +1110,15 @@ window.XRRPG_CLASS_ABILITIES = {
       "name": "Force fields",
       "tiers": {
         "1": "Make a bubble around yourself, can deflect all normal xenic effects, beams, spells, etc. Strong xenic effects will break it though Ignore Minor Injuries from xenic sources (lasts up to 10 min)",
-        "2": "The bubble deflects all but the strongest effects when just around yourself (Ignore up to Severe Injuries from xenic sources, lasts up to 10 min) Can make bubble 5 ft radius but it only deflects normal xenic effects (Ignore Minor Injuries from xenic sources, lasts up to 10 min)",
-        "3": "Personal bubble deflects most xenic attacks and effects (Ignore up to Critical Injuries but breaks on a Critical Injury, lasts up to 10 min) 5 ft rad. bubble is very strong (Ignore up to Severe Injuries from xenic sources, lasts up to 10 min) Can make a 20 ft rad. bubble that's normal strong (Ignore Minor Injuries from xenic sources, lasts up to 10 min)"
+        "2": "The bubble deflects all but the strongest effects when just around yourself (Ignore up to Severe Injuries from xenic sources, lasts up to 10 min)\nCan make bubble 5 ft radius but it only deflects normal xenic effects (Ignore Minor Injuries from xenic sources, lasts up to 10 min)",
+        "3": "Personal bubble deflects most xenic attacks and effects (Ignore up to Critical Injuries but breaks on a Critical Injury, lasts up to 10 min) 5 ft rad. bubble is very strong (Ignore up to Severe Injuries from xenic sources, lasts up to 10 min)\nCan make a 20 ft rad. bubble that's normal strong (Ignore Minor Injuries from xenic sources, lasts up to 10 min)"
       }
     },
     {
       "name": "Inertial dampening",
       "tiers": {
-        "1": "Can stop your own inertia at will (up to half terminal velocity) Can stop strong physical forces (Ignore Minor Injuries from physical sources)",
-        "2": "Stop own inertia at will, no limit Can stop most very strong physical force, like large beast-force Can stop inertia of anything a 30 ft bubble",
+        "1": "Can stop your own inertia at will (up to half terminal velocity)\nCan stop strong physical forces (Ignore Minor Injuries from physical sources)",
+        "2": "Stop own inertia at will, no limit\nCan stop most very strong physical force, like large beast-force\nCan stop inertia of anything a 30 ft bubble",
         "3": "Can rebound many inertial forces Limit is very very high (massive beasts attacks) Stop inertia of anything in a 100 ft bubble"
       }
     }
@@ -1219,7 +1219,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Cold/Heat",
       "tiers": {
-        "1": "Can do ice damage that inflicts the Frozen debuff (does 2 dmg on Success, grants +1d Mastery Die on next Action against them). Can do a powerful heat attack which deals +1 dmg but the heat power has to cool down next turn."
+        "1": "Can do ice damage that inflicts the Frozen debuff (does 2 dmg on Success, grants +1d Mastery Die on next Action against them).\nCan do a powerful heat attack which deals +1 dmg but the heat power has to cool down next turn."
       }
     },
     {
@@ -1249,7 +1249,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Reflect",
       "tiers": {
-        "3": "Can use to reflect xenic effects back to their target or to another target. Can deal a massive amount of damage depending on what you're reflecting"
+        "3": "Can use to reflect xenic effects back to their target or to another target.\nCan deal a massive amount of damage depending on what you're reflecting"
       }
     }
   ],
@@ -1359,7 +1359,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Recon Gun",
       "tiers": {
-        "2": "Gun shoots tiny cameras, mics, or xeon sensors that stick to the target. These are easily destroyed, but blend into their environments. Can also shoot trackers."
+        "2": "Gun shoots tiny cameras, mics, or xeon sensors that stick to the target. These are easily destroyed, but blend into their environments.\nCan also shoot trackers."
       }
     },
     {
@@ -1561,7 +1561,7 @@ window.XRRPG_CLASS_ABILITIES = {
     {
       "name": "Healing",
       "tiers": {
-        "1": "Can heal up to 2 HP's worth of Injuries up to 5 times a day (one target). Can also heal other drones and repair them if they've been destroyed (but if they've been disintegrated then tough luck)."
+        "1": "Can heal up to 2 HP's worth of Injuries up to 5 times a day (one target).\nCan also heal other drones and repair them if they've been destroyed (but if they've been disintegrated then tough luck)."
       }
     },
     {
