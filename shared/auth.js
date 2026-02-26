@@ -21,8 +21,10 @@ window.supabaseClient = window.supabase.createClient(
   let pendingCount = 0;
   let showTimer = null;
   let visibleSince = 0;
-  const SHOW_DELAY_MS = 140;
+  const SHOW_DELAY_MS = 0;
   const MIN_VISIBLE_MS = 180;
+  const MAX_VISIBLE_MS = 12000;
+  let safetyTimer = null;
 
   function ensureOverlay() {
     let overlay = document.getElementById('globalLoadingOverlay');
@@ -49,6 +51,11 @@ window.supabaseClient = window.supabase.createClient(
     setText(message);
     overlay.classList.remove('hidden');
     visibleSince = Date.now();
+    if (safetyTimer) window.clearTimeout(safetyTimer);
+    safetyTimer = window.setTimeout(() => {
+      pendingCount = 0;
+      hideNow();
+    }, MAX_VISIBLE_MS);
   }
 
   function hideNow() {
@@ -56,6 +63,10 @@ window.supabaseClient = window.supabase.createClient(
     if (!overlay) return;
     overlay.classList.add('hidden');
     visibleSince = 0;
+    if (safetyTimer) {
+      window.clearTimeout(safetyTimer);
+      safetyTimer = null;
+    }
   }
 
   function begin(message = 'Loading…') {
@@ -103,6 +114,15 @@ window.supabaseClient = window.supabase.createClient(
   window.hideGlobalLoading = function hideGlobalLoading() {
     end();
   };
+
+  window.addEventListener('pagehide', () => {
+    pendingCount = 0;
+    if (showTimer) {
+      window.clearTimeout(showTimer);
+      showTimer = null;
+    }
+    hideNow();
+  });
 
   window.withGlobalLoading = async function withGlobalLoading(message, task) {
     begin(message || 'Loading…');
