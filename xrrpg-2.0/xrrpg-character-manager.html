@@ -122,6 +122,12 @@
       'Warrior','Mentalist','Tank','Druid','Elementalist','Summoner','Mystic','Alchemist','Physic','Possessor','Bard','Enchanter','Sorcerer','Warlock','Cleric','Demititan','Emitter Specialist','Dronemaster','Brawler','Explosives Expert','Gunslinger','Swordmaster'
     ];
     const classAbilities = window.XRRPG_CLASS_ABILITIES || {};
+    const ADEPT_CHROMA_REQUIREMENTS = {
+      Warrior: 'Red',
+      Tank: 'Blue',
+      Druid: 'Green',
+      Mentalist: 'Grey'
+    };
     const CLASS_SUMMARIES = {
       'Warrior': 'Adept frontline striker with tiered basic/advanced powers.',
       'Mentalist': 'Adept mind specialist with scaling control powers.',
@@ -250,6 +256,32 @@
       classInput.appendChild(opt);
     });
 
+    function classChromaRequirement(cls) {
+      return ADEPT_CHROMA_REQUIREMENTS[String(cls || '').trim()] || null;
+    }
+
+    function validateClassChromaRequirement(cls, chroma) {
+      const required = classChromaRequirement(cls);
+      if (!required || chroma === required) return { valid: true, message: '' };
+      return {
+        valid: false,
+        message: `${cls} can only be selected by ${required} chroma characters.`
+      };
+    }
+
+    function syncClassOptionsByChroma() {
+      const chroma = chromaInput.value;
+      Array.from(classInput.options).forEach(option => {
+        const required = classChromaRequirement(option.value);
+        option.disabled = !!required && chroma !== required;
+      });
+      if (classInput.selectedOptions[0]?.disabled) {
+        const fallback = Array.from(classInput.options).find(option => !option.disabled);
+        if (fallback) classInput.value = fallback.value;
+      }
+      renderStartingClassDetails();
+    }
+
 
     function addStartingAbilityChoice(value = '') {
       const wrap = document.getElementById('startingAbilityChoices');
@@ -285,17 +317,29 @@
       });
     }
 
+    function adeptBasicAbilityName(cls) {
+      const basic = (classAbilities[cls] || []).find(item => {
+        const tiers = item?.tiers || {};
+        return Object.prototype.hasOwnProperty.call(tiers, '0') && !!tierText(tiers, 1);
+      });
+      return String(basic?.name || '').trim();
+    }
+
     function renderStartingClassDetails() {
       const cls = classInput.value;
       document.getElementById('classIntro').textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
-      const abilities = parsedTierAbilities(cls, 1);
+      const basicAbility = adeptBasicAbilityName(cls);
+      const abilities = parsedTierAbilities(cls, 1).filter(item => item.name !== basicAbility);
       const wrap = document.getElementById('startingAbilityChoices');
+      if (basicAbility) {
+        wrap.innerHTML = `<div class="muted">Basic ability gained automatically: <strong>${basicAbility}</strong>. Choose one advanced adept power below.</div>`;
+      }
       if (!abilities.length) {
-        wrap.innerHTML = '<div class="muted">No parsed tier-1 abilities for this class. Add your choice manually.</div>';
+        wrap.innerHTML += '<div class="muted">No parsed tier-1 advanced abilities for this class. Add your choice manually.</div>';
         addStartingAbilityChoice();
         return;
       }
-      wrap.innerHTML = abilities.map(item => `<label><input type="checkbox" class="starting-ability-option" value="${item.name.replace(/"/g, '&quot;')}" /> ${item.name} <span class="muted">${tierText(item.tiers || {}, 1)}</span></label>`).join('');
+      wrap.innerHTML += abilities.map(item => `<label><input type="checkbox" class="starting-ability-option" value="${item.name.replace(/"/g, '&quot;')}" /> ${item.name} <span class="muted">${tierText(item.tiers || {}, 1)}</span></label>`).join('');
       addStartingAbilityChoice();
     }
 
@@ -504,6 +548,7 @@
 
     document.getElementById('newCharacterBtn').onclick = () => { modal.classList.remove('hidden'); setStep(1); };
     classInput.onchange = () => renderStartingClassDetails();
+    chromaInput.addEventListener('change', syncClassOptionsByChroma);
     document.getElementById('addStartingAbilityBtn').onclick = () => addStartingAbilityChoice();
     modal.querySelector('.xr-modal-backdrop').onclick = () => modal.classList.add('hidden');
     document.getElementById('prevStepBtn').onclick = () => setStep(wizardStep - 1);
@@ -549,11 +594,18 @@
       try {
         const validation = validateStatSelections();
         if (!validation.valid) { msg.textContent = validation.message; return; }
+        const classChromaValidation = validateClassChromaRequirement(cls, chroma);
+        if (!classChromaValidation.valid) { msg.textContent = classChromaValidation.message; return; }
         currentUser = currentUser || await requireUser();
         const base_stats = buildStatsFromWizard();
         const class_progression = [{ class: cls, tier: 1, level_acquired: 1 }];
         const startingChoices = gatherStartingAbilityChoices();
-        if (!startingChoices.length) {
+        const adeptBasic = adeptBasicAbilityName(cls);
+        if (adeptBasic && startingChoices.length !== 1) {
+          msg.textContent = 'Adept classes automatically gain their basic ability and must pick exactly one advanced power at tier 1.';
+          return;
+        }
+        if (!adeptBasic && !startingChoices.length) {
           msg.textContent = 'Pick at least one starting class ability choice.';
           return;
         }
@@ -569,7 +621,7 @@
             species,
             chroma,
             class_ability_choices: {
-              [`${cls}-T1-L1-0`]: startingChoices
+              [`${cls}-T1-L1-0`]: adeptBasic ? [`${adeptBasic} (auto)`, ...startingChoices] : startingChoices
             }
           },
           class_progression,
@@ -611,6 +663,7 @@
     };
 
     withLoading('Loading characters…', loadCharacters);
+    syncClassOptionsByChroma();
   </script>
 </body>
 </html>

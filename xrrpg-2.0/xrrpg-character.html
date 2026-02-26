@@ -272,6 +272,12 @@
     let canEdit = false;
     const classAbilities = window.XRRPG_CLASS_ABILITIES || {};
     const ADEPT_CLASSES = new Set(['Warrior', 'Mentalist', 'Tank', 'Druid']);
+    const ADEPT_CHROMA_REQUIREMENTS = {
+      Warrior: 'Red',
+      Tank: 'Blue',
+      Druid: 'Green',
+      Mentalist: 'Grey'
+    };
     const CLASS_SUMMARIES = {
       'Warrior': 'Adept frontline striker. Tiered basic/advanced powers; each class level raises your power tiers.',
       'Mentalist': 'Adept mind specialist. Tiered control/mental powers that scale by class tier.',
@@ -499,10 +505,59 @@
       return ADEPT_CLASSES.has(String(cls || '').trim());
     }
 
+    function classChromaRequirement(cls) {
+      return ADEPT_CHROMA_REQUIREMENTS[String(cls || '').trim()] || null;
+    }
+
+    function validateClassChromaRequirement(cls, chroma) {
+      const required = classChromaRequirement(cls);
+      if (!required || chroma === required) return { valid: true, message: '' };
+      return {
+        valid: false,
+        message: `${cls} can only be selected by ${required} chroma characters.`
+      };
+    }
+
+    function adeptBasicAbilityName(cls) {
+      const basic = (classAbilities[cls] || []).find(item => {
+        const tiers = item?.tiers || {};
+        return Object.prototype.hasOwnProperty.call(tiers, '0') && !!tierText(tiers, 1);
+      });
+      return String(basic?.name || '').trim();
+    }
+
+    function syncLevelClassOptionsByChroma() {
+      const chroma = String(character?.base_stats?.chroma || '').trim();
+      const select = document.getElementById('levelClassSelect');
+      Array.from(select.options).forEach(option => {
+        const required = classChromaRequirement(option.value);
+        option.disabled = !!required && chroma !== required;
+      });
+      if (select.selectedOptions[0]?.disabled) {
+        const fallback = Array.from(select.options).find(option => !option.disabled);
+        if (fallback) select.value = fallback.value;
+      }
+    }
+
     function requiredAdeptAbilityChoices(tier) {
       if (tier === 1) return 1;
       if (tier >= 4) return 1;
       return 0;
+    }
+
+    function parsedAdeptAdvancedAbilities(cls) {
+      const basic = adeptBasicAbilityName(cls);
+      const byName = new Map();
+      [1, 2, 3].forEach(tier => {
+        parsedTierAbilities(cls, tier)
+          .filter(item => item.name !== basic)
+          .forEach(item => {
+            const name = String(item.name || '').trim();
+            if (!name || byName.has(name)) return;
+            byName.set(name, item);
+          });
+      });
+      return Array.from(byName.values());
     }
 
     function renderLevelAbilityOptions() {
@@ -525,8 +580,10 @@
       if (rule.skill_mode === 'skill_plus2') benefitBits.push('+2 to one skill');
       if (adeptClass && tier === 1) {
         benefitBits.push('Adept basic ability (auto) + choose 1 advanced ability');
+      } else if (adeptClass && tier <= 3) {
+        benefitBits.push(`existing advanced adept ability scales to tier ${tier} automatically`);
       } else if (adeptClass && tier >= 4) {
-        benefitBits.push('choose 1 advanced adept ability/tier upgrade');
+        benefitBits.push('choose 1 advanced adept ability (no tier restrictions)');
       }
       document.getElementById('levelClassSummary').textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
       document.getElementById('levelBenefitSummary').textContent = `This level up goes to Character Level ${level} and grants: ${benefitBits.join(', ') || 'class progression only'}.`;
@@ -534,11 +591,13 @@
       document.getElementById('levelSkillRow').classList.toggle('hidden', !['add_or_plus1', 'skill_plus2'].includes(rule.skill_mode));
       document.getElementById('levelStatBoostSelect2Wrap').classList.toggle('hidden', rule.stat_points < 2);
       syncSkillUpgradeUi(rule.skill_mode);
-      const abilities = parsedTierAbilities(cls, tier);
+      const abilities = adeptClass && tier >= 4
+        ? parsedAdeptAdvancedAbilities(cls)
+        : parsedTierAbilities(cls, tier);
       const choiceWrap = document.getElementById('levelAbilityChoices');
       const requiredChoices = adeptClass ? requiredAdeptAbilityChoices(tier) : 1;
       if (adeptClass && requiredChoices === 0) {
-        choiceWrap.innerHTML = '<div class="muted">Adept progression at Tiers 2-3 does not grant a new advanced ability pick.</div>';
+        choiceWrap.innerHTML = `<div class="muted">Adept progression at Tiers 2-3 does not grant a new advanced ability pick. Your existing advanced adept power automatically scales to Tier ${tier}.</div>`;
         document.getElementById('levelMsg').textContent = `Advancing ${cls} to Tier ${tier}.`;
         return;
       }
@@ -547,7 +606,23 @@
         addLevelAbilityChoice();
         return;
       }
-      choiceWrap.innerHTML = abilities.map(item => `<label><input type="checkbox" class="level-ability-option" value="${item.name.replace(/"/g,'&quot;')}" /> ${item.name} <span class="muted">${tierText(item.tiers || {}, tier)}</span></label>`).join('');
+      let filtered = abilities;
+      if (adeptClass && tier === 1) {
+        const basicAbility = adeptBasicAbilityName(cls);
+        filtered = abilities.filter(item => item.name !== basicAbility);
+        if (basicAbility) {
+          choiceWrap.innerHTML = `<div class="muted">Basic ability gained automatically: <strong>${basicAbility}</strong>. Choose one advanced adept power below.</div>`;
+        }
+      } else if (adeptClass && tier >= 4) {
+        choiceWrap.innerHTML = '<div class="muted">Tier 4+ adept picks are unrestricted. Choose any advanced adept power below, or type a custom one.</div>';
+      }
+      if (!filtered.length) {
+        choiceWrap.innerHTML += '<div class="muted">No parsed class abilities found for this class/tier. Add manual ability entries below.</div>';
+        addLevelAbilityChoice();
+        document.getElementById('levelMsg').textContent = `Advancing ${cls} to Tier ${tier}.`;
+        return;
+      }
+      choiceWrap.innerHTML += filtered.map(item => `<label><input type="checkbox" class="level-ability-option" value="${item.name.replace(/"/g,'&quot;')}" /> ${item.name} <span class="muted">${tierText(item.tiers || {}, tier)}</span></label>`).join('');
       addLevelAbilityChoice();
       document.getElementById('levelMsg').textContent = `Advancing ${cls} to Tier ${tier}.`;
     }
@@ -789,6 +864,7 @@
       document.getElementById('levelSkillModeSelect').value = 'add';
       document.getElementById('levelSkillNewInput').value = '';
       document.getElementById('levelSkillExistingSelect').value = '';
+      syncLevelClassOptionsByChroma();
       renderLevelAbilityOptions();
     };
     levelModal.querySelector('.xr-modal-backdrop').onclick = () => levelModal.classList.add('hidden');
@@ -808,6 +884,11 @@
       progression.push({ class: cls, tier, level_acquired: level });
       const choices = gatherLevelChoices();
       const adeptClass = isAdeptClass(cls);
+      const classChromaValidation = validateClassChromaRequirement(cls, String(character.base_stats?.chroma || '').trim());
+      if (!classChromaValidation.valid) {
+        document.getElementById('levelMsg').textContent = classChromaValidation.message;
+        return;
+      }
       const requiredChoices = adeptClass ? requiredAdeptAbilityChoices(tier) : 1;
       if (choices.length < requiredChoices) {
         const msg = requiredChoices === 1
@@ -816,10 +897,17 @@
         document.getElementById('levelMsg').textContent = msg;
         return;
       }
+      if (adeptClass && tier === 1 && choices.length !== 1) {
+        document.getElementById('levelMsg').textContent = 'Adept classes automatically gain their basic ability and must pick exactly one advanced power at tier 1.';
+        return;
+      }
       const key = `${cls}-T${tier}-L${level}-${progression.length - 1}`;
+      const adeptBasic = adeptBasicAbilityName(cls);
       const savedChoices = adeptClass && tier === 1
-        ? ['Basic Ability (auto)', ...choices]
-        : choices;
+        ? [`${adeptBasic || 'Basic Ability'} (auto)`, ...choices]
+        : (adeptClass && tier <= 3)
+          ? [`Advanced adept ability auto-upgraded to Tier ${tier}`]
+          : choices;
 
       const prevState = cloneCharacterState();
       const before = character.base_stats || {};
