@@ -311,6 +311,18 @@
       return user;
     }
 
+    function normalizeBaseStats(baseStats) {
+      if (!baseStats || typeof baseStats !== 'object') return {};
+      const normalized = { ...baseStats };
+      if (normalized.stamina === undefined && normalized.stamina_used !== undefined) {
+        normalized.stamina = normalized.stamina_used;
+      }
+      if (Object.prototype.hasOwnProperty.call(normalized, 'stamina_used')) {
+        delete normalized.stamina_used;
+      }
+      return normalized;
+    }
+
     function valueForSort(character, key) {
       const s = character.base_stats || {};
       if (key === 'name') return (character.name || '').toLowerCase();
@@ -365,7 +377,10 @@
           .eq('user_id', currentUser.id)
           .order('created_at', { ascending: true });
         if (error) throw error;
-        characters = data || [];
+        characters = (data || []).map(character => ({
+          ...character,
+          base_stats: normalizeBaseStats(character.base_stats)
+        }));
         render();
       } catch (error) {
         table.innerHTML = `<tr><td colspan='8'>Failed to load: ${error.message}</td></tr>`;
@@ -394,7 +409,10 @@
       triggerJsonDownload(`${cleanFileName(char.name)}.json`, {
         export_version: 1,
         exported_at: new Date().toISOString(),
-        character: char
+        character: {
+          ...char,
+          base_stats: normalizeBaseStats(char.base_stats)
+        }
       });
     }
 
@@ -403,7 +421,7 @@
       if (!importedCharacter || typeof importedCharacter !== 'object') throw new Error('Invalid character payload.');
       const name = String(importedCharacter.name || '').trim();
       if (!name) throw new Error('Imported character needs a name.');
-      const base_stats = importedCharacter.base_stats && typeof importedCharacter.base_stats === 'object' ? importedCharacter.base_stats : {};
+      const base_stats = normalizeBaseStats(importedCharacter.base_stats && typeof importedCharacter.base_stats === 'object' ? importedCharacter.base_stats : {});
       const class_progression = Array.isArray(importedCharacter.class_progression) ? importedCharacter.class_progression : [];
       const skills = Array.isArray(importedCharacter.skills) ? importedCharacter.skills : [];
       const notes = typeof importedCharacter.notes === 'string' ? importedCharacter.notes : '';
@@ -458,7 +476,7 @@
         current_hp: max_hp,
         mastery_die: 'd4',
         injuries: [],
-        stamina_used: 0,
+        stamina: 0,
         stamina_max: stamina_total,
         stamina_total,
         stamina_exhaustion_limit: stamina_total,

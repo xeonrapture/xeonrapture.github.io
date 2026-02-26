@@ -43,7 +43,7 @@
           <h3>Stamina</h3>
           <div class="xrrpg-stat-line xrrpg-stat-line--compact">
             <label title="Maximum stamina available for class abilities.">Stamina Max <input id="staminaTotalInput" type="number" min="0" /></label>
-            <label title="How much stamina has been used.">Stamina Used <input id="staminaUsedInput" type="number" min="0" /></label>
+            <label title="Current stamina consumed.">Stamina <input id="staminaUsedInput" type="number" min="0" /></label>
             <label title="Stamina exhaustion threshold before forced checks.">Stamina Exhaustion Limit <input id="staminaLimitInput" type="number" min="0" /></label>
           </div>
         </div>
@@ -388,6 +388,18 @@
       });
     }
 
+    function normalizeBaseStats(baseStats) {
+      if (!baseStats || typeof baseStats !== 'object') return {};
+      const normalized = { ...baseStats };
+      if (normalized.stamina === undefined && normalized.stamina_used !== undefined) {
+        normalized.stamina = normalized.stamina_used;
+      }
+      if (Object.prototype.hasOwnProperty.call(normalized, 'stamina_used')) {
+        delete normalized.stamina_used;
+      }
+      return normalized;
+    }
+
     function readStatsFromInputs() {
       return {
         ...character.base_stats,
@@ -403,7 +415,7 @@
         mastery_die: document.getElementById('masteryDieInput').value.trim() || 'd4',
         stamina_max: Number(document.getElementById('staminaTotalInput').value) || 0,
         stamina_total: Number(document.getElementById('staminaTotalInput').value) || 0,
-        stamina_used: Number(document.getElementById('staminaUsedInput').value) || 0,
+        stamina: Number(document.getElementById('staminaUsedInput').value) || 0,
         stamina_exhaustion_limit: Number(document.getElementById('staminaLimitInput').value) || 0,
         powerful_item_limit: Number(document.getElementById('powerfulItemLimitInput').value) || 0,
         powerful_item_max: Number(document.getElementById('powerfulItemMaxInput').value) || 0,
@@ -638,7 +650,7 @@
       document.getElementById('witInput').value = s.wit || 0;
       document.getElementById('masteryDieInput').value = s.mastery_die || 'd4';
       document.getElementById('staminaTotalInput').value = s.stamina_max ?? s.stamina_total ?? (10 + (s.intuition || 0) + (s.wit || 0));
-      document.getElementById('staminaUsedInput').value = s.stamina_used || 0;
+      document.getElementById('staminaUsedInput').value = s.stamina ?? s.stamina_used ?? 0;
       document.getElementById('staminaLimitInput').value = s.stamina_exhaustion_limit ?? (s.stamina_total || 0);
       document.getElementById('powerfulItemLimitInput').value = s.powerful_item_limit || 0;
       document.getElementById('powerfulItemMaxInput').value = s.powerful_item_max || 0;
@@ -711,8 +723,14 @@
         .eq('id', characterId)
         .single();
       if (error) throw error;
-      character = data;
+      character = { ...data, base_stats: normalizeBaseStats(data.base_stats) };
       canEdit = character.user_id === currentUser.id;
+      if (JSON.stringify(character.base_stats || {}) !== JSON.stringify(data.base_stats || {}) && canEdit) {
+        await sb.from('xrrpg_characters')
+          .update({ base_stats: character.base_stats, updated_at: new Date().toISOString() })
+          .eq('id', characterId)
+          .eq('user_id', currentUser.id);
+      }
       renderCharacter();
     }
 
