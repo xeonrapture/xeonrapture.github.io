@@ -133,12 +133,10 @@
 
     <section class="card collapsible" data-collapsible>
       <div class="collapsible-header">
-        <h2>Class Progression</h2>
+        <h2>Class Details</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
       </div>
       <div class="collapsible-body">
-        <div id="classList" class="mono muted"></div>
-        <h3 style="margin-top:1rem;">Class Abilities</h3>
         <div id="classAbilityList" class="ability-list"></div>
       </div>
     </section>
@@ -806,10 +804,6 @@
       document.getElementById('backstoryInput').value = notes.backstory || '';
       document.getElementById('extraNotesInput').value = notes.extra || '';
 
-      document.getElementById('classList').innerHTML = (character.class_progression || []).length
-        ? character.class_progression.map(row => `• Lv ${row.level_acquired}: ${row.class} (Tier ${row.tier})`).join('<br>')
-        : 'No classes selected yet.';
-
       renderInjuryTracker();
 
       const chosenAbilities = s.class_ability_choices || {};
@@ -819,17 +813,23 @@
       } else {
         const toAbilityBullets = (text) => {
           if (!text || !text.trim()) return [];
-          const normalized = text.replace(/\s+/g, ' ').trim();
-          return normalized
-            .split(/(?<=\.)\s+|\s+(?=Can\s|Cannot\s|Gain\s|Gains\s|Get\s|Gets\s|May\s|Heal\s|Feel\s|See\s|Summon\s|Create\s|Use\s)/)
+          return text
+            .replace(/\r\n/g, '\n')
+            .split('\n')
+            .map(line => line.trim())
+            .filter(Boolean)
+            .flatMap(line => line
+              .replace(/^[-*]\s*/, '')
+              .split(/(?<=\.)\s+|\s*[;•]\s+|\s+(?=Can\s|Cannot\s|Gain\s|Gains\s|Get\s|Gets\s|May\s|Heal\s|Feel\s|See\s|Summon\s|Create\s|Use\s|Become\s|Choose\s|Attack\s|Deal\s)/)
+            )
             .map(part => part.trim())
             .filter(Boolean);
         };
 
         const renderAdeptAbilityBlock = (label, name, detailText, fallbackText) => {
-          if (!name) return `<h5>${label}</h5><div class="muted">${fallbackText}</div>`;
+          if (!name) return `<h5 class="class-ability-subtitle">${label}</h5><div class="muted">${fallbackText}</div>`;
           const bullets = toAbilityBullets(detailText);
-          return `<h5>${label}</h5><div class="muted"><strong>${name}</strong></div>${bullets.length ? `<ul>${bullets.map(line => `<li>${line}</li>`).join('')}</ul>` : '<div class="muted">No details recorded.</div>'}`;
+          return `<h5 class="class-ability-subtitle">${label}</h5><div class="muted"><strong>${name}</strong></div>${bullets.length ? `<ul>${bullets.map(line => `<li>${line}</li>`).join('')}</ul>` : '<div class="muted">No details recorded.</div>'}`;
         };
 
         abilityWrap.innerHTML = character.class_progression.map((entry, idx) => {
@@ -848,13 +848,19 @@
               renderAdeptAbilityBlock('Basic', basicAbility, basicDetail, 'none recorded'),
               renderAdeptAbilityBlock('Advanced', advancedAbility, advancedDetail, 'none recorded')
             ];
-            return `<section class="card collapsible section-card" data-collapsible><div class="collapsible-header"><h4>${entry.class} Tier ${entry.tier} Abilities</h4><button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button></div><div class="collapsible-body">${chosen}${details.join('')}</div></section>`;
+            return `<section class="card collapsible section-card" data-collapsible><div class="collapsible-header"><h4 class="class-detail-card-title">${entry.class} Tier ${entry.tier} Abilities</h4><button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button></div><div class="collapsible-body">${chosen}${details.join('')}</div></section>`;
           }
           const available = (classAbilities[entry.class] || [])
             .filter(ability => ability.tiers && Object.prototype.hasOwnProperty.call(ability.tiers, String(entry.tier)))
-            .map(ability => `${ability.name}: ${ability.tiers[String(entry.tier)] || '(no description)'}`);
-          const availableHtml = available.length ? `<ul>${available.map(text => `<li>${text}</li>`).join('')}</ul>` : '<div class="muted">Available: add manually for this class tier.</div>';
-          return `<section class="card collapsible section-card" data-collapsible><div class="collapsible-header"><h4>${entry.class} Tier ${entry.tier} Abilities</h4><button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button></div><div class="collapsible-body">${chosen}<h5>Available</h5>${availableHtml}</div></section>`;
+            .map(ability => {
+              const detailBullets = toAbilityBullets(ability.tiers[String(entry.tier)] || '');
+              const detailHtml = detailBullets.length
+                ? `<ul>${detailBullets.map(line => `<li>${line}</li>`).join('')}</ul>`
+                : '<div class="muted">No details recorded.</div>';
+              return `<li><strong>${ability.name}</strong>${detailHtml}</li>`;
+            });
+          const availableHtml = available.length ? `<ul>${available.join('')}</ul>` : '<div class="muted">Available: add manually for this class tier.</div>';
+          return `<section class="card collapsible section-card" data-collapsible><div class="collapsible-header"><h4 class="class-detail-card-title">${entry.class} Tier ${entry.tier} Abilities</h4><button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button></div><div class="collapsible-body">${chosen}<h5 class="class-ability-subtitle">Available</h5>${availableHtml}</div></section>`;
         }).join('');
       }
 
