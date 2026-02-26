@@ -496,6 +496,36 @@
       });
     }
 
+    function abilityByName(cls, name) {
+      const target = String(name || '').replace(/\s*\(auto\)\s*$/i, '').trim().toLowerCase();
+      if (!target) return null;
+      return (classAbilities[cls] || []).find(item => String(item?.name || '').trim().toLowerCase() === target) || null;
+    }
+
+    function abilityDetailText(cls, name, tier) {
+      const ability = abilityByName(cls, name);
+      if (!ability) return '';
+      return tierText(ability.tiers || {}, tier);
+    }
+
+    function findChosenAdeptAdvancedAbility(chosenAbilities, progression, className, currentIndex) {
+      for (let i = currentIndex; i >= 0; i -= 1) {
+        const row = progression[i];
+        if (row.class !== className) continue;
+        const rowKey = `${row.class}-T${row.tier}-L${row.level_acquired}-${i}`;
+        const rowChoices = Array.isArray(chosenAbilities[rowKey]) ? chosenAbilities[rowKey] : [];
+        const chosen = rowChoices.find(choice => {
+          const text = String(choice || '').trim();
+          if (!text) return false;
+          if (/auto-upgraded/i.test(text)) return false;
+          if (/\(auto\)$/i.test(text)) return false;
+          return !!abilityByName(className, text);
+        });
+        if (chosen) return chosen;
+      }
+      return '';
+    }
+
     function staminaMaxForLevel(level, intuition, wit) {
       const base = levelRule(level).stamina_base;
       return base + Number(intuition || 0) + Number(wit || 0);
@@ -754,7 +784,21 @@
             ? `<div class="muted">Chosen on level up: ${chosenAbilities[key].join(', ')}</div>`
             : '<div class="muted">Chosen on level up: none recorded</div>';
           if (adeptClass) {
-            return `<div><strong>${entry.class} Tier ${entry.tier} Abilities</strong>${chosen}</div>`;
+            const adeptTier = Math.min(3, Number(entry.tier) || 1);
+            const basicAbility = adeptBasicAbilityName(entry.class);
+            const basicDetail = basicAbility ? abilityDetailText(entry.class, basicAbility, adeptTier) : '';
+            const advancedAbility = findChosenAdeptAdvancedAbility(chosenAbilities, character.class_progression || [], entry.class, idx);
+            const advancedDetail = advancedAbility ? abilityDetailText(entry.class, advancedAbility, adeptTier) : '';
+            const details = [];
+            if (basicAbility) {
+              details.push(`<div class="muted"><strong>Basic:</strong> ${basicAbility}${basicDetail ? ` — ${basicDetail}` : ''}</div>`);
+            }
+            if (advancedAbility) {
+              details.push(`<div class="muted"><strong>Advanced:</strong> ${advancedAbility}${advancedDetail ? ` — ${advancedDetail}` : ''}</div>`);
+            } else {
+              details.push('<div class="muted"><strong>Advanced:</strong> none recorded</div>');
+            }
+            return `<div><strong>${entry.class} Tier ${entry.tier} Abilities</strong>${chosen}${details.join('')}</div>`;
           }
           const available = (classAbilities[entry.class] || [])
             .filter(ability => ability.tiers && Object.prototype.hasOwnProperty.call(ability.tiers, String(entry.tier)))
