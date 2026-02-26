@@ -20,18 +20,27 @@
       <div id="ownershipNotice" class="mono muted hidden"></div>
     </header>
 
-    <section class="card">
-      <h2>Character</h2>
-      <div class="sheet-actions">
-        <label>Name <input id="nameInput" maxlength="48" /></label>
-        <label>Species <input id="speciesInput" maxlength="48" /></label>
-        <label>Chroma <input id="chromaInput" maxlength="16" /></label>
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Character</h2>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
+      </div>
+      <div class="collapsible-body">
+        <div class="sheet-actions">
+          <label>Name <input id="nameInput" maxlength="48" /></label>
+          <label>Species <input id="speciesInput" maxlength="48" /></label>
+          <label>Chroma <input id="chromaInput" maxlength="16" /></label>
+        </div>
       </div>
     </section>
 
-    <section class="card">
-      <h2>Core Stats</h2>
-      <div class="xrrpg-core-stats-grid">
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Core Stats</h2>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
+      </div>
+      <div class="collapsible-body">
+        <div class="xrrpg-core-stats-grid">
         <div class="xrrpg-core-stats-card">
           <h3>Level & Mastery</h3>
           <div class="xrrpg-stat-line xrrpg-stat-line--compact">
@@ -56,27 +65,37 @@
           <label title="Wit supports logic, innovation, and memory.">Wit <input id="witInput" type="number" /></label>
         </div>
       </div>
-      <div class="xrrpg-row" style="margin-top:0.8rem;">
-        <button id="levelUpBtn" type="button">Level Up (Class/Tier)</button>
+        <div class="xrrpg-row" style="margin-top:0.8rem;">
+          <button id="levelUpBtn" type="button">Level Up (Class/Tier)</button>
+        </div>
+        <div id="status" class="mono muted"></div>
       </div>
-      <div id="status" class="mono muted"></div>
     </section>
 
-    <section class="card">
-      <h2>Health & Injuries</h2>
-      <div class="stat-inputs">
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Health & Injuries</h2>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
+      </div>
+      <div class="collapsible-body">
+        <div class="stat-inputs">
         <label title="Maximum HP from your build and progression.">Max HP <input id="hpInput" type="number" /></label>
         <label title="Current HP after damage/healing.">Current HP <input id="currentHpInput" type="number" /></label>
       </div>
-      <div class="xrrpg-row" style="margin-top:0.8rem;">
-        <button id="takeInjuryBtn" type="button">Take Injury</button>
+        <div class="xrrpg-row" style="margin-top:0.8rem;">
+          <button id="takeInjuryBtn" type="button">Take Injury</button>
+        </div>
+        <div id="injuryTracker" class="xrrpg-injury-tracker"></div>
       </div>
-      <div id="injuryTracker" class="xrrpg-injury-tracker"></div>
     </section>
 
-    <section class="card">
-      <h2>Resource Tracking</h2>
-      <div class="xrrpg-resource-grid">
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Resource Tracking</h2>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
+      </div>
+      <div class="collapsible-body">
+        <div class="xrrpg-resource-grid">
         <div class="xrrpg-resource-card">
           <h3>Powerful Items</h3>
           <div class="xrrpg-resource-fields">
@@ -97,36 +116,56 @@
             <label title="Party progression tier used for group actions.">Party Tier <input id="partyTierInput" type="number" min="1" /></label>
           </div>
         </div>
+        </div>
       </div>
     </section>
 
-    <section class="card">
-      <h2>Skills</h2>
-      <div id="skillList" class="mono muted">No skills saved.</div>
-      <div class="xrrpg-row" style="margin-top:0.5rem; gap:0.5rem;"><button id="addSkillBtn" type="button">Add Skill</button></div>
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Skills</h2>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
+      </div>
+      <div class="collapsible-body">
+        <div id="skillList" class="mono muted">No skills saved.</div>
+        <div class="xrrpg-row" style="margin-top:0.5rem; gap:0.5rem;"><button id="addSkillBtn" type="button">Add Skill</button></div>
+      </div>
     </section>
 
-    <section class="card">
-      <h2>Class Progression</h2>
-      <div id="classList" class="mono muted"></div>
-      <h3 style="margin-top:1rem;">Class Abilities</h3>
-      <div id="classAbilityList" class="ability-list"></div>
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Class Progression</h2>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
+      </div>
+      <div class="collapsible-body">
+        <div id="classList" class="mono muted"></div>
+        <h3 style="margin-top:1rem;">Class Abilities</h3>
+        <div id="classAbilityList" class="ability-list"></div>
+      </div>
     </section>
 
-    <section class="card">
-      <h2>Character Notes</h2>
-      <div class="xrrpg-notes-stack">
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Character Notes</h2>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
+      </div>
+      <div class="collapsible-body">
+        <div class="xrrpg-notes-stack">
         <label>Appearance<textarea id="appearanceInput"></textarea></label>
         <label>Personality<textarea id="personalityInput"></textarea></label>
         <label>Motivation<textarea id="motivationInput"></textarea></label>
         <label>BACKSTORY<textarea id="backstoryInput"></textarea></label>
         <label>Extra Notes<textarea id="extraNotesInput"></textarea></label>
+        </div>
       </div>
     </section>
 
-    <section class="card">
-      <h2>History</h2>
-      <table class="table-full">
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>History</h2>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
+      </div>
+      <div class="collapsible-body">
+        <table class="table-full">
         <thead>
           <tr>
             <th><button type="button" class="table-sort" data-sort="created_at">Date</button></th>
@@ -136,7 +175,8 @@
           </tr>
         </thead>
         <tbody id="historyTable"><tr><td colspan="4">Loading…</td></tr></tbody>
-      </table>
+        </table>
+      </div>
     </section>
   </main>
 
@@ -777,6 +817,21 @@
       if (!(character.class_progression || []).length) {
         abilityWrap.innerHTML = '<div class="muted">No class abilities yet.</div>';
       } else {
+        const toAbilityBullets = (text) => {
+          if (!text || !text.trim()) return [];
+          const normalized = text.replace(/\s+/g, ' ').trim();
+          return normalized
+            .split(/(?<=\.)\s+|\s+(?=Can\s|Cannot\s|Gain\s|Gains\s|Get\s|Gets\s|May\s|Heal\s|Feel\s|See\s|Summon\s|Create\s|Use\s)/)
+            .map(part => part.trim())
+            .filter(Boolean);
+        };
+
+        const renderAdeptAbilityBlock = (label, name, detailText, fallbackText) => {
+          if (!name) return `<h5>${label}</h5><div class="muted">${fallbackText}</div>`;
+          const bullets = toAbilityBullets(detailText);
+          return `<h5>${label}</h5><div class="muted"><strong>${name}</strong></div>${bullets.length ? `<ul>${bullets.map(line => `<li>${line}</li>`).join('')}</ul>` : '<div class="muted">No details recorded.</div>'}`;
+        };
+
         abilityWrap.innerHTML = character.class_progression.map((entry, idx) => {
           const key = `${entry.class}-T${entry.tier}-L${entry.level_acquired}-${idx}`;
           const adeptClass = isAdeptClass(entry.class);
@@ -789,28 +844,52 @@
             const basicDetail = basicAbility ? abilityDetailText(entry.class, basicAbility, adeptTier) : '';
             const advancedAbility = findChosenAdeptAdvancedAbility(chosenAbilities, character.class_progression || [], entry.class, idx);
             const advancedDetail = advancedAbility ? abilityDetailText(entry.class, advancedAbility, adeptTier) : '';
-            const details = [];
-            if (basicAbility) {
-              details.push(`<div class="muted"><strong>Basic:</strong> ${basicAbility}${basicDetail ? ` — ${basicDetail}` : ''}</div>`);
-            }
-            if (advancedAbility) {
-              details.push(`<div class="muted"><strong>Advanced:</strong> ${advancedAbility}${advancedDetail ? ` — ${advancedDetail}` : ''}</div>`);
-            } else {
-              details.push('<div class="muted"><strong>Advanced:</strong> none recorded</div>');
-            }
-            return `<div><strong>${entry.class} Tier ${entry.tier} Abilities</strong>${chosen}${details.join('')}</div>`;
+            const details = [
+              renderAdeptAbilityBlock('Basic', basicAbility, basicDetail, 'none recorded'),
+              renderAdeptAbilityBlock('Advanced', advancedAbility, advancedDetail, 'none recorded')
+            ];
+            return `<section class="card collapsible section-card" data-collapsible><div class="collapsible-header"><h4>${entry.class} Tier ${entry.tier} Abilities</h4><button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button></div><div class="collapsible-body">${chosen}${details.join('')}</div></section>`;
           }
           const available = (classAbilities[entry.class] || [])
             .filter(ability => ability.tiers && Object.prototype.hasOwnProperty.call(ability.tiers, String(entry.tier)))
             .map(ability => `${ability.name}: ${ability.tiers[String(entry.tier)] || '(no description)'}`);
-          const availableHtml = available.length ? `<div class="muted">Available: ${available.join(' • ')}</div>` : '<div class="muted">Available: add manually for this class tier.</div>';
-          return `<div><strong>${entry.class} Tier ${entry.tier} Abilities</strong>${chosen}${availableHtml}</div>`;
+          const availableHtml = available.length ? `<ul>${available.map(text => `<li>${text}</li>`).join('')}</ul>` : '<div class="muted">Available: add manually for this class tier.</div>';
+          return `<section class="card collapsible section-card" data-collapsible><div class="collapsible-header"><h4>${entry.class} Tier ${entry.tier} Abilities</h4><button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button></div><div class="collapsible-body">${chosen}<h5>Available</h5>${availableHtml}</div></section>`;
         }).join('');
       }
+
+      initCollapsibles(abilityWrap);
 
       renderSkillList();
       applyOwnershipPermissions();
       isRendering = false;
+    }
+
+    function updateCollapsibleButton(section) {
+      const button = section?.querySelector(':scope > .collapsible-header .collapse-toggle') || section?.querySelector('.collapse-toggle');
+      if (!button) return;
+      const collapsed = section.classList.contains('collapsed');
+      button.innerHTML = collapsed
+        ? '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>'
+        : '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg>';
+      button.setAttribute('aria-label', collapsed ? 'Show section' : 'Hide section');
+      button.setAttribute('title', collapsed ? 'Show section' : 'Hide section');
+    }
+
+    function initCollapsibles(root = document) {
+      root.querySelectorAll('[data-collapsible]').forEach(section => {
+        const button = section.querySelector(':scope > .collapsible-header .collapse-toggle') || section.querySelector('.collapse-toggle');
+        if (!button || button.dataset.boundCollapse === '1') {
+          updateCollapsibleButton(section);
+          return;
+        }
+        updateCollapsibleButton(section);
+        button.dataset.boundCollapse = '1';
+        button.addEventListener('click', () => {
+          section.classList.toggle('collapsed');
+          updateCollapsibleButton(section);
+        });
+      });
     }
 
     function renderHistory() {
@@ -1246,6 +1325,7 @@
 
     (async () => {
       try {
+        initCollapsibles();
         await withLoading('Loading character sheet…', async () => {
           await loadCharacter();
           await loadHistory();
