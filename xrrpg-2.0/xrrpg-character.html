@@ -42,9 +42,8 @@
         <div class="xrrpg-core-stats-card">
           <h3>Stamina</h3>
           <div class="xrrpg-stat-line xrrpg-stat-line--compact">
-            <label title="Maximum stamina available for class abilities.">Stamina Max <input id="staminaTotalInput" type="number" min="0" /></label>
             <label title="Current stamina consumed.">Stamina <input id="staminaUsedInput" type="number" min="0" /></label>
-            <label title="Stamina exhaustion threshold before forced checks.">Stamina Exhaustion Limit <input id="staminaLimitInput" type="number" min="0" /></label>
+            <label title="Maximum stamina available for class abilities.">Stamina Max <input id="staminaTotalInput" type="number" min="0" /></label>
           </div>
         </div>
       </div>
@@ -338,7 +337,7 @@
 
       const editableIds = [
         'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
-        'staminaTotalInput','staminaUsedInput','staminaLimitInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
+        'staminaTotalInput','staminaUsedInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
         'partyTierInput','xenicDecayInput','timesCleansedInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput',
         'levelUpBtn','takeInjuryBtn','addSkillBtn','confirmLevelBtn','confirmInjuryBtn','saveSkillModalBtn','addLevelAbilityBtn'
       ];
@@ -416,7 +415,6 @@
         stamina_max: Number(document.getElementById('staminaTotalInput').value) || 0,
         stamina_total: Number(document.getElementById('staminaTotalInput').value) || 0,
         stamina: Number(document.getElementById('staminaUsedInput').value) || 0,
-        stamina_exhaustion_limit: Number(document.getElementById('staminaLimitInput').value) || 0,
         powerful_item_limit: Number(document.getElementById('powerfulItemLimitInput').value) || 0,
         powerful_item_max: Number(document.getElementById('powerfulItemMaxInput').value) || 0,
         party_tier: Number(document.getElementById('partyTierInput').value) || 1,
@@ -651,7 +649,6 @@
       document.getElementById('masteryDieInput').value = s.mastery_die || 'd4';
       document.getElementById('staminaTotalInput').value = s.stamina_max ?? s.stamina_total ?? (10 + (s.intuition || 0) + (s.wit || 0));
       document.getElementById('staminaUsedInput').value = s.stamina ?? s.stamina_used ?? 0;
-      document.getElementById('staminaLimitInput').value = s.stamina_exhaustion_limit ?? (s.stamina_total || 0);
       document.getElementById('powerfulItemLimitInput').value = s.powerful_item_limit || 0;
       document.getElementById('powerfulItemMaxInput').value = s.powerful_item_max || 0;
       document.getElementById('partyTierInput').value = s.party_tier || 1;
@@ -833,7 +830,6 @@
         mastery_die: toMasteryDie(level),
         stamina_max: staminaMaxForLevel(level, before.intuition, before.wit),
         stamina_total: staminaMaxForLevel(level, before.intuition, before.wit),
-        stamina_exhaustion_limit: staminaMaxForLevel(level, before.intuition, before.wit),
         powerful_item_limit: rule.powerful_item_limit,
         powerful_item_max: rule.powerful_item_max,
         class_ability_choices: {
@@ -894,7 +890,6 @@
         }
         base_stats.stamina_max = staminaMaxForLevel(level, base_stats.intuition, base_stats.wit);
         base_stats.stamina_total = base_stats.stamina_max;
-        base_stats.stamina_exhaustion_limit = base_stats.stamina_max;
       }
       const { error } = await sb.from('xrrpg_characters')
         .update({ class_progression: progression, base_stats, skills, updated_at: new Date().toISOString() })
@@ -1121,7 +1116,7 @@
         });
         const autosaveTargets = [
           'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
-          'staminaTotalInput','staminaUsedInput','staminaLimitInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
+          'staminaTotalInput','staminaUsedInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
           'xenicDecayInput','timesCleansedInput','partyTierInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput'
         ];
         autosaveTargets.forEach(id => {
