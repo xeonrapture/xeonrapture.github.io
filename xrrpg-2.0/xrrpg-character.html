@@ -749,9 +749,13 @@
       } else {
         abilityWrap.innerHTML = character.class_progression.map((entry, idx) => {
           const key = `${entry.class}-T${entry.tier}-L${entry.level_acquired}-${idx}`;
+          const adeptClass = isAdeptClass(entry.class);
           const chosen = Array.isArray(chosenAbilities[key]) && chosenAbilities[key].length
             ? `<div class="muted">Chosen on level up: ${chosenAbilities[key].join(', ')}</div>`
             : '<div class="muted">Chosen on level up: none recorded</div>';
+          if (adeptClass) {
+            return `<div><strong>${entry.class} Tier ${entry.tier} Abilities</strong>${chosen}</div>`;
+          }
           const available = (classAbilities[entry.class] || [])
             .filter(ability => ability.tiers && Object.prototype.hasOwnProperty.call(ability.tiers, String(entry.tier)))
             .map(ability => `${ability.name}: ${ability.tiers[String(entry.tier)] || '(no description)'}`);
