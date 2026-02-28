@@ -271,6 +271,11 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(122, 162, 255, 0.2);
 }
 
+label textarea {
+  display: block;
+  margin-top: 0.35rem;
+}
+
 #tools-list {
   list-style: none;
   padding: 0;
