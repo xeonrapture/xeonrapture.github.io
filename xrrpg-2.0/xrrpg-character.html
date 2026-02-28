@@ -30,6 +30,9 @@
           <label>Name <input id="nameInput" maxlength="48" /></label>
           <label>Species <input id="speciesInput" maxlength="48" /></label>
           <label>Chroma <input id="chromaInput" maxlength="16" /></label>
+          <label>Primary Class
+            <select id="primaryClassInput"></select>
+          </label>
         </div>
       </div>
     </section>
@@ -136,8 +139,19 @@
         <h2>Class Details</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
       </div>
-      <div class="collapsible-body">
-        <div id="classAbilityList" class="ability-list"></div>
+      <div class="collapsible-body xrrpg-notes-stack">
+        <div id="classProgressionSummary" class="muted"></div>
+        <label>Class Progression Notes<textarea id="classProgressionInput" placeholder="Paste class abilities / progression notes here."></textarea></label>
+      </div>
+    </section>
+
+    <section class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Inventory</h2>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
+      </div>
+      <div class="collapsible-body xrrpg-notes-stack">
+        <label>Inventory Text<textarea id="inventoryInput" placeholder="Paste your full inventory here."></textarea></label>
       </div>
     </section>
 
@@ -187,54 +201,13 @@
     <div class="xr-modal-backdrop"></div>
     <div class="xr-modal-card">
       <h2>Level Up</h2>
-      <p class="muted">Pick a class level. Existing class levels advance to new tier (I → II → III).</p>
+      <p class="muted">Pick the class that gets this level. This sheet tracks class levels only.</p>
       <label>Class
         <select id="levelClassSelect"></select>
       </label>
       <div id="levelClassSummary" class="muted"></div>
-      <div id="levelBenefitSummary" class="muted"></div>
-      <div>
-        <label>Ability choices for this level</label>
-        <div id="levelAbilityChoices" class="xrrpg-notes-stack"></div>
-        <button id="addLevelAbilityBtn" type="button" class="wr-mt-0-5">Add Ability Choice</button>
-      </div>
-      <p class="muted">Pick abilities here while leveling up. The Abilities area lists these choices automatically.</p>
-      <div id="levelStatRow" class="xrrpg-notes-stack">
-        <label>Stat increase target #1
-          <select id="levelStatBoostSelect1">
-            <option value="">-- Select stat --</option>
-            <option value="vigor">Vigor</option>
-            <option value="endurance">Endurance</option>
-            <option value="intuition">Intuition</option>
-            <option value="wit">Wit</option>
-          </select>
-        </label>
-        <label id="levelStatBoostSelect2Wrap" class="hidden">Stat increase target #2
-          <select id="levelStatBoostSelect2">
-            <option value="">-- Select stat --</option>
-            <option value="vigor">Vigor</option>
-            <option value="endurance">Endurance</option>
-            <option value="intuition">Intuition</option>
-            <option value="wit">Wit</option>
-          </select>
-        </label>
-      </div>
-      <div id="levelSkillRow" class="xrrpg-notes-stack">
-        <label>Skill upgrade type
-          <select id="levelSkillModeSelect">
-            <option value="add">Add new skill</option>
-            <option value="plus1">+1 to existing skill</option>
-          </select>
-        </label>
-        <label id="levelSkillNewWrap">New skill name
-          <input id="levelSkillNewInput" placeholder="Stealth" maxlength="48" />
-        </label>
-        <label id="levelSkillExistingWrap" class="hidden">Existing skill
-          <select id="levelSkillExistingSelect">
-            <option value="">-- Select existing skill --</option>
-          </select>
-        </label>
-      </div>
+      <div id="levelClassTrackSummary" class="muted"></div>
+      <p class="muted">Level-up reference: <a id="levelUpClassLink" href="#" target="_blank" rel="noopener noreferrer">Open class page</a></p>
       <div class="xr-modal-actions">
         <button id="confirmLevelBtn" type="button">Apply</button>
         <button id="cancelLevelBtn" type="button">Cancel</button>
@@ -291,7 +264,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/shared/auth.js"></script>
   <script src="/shared/nav.js"></script>
-  <script src="/xrrpg-2.0/class-abilities.js"></script>
   <script>
     window.__useLocalLoadingOverlay = true;
     const sb = window.supabaseClient;
@@ -340,6 +312,31 @@
       'Gunslinger': 'Technologist firearm crafter. Higher class level raises gadget tier and gun effects.',
       'Swordmaster': 'Technologist melee/beam fighter. Higher class level raises damage and attack shapes.'
     };
+    const CLASS_FOLDER_PATHS = {
+      'Warrior': 'Adepts/Warrior',
+      'Mentalist': 'Adepts/Mentalist',
+      'Tank': 'Adepts/Tank',
+      'Druid': 'Adepts/Druid',
+      'Elementalist': 'Spiritualists/Elementalist',
+      'Summoner': 'Spiritualists/Summoner',
+      'Mystic': 'Spiritualists/Mystic',
+      'Alchemist': 'Magicians/Alchemist',
+      'Physic': 'Magicians/Physic',
+      'Possessor': 'Magicians/Possessor',
+      'Bard': 'Magicians/Bard',
+      'Enchanter': 'Magicians/Enchanter',
+      'Sorcerer': 'Mages/Sorcerer',
+      'Warlock': 'Mages/Warlock',
+      'Cleric': 'Mages/Cleric',
+      'Demititan': 'Mages/Demititan',
+      'Emitter Specialist': 'Technologists/Emitter Specialist',
+      'Dronemaster': 'Technologists/Dronemaster',
+      'Brawler': 'Technologists/Brawler',
+      'Explosives Expert': 'Technologists/Explosives Expert',
+      'Gunslinger': 'Technologists/Gunslinger',
+      'Swordmaster': 'Technologists/Swordmaster'
+    };
+
     const LEVELING_RULES = {
       1: { stamina_base: 12, skill_mode: 'add_or_plus1', stat_points: 0, stat_bonus: 1, skill_points: 0, powerful_item_limit: 2, powerful_item_max: 1 },
       2: { stamina_base: 14, skill_mode: 'stat', stat_points: 1, stat_bonus: 1, skill_points: 0, powerful_item_limit: 3, powerful_item_max: 1 },
@@ -382,8 +379,8 @@
       const editableIds = [
         'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
         'staminaTotalInput','staminaUsedInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
-        'partyTierInput','xenicDecayInput','timesCleansedInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput',
-        'levelUpBtn','takeInjuryBtn','addSkillBtn','confirmLevelBtn','confirmInjuryBtn','saveSkillModalBtn','addLevelAbilityBtn'
+        'partyTierInput','xenicDecayInput','timesCleansedInput','primaryClassInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput',
+        'levelUpBtn','takeInjuryBtn','addSkillBtn','confirmLevelBtn','confirmInjuryBtn','saveSkillModalBtn'
       ];
       editableIds.forEach(id => {
         const el = document.getElementById(id);
@@ -395,7 +392,8 @@
       const opt = document.createElement('option');
       opt.value = name;
       opt.textContent = name;
-      document.getElementById('levelClassSelect').appendChild(opt);
+      document.getElementById('levelClassSelect').appendChild(opt.cloneNode(true));
+      document.getElementById('primaryClassInput').appendChild(opt);
     });
 
     async function requireUser() {
@@ -427,6 +425,8 @@
         personality: document.getElementById('personalityInput').value.trim(),
         motivation: document.getElementById('motivationInput').value.trim(),
         backstory: document.getElementById('backstoryInput').value.trim(),
+        class_progression_notes: document.getElementById('classProgressionInput').value.trim(),
+        inventory: document.getElementById('inventoryInput').value.trim(),
         extra: document.getElementById('extraNotesInput').value.trim()
       });
     }
@@ -448,6 +448,7 @@
         ...character.base_stats,
         species: document.getElementById('speciesInput').value.trim(),
         chroma: document.getElementById('chromaInput').value.trim(),
+        primary_class: document.getElementById('primaryClassInput').value.trim(),
         level: Number(document.getElementById('levelInput').value) || 1,
         hp: Number(document.getElementById('hpInput').value) || 0,
         current_hp: Number(document.getElementById('currentHpInput').value) || 0,
@@ -481,21 +482,7 @@
       return 'Debuff: -1 to all Actions until healed.';
     }
 
-    function addLevelAbilityChoice(value = '') {
-      const wrap = document.getElementById('levelAbilityChoices');
-      const row = document.createElement('label');
-      row.className = 'xrrpg-row';
-      row.innerHTML = '<input class="level-ability-choice" maxlength="80" placeholder="Ability name" /> <button type="button" class="remove-level-ability-btn">Remove</button>';
-      row.querySelector('.level-ability-choice').value = value;
-      row.querySelector('.remove-level-ability-btn').onclick = () => row.remove();
-      wrap.appendChild(row);
-    }
 
-    function readLevelAbilityChoices() {
-      return Array.from(document.querySelectorAll('.level-ability-choice'))
-        .map(input => input.value.trim())
-        .filter(Boolean);
-    }
     function cloneCharacterState() {
       return {
         name: character.name,
@@ -628,100 +615,36 @@
       return Array.from(byName.values());
     }
 
+    function classUrl(cls) {
+      const path = CLASS_FOLDER_PATHS[cls];
+      if (!path) return 'https://xeonrapture.com/xr/XRRPG+2.0/Classes/';
+      return `https://xeonrapture.com/xr/XRRPG+2.0/Classes/${path}`;
+    }
+
+    function classLevelBreakdown() {
+      const progression = character.class_progression || [];
+      const byClass = progression.reduce((acc, row) => {
+        const key = row.class || 'Unknown';
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+      return Object.entries(byClass).sort((a, b) => a[0].localeCompare(b[0]));
+    }
+
     function renderLevelAbilityOptions() {
       const cls = document.getElementById('levelClassSelect').value;
       const progression = character.class_progression || [];
       const level = Math.min(9, Number(character.base_stats?.level || 1) + 1);
       const tier = progression.filter(item => item.class === cls).length + 1;
-      const rule = levelRule(level);
-      const adeptClass = isAdeptClass(cls);
-      const benefitBits = [];
-      if (rule.stat_points > 0) {
-        const totalStatGain = Number(rule.stat_points || 0) * Number(rule.stat_bonus || 1);
-        if (Number(rule.stat_bonus || 1) > 1 && Number(rule.stat_points || 0) === 1) {
-          benefitBits.push(`+${totalStatGain} to one stat`);
-        } else {
-          benefitBits.push(`+${totalStatGain} stat`);
-        }
-      }
-      if (rule.skill_mode === 'add_or_plus1') benefitBits.push('add a skill or +1 to an existing skill');
-      if (rule.skill_mode === 'skill_plus2') benefitBits.push('+2 to one skill');
-      if (adeptClass && tier === 1) {
-        benefitBits.push('Adept basic ability (auto) + choose 1 advanced ability');
-      } else if (adeptClass && tier <= 3) {
-        benefitBits.push(`existing advanced adept ability scales to tier ${tier} automatically`);
-      } else if (adeptClass && tier >= 4) {
-        benefitBits.push('choose 1 advanced adept ability (no tier restrictions)');
-      }
       document.getElementById('levelClassSummary').textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
-      document.getElementById('levelBenefitSummary').textContent = `This level up goes to Character Level ${level} and grants: ${benefitBits.join(', ') || 'class progression only'}.`;
-      document.getElementById('levelStatRow').classList.toggle('hidden', rule.stat_points === 0);
-      document.getElementById('levelSkillRow').classList.toggle('hidden', !['add_or_plus1', 'skill_plus2'].includes(rule.skill_mode));
-      document.getElementById('levelStatBoostSelect2Wrap').classList.toggle('hidden', rule.stat_points < 2);
-      syncSkillUpgradeUi(rule.skill_mode);
-      const abilities = adeptClass && tier >= 4
-        ? parsedAdeptAdvancedAbilities(cls)
-        : parsedTierAbilities(cls, tier);
-      const choiceWrap = document.getElementById('levelAbilityChoices');
-      const requiredChoices = adeptClass ? requiredAdeptAbilityChoices(tier) : 1;
-      if (adeptClass && requiredChoices === 0) {
-        choiceWrap.innerHTML = `<div class="muted">Adept progression at Tiers 2-3 does not grant a new advanced ability pick. Your existing advanced adept power automatically scales to Tier ${tier}.</div>`;
-        document.getElementById('levelMsg').textContent = `Advancing ${cls} to Tier ${tier}.`;
-        return;
-      }
-      if (!abilities.length) {
-        choiceWrap.innerHTML = '<div class="muted">No parsed class abilities found for this class/tier. Add manual ability entries below.</div>';
-        addLevelAbilityChoice();
-        return;
-      }
-      let filtered = abilities;
-      if (adeptClass && tier === 1) {
-        const basicAbility = adeptBasicAbilityName(cls);
-        filtered = abilities.filter(item => item.name !== basicAbility);
-        if (basicAbility) {
-          choiceWrap.innerHTML = `<div class="muted">Basic ability gained automatically: <strong>${basicAbility}</strong>. Choose one advanced adept power below.</div>`;
-        }
-      } else if (adeptClass && tier >= 4) {
-        choiceWrap.innerHTML = '<div class="muted">Tier 4+ adept picks are unrestricted. Choose any advanced adept power below, or type a custom one.</div>';
-      }
-      if (!filtered.length) {
-        choiceWrap.innerHTML += '<div class="muted">No parsed class abilities found for this class/tier. Add manual ability entries below.</div>';
-        addLevelAbilityChoice();
-        document.getElementById('levelMsg').textContent = `Advancing ${cls} to Tier ${tier}.`;
-        return;
-      }
-      choiceWrap.innerHTML += filtered.map(item => `<label><input type="checkbox" class="level-ability-option" value="${item.name.replace(/"/g,'&quot;')}" /> ${item.name} <span class="muted">${tierText(item.tiers || {}, tier)}</span></label>`).join('');
-      addLevelAbilityChoice();
-      document.getElementById('levelMsg').textContent = `Advancing ${cls} to Tier ${tier}.`;
+      document.getElementById('levelClassTrackSummary').textContent = `This will set Character Level ${level} and ${cls} Class Level ${tier}.`;
+      const link = document.getElementById('levelUpClassLink');
+      link.href = classUrl(cls);
+      link.textContent = `Open ${cls} level-up page`;
+      document.getElementById('levelMsg').textContent = `Advancing ${cls} to class level ${tier}.`;
     }
 
-    function syncSkillUpgradeUi(skillMode) {
-      const isVisible = ['add_or_plus1', 'skill_plus2'].includes(skillMode);
-      if (!isVisible) return;
-      const skills = character.skills || [];
-      const existingSelect = document.getElementById('levelSkillExistingSelect');
-      const modeSelect = document.getElementById('levelSkillModeSelect');
-      const newWrap = document.getElementById('levelSkillNewWrap');
-      const existingWrap = document.getElementById('levelSkillExistingWrap');
-      const mode = skillMode === 'skill_plus2' ? 'plus1' : modeSelect.value;
-      modeSelect.value = mode;
-      existingSelect.innerHTML = '<option value="">-- Select existing skill --</option>';
-      skills.forEach(skill => {
-        const option = document.createElement('option');
-        option.value = skill.name || '';
-        option.textContent = `${skill.name || 'Unnamed Skill'} (+${Number(skill.bonus || 0)})`;
-        existingSelect.appendChild(option);
-      });
-      modeSelect.disabled = skillMode === 'skill_plus2';
-      newWrap.classList.toggle('hidden', mode !== 'add');
-      existingWrap.classList.toggle('hidden', mode === 'add');
-    }
 
-    function gatherLevelChoices() {
-      const checked = Array.from(document.querySelectorAll('.level-ability-option:checked')).map(input => input.value.trim()).filter(Boolean);
-      const typed = readLevelAbilityChoices();
-      return [...new Set([...checked, ...typed])];
-    }
 
 
     function renderSkillList() {
@@ -782,6 +705,7 @@
       document.getElementById('nameInput').value = character.name || '';
       document.getElementById('speciesInput').value = s.species || '';
       document.getElementById('chromaInput').value = s.chroma || '';
+      document.getElementById('primaryClassInput').value = s.primary_class || classNames[0];
       document.getElementById('levelInput').value = s.level || 1;
       document.getElementById('hpInput').value = s.hp || 0;
       document.getElementById('currentHpInput').value = s.current_hp ?? s.hp ?? 0;
@@ -802,69 +726,18 @@
       document.getElementById('personalityInput').value = notes.personality || '';
       document.getElementById('motivationInput').value = notes.motivation || '';
       document.getElementById('backstoryInput').value = notes.backstory || '';
+      document.getElementById('classProgressionInput').value = notes.class_progression_notes || '';
+      document.getElementById('inventoryInput').value = notes.inventory || '';
       document.getElementById('extraNotesInput').value = notes.extra || '';
 
       renderInjuryTracker();
 
-      const chosenAbilities = s.class_ability_choices || {};
-      const abilityWrap = document.getElementById('classAbilityList');
-      if (!(character.class_progression || []).length) {
-        abilityWrap.innerHTML = '<div class="muted">No class abilities yet.</div>';
-      } else {
-        const toAbilityBullets = (text) => {
-          if (!text || !text.trim()) return [];
-          return text
-            .replace(/\r\n/g, '\n')
-            .split('\n')
-            .map(line => line.trim())
-            .filter(Boolean)
-            .flatMap(line => line
-              .replace(/^[-*]\s*/, '')
-              .split(/(?<=\.)\s+|\s*[;•]\s+|\s+(?=Can\s|Cannot\s|Gain\s|Gains\s|Get\s|Gets\s|May\s|Heal\s|Feel\s|See\s|Summon\s|Create\s|Use\s|Become\s|Choose\s|Attack\s|Deal\s)/)
-            )
-            .map(part => part.trim())
-            .filter(Boolean);
-        };
+      const classSummary = classLevelBreakdown();
+      const summaryWrap = document.getElementById('classProgressionSummary');
+      summaryWrap.innerHTML = classSummary.length
+        ? classSummary.map(([cls, count]) => `<div><strong>${cls}</strong>: Level ${count} — <a href="${classUrl(cls)}" target="_blank" rel="noopener noreferrer">level-up page</a></div>`).join('')
+        : '<div>No class levels tracked yet.</div>';
 
-        const renderAdeptAbilityBlock = (label, name, detailText, fallbackText) => {
-          if (!name) return `<h5 class="class-ability-subtitle">${label}</h5><div class="muted">${fallbackText}</div>`;
-          const bullets = toAbilityBullets(detailText);
-          return `<h5 class="class-ability-subtitle">${label}</h5><div class="muted"><strong>${name}</strong></div>${bullets.length ? `<ul>${bullets.map(line => `<li>${line}</li>`).join('')}</ul>` : '<div class="muted">No details recorded.</div>'}`;
-        };
-
-        abilityWrap.innerHTML = character.class_progression.map((entry, idx) => {
-          const key = `${entry.class}-T${entry.tier}-L${entry.level_acquired}-${idx}`;
-          const adeptClass = isAdeptClass(entry.class);
-          const chosen = Array.isArray(chosenAbilities[key]) && chosenAbilities[key].length
-            ? `<div class="muted">Chosen on level up: ${chosenAbilities[key].join(', ')}</div>`
-            : '<div class="muted">Chosen on level up: none recorded</div>';
-          if (adeptClass) {
-            const adeptTier = Math.min(3, Number(entry.tier) || 1);
-            const basicAbility = adeptBasicAbilityName(entry.class);
-            const basicDetail = basicAbility ? abilityDetailText(entry.class, basicAbility, adeptTier) : '';
-            const advancedAbility = findChosenAdeptAdvancedAbility(chosenAbilities, character.class_progression || [], entry.class, idx);
-            const advancedDetail = advancedAbility ? abilityDetailText(entry.class, advancedAbility, adeptTier) : '';
-            const details = [
-              renderAdeptAbilityBlock('Basic', basicAbility, basicDetail, 'none recorded'),
-              renderAdeptAbilityBlock('Advanced', advancedAbility, advancedDetail, 'none recorded')
-            ];
-            return `<section class="card collapsible section-card" data-collapsible><div class="collapsible-header"><h4 class="class-detail-card-title">${entry.class} Tier ${entry.tier} Abilities</h4><button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button></div><div class="collapsible-body">${chosen}${details.join('')}</div></section>`;
-          }
-          const available = (classAbilities[entry.class] || [])
-            .filter(ability => ability.tiers && Object.prototype.hasOwnProperty.call(ability.tiers, String(entry.tier)))
-            .map(ability => {
-              const detailBullets = toAbilityBullets(ability.tiers[String(entry.tier)] || '');
-              const detailHtml = detailBullets.length
-                ? `<ul>${detailBullets.map(line => `<li>${line}</li>`).join('')}</ul>`
-                : '<div class="muted">No details recorded.</div>';
-              return `<li><strong>${ability.name}</strong>${detailHtml}</li>`;
-            });
-          const availableHtml = available.length ? `<ul>${available.join('')}</ul>` : '<div class="muted">Available: add manually for this class tier.</div>';
-          return `<section class="card collapsible section-card" data-collapsible><div class="collapsible-header"><h4 class="class-detail-card-title">${entry.class} Tier ${entry.tier} Abilities</h4><button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button></div><div class="collapsible-body">${chosen}<h5 class="class-ability-subtitle">Available</h5>${availableHtml}</div></section>`;
-        }).join('');
-      }
-
-      initCollapsibles(abilityWrap);
 
       renderSkillList();
       applyOwnershipPermissions();
@@ -991,19 +864,16 @@
       if (!canEdit) return;
       levelModal.classList.remove('hidden');
       document.getElementById('levelMsg').textContent = '';
-      document.getElementById('levelAbilityChoices').innerHTML = '';
-      document.getElementById('levelStatBoostSelect1').value = '';
-      document.getElementById('levelStatBoostSelect2').value = '';
-      document.getElementById('levelSkillModeSelect').value = 'add';
-      document.getElementById('levelSkillNewInput').value = '';
-      document.getElementById('levelSkillExistingSelect').value = '';
       syncLevelClassOptionsByChroma();
+      const preferredClass = document.getElementById('primaryClassInput').value || classNames[0];
+      if (Array.from(document.getElementById('levelClassSelect').options).some(option => option.value === preferredClass && !option.disabled)) {
+        document.getElementById('levelClassSelect').value = preferredClass;
+      }
       renderLevelAbilityOptions();
     };
     levelModal.querySelector('.xr-modal-backdrop').onclick = () => levelModal.classList.add('hidden');
     document.getElementById('cancelLevelBtn').onclick = () => levelModal.classList.add('hidden');
     document.getElementById('levelClassSelect').onchange = () => renderLevelAbilityOptions();
-    document.getElementById('levelSkillModeSelect').onchange = () => syncSkillUpgradeUi(levelRule(Math.min(9, Number(character.base_stats?.level || 1) + 1)).skill_mode);
 
     document.getElementById('confirmLevelBtn').onclick = async () => {
       if (!canEdit) return;
@@ -1012,35 +882,13 @@
       const progression = [...(character.class_progression || [])];
       const currentLevel = Number(character.base_stats?.level || 1);
       const level = Math.min(9, currentLevel + 1);
-      const entryCount = progression.filter(item => item.class === cls).length;
-      const tier = entryCount + 1;
-      progression.push({ class: cls, tier, level_acquired: level });
-      const choices = gatherLevelChoices();
-      const adeptClass = isAdeptClass(cls);
+      const tier = progression.filter(item => item.class === cls).length + 1;
       const classChromaValidation = validateClassChromaRequirement(cls, String(character.base_stats?.chroma || '').trim());
       if (!classChromaValidation.valid) {
         document.getElementById('levelMsg').textContent = classChromaValidation.message;
         return;
       }
-      const requiredChoices = adeptClass ? requiredAdeptAbilityChoices(tier) : 1;
-      if (choices.length < requiredChoices) {
-        const msg = requiredChoices === 1
-          ? 'Add at least one ability choice for this level.'
-          : `Add at least ${requiredChoices} ability choices for this level.`;
-        document.getElementById('levelMsg').textContent = msg;
-        return;
-      }
-      if (adeptClass && tier === 1 && choices.length !== 1) {
-        document.getElementById('levelMsg').textContent = 'Adept classes automatically gain their basic ability and must pick exactly one advanced power at tier 1.';
-        return;
-      }
-      const key = `${cls}-T${tier}-L${level}-${progression.length - 1}`;
-      const adeptBasic = adeptBasicAbilityName(cls);
-      const savedChoices = adeptClass && tier === 1
-        ? [`${adeptBasic || 'Basic Ability'} (auto)`, ...choices]
-        : (adeptClass && tier <= 3)
-          ? [`Advanced adept ability auto-upgraded to Tier ${tier}`]
-          : choices;
+      progression.push({ class: cls, tier, level_acquired: level });
 
       const prevState = cloneCharacterState();
       const before = character.base_stats || {};
@@ -1052,68 +900,11 @@
         stamina_max: staminaMaxForLevel(level, before.intuition, before.wit),
         stamina_total: staminaMaxForLevel(level, before.intuition, before.wit),
         powerful_item_limit: rule.powerful_item_limit,
-        powerful_item_max: rule.powerful_item_max,
-        class_ability_choices: {
-          ...(character.base_stats?.class_ability_choices || {}),
-          [key]: savedChoices
-        }
+        powerful_item_max: rule.powerful_item_max
       };
-      const skills = [...(character.skills || [])];
-      const skillUpgradeMode = document.getElementById('levelSkillModeSelect').value;
-      const levelSkillTarget = skillUpgradeMode === 'add'
-        ? document.getElementById('levelSkillNewInput').value.trim()
-        : document.getElementById('levelSkillExistingSelect').value.trim();
-      if (rule.skill_mode === 'add_or_plus1') {
-        if (!levelSkillTarget) {
-          document.getElementById('levelMsg').textContent = 'This level requires a skill target for add/+1.';
-          return;
-        }
-        const idx = skills.findIndex(skill => (skill.name || '').toLowerCase() === levelSkillTarget.toLowerCase());
-        if (skillUpgradeMode === 'plus1') {
-          if (idx < 0) {
-            document.getElementById('levelMsg').textContent = 'Choose an existing skill for +1.';
-            return;
-          }
-          skills[idx] = { ...skills[idx], bonus: Number(skills[idx].bonus || 0) + 1 };
-        } else {
-          if (idx >= 0) {
-            document.getElementById('levelMsg').textContent = 'That skill already exists. Use +1 instead.';
-            return;
-          }
-          skills.push({ name: levelSkillTarget, bonus: 2 });
-        }
-      }
-      if (rule.skill_mode === 'skill_plus2') {
-        if (!levelSkillTarget) {
-          document.getElementById('levelMsg').textContent = 'This level requires a skill target to receive +2.';
-          return;
-        }
-        const idx = skills.findIndex(skill => (skill.name || '').toLowerCase() === levelSkillTarget.toLowerCase());
-        if (idx < 0) {
-          document.getElementById('levelMsg').textContent = 'Skill +2 levels require an existing skill name.';
-          return;
-        }
-        skills[idx] = { ...skills[idx], bonus: Number(skills[idx].bonus || 0) + 2 };
-      }
-      if (rule.stat_points > 0) {
-        const statTargets = [
-          document.getElementById('levelStatBoostSelect1').value,
-          document.getElementById('levelStatBoostSelect2').value
-        ].filter(Boolean);
-        if (statTargets.length < rule.stat_points) {
-          document.getElementById('levelMsg').textContent = `This level needs ${rule.stat_points} stat increase(s).`;
-          return;
-        }
-        for (let i = 0; i < rule.stat_points; i += 1) {
-          const stat = statTargets[i];
-          if (!['vigor', 'endurance', 'intuition', 'wit'].includes(stat)) continue;
-          base_stats[stat] = Math.min(5, Number(base_stats[stat] || 0) + Number(rule.stat_bonus || 1));
-        }
-        base_stats.stamina_max = staminaMaxForLevel(level, base_stats.intuition, base_stats.wit);
-        base_stats.stamina_total = base_stats.stamina_max;
-      }
+
       const { error } = await sb.from('xrrpg_characters')
-        .update({ class_progression: progression, base_stats, skills, updated_at: new Date().toISOString() })
+        .update({ class_progression: progression, base_stats, updated_at: new Date().toISOString() })
         .eq('id', characterId)
         .eq('user_id', currentUser.id);
       if (error) {
@@ -1121,11 +912,10 @@
         return;
       }
 
-      await addHistory('level_up', `Level ${level}: ${cls} advanced to Tier ${tier}.`, { class: cls, tier, level, abilities: savedChoices, undo: { character: prevState } });
+      await addHistory('level_up', `Level ${level}: ${cls} advanced to class level ${tier}.`, { class: cls, class_level: tier, level, undo: { character: prevState } });
       levelModal.classList.add('hidden');
-      document.getElementById('levelAbilityChoices').innerHTML = '';
       await loadCharacter();
-      document.getElementById('status').textContent = `Level up applied: ${cls} Tier ${tier}.`;
+      document.getElementById('status').textContent = `Level up applied: ${cls} class level ${tier}.`;
       });
     };
 
@@ -1183,7 +973,6 @@
       });
     }
 
-    document.getElementById('addLevelAbilityBtn').onclick = () => addLevelAbilityChoice();
 
     const injuryModal = document.getElementById('injuryModal');
     document.getElementById('takeInjuryBtn').onclick = () => {
@@ -1337,9 +1126,9 @@
           await loadHistory();
         });
         const autosaveTargets = [
-          'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
+          'nameInput','speciesInput','chromaInput','primaryClassInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
           'staminaTotalInput','staminaUsedInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
-          'xenicDecayInput','timesCleansedInput','partyTierInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput'
+          'xenicDecayInput','timesCleansedInput','partyTierInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput'
         ];
         autosaveTargets.forEach(id => {
           const el = document.getElementById(id);
