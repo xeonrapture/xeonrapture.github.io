@@ -177,7 +177,9 @@
 
     function xrrpgStatBlurb(baseStats = {}) {
       const staminaMax = baseStats.stamina_max ?? baseStats.stamina_total ?? (10 + Number(baseStats.wit || 0) + Number(baseStats.intuition || 0));
-      return `Lv ${baseStats.level || 1} • Vig ${baseStats.vigor || 0} End ${baseStats.endurance || 0} Intu ${baseStats.intuition || 0} Wit ${baseStats.wit || 0} • Stam ${staminaMax}`;
+      const hpMax = Number(baseStats.hp || 0);
+      const hpCurrent = Number(baseStats.current_hp ?? hpMax);
+      return `Lv ${baseStats.level || 1} • HP ${hpCurrent}/${hpMax} • Vig ${baseStats.vigor || 0} End ${baseStats.endurance || 0} Intu ${baseStats.intuition || 0} Wit ${baseStats.wit || 0} • Stam ${staminaMax}`;
     }
 
     function webrunningStatBlurb(baseStats = {}, notes = null) {

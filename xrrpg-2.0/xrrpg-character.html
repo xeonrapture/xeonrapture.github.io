@@ -30,9 +30,6 @@
           <label>Name <input id="nameInput" maxlength="48" /></label>
           <label>Species <input id="speciesInput" maxlength="48" /></label>
           <label>Chroma <input id="chromaInput" maxlength="16" /></label>
-          <label>Primary Class
-            <select id="primaryClassInput"></select>
-          </label>
         </div>
       </div>
     </section>
@@ -117,6 +114,12 @@
           <h3>Party</h3>
           <div class="xrrpg-resource-fields">
             <label title="Party progression tier used for group actions.">Party Tier <input id="partyTierInput" type="number" min="1" /></label>
+          </div>
+        </div>
+        <div class="xrrpg-resource-card">
+          <h3>Credits</h3>
+          <div class="xrrpg-resource-fields">
+            <label title="Currency available for purchases and upkeep.">Credits <input id="creditsInput" type="number" min="0" /></label>
           </div>
         </div>
         </div>
@@ -379,7 +382,7 @@
       const editableIds = [
         'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
         'staminaTotalInput','staminaUsedInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
-        'partyTierInput','xenicDecayInput','timesCleansedInput','primaryClassInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput',
+        'partyTierInput','xenicDecayInput','timesCleansedInput','creditsInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput',
         'levelUpBtn','takeInjuryBtn','addSkillBtn','confirmLevelBtn','confirmInjuryBtn','saveSkillModalBtn'
       ];
       editableIds.forEach(id => {
@@ -393,7 +396,6 @@
       opt.value = name;
       opt.textContent = name;
       document.getElementById('levelClassSelect').appendChild(opt.cloneNode(true));
-      document.getElementById('primaryClassInput').appendChild(opt);
     });
 
     async function requireUser() {
@@ -448,7 +450,6 @@
         ...character.base_stats,
         species: document.getElementById('speciesInput').value.trim(),
         chroma: document.getElementById('chromaInput').value.trim(),
-        primary_class: document.getElementById('primaryClassInput').value.trim(),
         level: Number(document.getElementById('levelInput').value) || 1,
         hp: Number(document.getElementById('hpInput').value) || 0,
         current_hp: Number(document.getElementById('currentHpInput').value) || 0,
@@ -464,7 +465,8 @@
         powerful_item_max: Number(document.getElementById('powerfulItemMaxInput').value) || 0,
         party_tier: Number(document.getElementById('partyTierInput').value) || 1,
         xenic_decay_level: Number(document.getElementById('xenicDecayInput').value) || 0,
-        times_cleansed: Number(document.getElementById('timesCleansedInput').value) || 0
+        times_cleansed: Number(document.getElementById('timesCleansedInput').value) || 0,
+        credits: Number(document.getElementById('creditsInput').value) || 0
       };
     }
 
@@ -705,7 +707,6 @@
       document.getElementById('nameInput').value = character.name || '';
       document.getElementById('speciesInput').value = s.species || '';
       document.getElementById('chromaInput').value = s.chroma || '';
-      document.getElementById('primaryClassInput').value = s.primary_class || classNames[0];
       document.getElementById('levelInput').value = s.level || 1;
       document.getElementById('hpInput').value = s.hp || 0;
       document.getElementById('currentHpInput').value = s.current_hp ?? s.hp ?? 0;
@@ -721,6 +722,7 @@
       document.getElementById('partyTierInput').value = s.party_tier || 1;
       document.getElementById('xenicDecayInput').value = s.xenic_decay_level || 0;
       document.getElementById('timesCleansedInput').value = s.times_cleansed || 0;
+      document.getElementById('creditsInput').value = s.credits || 0;
 
       document.getElementById('appearanceInput').value = notes.appearance || '';
       document.getElementById('personalityInput').value = notes.personality || '';
@@ -865,7 +867,7 @@
       levelModal.classList.remove('hidden');
       document.getElementById('levelMsg').textContent = '';
       syncLevelClassOptionsByChroma();
-      const preferredClass = document.getElementById('primaryClassInput').value || classNames[0];
+      const preferredClass = character.class_progression?.[0]?.class || classNames[0];
       if (Array.from(document.getElementById('levelClassSelect').options).some(option => option.value === preferredClass && !option.disabled)) {
         document.getElementById('levelClassSelect').value = preferredClass;
       }
@@ -1126,9 +1128,9 @@
           await loadHistory();
         });
         const autosaveTargets = [
-          'nameInput','speciesInput','chromaInput','primaryClassInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
+          'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
           'staminaTotalInput','staminaUsedInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
-          'xenicDecayInput','timesCleansedInput','partyTierInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput'
+          'xenicDecayInput','timesCleansedInput','partyTierInput','creditsInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput'
         ];
         autosaveTargets.forEach(id => {
           const el = document.getElementById(id);
