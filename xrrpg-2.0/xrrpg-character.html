@@ -137,6 +137,16 @@
       </div>
     </section>
 
+    <section class="card collapsible" data-collapsible id="classAbilitiesSection">
+      <div class="collapsible-header">
+        <h2>Class Abilities</h2>
+        <button class="collapse-toggle" type="button" aria-expanded="true" aria-controls="classAbilitiesBody" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
+      </div>
+      <div class="collapsible-body" id="classAbilitiesBody">
+        <div class="muted" id="classAbilitiesEmpty">No class levels tracked yet.</div>
+      </div>
+    </section>
+
     <section class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Class Details</h2>
@@ -210,6 +220,7 @@
       </label>
       <div id="levelClassSummary" class="muted"></div>
       <div id="levelClassTrackSummary" class="muted"></div>
+      <div id="levelUpChoices" class="xrrpg-notes-stack"></div>
       <p class="muted">Level-up reference: <a id="levelUpClassLink" href="#" target="_blank" rel="noopener noreferrer">Open class page</a></p>
       <div class="xr-modal-actions">
         <button id="confirmLevelBtn" type="button">Apply</button>
@@ -388,6 +399,9 @@
       editableIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.disabled = readOnly;
+      });
+      document.querySelectorAll('[data-resource-inc], [data-resource-dec]').forEach(btn => {
+        btn.disabled = readOnly;
       });
     }
 
@@ -644,6 +658,311 @@
       link.href = classUrl(cls);
       link.textContent = `Open ${cls} level-up page`;
       document.getElementById('levelMsg').textContent = `Advancing ${cls} to class level ${tier}.`;
+      buildLevelChoiceUI(cls, tier);
+    }
+
+    // --- Class Abilities helpers ---
+
+    function getClassDef(cls) {
+      return window.XRRPG_CLASS_DEFS?.[cls] || null;
+    }
+
+    function getClassLevel(cls) {
+      return (character.class_progression || []).filter(p => p.class === cls).length;
+    }
+
+    function getClassChoices(cls) {
+      return character.base_stats?.class_ability_choices?.[cls] || {};
+    }
+
+    function setClassChoices(cls, choices) {
+      if (!character.base_stats.class_ability_choices) character.base_stats.class_ability_choices = {};
+      character.base_stats.class_ability_choices[cls] = choices;
+      scheduleAutosave();
+    }
+
+    function incrementResource(cls, resId) {
+      const def = getClassDef(cls);
+      const resDef = def?.resources?.find(r => r.id === resId);
+      if (!resDef) return;
+      const choices = getClassChoices(cls);
+      if (!choices.resources) choices.resources = {};
+      const current = choices.resources[resId] || 0;
+      if (current >= resDef.maxPerDay) return;
+      choices.resources[resId] = current + 1;
+      setClassChoices(cls, choices);
+      renderClassAbilitiesSection();
+    }
+
+    function decrementResource(cls, resId) {
+      const choices = getClassChoices(cls);
+      if (!choices.resources) return;
+      const current = choices.resources[resId] || 0;
+      if (current <= 0) return;
+      choices.resources[resId] = current - 1;
+      setClassChoices(cls, choices);
+      renderClassAbilitiesSection();
+    }
+
+    function resetDailyResources() {
+      if (!character.base_stats.class_ability_choices) return;
+      for (const cls of Object.keys(character.base_stats.class_ability_choices)) {
+        const choices = character.base_stats.class_ability_choices[cls];
+        if (choices.resources) choices.resources = {};
+      }
+      scheduleAutosave();
+      renderClassAbilitiesSection();
+    }
+
+    function renderClassAbilitiesSection() {
+      const body = document.getElementById('classAbilitiesBody');
+      if (!body) return;
+
+      const classes = [...new Set((character.class_progression || []).map(p => p.class))];
+      if (classes.length === 0) {
+        body.innerHTML = '<div class="muted" id="classAbilitiesEmpty">No class levels tracked yet.</div>';
+        return;
+      }
+
+      body.innerHTML = '';
+      for (const cls of classes) {
+        const classLevel = getClassLevel(cls);
+        const choices = getClassChoices(cls);
+        body.innerHTML += renderClassSubsection(cls, classLevel, choices);
+      }
+
+      body.innerHTML += `<div style="margin-top:1rem;"><button type="button" onclick="resetDailyResources()" class="xr-btn-secondary">Reset Daily (Deep Rest)</button></div>`;
+
+      body.querySelectorAll('[data-resource-inc]').forEach(btn => {
+        btn.onclick = () => incrementResource(btn.dataset.cls, btn.dataset.resId);
+      });
+      body.querySelectorAll('[data-resource-dec]').forEach(btn => {
+        btn.onclick = () => decrementResource(btn.dataset.cls, btn.dataset.resId);
+      });
+
+      initCollapsibles();
+      applyOwnershipPermissions();
+    }
+
+    function renderClassSubsection(cls, classLevel, choices) {
+      const def = getClassDef(cls);
+      if (!def) return `<div class="xrrpg-class-ability-subsection"><h3>${cls}</h3><p class="muted">No data available.</p></div>`;
+
+      let html = `<div class="xrrpg-class-ability-subsection" data-class="${cls}">`;
+      html += `<h3>${cls} <span class="muted">(Class Level ${classLevel})</span></h3>`;
+
+      if (def.basicPower) {
+        const tier = Math.min(classLevel, def.basicPower.tiers.length - 1);
+        html += `<div class="xrrpg-ability-row"><strong>${def.basicPower.name}</strong> <span class="xrrpg-tier-badge">T${tier}</span></div>`;
+        html += `<p class="xrrpg-ability-desc">${def.basicPower.tiers[tier]}</p>`;
+      }
+
+      if (choices.advanced_powers?.length) {
+        const tierCount = {};
+        for (const p of choices.advanced_powers) tierCount[p] = (tierCount[p] || 0) + 1;
+        for (const [name, tier] of Object.entries(tierCount)) {
+          const power = def.advancedPowers?.find(p => p.name === name);
+          const desc = power?.tiers[tier - 1] || '';
+          html += `<div class="xrrpg-ability-row"><strong>${name}</strong> <span class="xrrpg-tier-badge">T${tier}</span></div>`;
+          if (desc) html += `<p class="xrrpg-ability-desc">${desc}</p>`;
+        }
+      }
+
+      if (def.levels) {
+        for (let lvl = 1; lvl <= classLevel; lvl++) {
+          const levelDef = def.levels[lvl] || def.levels['default'];
+          if (!levelDef?.auto) continue;
+          for (const ability of levelDef.auto) {
+            html += `<div class="xrrpg-ability-row"><strong>${ability}</strong></div>`;
+          }
+        }
+      }
+
+      if (choices.deity) html += `<div class="xrrpg-ability-row">Deity: <strong>${choices.deity}</strong></div>`;
+      if (choices.devil_name) html += `<div class="xrrpg-ability-row">Devil: <strong>${choices.devil_name}</strong></div>`;
+      if (choices.devil_emotion) html += `<div class="xrrpg-ability-row">Emotion: <strong>${choices.devil_emotion}</strong></div>`;
+      if (choices.specialized_powers?.length) {
+        html += `<div class="xrrpg-ability-row">Specialized Powers: ${choices.specialized_powers.join(', ')}</div>`;
+      }
+      if (choices.spells_known?.length) {
+        html += `<div class="xrrpg-ability-row">Spells: ${choices.spells_known.join(', ')}</div>`;
+      }
+      if (choices.spirits?.length) {
+        for (const s of choices.spirits) {
+          html += `<div class="xrrpg-ability-row"><strong>${s.type}</strong> <span class="xrrpg-tier-badge">T${s.tier}</span></div>`;
+        }
+      }
+      if (choices.elements?.length) {
+        html += `<div class="xrrpg-ability-row">Elements: ${choices.elements.map(e => `${e.name} (${e.tier})`).join(', ')}</div>`;
+      }
+      if (choices.specialty) html += `<div class="xrrpg-ability-row">Specialty: <strong>${choices.specialty}</strong></div>`;
+      if (choices.effects_known?.length) {
+        html += `<div class="xrrpg-ability-row">Effects Known: ${choices.effects_known.join(', ')}</div>`;
+      }
+
+      const resources = def.resources || [];
+      const resVals = choices.resources || {};
+      for (const res of resources) {
+        const current = resVals[res.id] || 0;
+        html += `<div class="xrrpg-resource-tracker">
+          <span class="label">${res.label}</span>
+          <button type="button" data-resource-dec data-cls="${cls}" data-res-id="${res.id}">−</button>
+          <span class="value">${current} / ${res.maxPerDay}</span>
+          <button type="button" data-resource-inc data-cls="${cls}" data-res-id="${res.id}">+</button>
+        </div>`;
+      }
+
+      html += `</div>`;
+      return html;
+    }
+
+    function buildLevelChoiceUI(cls, classLevel) {
+      const container = document.getElementById('levelUpChoices');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const def = getClassDef(cls);
+      if (!def) return;
+
+      const levelDef = def.levels?.[classLevel] || def.levels?.['default'];
+      if (!levelDef?.choices?.length) return;
+
+      const choices = getClassChoices(cls);
+
+      for (const choice of levelDef.choices) {
+        if (choice.type === 'pick_advanced_power') {
+          const pool = def.advancedPowers || def[choice.pool] || [];
+          const opts = pool.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+          container.innerHTML += `<label>Choose Advanced Power:<br>
+            <select data-choice-id="advanced_power"><option value="">-- Select --</option>${opts}</select>
+          </label>`;
+
+        } else if (choice.type === 'pick_one') {
+          const opts = choice.options.map(o => `<option value="${o}">${o}</option>`).join('');
+          container.innerHTML += `<label>${choice.label}:<br>
+            <select data-choice-id="${choice.id}"><option value="">-- Select --</option>${opts}</select>
+          </label>`;
+
+        } else if (choice.type === 'text') {
+          container.innerHTML += `<label>${choice.label}:<br>
+            <input type="text" data-choice-id="${choice.id}" value="${choices[choice.id] || ''}">
+          </label>`;
+
+        } else if (choice.type === 'pick_spells') {
+          const pool = def.spellPool || [];
+          const known = choices.spells_known || [];
+          const filtered = pool.filter(s => !choice.maxTier || s.tier <= choice.maxTier);
+          const checks = filtered.map(s =>
+            `<label><input type="checkbox" data-choice-id="spell" value="${s.name}" ${known.includes(s.name) ? 'checked' : ''}> ${s.name} (T${s.tier})</label>`
+          ).join('<br>');
+          container.innerHTML += `<fieldset><legend>Pick ${choice.count} spells:</legend>${checks}</fieldset>`;
+
+        } else if (choice.type === 'pick_spirits') {
+          const pool = def.spiritPool || [];
+          const checks = pool.map(s =>
+            `<label><input type="checkbox" data-choice-id="spirit" value="${s}"> ${s}</label>`
+          ).join('<br>');
+          container.innerHTML += `<fieldset><legend>Pick ${choice.count} spirits:</legend>${checks}</fieldset>`;
+
+        } else if (choice.type === 'upgrade_spirits') {
+          const current = (choices.spirits || []).filter(s => s.tier < 3);
+          const checks = current.map(s =>
+            `<label><input type="checkbox" data-choice-id="upgrade_spirit" value="${s.type}"> ${s.type} (currently T${s.tier})</label>`
+          ).join('<br>');
+          container.innerHTML += `<fieldset><legend>Upgrade ${choice.count} spirits to next tier:</legend>${checks}</fieldset>`;
+
+        } else if (choice.type === 'pick_elements') {
+          const pool = def.elementPool?.filter(e => e.tier === choice.tier) || [];
+          const checks = pool.map(e =>
+            `<label><input type="checkbox" data-choice-id="element" value="${e.name}"> ${e.name}</label>`
+          ).join('<br>');
+          container.innerHTML += `<fieldset><legend>Pick ${choice.count} ${choice.tier} elements:</legend>${checks}</fieldset>`;
+
+        } else if (choice.type === 'pick_effects') {
+          const pool = def.effectPool || [];
+          const known = choices.effects_known || [];
+          const checks = pool.map(e =>
+            `<label><input type="checkbox" data-choice-id="effect" value="${e}" ${known.includes(e) ? 'checked' : ''}> ${e}</label>`
+          ).join('<br>');
+          container.innerHTML += `<fieldset><legend>Pick ${choice.count} effects:</legend>${checks}</fieldset>`;
+        }
+      }
+    }
+
+    function readLevelChoices(cls, classLevel) {
+      const container = document.getElementById('levelUpChoices');
+      if (!container) return {};
+      const result = {};
+
+      container.querySelectorAll('[data-choice-id]').forEach(el => {
+        const id = el.dataset.choiceId;
+        if (el.tagName === 'SELECT' || (el.tagName === 'INPUT' && el.type === 'text')) {
+          result[id] = el.value;
+        } else if (el.type === 'checkbox' && el.checked) {
+          if (!result[id]) result[id] = [];
+          result[id].push(el.value);
+        }
+      });
+
+      return result;
+    }
+
+    function applyLevelChoices(cls, classLevel, newChoices) {
+      const choices = getClassChoices(cls);
+
+      if (newChoices.advanced_power) {
+        if (!choices.advanced_powers) choices.advanced_powers = [];
+        choices.advanced_powers.push(newChoices.advanced_power);
+      }
+      if (newChoices.deity) choices.deity = newChoices.deity;
+      if (newChoices.specialty) choices.specialty = newChoices.specialty;
+      if (newChoices.devil_name) choices.devil_name = newChoices.devil_name;
+      if (newChoices.devil_emotion) choices.devil_emotion = newChoices.devil_emotion;
+      if (newChoices.devil_description) choices.devil_description = newChoices.devil_description;
+
+      if (newChoices.spell?.length) {
+        if (!choices.spells_known) choices.spells_known = [];
+        for (const s of newChoices.spell) {
+          if (!choices.spells_known.includes(s)) choices.spells_known.push(s);
+        }
+      }
+
+      if (newChoices.spirit?.length) {
+        if (!choices.spirits) choices.spirits = [];
+        for (const type of newChoices.spirit) {
+          choices.spirits.push({ type, tier: 1 });
+        }
+      }
+
+      if (newChoices.upgrade_spirit?.length) {
+        for (const type of newChoices.upgrade_spirit) {
+          const spirit = choices.spirits?.find(s => s.type === type && s.tier < 3);
+          if (spirit) spirit.tier++;
+        }
+      }
+
+      if (newChoices.element?.length) {
+        if (!choices.elements) choices.elements = [];
+        const def = getClassDef(cls);
+        const levelDef = def?.levels?.[classLevel];
+        const tier = levelDef?.choices?.find(c => c.type === 'pick_elements')?.tier || 'I';
+        for (const name of newChoices.element) {
+          choices.elements.push({ name, tier });
+        }
+      }
+
+      if (newChoices.effect?.length) {
+        choices.effects_known = newChoices.effect;
+      }
+
+      if (newChoices.specialized_power?.length) {
+        if (!choices.specialized_powers) choices.specialized_powers = [];
+        for (const p of newChoices.specialized_power) {
+          if (!choices.specialized_powers.includes(p)) choices.specialized_powers.push(p);
+        }
+      }
+
+      setClassChoices(cls, choices);
     }
 
 
@@ -742,6 +1061,7 @@
 
 
       renderSkillList();
+      renderClassAbilitiesSection();
       applyOwnershipPermissions();
       isRendering = false;
     }
@@ -891,6 +1211,9 @@
         return;
       }
       progression.push({ class: cls, tier, level_acquired: level });
+
+      const choiceValues = readLevelChoices(cls, tier);
+      applyLevelChoices(cls, tier, choiceValues);
 
       const prevState = cloneCharacterState();
       const before = character.base_stats || {};
@@ -1143,5 +1466,6 @@
       }
     })();
   </script>
+  <script src="class-abilities.js"></script>
 </body>
 </html>
