@@ -406,12 +406,12 @@ window.XRRPG_CLASS_DEFS = {
       }
     },
     resources: [
-      { id: "devil_form", label: "Devil Form", maxPerDay: 3 },
-      { id: "rage", label: "Rage Attack (Anger emotion)", maxPerDay: 3, requiresEmotion: "Anger" },
-      { id: "steal_vitality", label: "Steal Vitality (Envy emotion)", maxPerDay: 3, requiresEmotion: "Envy / Greed" },
-      { id: "spirit_shield_critical", label: "Spirit Shield (Critical Injury block)", maxPerDay: 3, requiresPower: "spirit_shield" },
-      { id: "soothe_soul_critical", label: "Soothe Soul (Critical Injury heal)", maxPerDay: 3, requiresPower: "soothe_soul" },
-      { id: "bend_fate_transfer", label: "Bend Fate (transfer consequence)", maxPerDay: 3, requiresPower: "bend_fate" }
+      { id: "devil_form", label: "Devil Form (merge with devil, +2d MD, 10 min)", maxPerDay: 3, minLevel: 3 },
+      { id: "rage", label: "Rage Attack (Anger — 3/4/5 dmg)", maxPerDay: 3, requiresEmotion: "Anger" },
+      { id: "steal_vitality", label: "Steal Vitality (Envy/Greed — steal HP)", maxPerDay: 3, requiresEmotion: "Envy, Greed" },
+      { id: "spirit_shield_critical", label: "Spirit Shield: ignore Critical Injury", maxPerDay: 3, minLevel: 3, requiresPower: "Spirit Shield" },
+      { id: "soothe_soul_critical", label: "Soothe Soul: heal Critical Injury", maxPerDay: 3, minLevel: 3, requiresPower: "Soothe Soul" },
+      { id: "bend_fate_transfer", label: "Bend Fate: transfer consequence", maxPerDay: 3, minLevel: 3, requiresPower: "Bend Fate" }
     ]
   },
 
@@ -419,17 +419,43 @@ window.XRRPG_CLASS_DEFS = {
     stat: "Vigor, Endurance, or Intuition",
     archetype: "Mages",
     chromaRequired: null,
-    tierIElements: [
-      { id: "stone", name: "Stone", description: "Extreme defense bonus. Immaterial form: become living stone." },
-      { id: "metal", name: "Metal", description: "Defense and attack bonus. Immaterial form: become living metal." },
-      { id: "plant", name: "Plant", description: "Extreme effect/utility bonus. Immaterial form: become living plant matter." },
-      { id: "flesh", name: "Flesh", description: "Defense and attack bonus. Immaterial form: become living flesh mass." }
-    ],
-    tierIIElements: [
-      { id: "water", name: "Water", description: "Extreme defense bonus. Immaterial form: become water (3x/day, lasts 10 min at lvl 3)." },
-      { id: "light", name: "Light", description: "Effect and attack bonus. Immaterial form: become light energy (3x/day)." },
-      { id: "air", name: "Air", description: "Defense and effect bonus. Immaterial form: become air (3x/day)." },
-      { id: "fire", name: "Fire", description: "Extreme attack bonus. Immaterial form: become fire (3x/day)." }
+    elementPool: [
+      { id: "stone", name: "Stone", tier: "I", focus: "++defense", levelAbilities: {
+        1: "You can turn your skin to stone, giving you a plus to defense (ignore Minor Injuries from physical sources)\nCan turn an object to stone or grab a block of stone out of a surface and throw it, dealing damage (2 dmg on success)",
+        2: "Can touch an ally to cover them with stone armor for up to a minute, protecting them (they ignore Minor Injuries)",
+        3: "You can now become stone, becoming even harder to damage (you ignore Minor Injuries)! You may still move around in this state."
+      }},
+      { id: "metal", name: "Metal", tier: "I", focus: "+defense, +attack", levelAbilities: {
+        1: "Now able to transmute you skin into metal; get a small bonus to defense (ignore the -1 debuff from Minor Injuries)\nCan morph body into metal blades and spines to deal damage (3 dmg on success up to 3/day)",
+        2: "Can create metal weapons and tools from the environment (3 dmg on success)",
+        3: "The weapons and tools you make are sharper and even more effective, and can be larger than before (4 dmg on success)"
+      }},
+      { id: "plant", name: "Plant", tier: "I", focus: "++effect", levelAbilities: {
+        1: "You get plant ranged attacks as you grow whipping and shooting plants from your skin, they can do several things if the enemy is hit by your attack:\n- slowing attack (next Action Difficulty against them is lowered by one tier)\n- bleeding attack (next three Attacks against them do +1 dmg)\n- binding attack (wraps up the enemy)",
+        2: "Can bind every enemy up to 20 feet from you as vines grow from your feet\nCan poison one target as you fire a poison dart or whip them with a poison vine (Actions against them get a +1d Mastery Die for up to a minute, effect can't stack)\nCan make climbing vines from a surface you touch that can extend up to 50 ft for a turn or 300ft if you spend 5 minutes",
+        3: "Turn into plants (a tree, vines, flowers, grass, etc.) and move around in vine mode\nCan merge with plants and travel along any connected plant\nExtremely intense single-target binds as you cover them in tree roots or vines"
+      }},
+      { id: "flesh", name: "Flesh", tier: "I", focus: "+defense, +attack", levelAbilities: {
+        1: "Can morph your body and give yourself attack claws and long teeth for a bite (3 dmg on success up to 3/day)\nYou can also give yourself scales for defense (ignore the -1 debuff from Minor Injuries)\nVision up to 1,000 ft",
+        2: "More intense attack claws and bite (3 dmg on success)\nGreat vision (darkvision up to 60 ft, regular vision up to 2,500 ft)\nSpeed legs (deer or rabbit) and jumps (30 ft jumps and quick dashes)\nSwimming speed and climbing speed up",
+        3: "Even more intense attack claws and bite (4 dmg on success)\nTransform (1 hour duration):\n- Give yourself wings and feathers and you can fly\n- Give yourself gills and scales and you can swim super fast\n- Give yourself digging claws and you can sense through the ground up to 60 ft"
+      }},
+      { id: "water", name: "Water", tier: "II", focus: "+++defense", levelAbilities: {
+        2: "Massive defense bonus as you turn partially to water (Ignores the -1 they get from their first Severe Injury)\nShoot ice spikes that can freeze enemies in place",
+        3: "You're extremely quick and hard to hit (Can't take Minor Injuries)\nDo a smother attack as you partially turn into water and cover an enemy (can do up to 2 dmg per turn upon Success, must keep Succeeding to keep this effect up)\nCan become completely water, you're immaterial, can move through cracks, make things wet, etc. (3/day, can't attack, take damage, cast spells, or do abilities in this form but you can do the smother attack, lasts up to 1 hr)"
+      }},
+      { id: "light", name: "Light", tier: "II", focus: "++effect, ++attack", levelAbilities: {
+        2: "You can create a massive flash of light, blinding your enemies (can last up to a minute, Action Difficulty goes down by one tier for any Action done against this enemy)\nYou can bend light within a 30 ft range of you, giving you extreme vision around corners and stuff\nYou can go almost invisible, goes away when you attack (makes it extremely hard to hit you)\nCan shoot laser beams, can go around corners (30 ft, does 3 dmg on Success)",
+        3: "You may do a light warp (warp up to 60ft from you at will)\nYou turn into light, you're immaterial, can move through cracks, fly, etc. (3/day, can't attack, take damage, cast spells, or do abilities in this form, lasts up to 1 hr)\nMove extremely fast as you turn partially to light\nMassive laser you can only do 3 times a day (5 dmg on Success)"
+      }},
+      { id: "air", name: "Air", tier: "II", focus: "++defense, ++effect", levelAbilities: {
+        2: "You can do big air pushes up to 30 ft from you (10 ft width, does no damage)\nYour speed goes up quite a bit\nCrazy jumps (up to 50 ft) and lunges (up to 50 ft)\nBig air blast that does quite a bit of damage but you can only do 3 times a day (5 ft width and 30 ft range cone, does 2 dmg on Success)\nCan throw ranged air blasts (30 ft, does 2 dmg on success, one target)",
+        3: "You become almost impossible to hit as you can turn partially to air to dodge (ignore up to 3 Severe Injuries per day)\nYou can become air, you're immaterial, can move through cracks, pick small things up, etc. (3/day, can't attack, take damage, cast spells, or do abilities in this form, lasts up to 1 hr)\nCan now push up to 60 ft away from you\nYou can do an aoe blast centered on you that goes 30 ft (3 dmg on success)"
+      }},
+      { id: "fire", name: "Fire", tier: "II", focus: "+++attack", levelAbilities: {
+        2: "Up-close attack blasts in a 10-ft cone (3 dmg on Success)\nThrow fire in a ranged attack, can go up to 30 ft away from you (4 dmg on Success)",
+        3: "Become fire, you're immaterial, can move through cracks, set things on fire, etc. (3/day, can't attack, take damage, cast spells, or do abilities in this form, lasts up to 1 hr)\nIf you engulf someone while you're made of fire you can do up to 3 dmg per turn upon Success, must keep Succeeding to keep this effect up\nDo a single-target touch damage attack that does a massive amount of damage 3 times a day (6 dmg on Success)\nFire AOE in a 30 ft range centered on you 3 of times a day (5 dmg on Success)"
+      }}
     ],
     levels: {
       1: { auto: [], choices: [{ type: "pick_elements", count: 2, tier: "I", label: "Pick 2 Tier I Elements" }] },
@@ -468,40 +494,63 @@ window.XRRPG_CLASS_DEFS = {
     ],
     levels: {
       1: {
-        auto: ["9 potions per day total. 30 ft throw distance.", "Mix any two potions together for combo effects!"],
-        choices: [
-          { type: "pick_potions", count: 5, label: "Pick 5 potions to know (from Tier 1 potions)" },
-          { type: "pick_two_mixes", count: 2, label: "Pick 2 two-potion mixes known" },
-          { type: "pick_three_mixes", count: 1, label: "Pick 1 three-potion mix known" }
-        ]
+        auto: [
+          "9 potions per day total. 30 ft throw distance.",
+          "Potions available: Basic Damage (unlimited), Basic Buff (unlimited), Healing I (3/day), Buff I (3/day), Weak I (3/day).",
+          "Know 2 two-potion mixes and 1 three-potion mix. Mix any two potions for combo effects (both Strength I and II variants).",
+          "It takes 30 min total to mix all potions each morning. Leftover potions from the previous day lose their effect after a Deep Rest.",
+          "Costs 1 Stamina to throw or administer a potion."
+        ],
+        choices: []
       },
       2: {
-        auto: ["17 potions per day total. 50 ft throw distance. Tier 2 potions available."],
-        choices: [
-          { type: "pick_potions", count: 3, label: "Pick 3 more potions (8 total known)" },
-          { type: "pick_two_mixes", count: 8, label: "Know up to 10 two-potion mixes total" },
-          { type: "pick_three_mixes", count: 15, label: "Know up to 16 three-potion mixes total" }
-        ]
+        auto: [
+          "17 potions per day total. 50 ft throw distance.",
+          "New potions unlocked: Corrupt I (3/day), Healing II (2/day), Fire I (3/day).",
+          "Know up to 10 two-potion mixes and 16 three-potion mixes total."
+        ],
+        choices: []
       },
       3: {
-        auto: ["23 potions per day total. 70 ft throw distance. Tier 3 potions available. Can reduce blast radius."],
-        choices: [
-          { type: "pick_potions", count: 3, label: "Pick 3 more potions (11 total known)" },
-          { type: "pick_two_mixes", count: 4, label: "Know up to 14 two-potion mixes total" },
-          { type: "pick_three_mixes", count: 4, label: "Know up to 20 three-potion mixes total" }
-        ]
+        auto: [
+          "23 potions per day total. 70 ft throw distance. Can now choose to reduce the radius of any potion blast.",
+          "New potions unlocked: Buff II (2/day), Weak II (2/day), Fire II (2/day).",
+          "Know up to 14 two-potion mixes and 20 three-potion mixes total."
+        ],
+        choices: []
       }
     },
     resources: [
-      { id: "healing_i_used", label: "Healing I used today", maxPerDay: 3, requiresPotion: "healing_i" },
-      { id: "buff_i_used", label: "Buff I used today", maxPerDay: 3, requiresPotion: "buff_i" },
-      { id: "weak_i_used", label: "Weak I used today", maxPerDay: 3, requiresPotion: "weak_i" },
-      { id: "corrupt_i_used", label: "Corrupt I used today", maxPerDay: 3, requiresPotion: "corrupt_i" },
-      { id: "healing_ii_used", label: "Healing II used today", maxPerDay: 2, requiresPotion: "healing_ii" },
-      { id: "fire_i_used", label: "Fire I used today", maxPerDay: 3, requiresPotion: "fire_i" },
-      { id: "buff_ii_used", label: "Buff II used today", maxPerDay: 2, requiresPotion: "buff_ii" },
-      { id: "weak_ii_used", label: "Weak II used today", maxPerDay: 2, requiresPotion: "weak_ii" },
-      { id: "fire_ii_used", label: "Fire II used today", maxPerDay: 2, requiresPotion: "fire_ii" }
+      { id: "healing_i_used", label: "Healing I (3 HP, no Critical)", maxPerDay: 3 },
+      { id: "buff_i_used", label: "Buff I (+1d MD on next 3 Actions)", maxPerDay: 3 },
+      { id: "weak_i_used", label: "Weak I (+1d MD vs target for next 3 Actions)", maxPerDay: 3 },
+      { id: "corrupt_i_used", label: "Corrupt I (ingested — horrible nightmares, reduced awareness)", maxPerDay: 3, minLevel: 2 },
+      { id: "healing_ii_used", label: "Healing II (5 HP, no Critical)", maxPerDay: 2, minLevel: 2 },
+      { id: "fire_i_used", label: "Fire I (10 ft AOE, 3 dmg on Success)", maxPerDay: 3, minLevel: 2 },
+      { id: "buff_ii_used", label: "Buff II (+2d MD on next 3 Actions)", maxPerDay: 2, minLevel: 3 },
+      { id: "weak_ii_used", label: "Weak II (+2d MD vs target for next 3 Actions)", maxPerDay: 2, minLevel: 3 },
+      { id: "fire_ii_used", label: "Fire II (15 ft AOE, 4 dmg on Success)", maxPerDay: 2, minLevel: 3 }
+    ],
+    twoPotionMixes: [
+      { potions: "Healing + Buff", strengthI: { minLevel: 1, name: "Buff Heal I", effect: "Heals 2 HP's worth of Injuries and gives +1d Mastery Die on next Action (10 ft radius)." }, strengthII: { minLevel: 2, name: "Buff Heal II", effect: "Heals 3 HP's worth of Injuries (not Critical) and gives +2d Mastery Dice on next Action (10 ft radius)." } },
+      { potions: "Buff + Weak", strengthI: { minLevel: 1, name: "Tentacles", effect: "You get up to 10 ft tentacles, up to 10 tentacles, can stick to any surface, are strong (1 hr)." }, strengthII: { minLevel: 3, name: "Wings", effect: "You get wings, can fly (1 hr)." } },
+      { potions: "Healing + Corrupt", strengthI: { minLevel: 2, name: "Poison I", effect: "Deals 2 dmg to target. If ingested gives Poisoned Critical Injury and does 3 dmg for 3 turns." }, strengthII: { minLevel: 2, name: "Corrupted Strength", effect: "Gives target Poisoned Severe Injury but they get +3d Mastery Dice on next 3 Actions." } },
+      { potions: "Fire + Healing", strengthI: { minLevel: 2, name: "Barkskin", effect: "Ignore next 3 HP's worth of Injuries (no Critical), heal 2 HP." }, strengthII: { minLevel: 2, name: "Stoneskin", effect: "Ignore next 5 HP's worth of Injuries, can ignore Critical Injuries (dmg spilled over 5 HP is also ignored)." } },
+      { potions: "Corrupt + Weak", strengthI: { minLevel: 2, name: "Deep Weak I", effect: "Gives +1d Mastery Die to all Actions done against everyone in range (15 ft radius)." }, strengthII: { minLevel: 3, name: "Deep Weak II", effect: "Gives +2d Mastery Die to all Actions done against everyone in range (15 ft radius)." } },
+      { potions: "Fire + Buff", strengthI: { minLevel: 2, name: "Holy Fire I", effect: "+1 dmg to attacks (1 hr)." }, strengthII: { minLevel: 3, name: "Holy Fire II", effect: "+2 dmg to attacks (1 hr)." } },
+      { potions: "Fire + Corrupt", strengthI: { minLevel: 2, name: "Concentrated Fire", effect: "15 ft explosion, does 6 dmg on Success." }, strengthII: { minLevel: 3, name: "Sticky Fire", effect: "25 ft radius explosion, 3 dmg for 3 turns to everything in radius as it coats the ground and hangs in the air." } }
+    ],
+    threePotionMixes: [
+      { potions: "Fire + Healing + Buff", strengthI: { minLevel: 2, name: "Enlarge I", effect: "You 150% the size of an ally (or yourself). End and Vig Actions get +1d Mastery Dice, deal +1 extra damage. Lasts up to a minute." }, strengthII: { minLevel: 2, name: "Enlarge II", effect: "You double the size of an ally (or yourself). End and Vig Actions get +2d Mastery Dice, deal +3 extra damage. Lasts up to a minute." } },
+      { potions: "Fire + Corrupt + Weak", strengthI: { minLevel: 2, name: "Shrink I", effect: "You 75% the size of an ally (or yourself). Int Actions get +1d Mastery Dice, speed increases by 25 ft. Lasts up to a minute." }, strengthII: { minLevel: 3, name: "Shrink II", effect: "You half the size of an ally (or yourself). Int Actions get +2d Mastery Dice, speed increases by 50 ft. Lasts up to a minute." } },
+      { potions: "Healing + Buff + Corrupt", strengthI: { minLevel: 2, name: "Charm", effect: "Target is charmed. They will go along with things you say and treat you like a close friend. If attacked by you or your allies this ends immediately." }, strengthII: { minLevel: 2, name: "Love/Hate Potion", effect: "See the Tier III Infect Emotions Mystic spell. This effect is the same." } },
+      { potions: "Healing + Weak + Corrupt", strengthI: { minLevel: 2, name: "Invisibility", effect: "The target is invisible for up to an hour, dissipates when they attack or do any ability that costs stamina." }, strengthII: { minLevel: 2, name: "Ethereality", effect: "Become ethereal, you're immaterial, can move through cracks and through substances up to 5 ft thick (can't attack, take damage, cast spells, or do abilities, lasts up to 10 min)." } },
+      { potions: "Fire + Buff + Weak", strengthI: { minLevel: 2, name: "Prettify", effect: "Makes the target hotter for up to an hour." }, strengthII: { minLevel: 3, name: "Forgetting", effect: "The target forgets a small thing or memory of your choosing, it returns after an hour." } },
+      { potions: "Buff + Weak + Corrupt", strengthI: { minLevel: 2, name: "Poison II", effect: "Deals 3 dmg to target. If ingested gives Poisoned Critical Injury and does 9 dmg for five turns." }, strengthII: { minLevel: 3, name: "Chaos", effect: "Roll on the Enchanter Chaos Table (roll a d20 and whatever you get on the Minor and Major Chaos Table happens)." } },
+      { potions: "Buff + Healing + Weak", strengthI: { minLevel: 1, name: "Speak and Comprehend Languages", effect: "For the next 10 min the target can comprehend and speak any language (certain ancient or secret languages have protections against this)." }, strengthII: { minLevel: 2, name: "Rejuvenate", effect: "The target doesn't have to breathe for up to an hour and gains half their Stamina Max immediately." } },
+      { potions: "Fire + Buff + Corrupt", strengthI: { minLevel: 2, name: "Structure Bomb", effect: "Does 3 dmg on Success but does double damage to structures (50 ft radius)." }, strengthII: { minLevel: 3, name: "Cluster Bomb", effect: "Does 5 dmg on Success, flows around corners (50 ft radius)." } },
+      { potions: "Fire + Healing + Weak", strengthI: { minLevel: 2, name: "Soothe Emotions", effect: "You can make this potion a mist to soothe the emotions of anything within a 30 ft square." }, strengthII: { minLevel: 2, name: "Sleep", effect: "You can make this potion a mist to make anything within a 30 ft square fall asleep." } },
+      { potions: "Fire + Healing + Corrupt", strengthI: { minLevel: 2, name: "Illusion", effect: "Can create an illusion up to 50 ft square." }, strengthII: { minLevel: 2, name: "Animate Object", effect: "You animate an object up to 10 ft × 10 ft × 10 ft. This object follows your orders and if it's large can deal up to 4 dmg on a Success." } }
     ]
   },
 
@@ -682,22 +731,51 @@ window.XRRPG_CLASS_DEFS = {
     stat: "Vigor or Intuition",
     archetype: "Magicians",
     chromaRequired: null,
+    spellPool: [
+      // Tier I
+      { id: "prestidigitation", name: "Prestidigitation", tier: 1, substance: "Predigitase (orange, red, green, yellow gem)", description: "Create a small magical effect: gust of wind, small illusion (2 ft square), ground rumble, open/close doors, light or put out fires, harmless sparkles, clean or soil a small area. Cannot do damage unless very creative. Range: 30 ft." },
+      { id: "mending", name: "Mending", tier: 1, substance: "Dioptase (dark green gem)", description: "Mend a non-magical, non-xenic object (2 ft square max). Can mend larger objects with multiple uses. Range: 15 ft." },
+      { id: "charm_enc", name: "Charm", tier: 1, substance: "Rose Quartz (light pink with white streaks)", concentration: true, description: "[Concentration] +2d MD bonus to interpersonal Actions for up to 10 min. Range: 15 ft." },
+      { id: "little_heal_enc", name: "Little Heal", tier: 1, substance: "Amber (golden orange gem)", description: "Heal up to 3 HP's worth of Injuries distributed among any amount of targets. Range: 30 ft." },
+      { id: "electric_zap", name: "Electric Zap", tier: 1, substance: "Barite (light blue or yellow gem)", description: "Zap a target, deals 3 dmg on Success. Range: 30 ft." },
+      { id: "comprehend_languages", name: "Comprehend and Speak Languages", tier: 1, substance: "Tincalconite (white solid gem or powder)", concentration: true, description: "[Concentration] For the next 10 min you can comprehend and speak any language (certain ancient or secret languages have protections against this)." },
+      { id: "clone_image", name: "Clone Image", tier: 1, substance: "Gypsum (soft clear gem)", concentration: true, description: "[Concentration] Create an illusory version of yourself you can command to do whatever you like. It can interact with the world physically but can't deal damage or use your xenic abilities. Range: 50 ft." },
+      { id: "breath_of_chaos", name: "Breath of Chaos", tier: 1, substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier I Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier I spell for free; every consecutive 8 you roll also lets you pick a free spell." },
+      // Tier II
+      { id: "petrify", name: "Petrify", tier: 2, substance: "Cerussite (clear white crystal shards)", concentration: true, description: "[Concentration] Partially petrify a target: +1d MD on all Actions against them for up to 1 min. Three successes against the same target = full petrification for 1 hour. Range: 30 ft." },
+      { id: "poison_enc", name: "Poison", tier: 2, substance: "Peridot (light green gem)", description: "Inflict poison upon a target: next two Actions against this target get +2d MD. Range: 30 ft." },
+      { id: "scrying", name: "Scrying", tier: 2, substance: "Purpurite (deep purple rare gem)", concentration: true, description: "[Concentration] See remotely from up to 100 ft away (eyes must be closed). Can also be used to see into the xenic plane. Range: 100 ft." },
+      { id: "illusion_enc", name: "Illusion", tier: 2, substance: "Garnet (any color)", concentration: true, description: "[Concentration] Create an illusion up to 50 ft square. Range: 100 ft." },
+      { id: "ghostwalk", name: "Ghostwalk", tier: 2, substance: "Amazonite (light blue gem)", concentration: true, description: "[Concentration] Become ethereal: you're immaterial, can move through cracks and through substances up to 5 ft thick. Can't attack, take damage, cast spells, or use abilities in this form. Lasts up to 10 min." },
+      { id: "solid_illusion", name: "Solid Illusion", tier: 2, substance: "Onidium (white, brown, black gem)", concentration: true, description: "[Concentration] Create an object out of xeon up to 30 ft square (max 1000 lbs). Must start stationary on the ground. Range: 50 ft." },
+      { id: "pocket_dimension", name: "Pocket Dimension", tier: 2, substance: "Pomjite (purple and gray gem)", description: "Create a small rift in the xenic plane: 3×3×3 ft cube, holds unlimited weight, entrance up to 3×3 ft. You can change dimensions (max 27 cubic ft). Location can't change while open. You can open it from within; no one else can. Range: 30 ft." },
+      { id: "touch_of_chaos", name: "Touch of Chaos", tier: 2, substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier II Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier II spell for free." },
+      // Tier III
+      { id: "xenic_portal", name: "Xenic Plane Portal", tier: 3, substance: "Malachite (bright green and dark green gem)", description: "Create a portal into or out of the xenic plane. Range: 15 ft." },
+      { id: "swap_places", name: "Swap Places", tier: 3, substance: "Black Rutile (clear gem with black streaks)", description: "Swap places with a person or creature, or swap two creatures. Willing targets: no Action needed (still costs Stamina), range up to 10 miles if you know both targets. Unwilling targets: must see them and do an Action Roll (100 ft range)." },
+      { id: "stasis_lock", name: "Stasis Lock", tier: 3, substance: "Wolframite (blue metal)", concentration: true, description: "[Concentration] Lock a person or thing to a fixed point in space for up to 10 minutes. Range: 50 ft." },
+      { id: "animate_object", name: "Animate Object", tier: 3, substance: "Topaz (clear crystal, many colors)", concentration: true, description: "[Concentration] Animate an object up to 10×10×10 ft. Follows your orders; large objects can deal up to 4 dmg on Success. Range: 15 ft." },
+      { id: "tiny_pocket_hut", name: "Tiny Pocket Hut", tier: 3, substance: "Pomjite (purple and gray gem)", description: "Create a large rift in the xenic plane: 20×20×20 ft Pocket Dimension with the same rules as Pocket Dimension. Range: 30 ft." },
+      { id: "enbiggen", name: "Enbiggen", tier: 3, substance: "Fluorite (green and purple gem)", concentration: true, description: "[Concentration] Double the size of an ally or yourself: weight ×8, End and Vig get +2d MD, deal +3 extra damage. Lasts up to 1 minute. Range: 15 ft." },
+      { id: "ensmallen", name: "Ensmallen", tier: 3, substance: "Fluorite (green and purple gem)", concentration: true, description: "[Concentration] Half the size of an ally or yourself: weight ÷8, Int gets +2d MD, speed +50 ft. Lasts up to 1 minute. Range: 15 ft." },
+      { id: "call_of_chaos", name: "Call of Chaos", tier: 3, substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier III Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier III spell for free." }
+    ],
     levels: {
       1: {
-        auto: ["All Tier I spells available.", "Pocket Space: Carry 3 items in pocket dimension (instantly accessible).", "Max Concentration 1, 10 min."],
+        auto: ["All Tier I spells available (see spell list below).", "Pocket Space: Carry up to 3 handheld items in a pocket dimension (rip a small hole in space anywhere; the hole can't move without closing/reopening it).", "Max Concentration 1, 10 min. Range 30 ft."],
         choices: []
       },
       2: {
-        auto: ["All Tier I and II spells available.", "Chaos: Roll d10 Minor Chaos Table (3x/day, free action).", "Max Concentration 2, 30 min."],
+        auto: ["All Tier I and II spells available.", "Chaos: Roll on the Chaos Table for 0 stamina (3×/day) — roll d10, apply the Minor Chaos Table result. You must enact the effect.", "Max Concentration 2, 30 min."],
         choices: []
       },
       3: {
-        auto: ["All Tier I, II, and III spells available.", "Controlled Chaos: Roll d20 on Minor+Major Chaos Tables, pick one (replaces Chaos, 3x/day).", "Max Concentration 3, 1 hr."],
+        auto: ["All Tier I, II, and III spells available.", "Controlled Chaos: Roll on both Minor and Major Chaos Tables (d20) and pick the result you want — 3×/day, 0 stamina. Replaces the level 2 Chaos ability.", "Max Concentration 3, 1 hr."],
         choices: []
       }
     },
     resources: [
-      { id: "chaos_uses", label: "Chaos / Controlled Chaos", maxPerDay: 3 }
+      { id: "chaos_uses", label: "Chaos / Controlled Chaos", maxPerDay: 3, minLevel: 2 }
     ]
   },
 
@@ -713,10 +791,39 @@ window.XRRPG_CLASS_DEFS = {
       { id: "green", label: "Green (Nature/Life)", bonus: "Exempt chosen targets from your AOE effects." },
       { id: "gray", label: "Gray (Shadow/Air)", bonus: "2× range on all elemental techniques." }
     ],
+    techniquePool: [
+      // Tier I
+      { id: "combust",       name: "Combust",         tier: 1, element: "Fire",  requirements: "5 ft cube air or gas around target",  description: "Target in range combusts, deals 3 dmg on Success. The air used has to be around the target." },
+      { id: "boulder",       name: "Boulder",          tier: 1, element: "Stone", requirements: "6 ft cube stone or earth",             description: "Shape a boulder into any shape or push a 6 ft square of stone or earth around in range. Can push a target." },
+      { id: "phytoheal",     name: "Phytoheal",        tier: 1, element: "Plant", requirements: "1 lb of biomass",                      description: "Shape biomass into a plant that can heal Minor Injuries." },
+      { id: "water_lash",    name: "Water Lash",       tier: 1, element: "Water", requirements: "3 ft cube water",                      description: "Use water to push or pull a target in any direction except up, or just move the water itself." },
+      { id: "flash_el",      name: "Flash",            tier: 1, element: "Light", requirements: "No xenic darkness",                    description: "Blind targets in a 25° cone; next Action against them gets +1d MD." },
+      { id: "chromespear",   name: "Chromespear",      tier: 1, element: "Metal", requirements: "1 ft cube of metal",                   description: "Use metal to deal 3 dmg to one target. Can throw a spear of metal or have the metal appear from the terrain. Can pin target on Success." },
+      { id: "chitinous_armor", name: "Chitinous Armor", tier: 1, element: "Flesh", requirements: "Biological target",                  description: "Target grows chitinous, scaly, or leathery armor; can ignore physical Minor or Severe Injuries for up to 30 seconds." },
+      { id: "wind_tunnel",   name: "Wind Tunnel",      tier: 1, element: "Air",   requirements: "10 ft cube air or gas",               description: "Push or pull a target in range in any direction, or just move the air itself." },
+      // Tier II
+      { id: "flamewave",     name: "Flamewave",        tier: 2, element: "Fire",  requirements: "20 ft cube air or gas",               description: "A wave of fire sweeps through a 20 ft cube, deals 3 dmg on Success." },
+      { id: "stonewall",     name: "Stonewall",        tier: 2, element: "Stone", requirements: "20 ft cube stone or earth",            description: "Shape stone or earth into a wall or any other shape, or push a 20 ft cube's worth around in range. Can push targets around." },
+      { id: "constrict",     name: "Constrict",        tier: 2, element: "Plant", requirements: "5 lbs of biomass",                    description: "Shape biomass into vines or another plant type that constricts one humanoid target. Spend multiple Actions to constrict a larger target." },
+      { id: "wave",          name: "Wave",             tier: 2, element: "Water", requirements: "15 ft cube water",                    description: "Use water to push or pull targets in a 30 ft area in any direction except up, or just move the water itself." },
+      { id: "lightshift",    name: "Lightshift",       tier: 2, element: "Light", requirements: "No xenic darkness",                   description: "Use light in a 30 ft square to create an illusion of the same size. Can also suck all light from that area to create deep darkness." },
+      { id: "shardbomb",     name: "Shardbomb",        tier: 2, element: "Metal", requirements: "5 ft cube of metal",                  description: "Use metal to throw spears or create a sharp flower of metal dealing 3 dmg in a 15 ft radius. Can pin targets on Success." },
+      { id: "pestilence",    name: "Pestilence",       tier: 2, element: "Flesh", requirements: "Biological targets",                  description: "All targets in up to a 30 ft sphere are attacked by a powerful disease or poison: they take 2 dmg and Actions against them get +1d MD." },
+      { id: "gust",          name: "Gust",             tier: 2, element: "Air",   requirements: "30 ft cube air or gas",               description: "Push or pull all targets in a 30 ft cube in any direction, or just move the air itself." },
+      // Tier III
+      { id: "fireball_el",   name: "Fireball",         tier: 3, element: "Fire",  requirements: "20 ft radius sphere air or gas",      description: "Massive fireball, deals 3 dmg on Success." },
+      { id: "stoneshape",    name: "Stoneshape",       tier: 3, element: "Stone", requirements: "100 ft cube stone or earth",           description: "Shape stone or earth into a wall or any other shape, or push a 100 ft cube's worth around in range. Can push targets around." },
+      { id: "create_plant",  name: "Create Plant",     tier: 3, element: "Plant", requirements: "Over 100 lbs of biomass (max 500 lbs)", description: "Use biomass to create and control whatever plants you want. Can be used for multiple Actions to create and shape bigger plants." },
+      { id: "waterbomb",     name: "Waterbomb",        tier: 3, element: "Water", requirements: "30 ft radius sphere water",            description: "Use water to push or pull targets in a 50 ft radius area in any direction except up, or just move the water itself." },
+      { id: "starbeam",      name: "Starbeam",         tier: 3, element: "Light", requirements: "No xenic darkness",                   description: "Do a laser beam that deals 4 dmg to all targets in a line." },
+      { id: "magnetize",     name: "Magnetize",        tier: 3, element: "Metal", requirements: "25 ft cube of metal",                 description: "Move metal and metal objects in range however you'd like. Deals up to 5 dmg on Success with a large amount of metal." },
+      { id: "flesh_puppet",  name: "Flesh Puppet",     tier: 3, element: "Flesh", requirements: "Biological target",                   description: "Attempt to take control of a target's body. Difficult Action; if Successful lasts up to 10 min. Does not control the target's mind." },
+      { id: "supercell",     name: "Supercell",        tier: 3, element: "Air",   requirements: "50 ft radius sphere air or gas",      description: "Move all targets in a 50 ft radius sphere in any direction, or just move the air itself." }
+    ],
     levels: {
       1: {
-        auto: ["All Tier I elemental techniques available (element must be present). Range 30 ft."],
-        choices: [{ type: "pick_one", id: "specialty", label: "Pick your elemental specialty", options: ["Red (Fire/Heat): +1 dmg on elemental attacks", "Blue (Water/Ice): +1d MD on moving targets", "Green (Nature/Life): exempt targets from AOE", "Gray (Shadow/Air): 2× range"] }]
+        auto: ["All Tier I elemental techniques available (element must be present in range). See techniques listed below. Range 30 ft."],
+        choices: [{ type: "pick_one", id: "specialty", label: "Pick your elemental specialty", options: ["Red: +1 dmg on all elemental technique attacks", "Blue: +1d MD on Actions against moving targets", "Green: may exempt any target or area from your AOE techniques", "Gray: all techniques get 2× range"] }]
       },
       2: {
         auto: ["All Tier II elemental techniques available. Range 50 ft."],

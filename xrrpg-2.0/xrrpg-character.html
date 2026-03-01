@@ -650,10 +650,11 @@
     function renderLevelAbilityOptions() {
       const cls = document.getElementById('levelClassSelect').value;
       const progression = character.class_progression || [];
-      const level = Math.min(9, Number(character.base_stats?.level || 1) + 1);
       const tier = progression.filter(item => item.class === cls).length + 1;
+      const currentLevel = Number(character.base_stats?.level || 1);
+      const level = Math.min(9, currentLevel + 1);
       document.getElementById('levelClassSummary').textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
-      document.getElementById('levelClassTrackSummary').textContent = `This will set Character Level ${level} and ${cls} Class Level ${tier}.`;
+      document.getElementById('levelClassTrackSummary').textContent = `This will set Character Level ${level} and ${cls} to Class Level ${tier}.`;
       const link = document.getElementById('levelUpClassLink');
       link.href = classUrl(cls);
       link.textContent = `Open ${cls} level-up page`;
@@ -751,58 +752,200 @@
       let html = `<div class="xrrpg-class-ability-subsection" data-class="${cls}">`;
       html += `<h3>${cls} <span class="muted">(Class Level ${classLevel})</span></h3>`;
 
+      // Basic power (Adepts) — show current tier description
       if (def.basicPower) {
         const tier = Math.min(classLevel, def.basicPower.tiers.length - 1);
         html += `<div class="xrrpg-ability-row"><strong>${def.basicPower.name}</strong> <span class="xrrpg-tier-badge">T${tier}</span></div>`;
         html += `<p class="xrrpg-ability-desc">${def.basicPower.tiers[tier]}</p>`;
       }
 
+      // Chosen advanced powers (Adepts) — show tier and full description
       if (choices.advanced_powers?.length) {
         const tierCount = {};
         for (const p of choices.advanced_powers) tierCount[p] = (tierCount[p] || 0) + 1;
         for (const [name, tier] of Object.entries(tierCount)) {
           const power = def.advancedPowers?.find(p => p.name === name);
-          const desc = power?.tiers[tier - 1] || '';
           html += `<div class="xrrpg-ability-row"><strong>${name}</strong> <span class="xrrpg-tier-badge">T${tier}</span></div>`;
+          const desc = power?.tiers[tier - 1] || '';
           if (desc) html += `<p class="xrrpg-ability-desc">${desc}</p>`;
         }
       }
 
+      // Auto-granted abilities — cumulative from level 1 through classLevel
       if (def.levels) {
         for (let lvl = 1; lvl <= classLevel; lvl++) {
           const levelDef = def.levels[lvl] || def.levels['default'];
-          if (!levelDef?.auto) continue;
+          if (!levelDef?.auto?.length) continue;
           for (const ability of levelDef.auto) {
-            html += `<div class="xrrpg-ability-row"><strong>${ability}</strong></div>`;
+            html += `<div class="xrrpg-ability-row">${ability}</div>`;
           }
         }
       }
 
-      if (choices.deity) html += `<div class="xrrpg-ability-row">Deity: <strong>${choices.deity}</strong></div>`;
-      if (choices.devil_name) html += `<div class="xrrpg-ability-row">Devil: <strong>${choices.devil_name}</strong></div>`;
-      if (choices.devil_emotion) html += `<div class="xrrpg-ability-row">Emotion: <strong>${choices.devil_emotion}</strong></div>`;
-      if (choices.specialized_powers?.length) {
-        html += `<div class="xrrpg-ability-row">Specialized Powers: ${choices.specialized_powers.join(', ')}</div>`;
+      // Sorcerer: devil name + description, emotion + ability
+      if (choices.devil_name) {
+        html += `<div class="xrrpg-ability-row"><strong>Devil:</strong> ${choices.devil_name}</div>`;
+        if (choices.devil_description) html += `<p class="xrrpg-ability-desc">${choices.devil_description}</p>`;
       }
-      if (choices.spells_known?.length) {
-        html += `<div class="xrrpg-ability-row">Spells: ${choices.spells_known.join(', ')}</div>`;
-      }
-      if (choices.spirits?.length) {
-        for (const s of choices.spirits) {
-          html += `<div class="xrrpg-ability-row"><strong>${s.type}</strong> <span class="xrrpg-tier-badge">T${s.tier}</span></div>`;
-        }
-      }
-      if (choices.elements?.length) {
-        html += `<div class="xrrpg-ability-row">Elements: ${choices.elements.map(e => `${e.name} (${e.tier})`).join(', ')}</div>`;
-      }
-      if (choices.specialty) html += `<div class="xrrpg-ability-row">Specialty: <strong>${choices.specialty}</strong></div>`;
-      if (choices.effects_known?.length) {
-        html += `<div class="xrrpg-ability-row">Effects Known: ${choices.effects_known.join(', ')}</div>`;
+      if (choices.devil_emotion) {
+        const emotion = def.devilEmotions?.find(e => e.label === choices.devil_emotion);
+        html += `<div class="xrrpg-ability-row"><strong>Devil Emotion:</strong> ${choices.devil_emotion}</div>`;
+        if (emotion?.ability) html += `<p class="xrrpg-ability-desc">${emotion.ability}</p>`;
       }
 
+      // Sorcerer: specialized powers with full descriptions
+      if (choices.specialized_powers?.length) {
+        html += `<div class="xrrpg-ability-row"><strong>Specialized Powers:</strong></div>`;
+        for (const pName of choices.specialized_powers) {
+          const power = def.specializedPowers?.find(p => p.name === pName);
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${pName}</strong></div>`;
+          if (power?.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${power.description}</p>`;
+        }
+      }
+
+      // Cleric/Warlock deity with ability
+      if (choices.deity) {
+        html += `<div class="xrrpg-ability-row"><strong>Deity:</strong> ${choices.deity}</div>`;
+        const deityAbility = def.deityAbilities?.[choices.deity];
+        if (deityAbility) html += `<p class="xrrpg-ability-desc">${deityAbility}</p>`;
+      }
+
+      // Elementalist specialty
+      if (choices.specialty) html += `<div class="xrrpg-ability-row"><strong>Specialty:</strong> ${choices.specialty}</div>`;
+
+      // Known spells (Bard, Physic, Possessor) — with full descriptions
+      if (choices.spells_known?.length && def.spellPool && cls !== 'Enchanter') {
+        html += `<div class="xrrpg-ability-row"><strong>Spells Known (${choices.spells_known.length}):</strong></div>`;
+        for (const spellName of choices.spells_known) {
+          const spell = def.spellPool.find(s => s.name === spellName);
+          const tags = [spell?.color ? `[${spell.color}]` : null, spell?.concentration ? '[Conc]' : null, spell?.aoe ? '[AOE]' : null].filter(Boolean).join(' ');
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${spellName}</strong>${tags ? ` <span class="muted">${tags}</span>` : ''}</div>`;
+          if (spell?.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${spell.description}</p>`;
+        }
+      }
+
+      // Enchanter: show ALL spells available at current tier
+      if (cls === 'Enchanter' && def.spellPool) {
+        const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
+        for (let t = 1; t <= maxTier; t++) {
+          const tierSpells = def.spellPool.filter(s => s.tier === t);
+          if (!tierSpells.length) continue;
+          html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Spells:</strong></div>`;
+          for (const spell of tierSpells) {
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${spell.name}</strong>${spell.concentration ? ' <span class="muted">[Conc]</span>' : ''}${spell.substance ? ` — <em>${spell.substance}</em>` : ''}</div>`;
+            html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${spell.description}</p>`;
+          }
+        }
+      }
+
+      // Elementalist: show ALL techniques available at current tier
+      if (cls === 'Elementalist' && def.techniquePool) {
+        const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
+        for (let t = 1; t <= maxTier; t++) {
+          const tierTechs = def.techniquePool.filter(tech => tech.tier === t);
+          if (!tierTechs.length) continue;
+          html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Techniques:</strong></div>`;
+          for (const tech of tierTechs) {
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${tech.name}</strong> <span class="xrrpg-tier-badge">${tech.element}</span> <span class="muted">(Req: ${tech.requirements})</span></div>`;
+            html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${tech.description}</p>`;
+          }
+        }
+      }
+
+      // Demititan: chosen elements with progressive level abilities
+      if (choices.elements?.length) {
+        html += `<div class="xrrpg-ability-row"><strong>Elements:</strong></div>`;
+        for (const e of choices.elements) {
+          const elDef = def.elementPool?.find(el => el.name === e.name);
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${e.name}</strong> <span class="xrrpg-tier-badge">Tier ${e.tier}</span>${elDef?.focus ? ` <span class="muted">(${elDef.focus})</span>` : ''}</div>`;
+          if (elDef?.levelAbilities) {
+            for (let lvl = 1; lvl <= classLevel; lvl++) {
+              if (elDef.levelAbilities[lvl]) {
+                html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;"><strong>${lvl}+</strong> ${elDef.levelAbilities[lvl].replace(/\n/g, '<br>')}</p>`;
+              }
+            }
+          } else if (elDef?.description) {
+            html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${elDef.description}</p>`;
+          }
+        }
+      }
+
+      // Mystic/Summoner: chosen spirits with type info
+      if (choices.spirits?.length) {
+        html += `<div class="xrrpg-ability-row"><strong>Spirits:</strong></div>`;
+        for (const s of choices.spirits) {
+          const spiritDef = def.spiritTypes?.find(st => st.name === s.type);
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${s.type}</strong> <span class="xrrpg-tier-badge">T${s.tier}</span>${spiritDef?.focus ? ` <span class="muted">(${spiritDef.focus})</span>` : ''}</div>`;
+          if (spiritDef?.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${spiritDef.description}</p>`;
+        }
+      }
+
+      // Brawler: effects known with descriptions
+      if (choices.effects_known?.length) {
+        html += `<div class="xrrpg-ability-row"><strong>Effects Known:</strong></div>`;
+        for (const eName of choices.effects_known) {
+          const eDef = def.effectPool?.find(e => e.name === eName);
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${eName}</strong></div>`;
+          if (eDef?.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${eDef.description}</p>`;
+        }
+      }
+
+      // Alchemist: show potions and mixes available at current class level
+      if (cls === 'Alchemist' && def.potionPool) {
+        html += `<div class="xrrpg-ability-row"><strong>Potions Available:</strong></div>`;
+        for (const p of def.potionPool) {
+          if (p.minLevel > classLevel) continue;
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${p.name}</strong> <span class="muted">(${p.unlimited ? 'unlimited' : `${p.brewedPerDay}/day`})</span></div>`;
+          html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${p.description}</p>`;
+        }
+
+        // Two-Potion Mixes
+        const availableTwoMixes = (def.twoPotionMixes || []).filter(m =>
+          m.strengthI.minLevel <= classLevel || m.strengthII.minLevel <= classLevel
+        );
+        if (availableTwoMixes.length) {
+          html += `<div class="xrrpg-ability-row" style="margin-top:0.5rem;"><strong>Two-Potion Mixes:</strong></div>`;
+          for (const m of availableTwoMixes) {
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${m.potions}</strong></div>`;
+            if (m.strengthI.minLevel <= classLevel) {
+              html += `<p class="xrrpg-ability-desc" style="margin-left:2rem;"><strong>Strength I — ${m.strengthI.name}:</strong> ${m.strengthI.effect}</p>`;
+            }
+            if (m.strengthII.minLevel <= classLevel) {
+              html += `<p class="xrrpg-ability-desc" style="margin-left:2rem;"><strong>Strength II — ${m.strengthII.name}:</strong> ${m.strengthII.effect}</p>`;
+            }
+          }
+        }
+
+        // Three-Potion Mixes
+        const availableThreeMixes = (def.threePotionMixes || []).filter(m =>
+          m.strengthI.minLevel <= classLevel || m.strengthII.minLevel <= classLevel
+        );
+        if (availableThreeMixes.length) {
+          html += `<div class="xrrpg-ability-row" style="margin-top:0.5rem;"><strong>Three-Potion Mixes:</strong></div>`;
+          for (const m of availableThreeMixes) {
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${m.potions}</strong></div>`;
+            if (m.strengthI.minLevel <= classLevel) {
+              html += `<p class="xrrpg-ability-desc" style="margin-left:2rem;"><strong>Strength I — ${m.strengthI.name}:</strong> ${m.strengthI.effect}</p>`;
+            }
+            if (m.strengthII.minLevel <= classLevel) {
+              html += `<p class="xrrpg-ability-desc" style="margin-left:2rem;"><strong>Strength II — ${m.strengthII.name}:</strong> ${m.strengthII.effect}</p>`;
+            }
+          }
+        }
+      }
+
+      // Resource trackers — gated by minLevel, deity, emotion, and power requirements
       const resources = def.resources || [];
       const resVals = choices.resources || {};
       for (const res of resources) {
+        if (res.minLevel && classLevel < res.minLevel) continue;
+        if (res.requiresDeity && choices.deity !== res.requiresDeity) continue;
+        if (res.requiresEmotion && choices.devil_emotion !== res.requiresEmotion) continue;
+        if (res.requiresPower && !(choices.specialized_powers || []).includes(res.requiresPower)) continue;
+        if (res.requiresPotion) {
+          const pot = def.potionPool?.find(p => p.id === res.requiresPotion);
+          if (!pot || pot.minLevel > classLevel) continue;
+        }
         const current = resVals[res.id] || 0;
         html += `<div class="xrrpg-resource-tracker">
           <span class="label">${res.label}</span>
@@ -828,65 +971,124 @@
       if (!levelDef?.choices?.length) return;
 
       const choices = getClassChoices(cls);
+      let html = '';
 
       for (const choice of levelDef.choices) {
         if (choice.type === 'pick_advanced_power') {
           const pool = def.advancedPowers || def[choice.pool] || [];
-          const opts = pool.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-          container.innerHTML += `<label>Choose Advanced Power:<br>
+          const opts = pool.map(p => `<option value="${p.name}" data-desc="${(p.tiers[0] || '').replace(/"/g, '&quot;')}">${p.name}</option>`).join('');
+          html += `<div class="xrrpg-choice-block"><label><strong>Choose Advanced Power:</strong><br>
             <select data-choice-id="advanced_power"><option value="">-- Select --</option>${opts}</select>
-          </label>`;
+            <p class="xrrpg-ability-desc xrrpg-choice-desc" style="margin-top:0.3rem;"></p>
+          </label></div>`;
+
+        } else if (choice.type === 'pick_specialized_powers') {
+          const pool = def.specializedPowers || [];
+          const already = choices.specialized_powers || [];
+          const checks = pool.map(p => {
+            const alreadyPicked = already.includes(p.name);
+            return `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="specialized_power" value="${p.name}" ${alreadyPicked ? 'checked disabled' : ''}> <strong>${p.name}</strong><br><span class="xrrpg-ability-desc">${p.description}</span></label>`;
+          }).join('');
+          html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} Specialized Powers`} (${already.length} already chosen):</legend>${checks}</fieldset>`;
 
         } else if (choice.type === 'pick_one') {
-          const opts = choice.options.map(o => `<option value="${o}">${o}</option>`).join('');
-          container.innerHTML += `<label>${choice.label}:<br>
-            <select data-choice-id="${choice.id}"><option value="">-- Select --</option>${opts}</select>
-          </label>`;
+          if (choice.id === 'devil_emotion') {
+            const opts = (def.devilEmotions || []).map(e => `<option value="${e.label}" data-ability="${(e.ability || '').replace(/"/g, '&quot;')}">${e.label}</option>`).join('');
+            html += `<div class="xrrpg-choice-block"><label><strong>${choice.label}:</strong><br>
+              <select data-choice-id="${choice.id}"><option value="">-- Select --</option>${opts}</select>
+              <p class="xrrpg-ability-desc xrrpg-choice-desc" style="margin-top:0.3rem;"></p>
+            </label></div>`;
+          } else {
+            const opts = choice.options.map(o => `<option value="${o}">${o}</option>`).join('');
+            html += `<div class="xrrpg-choice-block"><label><strong>${choice.label}:</strong><br>
+              <select data-choice-id="${choice.id}"><option value="">-- Select --</option>${opts}</select>
+            </label></div>`;
+          }
 
         } else if (choice.type === 'text') {
-          container.innerHTML += `<label>${choice.label}:<br>
-            <input type="text" data-choice-id="${choice.id}" value="${choices[choice.id] || ''}">
-          </label>`;
+          html += `<div class="xrrpg-choice-block"><label><strong>${choice.label}:</strong><br>
+            <input type="text" data-choice-id="${choice.id}" value="${(choices[choice.id] || '').replace(/"/g, '&quot;')}" style="width:100%;">
+          </label></div>`;
 
         } else if (choice.type === 'pick_spells') {
           const pool = def.spellPool || [];
           const known = choices.spells_known || [];
           const filtered = pool.filter(s => !choice.maxTier || s.tier <= choice.maxTier);
-          const checks = filtered.map(s =>
-            `<label><input type="checkbox" data-choice-id="spell" value="${s.name}" ${known.includes(s.name) ? 'checked' : ''}> ${s.name} (T${s.tier})</label>`
-          ).join('<br>');
-          container.innerHTML += `<fieldset><legend>Pick ${choice.count} spells:</legend>${checks}</fieldset>`;
+          const checks = filtered.map(s => {
+            const alreadyKnown = known.includes(s.name);
+            const tags = [s.color ? `[${s.color}]` : null, s.concentration ? '[Conc]' : null, s.aoe ? '[AOE]' : null].filter(Boolean).join(' ');
+            return `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="spell" value="${s.name}" ${alreadyKnown ? 'checked disabled' : ''}> <strong>${s.name}</strong>${tags ? ` <span class="muted">${tags}</span>` : ''}<br><span class="xrrpg-ability-desc">${s.description}</span></label>`;
+          }).join('');
+          html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} spells`} (${known.length} already known):</legend>${checks}</fieldset>`;
 
         } else if (choice.type === 'pick_spirits') {
-          const pool = def.spiritPool || [];
-          const checks = pool.map(s =>
-            `<label><input type="checkbox" data-choice-id="spirit" value="${s}"> ${s}</label>`
-          ).join('<br>');
-          container.innerHTML += `<fieldset><legend>Pick ${choice.count} spirits:</legend>${checks}</fieldset>`;
+          const pool = def.spiritTypes || [];
+          if (!pool.length) {
+            html += `<div class="xrrpg-choice-block"><p class="muted">No spirit types defined for this class.</p></div>`;
+          } else {
+            const checks = pool.map(s => `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="spirit" value="${s.name}"> <strong>${s.name}</strong> <span class="muted">(${s.focus})</span><br><span class="xrrpg-ability-desc">${s.description}</span></label>`).join('');
+            html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} spirits`}:</legend>${checks}</fieldset>`;
+          }
 
         } else if (choice.type === 'upgrade_spirits') {
           const current = (choices.spirits || []).filter(s => s.tier < 3);
-          const checks = current.map(s =>
-            `<label><input type="checkbox" data-choice-id="upgrade_spirit" value="${s.type}"> ${s.type} (currently T${s.tier})</label>`
-          ).join('<br>');
-          container.innerHTML += `<fieldset><legend>Upgrade ${choice.count} spirits to next tier:</legend>${checks}</fieldset>`;
+          if (!current.length) {
+            html += `<div class="xrrpg-choice-block"><p class="muted">No spirits eligible for upgrade (need tier &lt; 3).</p></div>`;
+          } else {
+            const checks = current.map(s => `<label><input type="checkbox" data-choice-id="upgrade_spirit" value="${s.type}"> <strong>${s.type}</strong> (T${s.tier} → T${s.tier + 1})</label>`).join('<br>');
+            html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Upgrade ${choice.count} spirits to next tier`}:</legend>${checks}</fieldset>`;
+          }
 
         } else if (choice.type === 'pick_elements') {
-          const pool = def.elementPool?.filter(e => e.tier === choice.tier) || [];
-          const checks = pool.map(e =>
-            `<label><input type="checkbox" data-choice-id="element" value="${e.name}"> ${e.name}</label>`
-          ).join('<br>');
-          container.innerHTML += `<fieldset><legend>Pick ${choice.count} ${choice.tier} elements:</legend>${checks}</fieldset>`;
+          const pool = (def.elementPool || []).filter(e => e.tier === choice.tier);
+          const already = (choices.elements || []).map(e => e.name);
+          if (!pool.length) {
+            html += `<div class="xrrpg-choice-block"><p class="muted">No Tier ${choice.tier} elements available.</p></div>`;
+          } else {
+            const checks = pool.map(e => {
+              const alreadyPicked = already.includes(e.name);
+              // Show the first unlocked level ability as preview (1+ for T1, 2+ for T2)
+              const firstLvl = e.tier === 'I' ? 1 : 2;
+              const previewText = e.levelAbilities?.[firstLvl]?.replace(/\n/g, '<br>') || e.description || '';
+              return `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="element" value="${e.name}" ${alreadyPicked ? 'checked disabled' : ''}> <strong>${e.name}</strong>${e.focus ? ` <span class="muted">(${e.focus})</span>` : ''}<br><span class="xrrpg-ability-desc">${previewText}</span></label>`;
+            }).join('');
+            html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} Tier ${choice.tier} Elements`}:</legend>${checks}</fieldset>`;
+          }
 
         } else if (choice.type === 'pick_effects') {
           const pool = def.effectPool || [];
           const known = choices.effects_known || [];
-          const checks = pool.map(e =>
-            `<label><input type="checkbox" data-choice-id="effect" value="${e}" ${known.includes(e) ? 'checked' : ''}> ${e}</label>`
-          ).join('<br>');
-          container.innerHTML += `<fieldset><legend>Pick ${choice.count} effects:</legend>${checks}</fieldset>`;
+          const checks = pool.map(e => `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="effect" value="${e.name}" ${known.includes(e.name) ? 'checked' : ''}> <strong>${e.name}</strong><br><span class="xrrpg-ability-desc">${e.description}</span></label>`).join('');
+          html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} effects`}:</legend>${checks}</fieldset>`;
         }
       }
+
+      container.innerHTML = html;
+
+      // Enforce count limits: disable further checkboxes once limit reached
+      container.querySelectorAll('.xrrpg-pick-fieldset').forEach(fs => {
+        const limit = parseInt(fs.dataset.limit || '0');
+        if (!limit) return;
+        const boxes = Array.from(fs.querySelectorAll('input[type=checkbox]:not([disabled])'));
+        const enforce = () => {
+          const checked = boxes.filter(b => b.checked).length;
+          boxes.forEach(b => { if (!b.checked) b.disabled = checked >= limit; });
+        };
+        boxes.forEach(b => b.addEventListener('change', enforce));
+        enforce();
+      });
+
+      // Show description when a select with data-attr options changes
+      container.querySelectorAll('select[data-choice-id]').forEach(sel => {
+        const descEl = sel.parentElement.querySelector('.xrrpg-choice-desc');
+        if (!descEl) return;
+        const update = () => {
+          const opt = sel.options[sel.selectedIndex];
+          descEl.textContent = opt?.dataset.desc || opt?.dataset.ability || '';
+        };
+        sel.addEventListener('change', update);
+        update();
+      });
     }
 
     function readLevelChoices(cls, classLevel) {
@@ -1237,7 +1439,7 @@
         return;
       }
 
-      await addHistory('level_up', `Level ${level}: ${cls} advanced to class level ${tier}.`, { class: cls, class_level: tier, level, undo: { character: prevState } });
+      await addHistory('level_up', `${cls} advanced to class level ${tier}.`, { class: cls, class_level: tier, undo: { character: prevState } });
       levelModal.classList.add('hidden');
       await loadCharacter();
       document.getElementById('status').textContent = `Level up applied: ${cls} class level ${tier}.`;
