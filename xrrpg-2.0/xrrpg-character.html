@@ -843,11 +843,15 @@
         if (deityAbility) part += `<p class="xrrpg-ability-desc">${deityAbility}</p>`;
         headerParts.push(part);
       }
-      if (cls === 'Possessor' && def.baseRange?.[classLevel]) {
+      if (def.baseRange?.[classLevel]) {
         headerParts.push(`<div class="xrrpg-ability-row"><span class="muted">Base Range <strong>(r)</strong> = <strong>${def.baseRange[classLevel]} ft</strong></span></div>`);
       }
       if (cls === 'Elementalist' && def.rangeByLevel?.[classLevel]) {
         headerParts.push(`<div class="xrrpg-ability-row"><span class="muted">Current Range: <strong>${def.rangeByLevel[classLevel]} ft</strong></span></div>`);
+      }
+      if (cls === 'Mystic' && def.spiritRange) {
+        const maxRange = def.spiritRange[classLevel] || def.spiritRange[Math.max(...Object.keys(def.spiritRange).map(Number).filter(k => k <= classLevel))];
+        if (maxRange) headerParts.push(`<div class="xrrpg-ability-row"><span class="muted">Spirit Range: <strong>${maxRange} ft</strong></span></div>`);
       }
       if (cls === 'Enchanter' && def.substanceNote) {
         headerParts.push(`<div class="xrrpg-ability-row"><span class="muted">${def.substanceNote}</span></div>`);
@@ -879,8 +883,10 @@
       if (choices.advanced_powers?.length) {
         const tierCount = {};
         for (const p of choices.advanced_powers) tierCount[p] = (tierCount[p] || 0) + 1;
-        for (const [name, tier] of Object.entries(tierCount)) {
+        for (const [name, rawTier] of Object.entries(tierCount)) {
           const power = def.advancedPowers?.find(p => p.name === name);
+          const maxTier = power?.tiers?.length || 3;
+          const tier = Math.min(rawTier, maxTier);
           const desc = power?.tiers[tier - 1] || '';
           html += `<div class="xrrpg-ability-bubble">`;
           html += `<div class="xrrpg-ability-row"><strong>${name}</strong> <span class="xrrpg-tier-badge">T${tier}</span></div>`;
@@ -916,7 +922,7 @@
             }
             html += `</div>`;
           }
-        } else {
+        } else if (def.archetype !== 'Adepts') {
           for (let lvl = 1; lvl <= classLevel; lvl++) {
             for (const auto of def.levels[lvl]?.auto || []) {
               const text = typeof auto === 'string' ? auto : auto.text;
@@ -972,12 +978,13 @@
           const spell = def.spellPool.find(s => s.name === spellName);
           const tags = [spell?.color ? `[${spell.color}]` : null, spell?.concentration ? '[Conc]' : null, spell?.aoe ? '[AOE]' : null].filter(Boolean).join(' ');
           let rangeText = '';
-          if (cls === 'Possessor' && spell?.range && def.baseRange?.[classLevel]) {
+          if (spell?.range && def.baseRange?.[classLevel]) {
             const r = def.baseRange[classLevel];
             if (spell.range === '0') rangeText = 'Self';
             else if (spell.range === 'r') rangeText = `${r} ft`;
             else if (spell.range === 'r x 2') rangeText = `${r * 2} ft`;
             else if (spell.range === 'r / 2') rangeText = `${Math.floor(r / 2)} ft`;
+            else if (spell.range === 'r x 4') rangeText = `${r * 4} ft`;
             else rangeText = spell.range;
           }
           html += `<div class="xrrpg-ability-row" style="margin-left:1rem;">`;
@@ -1010,7 +1017,8 @@
           html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Spells:</strong></div>`;
           for (const spell of tierSpells) {
             const rangeTag = spell.range ? ` <span class="muted">[${spell.range}]</span>` : '';
-            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${spell.name}</strong>${spell.concentration ? ' <span class="muted">[Conc]</span>' : ''}${rangeTag}${spell.substance ? ` — <em>${spell.substance}</em>` : ''}</div>`;
+            const rollNum = spell.roll ? `<span class="muted" style="margin-right:0.4rem;">${spell.roll}.</span>` : '';
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;">${rollNum}<strong>${spell.name}</strong>${spell.concentration ? ' <span class="muted">[Conc]</span>' : ''}${rangeTag}${spell.substance ? ` — <em>${spell.substance}</em>` : ''}</div>`;
             html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${spell.description}</p>`;
           }
           html += `</div>`;
@@ -1450,11 +1458,23 @@
         choices.effects_known = def.effectPool.map(e => e.name);
       }
 
-      // Adept levels 2-3: auto-advance the first picked power to next tier
+      // Sorcerer L4: auto-grant all specialized powers
+      if (def?.specializedPowers && classLevel >= 4) {
+        choices.specialized_powers = def.specializedPowers.map(p => p.name);
+      }
+
+      // Magician L4 (Bard, Physic, Possessor): auto-grant all spells
+      if (def?.spellPool && classLevel >= 4 && def.archetype === 'Magicians' && cls !== 'Enchanter' && cls !== 'Alchemist') {
+        choices.spells_known = def.spellPool.map(s => s.name);
+      }
+
+      // Adept levels 2-3: auto-advance the first picked power to next tier (max tier 3)
       if (def?.basicPower && classLevel >= 2 && classLevel <= 3 && choices.advanced_powers?.length > 0) {
         const firstPower = choices.advanced_powers[0];
+        const power = def.advancedPowers?.find(p => p.name === firstPower);
+        const maxTier = power?.tiers?.length || 3;
         const currentCount = choices.advanced_powers.filter(p => p === firstPower).length;
-        if (currentCount < classLevel) {
+        if (currentCount < classLevel && currentCount < maxTier) {
           choices.advanced_powers.push(firstPower);
         }
       }
