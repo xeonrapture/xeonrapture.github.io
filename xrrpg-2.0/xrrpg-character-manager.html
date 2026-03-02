@@ -394,7 +394,7 @@
         row.innerHTML = `
           <td>${c.name}</td>
           <td>${s.level || 1}</td>
-          <td>${(c.class_progression || []).map(p => `${p.class} T${p.tier}`).join(', ') || '—'}</td>
+          <td>${(() => { const highest = {}; (c.class_progression || []).forEach(p => { if (!highest[p.class] || p.tier > highest[p.class]) highest[p.class] = p.tier; }); const entries = Object.entries(highest); return entries.length ? entries.map(([cls, tier]) => `${cls} T${tier}`).join(', ') : '—'; })()}</td>
           <td>${s.credits || 0}</td>
           <td>${s.vigor || 0}</td>
           <td>${s.endurance || 0}</td>

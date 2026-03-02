@@ -375,7 +375,7 @@ window.XRRPG_CLASS_DEFS = {
       { id: "bend_fate", name: "Bend Fate", descriptions: [
         "Take a consequence from a willing target within 15 ft.",
         "Take a consequence from a willing target within 15 ft, or from an unwilling target within 30 ft.",
-        "Take a consequence from any target within 50 ft. Can also transfer it to a different target (3x/day)."
+        "Take a consequence from a willing or unwilling target within 50 ft. Can also transfer it to a different target instead of taking it yourself (3x/day)."
       ]},
       { id: "invigorate", name: "Invigorate", descriptions: [
         "Grant +1d MD to the next Action of any visible target.",
@@ -408,9 +408,9 @@ window.XRRPG_CLASS_DEFS = {
         "Heal target 5 HP's worth of Injuries. Can heal Critical Injuries (3x/day)."
       ]},
       { id: "chaos", name: "Chaos", descriptions: [
-        "Roll a d8 and cast the corresponding Tier I <a href='/xr/XRRGP+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> spell without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier I spell for free; every consecutive 8 also lets you pick a free spell.",
-        "Roll a d8 and cast the corresponding Tier II <a href='/xr/XRRGP+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> spell without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier II spell for free; every consecutive 8 also lets you pick a free spell.",
-        "Roll a d8 and cast the corresponding Tier III <a href='/xr/XRRGP+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> spell without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier III spell for free; every consecutive 8 also lets you pick a free spell."
+        "Roll a d8 and cast the corresponding Tier I <a href='https://xeonrapture.com/xr/XRRPG+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> Chaos spell (1. Prestidigitation, 2. Mending, 3. Charm, 4. Little Heal, 5. Electric Zap, 6. Comprehend Languages, 7. Clone Image, 8. Breath of Chaos) without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier I spell for free; every consecutive 8 also lets you pick a free spell.",
+        "Roll a d8 and cast the corresponding Tier II <a href='https://xeonrapture.com/xr/XRRPG+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> Chaos spell (1. Petrify, 2. Poison, 3. Scrying, 4. Illusion, 5. Ghostwalk, 6. Solid Illusion, 7. Pocket Dimension, 8. Touch of Chaos) without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier II spell for free; every consecutive 8 also lets you pick a free spell.",
+        "Roll a d8 and cast the corresponding Tier III <a href='https://xeonrapture.com/xr/XRRPG+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> Chaos spell (1. Xenic Plane Portal, 2. Swap Places, 3. Stasis Lock, 4. Animate Object, 5. Tiny Pocket Hut, 6. Enbiggen, 7. Ensmallen, 8. Call of Chaos) without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier III spell for free; every consecutive 8 also lets you pick a free spell."
       ]}
     ],
     devilEmotions: [
@@ -1251,6 +1251,24 @@ window.XRRPG_CLASS_DEFS = {
     stat: "Wit or Intuition",
     archetype: "Technologists",
     chromaRequired: null,
+    emitterNote: "Emitters are small devices you throw (20 ft by hand) or launch from a gun. They stick to floors, walls, or ceilings, stay tethered to you, and return when spent or dismissed. Upgraded emitters can also perform the abilities of their lower-tier counterparts.",
+    emitterPool: [
+      { id: "blue_shield",        name: "Blue Shield",           tier: 1, description: "Blocks xenic damage (can be destroyed by sustained fire). Does not block sight. Ignore Minor Injuries from xenic sources; Severe Injuries break it." },
+      { id: "onyx_shield",        name: "Onyx Shield",           tier: 1, description: "Must be a flat surface (no curves). Blocks physical, onyx, and obsidian damage. Ignore Minor Injuries from physical sources; Severe Injuries break it. Surface holds up to 2,000 lbs." },
+      { id: "healing_zone",       name: "Healing Zone",          tier: 1, description: "Heals a Minor Injury for everyone in range every round it's active." },
+      { id: "damage_zone",        name: "Damage Zone",           tier: 1, description: "Deals 1 damage to everyone in range every round it's active." },
+      { id: "force_wall",         name: "Force Wall",            tier: 2, description: "Creates a wall or chamber of invisible force in range. Takes strength to overcome." },
+      { id: "cold_heat_wall",     name: "Cold/Heat Wall",        tier: 2, description: "Creates a wall in range. Deals 2 dmg to anyone who passes through it." },
+      { id: "projection_emitter", name: "Projection Emitter",    tier: 2, description: "Projects a realistic illusion; others may attempt to discern that it's not real." },
+      { id: "buff_zone",          name: "Buff Zone",             tier: 2, description: "Empowers everyone in range: +1d Mastery Die to all Actions." },
+      { id: "debuff_zone",        name: "Debuff Zone",           tier: 2, description: "Debuffs everyone in range: +1d Mastery Die on all Actions done against targets in range." },
+      { id: "atmosphere_zone",    name: "Atmosphere Zone",       tier: 2, description: "Generates breathable atmosphere in range." },
+      { id: "adv_onyx_shield",    name: "Advanced Onyx Shield",  tier: 3, description: "Full box of onyx to contain or protect. Ignore up to Severe Injuries from physical sources; breaks on Critical Injuries." },
+      { id: "adv_blue_shield",    name: "Advanced Blue Shield",  tier: 3, description: "Intense xenic shield. Ignore up to Severe Injuries from xenic sources; breaks on Critical Injuries." },
+      { id: "adv_healing_zone",   name: "Advanced Healing Zone", tier: 3, description: "Heals everyone in range up to 2 HP's worth of Injuries per turn it's active." },
+      { id: "adv_buff_zone",      name: "Advanced Buff Zone",    tier: 3, description: "Empowers everyone in range: +2d Mastery Dice to all Actions." },
+      { id: "adv_debuff_zone",    name: "Advanced Debuff Zone",  tier: 3, description: "Debuffs everyone in range: +2d Mastery Dice on all Actions done against targets in range." }
+    ],
     levels: {
       1: {
         auto: ["All Tier I emitters available. 3 active emitters max. Duration 1 min. Radius 10 ft. Gun range 40 ft.", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
@@ -1272,6 +1290,28 @@ window.XRRPG_CLASS_DEFS = {
     stat: "Any",
     archetype: "Technologists",
     chromaRequired: null,
+    bombNote: "Explosives can be thrown by hand (20 ft) or launched from a cannon. Effects don't flow around corners unless stated. Basic Damage and Basic Heal bombs are unlimited and don't count toward the daily limit. Higher-tier bombs include all lower-tier bomb capabilities.",
+    bombPool: [
+      { id: "basic_damage",    name: "Basic Damage",      tier: 1, unlimited: true,  description: "Deals 1 damage on Success." },
+      { id: "basic_heal",      name: "Basic Heal",        tier: 1, unlimited: true,  description: "Heals 1 HP worth of Injuries to everyone in range." },
+      { id: "heat",            name: "Heat",              tier: 1, description: "Deals 3 damage on Success. Cannon can't throw Heat Bombs next turn." },
+      { id: "cold",            name: "Cold",              tier: 1, description: "Inflicts Frozen debuff (+1d Mastery Die on next Action against them). Deals 2 dmg on Success." },
+      { id: "obsidian",        name: "Obsidian",          tier: 1, description: "Throws out small black daggers that do physical damage." },
+      { id: "healing",         name: "Healing",           tier: 1, description: "Heals up to 3 HP's worth of Injuries to everyone in range." },
+      { id: "sticky",          name: "Sticky",            tier: 1, description: "Everyone caught in the blast has half movement for the next round." },
+      { id: "force",           name: "Force",             tier: 2, description: "Doesn't do damage. Forces everything up to 500 lbs within range away from the center to the rim. Objects hitting something take damage." },
+      { id: "atmosphere",      name: "Atmosphere",        tier: 2, description: "Creates atmosphere in its area for the next 30 minutes." },
+      { id: "darkness",        name: "Darkness",          tier: 2, description: "Creates impenetrable darkness within range. Sound and xeon sensors still work." },
+      { id: "adv_heat",        name: "Advanced Heat",     tier: 2, description: "Deals 4 damage on Success. Cannon can't throw Heat Bombs next turn." },
+      { id: "adv_cold",        name: "Advanced Cold",     tier: 2, description: "Inflicts Advanced Frozen debuff (+2d Mastery Die on next Action against them). Deals 2 dmg on Success." },
+      { id: "stamina",         name: "Stamina",           tier: 2, description: "Gives everyone in range +1d Mastery Die for their next Action." },
+      { id: "cluster",         name: "Cluster Explosion", tier: 3, description: "Does 5 damage on Success. Flows around corners." },
+      { id: "adv_obsidian",    name: "Advanced Obsidian", tier: 3, description: "Obsidian shards shred the defenses of anyone inside." },
+      { id: "tentacle",        name: "Tentacle",          tier: 3, description: "Pick three targets within double your AOE range. 5 ft-wide beams of energy arc from the bomb to each target, hitting everything in between. Does 4 dmg to everything hit." },
+      { id: "structure",       name: "Structure",         tier: 3, description: "Does 3 dmg on Success but does double damage to structures." },
+      { id: "adv_stamina",     name: "Advanced Stamina",  tier: 3, description: "Gives everyone in range +2d Mastery Dice for their next Action." },
+      { id: "slippery",        name: "Slippery",          tier: 3, description: "Decreases friction for everything in range. Targets have half movement and +1d Mastery Die on all Actions done against them for the next 10 seconds." }
+    ],
     levels: {
       1: {
         auto: ["All Tier I bombs available. 7 bombs made per day. Store up to 10. AOE 15 ft. Cannon range 40 ft.", "Basic Damage and Basic Heal bombs: unlimited (not counted toward daily limit).", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
@@ -1287,7 +1327,7 @@ window.XRRPG_CLASS_DEFS = {
       }
     },
     resources: [
-      { id: "bombs_made_today", label: "Bombs made today", maxPerDay: 7 }
+      { id: "bombs_made_today", label: "Bombs made today", maxPerDay: 7, maxByLevel: { 1: 7, 2: 9, 3: 15 } }
     ]
   },
 

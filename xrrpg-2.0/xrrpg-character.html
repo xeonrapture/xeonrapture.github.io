@@ -1082,6 +1082,92 @@
         }
       }
 
+      // ── EMITTER SPECIALIST: emitter types by tier ────────────────
+      if (cls === 'Emitter Specialist' && def.emitterPool) {
+        if (def.emitterNote) {
+          html += `<div class="xrrpg-ability-bubble"><div class="xrrpg-ability-row"><span class="muted">${def.emitterNote}</span></div></div>`;
+        }
+        const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
+        for (let t = 1; t <= maxTier; t++) {
+          const tierEmitters = def.emitterPool.filter(e => e.tier === t);
+          if (!tierEmitters.length) continue;
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Emitters:</strong></div>`;
+          for (const e of tierEmitters) {
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${e.name}</strong></div>`;
+            if (e.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${e.description}</p>`;
+          }
+          html += `</div>`;
+        }
+      }
+
+      // ── EXPLOSIVES EXPERT: bomb types by tier ────────────────────
+      if (cls === 'Explosives Expert' && def.bombPool) {
+        if (def.bombNote) {
+          html += `<div class="xrrpg-ability-bubble"><div class="xrrpg-ability-row"><span class="muted">${def.bombNote}</span></div></div>`;
+        }
+        const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
+        for (let t = 1; t <= maxTier; t++) {
+          const tierBombs = def.bombPool.filter(b => b.tier === t);
+          if (!tierBombs.length) continue;
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Bombs:</strong></div>`;
+          for (const b of tierBombs) {
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${b.name}</strong>${b.unlimited ? ' <span class="muted">[Unlimited]</span>' : ''}</div>`;
+            if (b.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${b.description}</p>`;
+          }
+          html += `</div>`;
+        }
+      }
+
+      // ── DRONEMASTER: drone effects by tier ───────────────────────
+      if (cls === 'Dronemaster' && def.droneEffectPool) {
+        const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
+        for (let t = 1; t <= maxTier; t++) {
+          const tierEffects = def.droneEffectPool.filter(e => e.tier === t);
+          if (!tierEffects.length) continue;
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Drone Effects:</strong></div>`;
+          for (const e of tierEffects) {
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${e.name}</strong></div>`;
+            if (e.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${e.description}</p>`;
+          }
+          html += `</div>`;
+        }
+      }
+
+      // ── GUNSLINGER: gun pool by tier ─────────────────────────────
+      if (cls === 'Gunslinger' && def.gunPool) {
+        const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
+        for (let t = 1; t <= maxTier; t++) {
+          const tierGuns = def.gunPool.filter(g => g.tier === t);
+          if (!tierGuns.length) continue;
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Gun Effects:</strong></div>`;
+          for (const g of tierGuns) {
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${g.name}</strong></div>`;
+            if (g.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${g.description}</p>`;
+          }
+          html += `</div>`;
+        }
+      }
+
+      // ── SWORDMASTER: sword powers by tier ────────────────────────
+      if (cls === 'Swordmaster' && def.swordPowers) {
+        const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
+        for (let t = 1; t <= maxTier; t++) {
+          const tierPowers = def.swordPowers.filter(p => p.tier === t);
+          if (!tierPowers.length) continue;
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Sword Powers:</strong></div>`;
+          for (const p of tierPowers) {
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${p.name}</strong></div>`;
+            if (p.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${p.description}</p>`;
+          }
+          html += `</div>`;
+        }
+      }
+
       // ── BRAWLER: Uninstall All + effects known + install tracking ─
       if (def.effectPool) {
         const allEffects = def.effectPool.map(e => e.name);
@@ -1252,9 +1338,9 @@
           const opts = pool.map(p => {
             const curTier = tierCount[p.name] || 0;
             const nextTier = curTier + 1;
-            const atMax = nextTier > p.tiers.length;
-            const desc = (p.tiers[nextTier - 1] || '').replace(/"/g, '&quot;');
-            const label = curTier > 0 ? `${p.name} (T${curTier} → T${nextTier})` : p.name;
+            const atMax = curTier >= p.tiers.length;
+            const desc = atMax ? '' : (p.tiers[nextTier - 1] || '').replace(/"/g, '&quot;');
+            const label = atMax ? `${p.name} (T${curTier} — Max)` : curTier > 0 ? `${p.name} (T${curTier} → T${nextTier})` : p.name;
             return `<option value="${p.name}" data-desc="${desc}" ${atMax ? 'disabled' : ''}>${label}</option>`;
           }).join('');
           html += `<div class="xrrpg-choice-block"><label><strong>Choose Advanced Power:</strong><br>
@@ -1567,13 +1653,23 @@
       document.getElementById('timesCleansedInput').value = s.times_cleansed || 0;
       document.getElementById('creditsInput').value = s.credits || 0;
 
-      document.getElementById('appearanceInput').value = notes.appearance || '';
-      document.getElementById('personalityInput').value = notes.personality || '';
-      document.getElementById('motivationInput').value = notes.motivation || '';
-      document.getElementById('backstoryInput').value = notes.backstory || '';
-      document.getElementById('classProgressionInput').value = notes.class_progression_notes || '';
-      document.getElementById('inventoryInput').value = notes.inventory || '';
-      document.getElementById('extraNotesInput').value = notes.extra || '';
+      const textareaIds = ['appearanceInput','personalityInput','motivationInput','backstoryInput','classProgressionInput','inventoryInput','extraNotesInput'];
+      const textareaValues = {
+        appearanceInput: notes.appearance || '',
+        personalityInput: notes.personality || '',
+        motivationInput: notes.motivation || '',
+        backstoryInput: notes.backstory || '',
+        classProgressionInput: notes.class_progression_notes || '',
+        inventoryInput: notes.inventory || '',
+        extraNotesInput: notes.extra || ''
+      };
+      textareaIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.value = textareaValues[id];
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+      });
 
       renderInjuryTracker();
 
@@ -1638,6 +1734,9 @@
           <td><button type="button" data-undo-id="${row.id}" ${row.event_payload?.undo && canEdit ? '' : 'disabled'}>Undo</button></td>
         </tr>
       `).join('');
+      historyTable.querySelectorAll('[data-undo-id]:not([disabled])').forEach(btn => {
+        btn.addEventListener('click', () => undoHistoryEvent(btn.dataset.undoId));
+      });
     }
 
     async function loadCharacter() {
@@ -1737,10 +1836,10 @@
       }
       progression.push({ class: cls, tier, level_acquired: level });
 
+      const prevState = cloneCharacterState();
       const choiceValues = readLevelChoices(cls, tier);
       applyLevelChoices(cls, tier, choiceValues);
 
-      const prevState = cloneCharacterState();
       const before = character.base_stats || {};
       const rule = levelRule(level);
       const base_stats = {
@@ -1980,11 +2079,15 @@
           'staminaTotalInput','staminaUsedInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
           'xenicDecayInput','timesCleansedInput','partyTierInput','creditsInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput'
         ];
+        const autoResizeIds = ['appearanceInput','personalityInput','motivationInput','backstoryInput','classProgressionInput','inventoryInput','extraNotesInput'];
         autosaveTargets.forEach(id => {
           const el = document.getElementById(id);
           if (!el) return;
           el.addEventListener('input', scheduleAutosave);
           el.addEventListener('change', scheduleAutosave);
+          if (autoResizeIds.includes(id) && el.tagName === 'TEXTAREA') {
+            el.addEventListener('input', () => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; });
+          }
         });
       } catch (error) {
         document.getElementById('status').textContent = error.message;
