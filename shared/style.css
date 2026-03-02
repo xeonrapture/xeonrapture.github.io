@@ -2071,6 +2071,17 @@ select,
 }
 .xrrpg-class-ability-subsection:last-of-type { border-bottom: none; }
 
+.xrrpg-ability-bubble {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.xrrpg-class-ability-subsection .collapsible-body > * + * {
+  margin-top: 0.4rem;
+}
+
 .xrrpg-ability-row {
   display: flex;
   align-items: center;

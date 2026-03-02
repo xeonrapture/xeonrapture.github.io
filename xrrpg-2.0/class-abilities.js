@@ -62,7 +62,6 @@ window.XRRPG_CLASS_DEFS = {
       }
     ],
     levels: {
-      0: { auto: ["Burst Strength Tier 0: Naturally very strong and fast."], choices: [] },
       1: { auto: ["Burst Strength Tier 1"], choices: [{ type: "pick_advanced_power", count: 1 }] },
       2: { auto: ["Burst Strength Tier 2", "Chosen Advanced Power advances to Tier 2"], choices: [] },
       3: { auto: ["Burst Strength Tier 3", "Chosen Advanced Power advances to Tier 3"], choices: [] },
@@ -127,7 +126,6 @@ window.XRRPG_CLASS_DEFS = {
       }
     ],
     levels: {
-      0: { auto: ["Upped Endurance & Durability Tier 0."], choices: [] },
       1: { auto: ["Upped Endurance & Durability Tier 1"], choices: [{ type: "pick_advanced_power", count: 1 }] },
       2: { auto: ["Upped Endurance & Durability Tier 2", "Chosen Advanced Power → Tier 2"], choices: [] },
       3: { auto: ["Upped Endurance & Durability Tier 3", "Chosen Advanced Power → Tier 3"], choices: [] },
@@ -208,7 +206,6 @@ window.XRRPG_CLASS_DEFS = {
       }
     ],
     levels: {
-      0: { auto: ["Upped Senses Tier 0."], choices: [] },
       1: { auto: ["Upped Senses Tier 1"], choices: [{ type: "pick_advanced_power", count: 1 }] },
       2: { auto: ["Upped Senses Tier 2", "Chosen Advanced Power → Tier 2"], choices: [] },
       3: { auto: ["Upped Senses Tier 3", "Chosen Advanced Power → Tier 3"], choices: [] },
@@ -281,7 +278,6 @@ window.XRRPG_CLASS_DEFS = {
       }
     ],
     levels: {
-      0: { auto: ["Mind Up Tier 0."], choices: [] },
       1: { auto: ["Mind Up Tier 1"], choices: [{ type: "pick_advanced_power", count: 1 }] },
       2: { auto: ["Mind Up Tier 2", "Chosen Advanced Power → Tier 2"], choices: [] },
       3: { auto: ["Mind Up Tier 3", "Chosen Advanced Power → Tier 3"], choices: [] },
@@ -354,19 +350,68 @@ window.XRRPG_CLASS_DEFS = {
     stat: "Any",
     archetype: "Mages",
     chromaRequired: null,
+    maxLevel: 4,
     specializedPowers: [
-      { id: "grab", name: "Grab", description: "Grab target 15/30/50 ft away, throw 15/20/25 ft, pull closer, or grapple. While grappled: +1d/2d/3d MD on Actions against them." },
-      { id: "hurl", name: "Hurl", description: "Push target 20/30/50 ft away directly from you. At lvl 3 can push in any direction." },
-      { id: "flash", name: "Flash", description: "Dash 30/50/100 ft. At lvl 2 dash before and 15/25/50 ft after an Action. At lvl 3 dash through walls." },
-      { id: "reduce_mass", name: "Reduce Mass", description: "25%/50%/80% weight reduction in 10/20/40 ft bubble. At lvl 2 choose exemptions. At lvl 3 can nullify own gravity." },
-      { id: "bend_fate", name: "Bend Fate", description: "Take a consequence from a willing target within 15/30/50 ft. At lvl 2 can affect unwilling. At lvl 3 transfer consequence to another target (3x/day)." },
-      { id: "invigorate", name: "Invigorate", description: "Next Action of any visible target: +1d/+2d/+3d MD." },
-      { id: "mind_invasion", name: "Mind Invasion", description: "Inhabit target's mind for 30 sec/1 min/5 min. Speak to them or hamper abilities (+1d MD on Actions against them)." },
-      { id: "intense_aura", name: "Intense Aura", description: "Fill 15/30/50 ft radius with sensory distraction. Targets: +1d/+2d/+2d MD against them. At lvl 3 choose exemptions." },
-      { id: "devil_weapons", name: "Devil Weapons", description: "Morph body to adopt devil's weapons: +1/+2/+3 dmg for 30 sec/1 min/5 min." },
-      { id: "spirit_shield", name: "Spirit Shield", description: "Protect target from next Minor/Severe/Critical Injury. Ignoring Critical Injuries: 3x/day." },
-      { id: "soothe_soul", name: "Soothe Soul", description: "Heal target 3/4/5 HP's worth of Injuries. At lvl 3 can heal Critical Injuries (3x/day)." },
-      { id: "chaos", name: "Chaos", description: "Cast Enchanter Chaos at Tier I/II/III." }
+      { id: "grab", name: "Grab", descriptions: [
+        "Grab target 15 ft away, throw 15 ft, pull closer, or grapple. While grappled: +1d MD on Actions against them.",
+        "Grab target 30 ft away, throw 20 ft, pull closer, or grapple. While grappled: +2d MD on Actions against them.",
+        "Grab target 50 ft away, throw 25 ft, pull closer, or grapple. While grappled: +3d MD on Actions against them."
+      ]},
+      { id: "hurl", name: "Hurl", descriptions: [
+        "Push target 20 ft away directly from you.",
+        "Push target 30 ft away directly from you.",
+        "Push target 50 ft away in any direction."
+      ]},
+      { id: "flash", name: "Flash", descriptions: [
+        "Dash 30 ft.",
+        "Dash 50 ft. May also dash 25 ft before and after an Action.",
+        "Dash 100 ft. May dash 50 ft before and after an Action. Can dash through walls."
+      ]},
+      { id: "reduce_mass", name: "Reduce Mass", descriptions: [
+        "25% weight reduction in a 10 ft bubble.",
+        "50% weight reduction in a 20 ft bubble. Can choose who is exempted.",
+        "80% weight reduction in a 40 ft bubble. At lvl 3 can nullify own gravity entirely."
+      ]},
+      { id: "bend_fate", name: "Bend Fate", descriptions: [
+        "Take a consequence from a willing target within 15 ft.",
+        "Take a consequence from a willing or unwilling target within 30 ft.",
+        "Take a consequence from any target within 50 ft. Transfer it to another target (3x/day)."
+      ]},
+      { id: "invigorate", name: "Invigorate", descriptions: [
+        "Grant +1d MD to the next Action of any visible target.",
+        "Grant +2d MD to the next Action of any visible target.",
+        "Grant +3d MD to the next Action of any visible target."
+      ]},
+      { id: "mind_invasion", name: "Mind Invasion", descriptions: [
+        "Inhabit target's mind for 30 sec. Speak to them or hamper abilities (+1d MD on Actions against them).",
+        "Inhabit target's mind for 1 min. Speak to them or hamper abilities (+1d MD on Actions against them).",
+        "Inhabit target's mind for 5 min. Speak to them or hamper abilities (+1d MD on Actions against them)."
+      ]},
+      { id: "intense_aura", name: "Intense Aura", descriptions: [
+        "Fill 15 ft radius with sensory distraction. Targets: +1d MD on Actions against them.",
+        "Fill 30 ft radius with sensory distraction. Targets: +2d MD on Actions against them.",
+        "Fill 50 ft radius with sensory distraction. Targets: +2d MD on Actions against them. Can choose exemptions."
+      ]},
+      { id: "devil_weapons", name: "Devil Weapons", descriptions: [
+        "Morph body to adopt devil's weapons: +1 dmg for 30 sec.",
+        "Morph body to adopt devil's weapons: +2 dmg for 1 min.",
+        "Morph body to adopt devil's weapons: +3 dmg for 5 min."
+      ]},
+      { id: "spirit_shield", name: "Spirit Shield", descriptions: [
+        "Protect target from next Minor Injury.",
+        "Protect target from next Minor or Severe Injury.",
+        "Protect target from next Minor, Severe, or Critical Injury (3x/day for Critical)."
+      ]},
+      { id: "soothe_soul", name: "Soothe Soul", descriptions: [
+        "Heal target 3 HP's worth of Injuries.",
+        "Heal target 4 HP's worth of Injuries.",
+        "Heal target 5 HP's worth of Injuries. Can heal Critical Injuries (3x/day)."
+      ]},
+      { id: "chaos", name: "Chaos", descriptions: [
+        "Cast Enchanter Chaos at Tier I.",
+        "Cast Enchanter Chaos at Tier II.",
+        "Cast Enchanter Chaos at Tier III."
+      ]}
     ],
     devilEmotions: [
       { id: "fear", label: "Fear", ability: "Terrify: Target terrified, +1d/+2d/+3d MD on Actions against them for up to 3 turns." },
@@ -397,7 +442,7 @@ window.XRRPG_CLASS_DEFS = {
         choices: [{ type: "pick_specialized_powers", count: 2, label: "Pick 2 more Specialized Powers (6 total)" }]
       },
       3: {
-        auto: ["Devil Form: Merge with devil (+2d MD on everything). Lasts 10 min. 3x/day."],
+        auto: ["Devil Form: Merge with devil (+2d MD on everything). Lasts 10 min. 3x/day. Note: the devil may try to influence your actions or personality while merged — their emotions and appetites may heavily affect yours."],
         choices: [{ type: "pick_specialized_powers", count: 2, label: "Pick 2 more Specialized Powers (8 total)" }]
       },
       4: {
@@ -466,10 +511,10 @@ window.XRRPG_CLASS_DEFS = {
       6: { auto: ["Gain Empowered Immaterial Mode for all Tier II elements."], choices: [{ type: "pick_elements", count: 1, tier: "II", label: "Pick 1 more Tier II Element" }] }
     },
     resources: [
-      { id: "water_immaterial", label: "Water Immaterial Form", maxPerDay: 3 },
-      { id: "light_immaterial", label: "Light Immaterial Form", maxPerDay: 3 },
-      { id: "air_immaterial", label: "Air Immaterial Form", maxPerDay: 3 },
-      { id: "fire_immaterial", label: "Fire Immaterial Form", maxPerDay: 3 }
+      { id: "water_immaterial", label: "Water Immaterial Form", maxPerDay: 3, requiresElement: "Water", minLevel: 3 },
+      { id: "light_immaterial", label: "Light Immaterial Form", maxPerDay: 3, requiresElement: "Light", minLevel: 3 },
+      { id: "air_immaterial",   label: "Air Immaterial Form",   maxPerDay: 3, requiresElement: "Air",   minLevel: 3 },
+      { id: "fire_immaterial",  label: "Fire Immaterial Form",  maxPerDay: 3, requiresElement: "Fire",  minLevel: 3 }
     ]
   },
 
@@ -600,7 +645,9 @@ window.XRRPG_CLASS_DEFS = {
         choices: []
       }
     },
-    resources: []
+    resources: [
+      { id: "concentration_active", label: "Active Concentration", maxByLevel: { 1: 2, 2: 3, 3: 4, 4: 6 } }
+    ]
   },
 
   "Physic": {
@@ -667,63 +714,67 @@ window.XRRPG_CLASS_DEFS = {
         choices: []
       }
     },
-    resources: []
+    resources: [
+      { id: "concentration_active", label: "Active Concentration", maxByLevel: { 1: 1, 2: 2, 3: 3, 4: 5 } }
+    ]
   },
 
   "Possessor": {
     stat: "Any",
     archetype: "Magicians",
     chromaRequired: null,
+    baseRange: { 1: 20, 2: 30, 3: 50, 4: 50 },
     spellPool: [
       // Red
-      { id: "heat_ray_pos", name: "Heat Ray", tier: 1, color: "Red", description: "3 dmg on Success. Can't use red spells next turn." },
-      { id: "scorching_bomb_pos", name: "Scorching Bomb", tier: 1, color: "Red", aoe: true, description: "AOE 2 dmg on Success." },
-      { id: "flash_heat_trigger_pos", name: "Flash Heat Trigger", tier: 2, color: "Red", description: "Heat blast in triggering rune. Spec conditions or manual. 3 dmg." },
-      { id: "heat_wall_pos", name: "Heat Wall", tier: 2, color: "Red", description: "40 ft wall, heat damage one side." },
-      { id: "percussive_bomb_pos", name: "Percussive Bomb", tier: 2, color: "Red", aoe: true, description: "2 dmg, push enemies to edge of radius." },
+      { id: "heat_ray_pos", name: "Heat Ray", tier: 1, color: "Red", range: "r x 2", description: "3 dmg on Success. Can't use red spells next turn." },
+      { id: "scorching_bomb_pos", name: "Scorching Bomb", tier: 1, color: "Red", aoe: true, range: "r", description: "AOE 2 dmg on Success. Can cast at Tier II for 3 dmg (can't use red next turn)." },
+      { id: "flash_heat_trigger_pos", name: "Flash Heat Trigger", tier: 3, color: "Red", concentration: true, aoe: true, range: "r", description: "Heat blast in triggering rune. Manual trigger range r x 2. Lasts 1 day. 3 dmg (can't use red next turn)." },
+      { id: "heat_wall_pos", name: "Heat Wall", tier: 3, color: "Red", concentration: true, aoe: true, range: "r", description: "40 ft wall (can bend); one side exudes heat and damage in 10 ft radius. 3 dmg (can't use red next turn)." },
+      { id: "percussive_bomb_pos", name: "Percussive Bomb", tier: 2, color: "Red", aoe: true, range: "r x 2", description: "2 dmg in 15 ft radius; enemies pushed to edge of radius." },
       // Blue
-      { id: "cold_ray_pos", name: "Cold Ray", tier: 1, color: "Blue", description: "2 dmg + Frozen (+1d MD on next Action against them)." },
-      { id: "freezing_bomb_pos", name: "Freezing Bomb", tier: 1, color: "Blue", aoe: true, description: "AOE 2 dmg." },
-      { id: "flash_cold_trigger_pos", name: "Flash Cold Trigger", tier: 2, color: "Blue", description: "Cold blast in triggering rune. 2 dmg + Advanced Frozen." },
-      { id: "cold_wall_pos", name: "Cold Wall", tier: 2, color: "Blue", description: "40 ft wall, cold damage and Frozen on one side." },
+      { id: "cold_ray_pos", name: "Cold Ray", tier: 1, color: "Blue", range: "r x 2", description: "2 dmg + Frozen (+1d MD on next Action against them)." },
+      { id: "freezing_bomb_pos", name: "Freezing Bomb", tier: 1, color: "Blue", aoe: true, range: "r", description: "AOE 2 dmg. Can cast at Tier II: 2 dmg + Frozen (+1d MD)." },
+      { id: "flash_cold_trigger_pos", name: "Flash Cold Trigger", tier: 3, color: "Blue", concentration: true, aoe: true, range: "r", description: "Cold blast in triggering rune. Lasts 1 day. 2 dmg + Advanced Frozen (+2d MD on next two Actions against them)." },
+      { id: "cold_wall_pos", name: "Cold Wall", tier: 3, color: "Blue", concentration: true, aoe: true, range: "r", description: "40 ft wall (can bend); cold damage and Frozen (+1d MD) on one side. 2 dmg." },
       // Gray
-      { id: "create_darkness_pos", name: "Create Darkness", tier: 1, color: "Gray", aoe: true, description: "No one can see in range unless heat vision or xeon sensing." },
-      { id: "shade_pos", name: "Shade", tier: 1, color: "Gray", description: "Make someone a stealthy shade." },
-      { id: "xeon_sensing_pos", name: "Xeon Sensing", tier: 1, color: "Gray", concentration: true, description: "Reveal xenic spirits and xeon sources." },
+      { id: "create_darkness_pos", name: "Create Darkness", tier: 2, color: "Gray", concentration: true, aoe: true, range: "r", description: "No one can see in range unless they have heat vision or xeon sensing." },
+      { id: "shade_pos", name: "Shade", tier: 3, color: "Gray", concentration: true, range: "0", description: "Make someone a stealthy shade (invisible, move silently)." },
+      { id: "xeon_sensing_pos", name: "Xeon Sensing", tier: 1, color: "Gray", concentration: true, range: "r x 2", description: "See xenic spirits and other sources of xeon, including tech and magic items. Lasts 10 min." },
       // Dark
-      { id: "wither_flesh", name: "Wither Flesh", tier: 1, color: "Dark", description: "Wither a target's flesh, weakening them." },
-      { id: "corporealize_spirit", name: "Corporealize Spirit", tier: 1, color: "Dark", description: "Make a spirit partially physical." },
-      { id: "take_spirit_appearance", name: "Take Spirit Appearance", tier: 1, color: "Dark", description: "Take on the appearance of a spirit." },
-      { id: "haunting_figures", name: "Haunting Figures", tier: 2, color: "Dark", description: "Create ghostly haunting figures to terrify and confuse enemies." },
-      { id: "necrotic_beam", name: "Necrotic Beam", tier: 2, color: "Dark", description: "Beam of necrotic energy that drains life." },
-      { id: "raise_hoard", name: "Raise Hoard", tier: 2, color: "Dark", description: "Raise a small horde of undead spirits." },
-      { id: "physical_thrall", name: "Physical Thrall", tier: 2, color: "Dark", description: "Bind a target as a physical thrall." },
-      { id: "raise_dead_i", name: "Raise Dead I", tier: 1, color: "Dark", description: "Raise a basic undead construct. 3x/day." },
-      { id: "raise_dead_ii", name: "Raise Dead II / Create Construct I", tier: 2, color: "Dark", description: "Raise stronger undead or create a basic construct. 3x/day." },
-      { id: "raise_dead_iii", name: "Raise Dead III / Create Construct II (Elite)", tier: 3, color: "Dark", description: "Raise elite undead or create advanced construct. 2x/day." }
+      { id: "wither_flesh", name: "Wither Flesh", tier: 1, color: "Dark", range: "r", description: "Spirits suck life force from a creature, weakening them (3 dmg on Success)." },
+      { id: "corporealize_spirit", name: "Corporealize Spirit", tier: 1, color: "Dark", concentration: true, range: "r / 2", description: "Give a spirit physical form; they can speak and interact with the world. Give simple commands. Lasts up to 1 hr." },
+      { id: "take_spirit_appearance", name: "Take Spirit Appearance", tier: 2, color: "Dark", range: "0", description: "Take on the appearance of one of your servant spirits for up to 2 hours." },
+      { id: "haunting_figures", name: "Haunting Figures", tier: 2, color: "Dark", concentration: true, range: "r", description: "Spirits torment a target; 2 dmg per 10 sec on Success. Lasts up to 5 min (target can keep trying to escape)." },
+      { id: "necrotic_beam", name: "Necrotic Beam", tier: 3, color: "Dark", aoe: true, range: "r", description: "Beam of necrotic energy hits everyone on a line in 60 ft range (5 dmg on Success)." },
+      { id: "raise_hoard", name: "Raise Hoard", tier: 2, color: "Dark", concentration: true, range: "r / 2", description: "Raise a hoard of undead spirits. As a whole has health of one strong servant. Can't do damage but can restrain, block spaces, break doors/walls." },
+      { id: "physical_thrall", name: "Physical Thrall", tier: 3, color: "Dark", concentration: true, range: "r / 2", description: "A spirit attempts to inhabit a mortal's body. Take over for ~1 min. Every time hurt they can try to escape." },
+      { id: "raise_dead_i", name: "Raise Dead/Create Construct", tier: 1, color: "Dark", concentration: true, range: "r / 2", description: "Servant HP: 3. A spirit inhabits a deceased creature/person or animates non-living matter. Base 2 dmg on Success. (3/day)" },
+      { id: "raise_dead_ii", name: "Raise Dead/Create Construct II", tier: 2, color: "Dark", concentration: true, range: "r / 2", description: "Servant HP: 5. The servant is Special, imbued with one Lvl 1 Adept Basic and Advanced power. (3/day)" },
+      { id: "raise_dead_iii", name: "Raise Dead/Create Construct III (Elite)", tier: 3, color: "Dark", concentration: true, range: "r / 2", description: "Servant HP: 7. The servant is Elite, imbued with one Lvl 2 Adept Basic and Advanced power. Extremely strong and hard to take down. (2/day)" }
     ],
     levels: {
       1: {
-        auto: ["Max Spell Tier I. Max Concentration 1, 10 min. Range 20 ft."],
+        auto: ["Max Spell Tier I. Max Concentration 2, 10 min. Range (r) = 20 ft.", "Possessors can't use the same spell more than once in a row (thrall spirits tire out). Can combine multiple spells in one Action for 1 Stamina."],
         choices: [{ type: "pick_spells", count: 7, maxTier: 1, label: "Pick 7 Tier I spells" }]
       },
       2: {
-        auto: ["Max Spell Tier II. Max Concentration 3, 30 min. Range 30 ft."],
+        auto: ["Max Spell Tier II. Max Concentration 3, 30 min. Range (r) = 30 ft."],
         choices: [{ type: "pick_spells", count: 4, maxTier: 2, label: "Pick 4 more spells (11 total, Tier I–II)" }]
       },
       3: {
-        auto: ["Max Spell Tier III. Max Concentration 4, 1 hr. Range 50 ft."],
+        auto: ["Max Spell Tier III. Max Concentration 4, 1 hr. Range (r) = 50 ft."],
         choices: [{ type: "pick_spells", count: 4, maxTier: 3, label: "Pick 4 more spells (15 total, Tier I–III)" }]
       },
       4: {
-        auto: ["Know all spells. Max Concentration 5, 3 hr."],
+        auto: ["Know all spells. Max Concentration 5, 3 hr. Range (r) = 50 ft."],
         choices: []
       }
     },
     resources: [
-      { id: "raise_dead_i_uses", label: "Raise Dead I", maxPerDay: 3 },
-      { id: "raise_dead_ii_uses", label: "Raise Dead II / Construct I", maxPerDay: 3 },
-      { id: "raise_dead_iii_uses", label: "Raise Dead III / Construct II (Elite)", maxPerDay: 2 }
+      { id: "concentration_active", label: "Active Concentration", maxByLevel: { 1: 2, 2: 3, 3: 4, 4: 5 } },
+      { id: "raise_dead_i_uses", label: "Raise Dead/Create Construct (3 HP servant)", maxPerDay: 3 },
+      { id: "raise_dead_ii_uses", label: "Raise Dead/Create Construct II (5 HP, Special)", maxPerDay: 3 },
+      { id: "raise_dead_iii_uses", label: "Raise Dead/Create Construct III Elite (7 HP)", maxPerDay: 2 }
     ]
   },
 
@@ -731,50 +782,76 @@ window.XRRPG_CLASS_DEFS = {
     stat: "Vigor or Intuition",
     archetype: "Magicians",
     chromaRequired: null,
+    substanceNote: "You need the listed material to cast each spell — feel free to just buy it or go on a small quest to find it!",
     spellPool: [
       // Tier I
-      { id: "prestidigitation", name: "Prestidigitation", tier: 1, substance: "Predigitase (orange, red, green, yellow gem)", description: "Create a small magical effect: gust of wind, small illusion (2 ft square), ground rumble, open/close doors, light or put out fires, harmless sparkles, clean or soil a small area. Cannot do damage unless very creative. Range: 30 ft." },
-      { id: "mending", name: "Mending", tier: 1, substance: "Dioptase (dark green gem)", description: "Mend a non-magical, non-xenic object (2 ft square max). Can mend larger objects with multiple uses. Range: 15 ft." },
-      { id: "charm_enc", name: "Charm", tier: 1, substance: "Rose Quartz (light pink with white streaks)", concentration: true, description: "[Concentration] +2d MD bonus to interpersonal Actions for up to 10 min. Range: 15 ft." },
-      { id: "little_heal_enc", name: "Little Heal", tier: 1, substance: "Amber (golden orange gem)", description: "Heal up to 3 HP's worth of Injuries distributed among any amount of targets. Range: 30 ft." },
-      { id: "electric_zap", name: "Electric Zap", tier: 1, substance: "Barite (light blue or yellow gem)", description: "Zap a target, deals 3 dmg on Success. Range: 30 ft." },
-      { id: "comprehend_languages", name: "Comprehend and Speak Languages", tier: 1, substance: "Tincalconite (white solid gem or powder)", concentration: true, description: "[Concentration] For the next 10 min you can comprehend and speak any language (certain ancient or secret languages have protections against this)." },
-      { id: "clone_image", name: "Clone Image", tier: 1, substance: "Gypsum (soft clear gem)", concentration: true, description: "[Concentration] Create an illusory version of yourself you can command to do whatever you like. It can interact with the world physically but can't deal damage or use your xenic abilities. Range: 50 ft." },
-      { id: "breath_of_chaos", name: "Breath of Chaos", tier: 1, substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier I Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier I spell for free; every consecutive 8 you roll also lets you pick a free spell." },
+      { id: "prestidigitation", name: "Prestidigitation", tier: 1, range: "30 ft", substance: "Predigitase (orange, red, green, yellow gem)", description: "Create a small magical effect: gust of wind, small illusion (2 ft square), ground rumble, open/close doors, light or put out fires, harmless sparkles, clean or soil a small area. Cannot do damage unless very creative." },
+      { id: "mending", name: "Mending", tier: 1, range: "15 ft", substance: "Dioptase (dark green gem)", description: "Mend a non-magical, non-xenic object (2 ft square max). Can mend larger objects with multiple uses." },
+      { id: "charm_enc", name: "Charm", tier: 1, range: "15 ft", substance: "Rose Quartz (light pink with white streaks)", concentration: true, description: "[Concentration] +2d MD bonus to interpersonal Actions for up to 10 min." },
+      { id: "little_heal_enc", name: "Little Heal", tier: 1, range: "30 ft", substance: "Amber (golden orange gem)", description: "Heal up to 3 HP's worth of Injuries distributed among any amount of targets." },
+      { id: "electric_zap", name: "Electric Zap", tier: 1, range: "30 ft", substance: "Barite (light blue or yellow gem)", description: "Zap a target, deals 3 dmg on Success." },
+      { id: "comprehend_languages", name: "Comprehend and Speak Languages", tier: 1, range: "—", substance: "Tincalconite (white solid gem or powder)", concentration: true, description: "[Concentration] For the next 10 min you can comprehend and speak any language (certain ancient or secret languages have protections against this)." },
+      { id: "clone_image", name: "Clone Image", tier: 1, range: "50 ft", substance: "Gypsum (soft clear gem)", concentration: true, description: "[Concentration] Create an illusory version of yourself you can command to do whatever you like. It can interact with the world physically but can't deal damage or use your xenic abilities." },
+      { id: "breath_of_chaos", name: "Breath of Chaos", tier: 1, range: "—", substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier I Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier I spell for free; every consecutive 8 you roll also lets you pick a free spell." },
       // Tier II
-      { id: "petrify", name: "Petrify", tier: 2, substance: "Cerussite (clear white crystal shards)", concentration: true, description: "[Concentration] Partially petrify a target: +1d MD on all Actions against them for up to 1 min. Three successes against the same target = full petrification for 1 hour. Range: 30 ft." },
-      { id: "poison_enc", name: "Poison", tier: 2, substance: "Peridot (light green gem)", description: "Inflict poison upon a target: next two Actions against this target get +2d MD. Range: 30 ft." },
-      { id: "scrying", name: "Scrying", tier: 2, substance: "Purpurite (deep purple rare gem)", concentration: true, description: "[Concentration] See remotely from up to 100 ft away (eyes must be closed). Can also be used to see into the xenic plane. Range: 100 ft." },
-      { id: "illusion_enc", name: "Illusion", tier: 2, substance: "Garnet (any color)", concentration: true, description: "[Concentration] Create an illusion up to 50 ft square. Range: 100 ft." },
-      { id: "ghostwalk", name: "Ghostwalk", tier: 2, substance: "Amazonite (light blue gem)", concentration: true, description: "[Concentration] Become ethereal: you're immaterial, can move through cracks and through substances up to 5 ft thick. Can't attack, take damage, cast spells, or use abilities in this form. Lasts up to 10 min." },
-      { id: "solid_illusion", name: "Solid Illusion", tier: 2, substance: "Onidium (white, brown, black gem)", concentration: true, description: "[Concentration] Create an object out of xeon up to 30 ft square (max 1000 lbs). Must start stationary on the ground. Range: 50 ft." },
-      { id: "pocket_dimension", name: "Pocket Dimension", tier: 2, substance: "Pomjite (purple and gray gem)", description: "Create a small rift in the xenic plane: 3×3×3 ft cube, holds unlimited weight, entrance up to 3×3 ft. You can change dimensions (max 27 cubic ft). Location can't change while open. You can open it from within; no one else can. Range: 30 ft." },
-      { id: "touch_of_chaos", name: "Touch of Chaos", tier: 2, substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier II Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier II spell for free." },
+      { id: "petrify", name: "Petrify", tier: 2, range: "30 ft", substance: "Cerussite (clear white crystal shards)", concentration: true, description: "[Concentration] Partially petrify a target: +1d MD on all Actions against them for up to 1 min. Three successes against the same target = full petrification for 1 hour." },
+      { id: "poison_enc", name: "Poison", tier: 2, range: "30 ft", substance: "Peridot (light green gem)", description: "Inflict poison upon a target: next two Actions against this target get +2d MD." },
+      { id: "scrying", name: "Scrying", tier: 2, range: "100 ft", substance: "Purpurite (deep purple rare gem)", concentration: true, description: "[Concentration] See remotely from up to 100 ft away (eyes must be closed). Can also be used to see into the xenic plane." },
+      { id: "illusion_enc", name: "Illusion", tier: 2, range: "100 ft", substance: "Garnet (any color)", concentration: true, description: "[Concentration] Create an illusion up to 50 ft square." },
+      { id: "ghostwalk", name: "Ghostwalk", tier: 2, range: "—", substance: "Amazonite (light blue gem)", concentration: true, description: "[Concentration] Become ethereal: you're immaterial, can move through cracks and through substances up to 5 ft thick. Can't attack, take damage, cast spells, or use abilities in this form. Lasts up to 10 min." },
+      { id: "solid_illusion", name: "Solid Illusion", tier: 2, range: "50 ft", substance: "Onidium (white, brown, black gem)", concentration: true, description: "[Concentration] Create an object out of xeon up to 30 ft square (max 1000 lbs). Must start stationary on the ground." },
+      { id: "pocket_dimension", name: "Pocket Dimension", tier: 2, range: "30 ft", substance: "Pomjite (purple and gray gem)", description: "Create a small rift in the xenic plane: 3×3×3 ft cube, holds unlimited weight, entrance up to 3×3 ft. You can change dimensions (max 27 cubic ft). Location can't change while open. You can open it from within; no one else can." },
+      { id: "touch_of_chaos", name: "Touch of Chaos", tier: 2, range: "—", substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier II Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier II spell for free." },
       // Tier III
-      { id: "xenic_portal", name: "Xenic Plane Portal", tier: 3, substance: "Malachite (bright green and dark green gem)", description: "Create a portal into or out of the xenic plane. Range: 15 ft." },
-      { id: "swap_places", name: "Swap Places", tier: 3, substance: "Black Rutile (clear gem with black streaks)", description: "Swap places with a person or creature, or swap two creatures. Willing targets: no Action needed (still costs Stamina), range up to 10 miles if you know both targets. Unwilling targets: must see them and do an Action Roll (100 ft range)." },
-      { id: "stasis_lock", name: "Stasis Lock", tier: 3, substance: "Wolframite (blue metal)", concentration: true, description: "[Concentration] Lock a person or thing to a fixed point in space for up to 10 minutes. Range: 50 ft." },
-      { id: "animate_object", name: "Animate Object", tier: 3, substance: "Topaz (clear crystal, many colors)", concentration: true, description: "[Concentration] Animate an object up to 10×10×10 ft. Follows your orders; large objects can deal up to 4 dmg on Success. Range: 15 ft." },
-      { id: "tiny_pocket_hut", name: "Tiny Pocket Hut", tier: 3, substance: "Pomjite (purple and gray gem)", description: "Create a large rift in the xenic plane: 20×20×20 ft Pocket Dimension with the same rules as Pocket Dimension. Range: 30 ft." },
-      { id: "enbiggen", name: "Enbiggen", tier: 3, substance: "Fluorite (green and purple gem)", concentration: true, description: "[Concentration] Double the size of an ally or yourself: weight ×8, End and Vig get +2d MD, deal +3 extra damage. Lasts up to 1 minute. Range: 15 ft." },
-      { id: "ensmallen", name: "Ensmallen", tier: 3, substance: "Fluorite (green and purple gem)", concentration: true, description: "[Concentration] Half the size of an ally or yourself: weight ÷8, Int gets +2d MD, speed +50 ft. Lasts up to 1 minute. Range: 15 ft." },
-      { id: "call_of_chaos", name: "Call of Chaos", tier: 3, substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier III Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier III spell for free." }
+      { id: "xenic_portal", name: "Xenic Plane Portal", tier: 3, range: "15 ft", substance: "Malachite (bright green and dark green gem)", description: "Create a portal into or out of the xenic plane." },
+      { id: "swap_places", name: "Swap Places", tier: 3, range: "100 ft (unwilling) / 10 miles (willing)", substance: "Black Rutile (clear gem with black streaks)", description: "Swap places with a person or creature, or swap two creatures. Willing targets: no Action needed (still costs Stamina), range up to 10 miles if you know both targets. Unwilling targets: must see them and do an Action Roll." },
+      { id: "stasis_lock", name: "Stasis Lock", tier: 3, range: "50 ft", substance: "Wolframite (blue metal)", concentration: true, description: "[Concentration] Lock a person or thing to a fixed point in space for up to 10 minutes." },
+      { id: "animate_object", name: "Animate Object", tier: 3, range: "15 ft", substance: "Topaz (clear crystal, many colors)", concentration: true, description: "[Concentration] Animate an object up to 10×10×10 ft. Follows your orders; large objects can deal up to 4 dmg on Success." },
+      { id: "tiny_pocket_hut", name: "Tiny Pocket Hut", tier: 3, range: "30 ft", substance: "Pomjite (purple and gray gem)", description: "Create a large rift in the xenic plane: 20×20×20 ft Pocket Dimension with the same rules as Pocket Dimension." },
+      { id: "enbiggen", name: "Enbiggen", tier: 3, range: "15 ft", substance: "Fluorite (green and purple gem)", concentration: true, description: "[Concentration] Double the size of an ally or yourself: weight ×8, End and Vig get +2d MD, deal +3 extra damage. Lasts up to 1 minute." },
+      { id: "ensmallen", name: "Ensmallen", tier: 3, range: "15 ft", substance: "Fluorite (green and purple gem)", concentration: true, description: "[Concentration] Half the size of an ally or yourself: weight ÷8, Int gets +2d MD, speed +50 ft. Lasts up to 1 minute." },
+      { id: "call_of_chaos", name: "Call of Chaos", tier: 3, range: "—", substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier III Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier III spell for free." }
+    ],
+    chaosTableMinor: [
+      { roll: 1,  name: "Self-Petrify",  range: "—",     effect: "Paralyzes you for a turn (cannot take Actions)." },
+      { roll: 2,  name: "Rot",           range: "50 ft",  effect: "Rot flesh; cloud of smell 15 ft radius does 1 dmg to target and everyone around for 3 rounds." },
+      { roll: 3,  name: "Future Sight",  range: "—",     effect: "You see something that will happen in the future." },
+      { roll: 4,  name: "Eyes to See",   range: "—",     effect: "See the whole electromagnetic spectrum and into the xenic plane for 1d10 min." },
+      { roll: 5,  name: "Faraway Voice", range: "—",     effect: "Send a short message to anyone you've met or seen in person, anywhere." },
+      { roll: 6,  name: "Summon Spirit", range: "—",     effect: "Summon a minor spirit (roll d4: 1=demon, 2=devil, 3=elemental sprite, 4=mortal spirit). No control over this being." },
+      { roll: 7,  name: "Forgetting",    range: "50 ft",  effect: "Make a target forget one thought or small memory of your choosing." },
+      { roll: 8,  name: "Little Heal",   range: "—",     effect: "Heal yourself up to 5 HP's worth of Injuries." },
+      { roll: 9,  name: "Paralyze Foe",  range: "50 ft",  effect: "Paralyze a foe; allies get +2d MD on all Actions against them for 1d4 turns." },
+      { roll: 10, name: "Rejuvenation",  range: "—",     effect: "Gain half your Stamina Max immediately." }
+    ],
+    chaosTableMajor: [
+      { roll: 11, name: "Degradation",    range: "—",      effect: "Gain a level of Spirit Decay immediately!" },
+      { roll: 12, name: "Mass Heal",      range: "50 ft",   effect: "Heal up to 20 HP's worth of Injuries distributed among anybody within range." },
+      { roll: 13, name: "Wings to Fly",   range: "—",      effect: "You can fly for 10 min." },
+      { roll: 14, name: "Confuse",        range: "100 ft",  effect: "An enemy is forced to attempt to attack an ally this round." },
+      { roll: 15, name: "Explode",        range: "50 ft",   effect: "Explosion around an enemy: 5 dmg in a 30 ft radius." },
+      { roll: 16, name: "Reverse Time",   range: "50 ft",   effect: "Reverse one thing that anyone has done in the past 10 minutes." },
+      { roll: 17, name: "Electric Shock", range: "30 ft",   effect: "Shock the enemy with electricity, 7 dmg." },
+      { roll: 18, name: "Cleanse Spirit", range: "—",      effect: "Cleanse all your Spirit Decay, or that of an ally if you don't have any." },
+      { roll: 19, name: "Energize",       range: "—",      effect: "You or any ally may immediately do an Action using +3d MD for no Stamina." },
+      { roll: 20, name: "Channel Chaos",  range: "—",      effect: "You may immediately do an ability of any other class." }
     ],
     levels: {
       1: {
-        auto: ["All Tier I spells available (see spell list below).", "Pocket Space: Carry up to 3 handheld items in a pocket dimension (rip a small hole in space anywhere; the hole can't move without closing/reopening it).", "Max Concentration 1, 10 min. Range 30 ft."],
+        auto: ["All Tier I spells available (see spell list below).", "Pocket Space: Carry up to 3 handheld items in a pocket dimension (rip a small hole in space anywhere; the hole can't move without closing/reopening it).", "Max Concentration 1, 10 min."],
         choices: []
       },
       2: {
-        auto: ["All Tier I and II spells available.", "Chaos: Roll on the Chaos Table for 0 stamina (3×/day) — roll d10, apply the Minor Chaos Table result. You must enact the effect.", "Max Concentration 2, 30 min."],
+        auto: ["All Tier I and II spells available.", "Chaos: Roll on the Minor Chaos Table for 0 stamina (3×/day) — roll d10. You must enact the effect.", "Max Concentration 2, 30 min."],
         choices: []
       },
       3: {
-        auto: ["All Tier I, II, and III spells available.", "Controlled Chaos: Roll on both Minor and Major Chaos Tables (d20) and pick the result you want — 3×/day, 0 stamina. Replaces the level 2 Chaos ability.", "Max Concentration 3, 1 hr."],
+        auto: ["All Tier I, II, and III spells available.", "Controlled Chaos: Roll a d20 on the full Chaos Table and pick the result you want — 3×/day, 0 stamina. Replaces the level 2 Chaos ability.", "Max Concentration 3, 1 hr."],
         choices: []
       }
     },
     resources: [
+      { id: "concentration_active", label: "Active Concentration", maxByLevel: { 1: 1, 2: 2, 3: 3 } },
       { id: "chaos_uses", label: "Chaos / Controlled Chaos", maxPerDay: 3, minLevel: 2 }
     ]
   },
@@ -785,6 +862,7 @@ window.XRRPG_CLASS_DEFS = {
     stat: "Vigor or Endurance",
     archetype: "Spiritualists",
     chromaRequired: null,
+    rangeByLevel: { 1: 30, 2: 50, 3: 75 },
     specialties: [
       { id: "red", label: "Red (Fire/Heat)", bonus: "+1 dmg on successful elemental attacks." },
       { id: "blue", label: "Blue (Water/Ice)", bonus: "+1d MD on Actions against moving targets." },
@@ -822,15 +900,15 @@ window.XRRPG_CLASS_DEFS = {
     ],
     levels: {
       1: {
-        auto: ["All Tier I elemental techniques available (element must be present in range). See techniques listed below. Range 30 ft."],
+        auto: ["All Tier I elemental techniques available (element must be present in range)."],
         choices: [{ type: "pick_one", id: "specialty", label: "Pick your elemental specialty", options: ["Red: +1 dmg on all elemental technique attacks", "Blue: +1d MD on Actions against moving targets", "Green: may exempt any target or area from your AOE techniques", "Gray: all techniques get 2× range"] }]
       },
       2: {
-        auto: ["All Tier II elemental techniques available. Range 50 ft."],
+        auto: ["All Tier II elemental techniques available."],
         choices: []
       },
       3: {
-        auto: ["All Tier III elemental techniques available. Range 75 ft."],
+        auto: ["All Tier III elemental techniques available."],
         choices: []
       }
     },
@@ -842,11 +920,116 @@ window.XRRPG_CLASS_DEFS = {
     archetype: "Spiritualists",
     chromaRequired: null,
     spiritTypes: [
-      { id: "mortal_spirit", name: "Mortal Spirit", focus: "Buffs and Debuffs", description: "Spirit of a deceased mortal. Specializes in helping allies and hurting foes." },
-      { id: "animal_spirit", name: "Animal Spirit", focus: "Utility", description: "Spirit of a deceased animal or green xenic sprite. Specializes in buffing abilities and utility." },
-      { id: "light_spirit", name: "Light Spirit", focus: "Buffs and Healing", description: "A light spirit or good mortal spirit. Specializes in healing, buffs, and blessings." },
-      { id: "dark_spirit", name: "Dark Spirit", focus: "Debuffs and Curses", description: "A devil, demon, or evil mortal spirit. Specializes in debuffs, curses, and damage over time." },
-      { id: "xenic_sprite", name: "Xenic Sprite", focus: "Utility", description: "Spirit made of pure xeon. Specializes in illusion, trickery, and mischief." }
+      { id: "mortal_spirit", name: "Mortal Spirit", focus: "Buffs and Debuffs", description: "Spirit of a deceased mortal. Specializes in helping allies and hurting foes.",
+        spells: {
+          1: [
+            { name: "Mystic Trickery", latch: false, effect: "Creates small harmless sensory effects, moves objects, affects lights, overlaps voice, opens/closes doors, or becomes visible." },
+            { name: "Spirit Scry", latch: false, effect: "See through spirit's eyes anywhere within double Spirit Range; invisible unless commanded." },
+            { name: "Soothe", latch: true, effect: "Heals ally 2 HP's worth of Injuries for 3 turns." },
+            { name: "Sludge", latch: true, effect: "All Actions against enemy: +1d MD for up to 3 turns (breakable on Failed roll)." },
+            { name: "Warp Sound", latch: true, effect: "Creates 15 ft diameter cylinder of silence or sound-cancelling." }
+          ],
+          2: [
+            { name: "Wither", latch: false, effect: "Saps enemy defenses: next Action against them gets +2d MD." },
+            { name: "Charm", latch: true, effect: "Target treats you as close friend (breaks if attacked or trust broken)." },
+            { name: "Bind Person", latch: true, effect: "Bind a humanoid from moving for up to 3 turns; they can't act and attacks have advantage (breakable)." },
+            { name: "Illusion", latch: true, effect: "Detailed illusion within 20 ft cube including all senses, can move within range (immaterial)." }
+          ],
+          3: [
+            { name: "Instill Passion", latch: false, effect: "Energizes ally with +3d MD on their next Action. (3/day)" },
+            { name: "Infect Emotions", latch: false, effect: "Increase/decrease target's reputation by ±1 for up to 10 days; resets if Successful each day (max ±5)." },
+            { name: "Possession", latch: true, effect: "Attempt to possess a mortal's body for 3 turns (breakable on Failed roll)." }
+          ]
+        }
+      },
+      { id: "animal_spirit", name: "Animal Spirit", focus: "Utility", description: "Spirit of a deceased animal or green xenic sprite. Specializes in buffing abilities and utility.",
+        spells: {
+          1: [
+            { name: "Mystic Trickery", latch: false, effect: "Creates small harmless effects including sensory effects, moves objects, causes ground tremors, overlaps voice, opens/closes doors, or becomes visible." },
+            { name: "Spirit Scry", latch: false, effect: "See through spirit's eyes anywhere within double Spirit Range; invisible unless commanded." },
+            { name: "Animal Instinct", latch: false, effect: "Materializes to assist on animal handling, tracking, survival, or nature Actions (+2d MD); allows speaking to animals." },
+            { name: "Primal Energy", latch: true, effect: "Attaches to ally: +1d MD to adventuring (non-combat) checks with one stat for 10 min max." },
+            { name: "Primal Nature", latch: true, effect: "Attaches to ally: doubles speed and jump distance." },
+            { name: "Ferocity", latch: true, effect: "Attaches to ally: +2 damage for 3 turns." }
+          ],
+          2: [
+            { name: "Wither", latch: false, effect: "Saps enemy defenses: next Action against them gets +2d MD." },
+            { name: "Distraction", latch: true, effect: "Distracts enemy: +1d MD on all Actions against them for next 3 turns." },
+            { name: "Bind Monster", latch: true, effect: "Bind a non-humanoid creature from moving for up to 3 turns; they can't act and attacks have advantage (breakable)." },
+            { name: "Create Atmosphere", latch: true, effect: "Creates 100 ft aura of breathable atmosphere around spirit." }
+          ],
+          3: [
+            { name: "Primal Power", latch: false, effect: "Grants ally +3d MD to their next Action. (3/day)" },
+            { name: "Fly", latch: true, effect: "Attaches to a person and allows them to fly unaided for up to 3 rounds." },
+            { name: "Tough Skin", latch: true, effect: "Protects ally: absorbs up to 5 HP's worth of Injuries for up to 3 rounds (can absorb Critical Injuries)." }
+          ]
+        }
+      },
+      { id: "light_spirit", name: "Light Spirit", focus: "Buffs and Healing", description: "A light spirit or good mortal spirit. Specializes in healing, buffs, and blessings.",
+        spells: {
+          1: [
+            { name: "Mystic Trickery", latch: false, effect: "Creates small harmless effects including sensory effects, overlaps beautiful voice, opens/closes doors, becomes bright 30 ft radius light, or becomes visible." },
+            { name: "Spirit Scry", latch: false, effect: "See through spirit's eyes anywhere within double Spirit Range; invisible unless commanded." },
+            { name: "Healing Touch", latch: true, effect: "Attaches to ally: heals them up to 3 HP's worth of Injuries each turn for 3 turns (no Critical Injuries)." },
+            { name: "Charisma", latch: true, effect: "Attaches to ally: +2d MD on rolls dealing with communicating with others for 3 turns." },
+            { name: "Seal Spirit", latch: false, effect: "Attempts to seal away a spirit or spiritual entity (can end possessions and latching); gets +1d MD." }
+          ],
+          2: [
+            { name: "Wither", latch: false, effect: "Saps enemy defenses: next Action against them gets +2d MD." },
+            { name: "Xenic Shield", latch: true, effect: "Attaches to ally: blocks all up to Severe Injuries from xenic sources for 3 turns." },
+            { name: "Soothe", latch: false, effect: "Heals ally for up to 5 HP's worth of Injuries (no Critical); suppresses Spirit Decay effects for 1d10 hours." },
+            { name: "Anoint Protector", latch: true, effect: "Attaches to ally with +1d MD; enemies in 10 ft radius can only attack this ally for up to 3 turns." }
+          ],
+          3: [
+            { name: "Healing Presence", latch: true, effect: "Attaches to ally: heals them 3 HP's worth of Injuries each turn for 3 turns (no Critical)." },
+            { name: "Energize", latch: true, effect: "Attaches to ally: grants +3d MD for 3 turns." },
+            { name: "Block Decay", latch: true, effect: "Attaches to ally: they cannot take Spirit Decay for 3 turns." },
+            { name: "Rejuvenate", latch: true, effect: "Cleanses all Minor Spirit Decay and Critical Injuries (except Death Blows) from ally, heals 1 HP; ally can't gain Critical Injuries for 3 turns." }
+          ]
+        }
+      },
+      { id: "dark_spirit", name: "Dark Spirit", focus: "Debuffs and Curses", description: "A devil, demon, or evil mortal spirit. Specializes in debuffs, curses, and damage over time.",
+        spells: {
+          1: [
+            { name: "Mystic Trickery", latch: false, effect: "Creates small harmless effects including otherworldly and terrifying voice, moves objects, affects lights, opens/closes doors, or becomes visible." },
+            { name: "Spirit Scry", latch: false, effect: "See through spirit's eyes anywhere within double Spirit Range; invisible unless commanded." },
+            { name: "Hamper", latch: true, effect: "Enemy gets -3 debuff to adventuring (non-combat) checks with one chosen stat for 10 minutes (on failure vs stat)." },
+            { name: "Torment", latch: true, effect: "Enemy takes +2 more damage from every attack for 3 turns (on failure vs stat)." }
+          ],
+          2: [
+            { name: "Wither", latch: false, effect: "Saps enemy defenses: next Action against them gets +2d MD." },
+            { name: "Empower", latch: true, effect: "Attaches to ally: +1d MD on Attack Actions and +2 damage for up to 3 turns." },
+            { name: "Incite", latch: true, effect: "Forces enemy to attack a chosen target for next 3 turns (breakable on Failed roll)." },
+            { name: "Frighten", latch: false, effect: "Enemy can't move closer to chosen person/thing and can't attack them (breakable)." }
+          ],
+          3: [
+            { name: "Torture", latch: true, effect: "Target can't move, deal damage, do actions, or speak; all attacks against them are easier; 2 dmg at end of each turn for 3 turns (breakable)." },
+            { name: "Waking Nightmare", latch: true, effect: "Enemy gets -2 to all damage dealt for up to 3 turns." },
+            { name: "Pain Transfer", latch: true, effect: "All damage and healing taken by you is dealt as damage to enemy for 3 turns." }
+          ]
+        }
+      },
+      { id: "xenic_sprite", name: "Xenic Sprite", focus: "Utility", description: "Spirit made of pure xeon. Specializes in illusion, trickery, and mischief.",
+        spells: {
+          1: [
+            { name: "Mystic Trickery", latch: false, effect: "Creates small harmless effects including sensory effects, moves objects, affects lights, causes ground tremors, overlaps voice, opens/closes doors, or becomes bright 30 ft radius light." },
+            { name: "Spirit Scry", latch: false, effect: "See through spirit's eyes anywhere within double Spirit Range; invisible unless commanded." },
+            { name: "Fog Cloud", latch: true, effect: "Becomes fog cloud up to 50 ft diameter sphere; reduces visibility to 5 ft." },
+            { name: "Nature Form", latch: true, effect: "Attaches to ally: they can walk on water, talk to plants, and not need to breathe for up to 10 minutes." },
+            { name: "Mending", latch: false, effect: "Mends broken object within 15 ft cube of any complexity level (must be Tier I power or less)." }
+          ],
+          2: [
+            { name: "Wither", latch: false, effect: "Saps enemy defenses: next Action against them gets +2d MD." },
+            { name: "Animate Object", latch: true, effect: "Inhabits object no bigger than 20 ft cube (max 350 lbs); can move it and unlock doors. In a computer: +2d MD to hack/search." },
+            { name: "Illusion", latch: true, effect: "Detailed illusion within 20 ft cube with all senses; can move within range (breakable on Failed roll; immaterial)." },
+            { name: "Ghostwalk", latch: true, effect: "Attaches to ally: they become ethereal (not invisible), can walk through substances and can't affect the physical realm for 10 min max." }
+          ],
+          3: [
+            { name: "Truth", latch: true, effect: "Attempts to possess enemy; on success they enter trance and answer questions honestly (damage ends it; max 10 minutes)." },
+            { name: "Bend Physics", latch: false, effect: "Cast any Physics spell (range 50 ft, AOE 25 ft radius), including Clear spells. Concentration spells require Sprite engagement. (3/day)" }
+          ]
+        }
+      }
     ],
     levels: {
       1: {
@@ -930,8 +1113,8 @@ window.XRRPG_CLASS_DEFS = {
       { id: "inertial_dampening", name: "Inertial Dampening", description: "Attempt to stop enemy attack or movement (reaction Action Roll). Range 15/30/50 ft." },
       { id: "tethering_whip", name: "Tethering Whip", description: "Xeon binding whip from gauntlet. Attaches 25/50/100 ft away; pull yourself to target or target to you." },
       { id: "propulsion", name: "Propulsion", description: "Boost speed 2×/3×/5× with boots. Push targets 15/30/50 ft with gauntlets." },
-      { id: "onyx_shield", name: "Onyx Shield", description: "Black xeon armor plates. Ignore Minor/Severe/1 Critical from physical sources (lasts 10 min, then breaks)." },
-      { id: "blue_shield", name: "Blue Shield", description: "Bubble of blue xeon. Ignore Minor/Severe/1 Critical from xenic sources (lasts 10 min, then breaks)." },
+      { id: "onyx_shield", name: "Onyx Shield", description: "Black xeon armor plates. Ignore Minor/Severe/1 Critical from physical sources (lasts 10 min, breaks after blocking Critical)." },
+      { id: "blue_shield", name: "Blue Shield", description: "Bubble of blue xeon. Ignore Minor/Severe/1 Critical from xenic sources (lasts 10 min, breaks after blocking Critical)." },
       { id: "friction_control", name: "Friction Control", description: "Friction Up: sticky, grapple bonus, wall climbing. Friction Down: slippery, dodge bonus. Each lasts 5/10/30 min." },
       { id: "weight_control", name: "Weight Control", description: "Weight Up: +2/+3/+4 extra dmg (5×/day). Weight Down: 4× jump height/distance, half fall dmg (10 min/30 min/1 hr)." },
       { id: "hp_gain", name: "HP Gain", description: "Heal 3/5/7 HP worth of Injuries (3×/day, no Critical)." },

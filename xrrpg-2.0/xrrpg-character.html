@@ -602,7 +602,12 @@
       const select = document.getElementById('levelClassSelect');
       Array.from(select.options).forEach(option => {
         const required = classChromaRequirement(option.value);
-        option.disabled = !!required && chroma !== required;
+        const chromaInvalid = !!required && chroma !== required;
+        const def = getClassDef(option.value);
+        const classLevel = getClassLevel(option.value);
+        const atMaxLevel = def?.maxLevel && classLevel >= def.maxLevel;
+        option.disabled = chromaInvalid || !!atMaxLevel;
+        option.title = atMaxLevel ? `${option.value} is at max level (${def.maxLevel})` : '';
       });
       if (select.selectedOptions[0]?.disabled) {
         const fallback = Array.from(select.options).find(option => !option.disabled);
@@ -686,11 +691,29 @@
       const def = getClassDef(cls);
       const resDef = def?.resources?.find(r => r.id === resId);
       if (!resDef) return;
+      const classLevel = getClassLevel(cls);
       const choices = getClassChoices(cls);
       if (!choices.resources) choices.resources = {};
       const current = choices.resources[resId] || 0;
-      if (current >= resDef.maxPerDay) return;
+      const resMax = resDef.maxByLevel?.[classLevel] || resDef.maxPerDay;
+      if (current >= resMax) return;
       choices.resources[resId] = current + 1;
+      setClassChoices(cls, choices);
+      renderClassAbilitiesSection();
+    }
+
+    function toggleInstallEffect(cls, effectName) {
+      const choices = getClassChoices(cls);
+      const classLevel = getClassLevel(cls);
+      const installMax = classLevel >= 3 ? 8 : classLevel >= 2 ? 6 : 4;
+      if (!choices.effects_installed) choices.effects_installed = [];
+      const idx = choices.effects_installed.indexOf(effectName);
+      if (idx >= 0) {
+        choices.effects_installed.splice(idx, 1);
+      } else {
+        if (choices.effects_installed.length >= installMax) return;
+        choices.effects_installed.push(effectName);
+      }
       setClassChoices(cls, choices);
       renderClassAbilitiesSection();
     }
@@ -740,6 +763,9 @@
       body.querySelectorAll('[data-resource-dec]').forEach(btn => {
         btn.onclick = () => decrementResource(btn.dataset.cls, btn.dataset.resId);
       });
+      body.querySelectorAll('[data-install-effect]').forEach(btn => {
+        btn.onclick = () => toggleInstallEffect(btn.dataset.cls, btn.dataset.installEffect);
+      });
 
       initCollapsibles();
       applyOwnershipPermissions();
@@ -749,115 +775,169 @@
       const def = getClassDef(cls);
       if (!def) return `<div class="xrrpg-class-ability-subsection"><h3>${cls}</h3><p class="muted">No data available.</p></div>`;
 
-      let html = `<div class="xrrpg-class-ability-subsection" data-class="${cls}">`;
+      let html = `<div class="xrrpg-class-ability-subsection collapsible" data-class="${cls}" data-collapsible>`;
+      html += `<div class="collapsible-header">`;
       html += `<h3>${cls} <span class="muted">(Class Level ${classLevel})</span></h3>`;
+      html += `<button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"></button>`;
+      html += `</div>`;
+      html += `<div class="collapsible-body">`;
 
-      // Basic power (Adepts) — show current tier description
-      if (def.basicPower) {
-        const tier = Math.min(classLevel, def.basicPower.tiers.length - 1);
-        html += `<div class="xrrpg-ability-row"><strong>${def.basicPower.name}</strong> <span class="xrrpg-tier-badge">T${tier}</span></div>`;
-        html += `<p class="xrrpg-ability-desc">${def.basicPower.tiers[tier]}</p>`;
+      // ── CLERIC / WARLOCK: deity block at TOP ─────────────────────
+      if (choices.deity) {
+        const deityAbility = def.deityAbilities?.[choices.deity];
+        html += `<div class="xrrpg-ability-bubble">`;
+        html += `<div class="xrrpg-ability-row"><strong>Deity:</strong> ${choices.deity}</div>`;
+        if (deityAbility) html += `<p class="xrrpg-ability-desc">${deityAbility}</p>`;
+        html += `</div>`;
       }
 
-      // Chosen advanced powers (Adepts) — show tier and full description
+      // ── POSSESSOR: base range header ─────────────────────────────
+      if (cls === 'Possessor' && def.baseRange?.[classLevel]) {
+        html += `<div class="xrrpg-ability-bubble"><div class="xrrpg-ability-row"><span class="muted">Base Range <strong>(r)</strong> = <strong>${def.baseRange[classLevel]} ft</strong></span></div></div>`;
+      }
+
+      // ── ELEMENTALIST: current range header ───────────────────────
+      if (cls === 'Elementalist' && def.rangeByLevel?.[classLevel]) {
+        html += `<div class="xrrpg-ability-bubble"><div class="xrrpg-ability-row"><span class="muted">Current Range: <strong>${def.rangeByLevel[classLevel]} ft</strong></span></div></div>`;
+      }
+
+      // ── ENCHANTER: substance note ─────────────────────────────────
+      if (cls === 'Enchanter' && def.substanceNote) {
+        html += `<div class="xrrpg-ability-bubble"><div class="xrrpg-ability-row"><span class="muted">${def.substanceNote}</span></div></div>`;
+      }
+
+      // ── BASIC POWER (Adepts) ──────────────────────────────────────
+      if (def.basicPower) {
+        const tier = Math.min(classLevel, def.basicPower.tiers.length - 1);
+        html += `<div class="xrrpg-ability-bubble">`;
+        html += `<div class="xrrpg-ability-row"><strong>${def.basicPower.name}</strong> <span class="xrrpg-tier-badge">T${tier}</span></div>`;
+        html += `<p class="xrrpg-ability-desc">${def.basicPower.tiers[tier]}</p>`;
+        html += `</div>`;
+      }
+
+      // ── ADVANCED POWERS (Adepts) ──────────────────────────────────
       if (choices.advanced_powers?.length) {
         const tierCount = {};
         for (const p of choices.advanced_powers) tierCount[p] = (tierCount[p] || 0) + 1;
         for (const [name, tier] of Object.entries(tierCount)) {
           const power = def.advancedPowers?.find(p => p.name === name);
-          html += `<div class="xrrpg-ability-row"><strong>${name}</strong> <span class="xrrpg-tier-badge">T${tier}</span></div>`;
           const desc = power?.tiers[tier - 1] || '';
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>${name}</strong> <span class="xrrpg-tier-badge">T${tier}</span></div>`;
           if (desc) html += `<p class="xrrpg-ability-desc">${desc}</p>`;
+          html += `</div>`;
         }
       }
 
-      // Auto-granted abilities — cumulative from level 1 through classLevel
+      // ── AUTO-GRANTED ABILITIES ────────────────────────────────────
       if (def.levels) {
         for (let lvl = 1; lvl <= classLevel; lvl++) {
           const levelDef = def.levels[lvl] || def.levels['default'];
           if (!levelDef?.auto?.length) continue;
           for (const ability of levelDef.auto) {
-            html += `<div class="xrrpg-ability-row">${ability}</div>`;
+            html += `<div class="xrrpg-ability-bubble"><div class="xrrpg-ability-row">${ability}</div></div>`;
           }
         }
       }
 
-      // Sorcerer: devil name + description, emotion + ability
+      // ── SORCERER: devil name/description, emotion/ability ─────────
       if (choices.devil_name) {
+        html += `<div class="xrrpg-ability-bubble">`;
         html += `<div class="xrrpg-ability-row"><strong>Devil:</strong> ${choices.devil_name}</div>`;
         if (choices.devil_description) html += `<p class="xrrpg-ability-desc">${choices.devil_description}</p>`;
+        html += `</div>`;
       }
       if (choices.devil_emotion) {
         const emotion = def.devilEmotions?.find(e => e.label === choices.devil_emotion);
+        html += `<div class="xrrpg-ability-bubble">`;
         html += `<div class="xrrpg-ability-row"><strong>Devil Emotion:</strong> ${choices.devil_emotion}</div>`;
         if (emotion?.ability) html += `<p class="xrrpg-ability-desc">${emotion.ability}</p>`;
+        html += `</div>`;
       }
 
-      // Sorcerer: specialized powers with full descriptions
+      // ── SORCERER: specialized powers (per-level description) ──────
       if (choices.specialized_powers?.length) {
-        html += `<div class="xrrpg-ability-row"><strong>Specialized Powers:</strong></div>`;
+        const sorcIdx = Math.min(classLevel - 1, 2);
         for (const pName of choices.specialized_powers) {
           const power = def.specializedPowers?.find(p => p.name === pName);
-          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${pName}</strong></div>`;
-          if (power?.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${power.description}</p>`;
+          const desc = power?.descriptions?.[sorcIdx] || power?.description || '';
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>${pName}</strong></div>`;
+          if (desc) html += `<p class="xrrpg-ability-desc">${desc}</p>`;
+          html += `</div>`;
         }
       }
 
-      // Cleric/Warlock deity with ability
-      if (choices.deity) {
-        html += `<div class="xrrpg-ability-row"><strong>Deity:</strong> ${choices.deity}</div>`;
-        const deityAbility = def.deityAbilities?.[choices.deity];
-        if (deityAbility) html += `<p class="xrrpg-ability-desc">${deityAbility}</p>`;
+      // ── ELEMENTALIST: specialty ───────────────────────────────────
+      if (choices.specialty) {
+        html += `<div class="xrrpg-ability-bubble"><div class="xrrpg-ability-row"><strong>Specialty:</strong> ${choices.specialty}</div></div>`;
       }
 
-      // Elementalist specialty
-      if (choices.specialty) html += `<div class="xrrpg-ability-row"><strong>Specialty:</strong> ${choices.specialty}</div>`;
-
-      // Known spells (Bard, Physic, Possessor) — with full descriptions
+      // ── KNOWN SPELLS (Bard, Physic, Possessor) ───────────────────
       if (choices.spells_known?.length && def.spellPool && cls !== 'Enchanter') {
+        html += `<div class="xrrpg-ability-bubble">`;
         html += `<div class="xrrpg-ability-row"><strong>Spells Known (${choices.spells_known.length}):</strong></div>`;
         for (const spellName of choices.spells_known) {
           const spell = def.spellPool.find(s => s.name === spellName);
           const tags = [spell?.color ? `[${spell.color}]` : null, spell?.concentration ? '[Conc]' : null, spell?.aoe ? '[AOE]' : null].filter(Boolean).join(' ');
-          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${spellName}</strong>${tags ? ` <span class="muted">${tags}</span>` : ''}</div>`;
+          let rangeText = '';
+          if (cls === 'Possessor' && spell?.range && def.baseRange?.[classLevel]) {
+            const r = def.baseRange[classLevel];
+            if (spell.range === '0') rangeText = 'Self';
+            else if (spell.range === 'r') rangeText = `${r} ft`;
+            else if (spell.range === 'r x 2') rangeText = `${r * 2} ft`;
+            else if (spell.range === 'r / 2') rangeText = `${Math.floor(r / 2)} ft`;
+            else rangeText = spell.range;
+          }
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;">`;
+          html += `<strong>${spellName}</strong>`;
+          if (tags) html += ` <span class="muted">${tags}</span>`;
+          if (rangeText) html += ` <span class="muted">[${rangeText}]</span>`;
+          html += `</div>`;
           if (spell?.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${spell.description}</p>`;
         }
+        html += `</div>`;
       }
 
-      // Enchanter: show ALL spells available at current tier
+      // ── ENCHANTER: all spells by tier ────────────────────────────
       if (cls === 'Enchanter' && def.spellPool) {
         const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
         for (let t = 1; t <= maxTier; t++) {
           const tierSpells = def.spellPool.filter(s => s.tier === t);
           if (!tierSpells.length) continue;
+          html += `<div class="xrrpg-ability-bubble">`;
           html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Spells:</strong></div>`;
           for (const spell of tierSpells) {
-            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${spell.name}</strong>${spell.concentration ? ' <span class="muted">[Conc]</span>' : ''}${spell.substance ? ` — <em>${spell.substance}</em>` : ''}</div>`;
+            const rangeTag = spell.range ? ` <span class="muted">[${spell.range}]</span>` : '';
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${spell.name}</strong>${spell.concentration ? ' <span class="muted">[Conc]</span>' : ''}${rangeTag}${spell.substance ? ` — <em>${spell.substance}</em>` : ''}</div>`;
             html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${spell.description}</p>`;
           }
+          html += `</div>`;
         }
       }
 
-      // Elementalist: show ALL techniques available at current tier
+      // ── ELEMENTALIST: all techniques by tier ─────────────────────
       if (cls === 'Elementalist' && def.techniquePool) {
         const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
         for (let t = 1; t <= maxTier; t++) {
           const tierTechs = def.techniquePool.filter(tech => tech.tier === t);
           if (!tierTechs.length) continue;
+          html += `<div class="xrrpg-ability-bubble">`;
           html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Techniques:</strong></div>`;
           for (const tech of tierTechs) {
             html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${tech.name}</strong> <span class="xrrpg-tier-badge">${tech.element}</span> <span class="muted">(Req: ${tech.requirements})</span></div>`;
             html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${tech.description}</p>`;
           }
+          html += `</div>`;
         }
       }
 
-      // Demititan: chosen elements with progressive level abilities
+      // ── DEMITITAN: chosen elements ────────────────────────────────
       if (choices.elements?.length) {
-        html += `<div class="xrrpg-ability-row"><strong>Elements:</strong></div>`;
         for (const e of choices.elements) {
           const elDef = def.elementPool?.find(el => el.name === e.name);
-          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${e.name}</strong> <span class="xrrpg-tier-badge">Tier ${e.tier}</span>${elDef?.focus ? ` <span class="muted">(${elDef.focus})</span>` : ''}</div>`;
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>${e.name}</strong> <span class="xrrpg-tier-badge">Tier ${e.tier}</span>${elDef?.focus ? ` <span class="muted">(${elDef.focus})</span>` : ''}</div>`;
           if (elDef?.levelAbilities) {
             for (let lvl = 1; lvl <= classLevel; lvl++) {
               if (elDef.levelAbilities[lvl]) {
@@ -867,95 +947,178 @@
           } else if (elDef?.description) {
             html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${elDef.description}</p>`;
           }
+          html += `</div>`;
         }
       }
 
-      // Mystic/Summoner: chosen spirits with type info
+      // ── MYSTIC / SUMMONER: chosen spirits with spell tables ───────
       if (choices.spirits?.length) {
-        html += `<div class="xrrpg-ability-row"><strong>Spirits:</strong></div>`;
         for (const s of choices.spirits) {
           const spiritDef = def.spiritTypes?.find(st => st.name === s.type);
-          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${s.type}</strong> <span class="xrrpg-tier-badge">T${s.tier}</span>${spiritDef?.focus ? ` <span class="muted">(${spiritDef.focus})</span>` : ''}</div>`;
-          if (spiritDef?.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${spiritDef.description}</p>`;
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>${s.type}</strong> <span class="xrrpg-tier-badge">T${s.tier}</span>${spiritDef?.focus ? ` <span class="muted">(${spiritDef.focus})</span>` : ''}</div>`;
+          if (spiritDef?.description) html += `<p class="xrrpg-ability-desc">${spiritDef.description}</p>`;
+          if (spiritDef?.spells) {
+            for (let t = 1; t <= s.tier; t++) {
+              const tierSpells = spiritDef.spells[t] || [];
+              if (!tierSpells.length) continue;
+              html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.25rem;"><strong>Tier ${t} Spells:</strong></div>`;
+              for (const spell of tierSpells) {
+                html += `<div class="xrrpg-ability-row" style="margin-left:2rem;"><strong>${spell.name}</strong>${spell.latch ? ' <span class="muted">[Latch]</span>' : ''}</div>`;
+                html += `<p class="xrrpg-ability-desc" style="margin-left:2rem;">${spell.effect}</p>`;
+              }
+            }
+          }
+          html += `</div>`;
         }
       }
 
-      // Brawler: effects known with descriptions
+      // ── BRAWLER: effects known + install tracking ─────────────────
       if (choices.effects_known?.length) {
-        html += `<div class="xrrpg-ability-row"><strong>Effects Known:</strong></div>`;
+        const installMax = classLevel >= 3 ? 8 : classLevel >= 2 ? 6 : 4;
+        const installed = choices.effects_installed || [];
+        html += `<div class="xrrpg-ability-bubble">`;
+        html += `<div class="xrrpg-ability-row"><strong>Effects Known:</strong> <span class="muted">(${installed.length}/${installMax} installed)</span></div>`;
         for (const eName of choices.effects_known) {
           const eDef = def.effectPool?.find(e => e.name === eName);
-          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${eName}</strong></div>`;
-          if (eDef?.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${eDef.description}</p>`;
+          const isInstalled = installed.includes(eName);
+          const canInstall = !isInstalled && installed.length < installMax;
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem; display:flex; align-items:flex-start; gap:0.5rem;">`;
+          html += `<button type="button" class="xr-btn-secondary" style="font-size:0.7rem; padding:0.1rem 0.4rem; flex-shrink:0;" data-install-effect="${eName}" data-cls="${cls}"${canInstall || isInstalled ? '' : ' disabled'}>${isInstalled ? 'Uninstall' : 'Install'}</button>`;
+          html += `<div><strong>${eName}</strong>${isInstalled ? ' <span class="xrrpg-tier-badge">Installed</span>' : ''}`;
+          if (eDef?.description) html += `<p class="xrrpg-ability-desc">${eDef.description}</p>`;
+          html += `</div></div>`;
         }
+        html += `</div>`;
       }
 
-      // Alchemist: show potions and mixes available at current class level
+      // ── ALCHEMIST: trackers first, then tables ────────────────────
       if (cls === 'Alchemist' && def.potionPool) {
-        html += `<div class="xrrpg-ability-row"><strong>Potions Available:</strong></div>`;
-        for (const p of def.potionPool) {
-          if (p.minLevel > classLevel) continue;
-          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${p.name}</strong> <span class="muted">(${p.unlimited ? 'unlimited' : `${p.brewedPerDay}/day`})</span></div>`;
-          html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${p.description}</p>`;
+        const alcResources = def.resources || [];
+        const alcResVals = choices.resources || {};
+        const alcTrackers = alcResources.filter(res => {
+          if (res.minLevel && classLevel < res.minLevel) return false;
+          if (res.requiresPotion) {
+            const pot = def.potionPool?.find(p => p.id === res.requiresPotion);
+            if (!pot || pot.minLevel > classLevel) return false;
+          }
+          return true;
+        });
+        if (alcTrackers.length) {
+          html += `<div class="xrrpg-ability-bubble">`;
+          for (const res of alcTrackers) {
+            const current = alcResVals[res.id] || 0;
+            const resMax = res.maxByLevel?.[classLevel] || res.maxPerDay;
+            html += `<div class="xrrpg-resource-tracker">
+              <span class="label">${res.label}</span>
+              <button type="button" data-resource-dec data-cls="${cls}" data-res-id="${res.id}">−</button>
+              <span class="value">${current} / ${resMax}</span>
+              <button type="button" data-resource-inc data-cls="${cls}" data-res-id="${res.id}" data-max="${resMax}">+</button>
+            </div>`;
+          }
+          html += `</div>`;
         }
 
-        // Two-Potion Mixes
-        const availableTwoMixes = (def.twoPotionMixes || []).filter(m =>
-          m.strengthI.minLevel <= classLevel || m.strengthII.minLevel <= classLevel
-        );
-        if (availableTwoMixes.length) {
-          html += `<div class="xrrpg-ability-row" style="margin-top:0.5rem;"><strong>Two-Potion Mixes:</strong></div>`;
-          for (const m of availableTwoMixes) {
-            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${m.potions}</strong></div>`;
-            if (m.strengthI.minLevel <= classLevel) {
-              html += `<p class="xrrpg-ability-desc" style="margin-left:2rem;"><strong>Strength I — ${m.strengthI.name}:</strong> ${m.strengthI.effect}</p>`;
-            }
-            if (m.strengthII.minLevel <= classLevel) {
-              html += `<p class="xrrpg-ability-desc" style="margin-left:2rem;"><strong>Strength II — ${m.strengthII.name}:</strong> ${m.strengthII.effect}</p>`;
-            }
+        const availPotions = def.potionPool.filter(p => p.minLevel <= classLevel);
+        if (availPotions.length) {
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Potions Available:</strong></div>`;
+          html += `<table class="table-full" style="margin-top:0.5rem;"><thead><tr><th>Potion</th><th>Per Day</th><th>Effect</th></tr></thead><tbody>`;
+          for (const p of availPotions) {
+            html += `<tr><td><strong>${p.name}</strong></td><td>${p.unlimited ? '∞' : p.brewedPerDay + '/day'}</td><td>${p.description}</td></tr>`;
           }
+          html += `</tbody></table></div>`;
         }
 
-        // Three-Potion Mixes
-        const availableThreeMixes = (def.threePotionMixes || []).filter(m =>
+        const availTwoMixes = (def.twoPotionMixes || []).filter(m =>
           m.strengthI.minLevel <= classLevel || m.strengthII.minLevel <= classLevel
         );
-        if (availableThreeMixes.length) {
-          html += `<div class="xrrpg-ability-row" style="margin-top:0.5rem;"><strong>Three-Potion Mixes:</strong></div>`;
-          for (const m of availableThreeMixes) {
-            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${m.potions}</strong></div>`;
-            if (m.strengthI.minLevel <= classLevel) {
-              html += `<p class="xrrpg-ability-desc" style="margin-left:2rem;"><strong>Strength I — ${m.strengthI.name}:</strong> ${m.strengthI.effect}</p>`;
-            }
-            if (m.strengthII.minLevel <= classLevel) {
-              html += `<p class="xrrpg-ability-desc" style="margin-left:2rem;"><strong>Strength II — ${m.strengthII.name}:</strong> ${m.strengthII.effect}</p>`;
-            }
+        if (availTwoMixes.length) {
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Two-Potion Mixes:</strong></div>`;
+          html += `<table class="table-full" style="margin-top:0.5rem;"><thead><tr><th>Potions</th><th>Strength</th><th>Name</th><th>Effect</th></tr></thead><tbody>`;
+          for (const m of availTwoMixes) {
+            if (m.strengthI.minLevel <= classLevel)
+              html += `<tr><td><strong>${m.potions}</strong></td><td>I</td><td>${m.strengthI.name}</td><td>${m.strengthI.effect}</td></tr>`;
+            if (m.strengthII.minLevel <= classLevel)
+              html += `<tr><td><strong>${m.potions}</strong></td><td>II</td><td>${m.strengthII.name}</td><td>${m.strengthII.effect}</td></tr>`;
           }
+          html += `</tbody></table></div>`;
+        }
+
+        const availThreeMixes = (def.threePotionMixes || []).filter(m =>
+          m.strengthI.minLevel <= classLevel || m.strengthII.minLevel <= classLevel
+        );
+        if (availThreeMixes.length) {
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Three-Potion Mixes:</strong></div>`;
+          html += `<table class="table-full" style="margin-top:0.5rem;"><thead><tr><th>Potions</th><th>Strength</th><th>Name</th><th>Effect</th></tr></thead><tbody>`;
+          for (const m of availThreeMixes) {
+            if (m.strengthI.minLevel <= classLevel)
+              html += `<tr><td><strong>${m.potions}</strong></td><td>I</td><td>${m.strengthI.name}</td><td>${m.strengthI.effect}</td></tr>`;
+            if (m.strengthII.minLevel <= classLevel)
+              html += `<tr><td><strong>${m.potions}</strong></td><td>II</td><td>${m.strengthII.name}</td><td>${m.strengthII.effect}</td></tr>`;
+          }
+          html += `</tbody></table></div>`;
         }
       }
 
-      // Resource trackers — gated by minLevel, deity, emotion, and power requirements
-      const resources = def.resources || [];
-      const resVals = choices.resources || {};
-      for (const res of resources) {
-        if (res.minLevel && classLevel < res.minLevel) continue;
-        if (res.requiresDeity && choices.deity !== res.requiresDeity) continue;
-        if (res.requiresEmotion && choices.devil_emotion !== res.requiresEmotion) continue;
-        if (res.requiresPower && !(choices.specialized_powers || []).includes(res.requiresPower)) continue;
-        if (res.requiresPotion) {
-          const pot = def.potionPool?.find(p => p.id === res.requiresPotion);
-          if (!pot || pot.minLevel > classLevel) continue;
+      // ── RESOURCE TRACKERS (non-Alchemist) ────────────────────────
+      if (cls !== 'Alchemist') {
+        const resources = def.resources || [];
+        const resVals = choices.resources || {};
+        const trackers = resources.filter(res => {
+          if (res.minLevel && classLevel < res.minLevel) return false;
+          if (res.requiresDeity && choices.deity !== res.requiresDeity) return false;
+          if (res.requiresEmotion && choices.devil_emotion !== res.requiresEmotion) return false;
+          if (res.requiresPower && !(choices.specialized_powers || []).includes(res.requiresPower)) return false;
+          if (res.requiresElement && !(choices.elements || []).some(e => e.name === res.requiresElement)) return false;
+          if (res.requiresPotion) {
+            const pot = def.potionPool?.find(p => p.id === res.requiresPotion);
+            if (!pot || pot.minLevel > classLevel) return false;
+          }
+          return true;
+        });
+        if (trackers.length) {
+          html += `<div class="xrrpg-ability-bubble">`;
+          for (const res of trackers) {
+            const current = resVals[res.id] || 0;
+            const resMax = res.maxByLevel?.[classLevel] || res.maxPerDay;
+            html += `<div class="xrrpg-resource-tracker">
+              <span class="label">${res.label}</span>
+              <button type="button" data-resource-dec data-cls="${cls}" data-res-id="${res.id}">−</button>
+              <span class="value">${current} / ${resMax}</span>
+              <button type="button" data-resource-inc data-cls="${cls}" data-res-id="${res.id}" data-max="${resMax}">+</button>
+            </div>`;
+          }
+          html += `</div>`;
         }
-        const current = resVals[res.id] || 0;
-        html += `<div class="xrrpg-resource-tracker">
-          <span class="label">${res.label}</span>
-          <button type="button" data-resource-dec data-cls="${cls}" data-res-id="${res.id}">−</button>
-          <span class="value">${current} / ${res.maxPerDay}</span>
-          <button type="button" data-resource-inc data-cls="${cls}" data-res-id="${res.id}">+</button>
-        </div>`;
       }
 
-      html += `</div>`;
+      // ── ENCHANTER: chaos tables ───────────────────────────────────
+      if (cls === 'Enchanter' && classLevel >= 2) {
+        if (def.chaosTableMinor) {
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Minor Chaos Table (d10):</strong></div>`;
+          html += `<table class="table-full" style="margin-top:0.5rem;"><thead><tr><th>Roll</th><th>Name</th><th>Range</th><th>Effect</th></tr></thead><tbody>`;
+          for (const row of def.chaosTableMinor) {
+            html += `<tr><td>${row.roll}</td><td><strong>${row.name}</strong></td><td>${row.range}</td><td>${row.effect}</td></tr>`;
+          }
+          html += `</tbody></table></div>`;
+        }
+        if (classLevel >= 3 && def.chaosTableMajor) {
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Major Chaos Table (d10, roll 11–20):</strong></div>`;
+          html += `<table class="table-full" style="margin-top:0.5rem;"><thead><tr><th>Roll</th><th>Name</th><th>Range</th><th>Effect</th></tr></thead><tbody>`;
+          for (const row of def.chaosTableMajor) {
+            html += `<tr><td>${row.roll}</td><td><strong>${row.name}</strong></td><td>${row.range}</td><td>${row.effect}</td></tr>`;
+          }
+          html += `</tbody></table></div>`;
+        }
+      }
+
+      html += `</div>`; // .collapsible-body
+      html += `</div>`; // .xrrpg-class-ability-subsection
       return html;
     }
 
@@ -1389,7 +1552,8 @@
       levelModal.classList.remove('hidden');
       document.getElementById('levelMsg').textContent = '';
       syncLevelClassOptionsByChroma();
-      const preferredClass = character.class_progression?.[0]?.class || classNames[0];
+      const prog = character.class_progression || [];
+      const preferredClass = prog[prog.length - 1]?.class || classNames[0];
       if (Array.from(document.getElementById('levelClassSelect').options).some(option => option.value === preferredClass && !option.disabled)) {
         document.getElementById('levelClassSelect').value = preferredClass;
       }

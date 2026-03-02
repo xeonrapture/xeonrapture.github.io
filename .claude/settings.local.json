@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:xeonrapture.com)"
+      "WebFetch(domain:xeonrapture.com)",
+      "Bash(ls empty:*)"
     ]
   }
 }
