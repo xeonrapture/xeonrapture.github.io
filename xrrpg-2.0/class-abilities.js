@@ -1162,6 +1162,7 @@ window.XRRPG_CLASS_DEFS = {
   "Brawler": {
     stat: "Vigor or Endurance",
     archetype: "Technologists",
+    maxLevel: 3,
     chromaRequired: null,
     effectPool: [
       { id: "cold_fist", name: "Cold Fist", description: "Inflict Frozen debuff (2 dmg on Success, +1d/+2d/+3d MD on next Action against them)." },
@@ -1204,52 +1205,49 @@ window.XRRPG_CLASS_DEFS = {
   "Dronemaster": {
     stat: "Wit or Intuition",
     archetype: "Technologists",
+    maxLevel: 3,
     chromaRequired: null,
     droneEffectPool: [
-      { id: "beam", name: "Beam", tier: 1, description: "Can fire a ice ray that inflicts the Frozen debuff (grants +1d Mastery Die on next Action against them). Fire beam deals +1 damage but it has to cool down next turn." },
-      { id: "shielding", name: "Shielding", tier: 1, description: "Can hover around a person and give them a bonus to defense against beam damage (target ignores Minor Injuries from xenic sources, but the shield breaks if it takes Severe or higher)" },
+      { id: "beam", name: "Beam", tier: 1, description: "Can fire an ice ray that inflicts the Frozen debuff (grants +1d Mastery Die on next Action against them). Fire beam deals +1 damage but it has to cool down next turn." },
+      { id: "shielding", name: "Shielding", tier: 1, description: "Can hover around a person and give them a bonus to defense against beam damage (target ignores Minor Injuries from xenic sources, but the shield breaks if it takes Severe or higher)." },
       { id: "hacking", name: "Hacking", tier: 1, description: "Can do a check for it to hack into things remotely; it can also look things up on the web. Hacking can't be used to disrupt weapons or other combat machinery." },
-      { id: "recon", name: "Recon", tier: 1, description: "The Recon Drone has a range of 500 ft and you can see through its eyes and hear through its ears." },
-      { id: "healing_drone", name: "Healing", tier: 1, description: "Can heal up to 2 HP's worth of Injuries up to 5 times a day (one target). Can also heal other drones and repair them if they've been destroyed (but if they've been disintegrated then tough luck)." },
+      { id: "recon", name: "Recon", tier: 1, description: "The Recon Drone has a drone connection range of 500 ft and you can see through its eyes and hear through its ears." },
+      { id: "healing_drone", name: "Healing", tier: 1, trackUses: 5, trackLabel: "Healing uses (per day)", description: "Can heal up to 2 HP's worth of Injuries up to 5 times a day (one target). Can also heal other drones and repair them if they've been destroyed (but if they've been disintegrated then tough luck)." },
       { id: "advanced_beam", name: "Advanced Beam", tier: 2, description: "Ice ray inflicts Advanced Frozen debuff (grants +2d Mastery Die on next Action against them). Fire beam deals +2 damage but it has to cool down next turn." },
       { id: "animal_mech", name: "Animal Mech", tier: 2, description: "This mech drone is in the shape of a small animal. This animal can do up to 2 damage on a Success during combat, but it has all the abilities of the animal otherwise. May be used to scout." },
       { id: "atmosphere_drone", name: "Atmosphere", tier: 2, description: "Creates a 30 ft radius bubble of atmosphere." },
       { id: "onyx_drone", name: "Onyx", tier: 2, description: "Can hover around a person and give them a defense bonus against physical damage (target ignores Minor Injuries from physical sources). It can also create floating black platforms (up to 2 at a time)." },
       { id: "advanced_recon", name: "Advanced Recon", tier: 2, description: "The Advanced Recon Drone has extremely advanced auditory and visual sensors. It can also go semi-invisible, making it extremely stealthy, and can sense sources of xeon." },
       { id: "projector", name: "Projector", tier: 2, description: "Can create holographic projections up to a 20 ft square." },
-      { id: "xeon_binding_drone", name: "Xeon Binding", tier: 3, description: "	Can bind two things together with a white glowing tether. This tether can last up to 5 minutes, and the drone can have up to 3 tethers going at a time. The tethers can hold up to 1000 lbs, and the drone can manipulate the direction and length of these tethers (max 30 ft). It can also attempt to move another person but it's not quite as effective at that." },
-      { id: "inertial_dampening_drone", name: "Inertial Dampening", tier: 3, description: "	This drone can shoot a blue beam at a person to either stop them moving (no charge) or hamper the person's attacks and defense for the next turn (has to charge for 1 turn, +2d Mastery Dice on Actions against this target)." },
+      { id: "xeon_binding_drone", name: "Xeon Binding", tier: 3, description: "Can bind two things together with a white glowing tether. This tether can last up to 5 minutes, and the drone can have up to 3 tethers going at a time. The tethers can hold up to 1000 lbs, and the drone can manipulate the direction and length of these tethers (max 30 ft). It can also attempt to move another person but it's not quite as effective at that." },
+      { id: "inertial_dampening_drone", name: "Inertial Dampening", tier: 3, description: "This drone can shoot a blue beam at a person to either stop them moving (no charge) or hamper the person's attacks and defense for the next turn (has to charge for 1 turn, +2d Mastery Dice on Actions against this target)." },
       { id: "weight_control_drone", name: "Weight Control", tier: 3, description: "Can shoot an orb of blue or red xeon at a person:<br>- Blue makes them go up to 2x their weight, which stops them in their tracks for the turn and damages them 2 on a Success<br>- Red makes them extra light, which makes them easier to push around" },
-      { id: "advanced_healing", name: "Advanced Healing", tier: 3, description: "	Can heal up to 5 HP's worth of Injuries up to 5 times a day (any amount of targets, can't heal Critical Injuries)." },
+      { id: "advanced_healing", name: "Advanced Healing", tier: 3, trackUses: 5, trackLabel: "Adv. Healing uses (per day)", description: "Can heal up to 5 HP's worth of Injuries up to 5 times a day (any amount of targets, can't heal Critical Injuries)." },
       { id: "diamond", name: "Diamond", tier: 3, description: "When hit by beam attacks (blue or red) it amplifies them, multiplying the amount damage they do by 1.5. Has to cooldown for a turn after use." },
       { id: "force_wave_drone", name: "Force Wave", tier: 3, description: "Can create force waves in up to a 30 ft cube in any direction. These force waves can throw up to 500 lbs of weight (if the weight is spread out), and anyone caught in it must attempt to resist the effect." },
-      { id: "advanced_hacking", name: "Advanced Hacking", tier: 3, description: "You can now attempt to hack cybermods, weaponry, and most other technological objects. If successful all the enemy's cybermods go down for a turn, or the select tech or weaponry goes down. This ability can only be used on any individual person or object once per day." }
+      { id: "advanced_hacking", name: "Advanced Hacking", tier: 3, trackUses: 1, trackLabel: "Adv. Hacking (1× per target, per day)", description: "You can now attempt to hack cybermods, weaponry, and most other technological objects. If successful all the enemy's cybermods go down for a turn, or the select tech or weaponry goes down. This ability can only be used on any individual person or object once per day." }
     ],
     levels: {
       1: {
-        auto: ["2 active drones. Max Tier I effects only. 1 effect per drone. Range 20 ft, height 10 ft. Each drone has 3 HP.", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
-        choices: [{ type: "configure_drones", maxDrones: 2, maxEffectsPerDrone: 1, maxEffectTier: 1, label: "Configure your 2 drones (1 Tier I effect each)" }]
+        auto: ["2 active drones + 1 docked slot. Max Tier I effects only. 1 effect per drone. Drone connection range: 20 ft, max height: 10 ft. Drone shooting range: always 30 ft. Each drone has 3 HP.", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
+        choices: []
       },
       2: {
-        auto: ["3 active drones. Tier I and II effects. 2 effects per drone. Range 30 ft, height 20 ft. Each drone has 4 HP."],
-        choices: [{ type: "configure_drones", maxDrones: 3, maxEffectsPerDrone: 2, maxEffectTier: 2, label: "Configure your 3 drones (up to 2 effects each, Tier I–II)" }]
+        auto: ["3 active drones + 1 docked slot. Tier I and II effects. 2 effects per drone. Drone connection range: 30 ft, max height: 20 ft. Drone shooting range: always 30 ft. Each drone has 4 HP."],
+        choices: []
       },
       3: {
-        auto: ["4 active drones. All tier effects. 2 effects per drone. Unlimited range/height. Each drone has 5 HP."],
-        choices: [{ type: "configure_drones", maxDrones: 4, maxEffectsPerDrone: 2, maxEffectTier: 3, label: "Configure your 4 drones (up to 2 effects each, all tiers)" }]
+        auto: ["4 active drones + 1 docked slot. All tier effects. 2 effects per drone. Unlimited connection range/max height. Drone shooting range: always 30 ft. Each drone has 5 HP."],
+        choices: []
       }
     },
-    resources: [
-      { id: "healing_drone_1", label: "Drone Healing #1", maxPerDay: 5 },
-      { id: "healing_drone_2", label: "Drone Healing #2", maxPerDay: 5 },
-      { id: "adv_healing_1", label: "Advanced Healing Drone #1", maxPerDay: 5 },
-      { id: "adv_hacking_1", label: "Advanced Hacking #1 (per target)", maxPerDay: 1 }
-    ]
+    resources: []
   },
 
   "Emitter Specialist": {
     stat: "Wit or Intuition",
     archetype: "Technologists",
+    maxLevel: 3,
     chromaRequired: null,
     emitterNote: "Emitters are small devices you throw (20 ft by hand) or launch from a gun. They stick to floors, walls, or ceilings, stay tethered to you, and return when spent or dismissed. Upgraded emitters can also perform the abilities of their lower-tier counterparts.",
     emitterPool: [
@@ -1289,6 +1287,7 @@ window.XRRPG_CLASS_DEFS = {
   "Explosives Expert": {
     stat: "Any",
     archetype: "Technologists",
+    maxLevel: 3,
     chromaRequired: null,
     bombNote: "Explosives can be thrown by hand (20 ft) or launched from a cannon. Effects don't flow around corners unless stated. Basic Damage and Basic Heal bombs are unlimited and don't count toward the daily limit. Higher-tier bombs include all lower-tier bomb capabilities.",
     bombPool: [
@@ -1334,25 +1333,23 @@ window.XRRPG_CLASS_DEFS = {
   "Gunslinger": {
     stat: "Wit or Intuition",
     archetype: "Technologists",
+    maxLevel: 3,
     chromaRequired: null,
     gunPool: [
-      { id: "healing_gun", name: "Healing Gun", tier: 1, description: "	Heals a 2 HP's worth of Injuries up to 5 times a day (one target)." },
-      { id: "freeze_gun", name: "Cold Gun", tier: 1, description: "	Inflicts Frozen (grants +1d Mastery Die on next Action against them). Gun does -1 dmg than usual (can't go below 0)." },
+      { id: "healing_gun", name: "Healing Gun", tier: 1, trackUses: 5, trackLabel: "Healing shots (per day)", description: "Heals 2 HP's worth of Injuries up to 5 times a day (one target)." },
+      { id: "freeze_gun", name: "Cold Gun", tier: 1, description: "Inflicts Frozen (grants +1d Mastery Die on next Action against them). Gun does -1 dmg than usual (can't go below 0)." },
       { id: "heat_gun", name: "Heat Gun", tier: 1, description: "Deals +1 damage but it has to cool down next turn." },
-      { id: "onyx_gun", name: "Onyx Gun", tier: 1, description: "Normal percussive gun, does physical damage" },
+      { id: "onyx_gun", name: "Onyx Gun", tier: 1, description: "Normal percussive gun, does physical damage." },
       { id: "grapple_gun", name: "Grapple Gun", tier: 1, description: "Can use to either move yourself to any place within 30 ft of you or attempt to attach to an enemy and move them to you, 30 ft range." },
       { id: "hacking_gun", name: "Hacking Gun", tier: 1, description: "Shoots a small device that hooks into the target's computer, enabling hacking." },
-
-      
       { id: "advanced_cold_gun", name: "Advanced Cold Gun", tier: 2, description: "Inflicts Advanced Frozen debuff (grants +2d Mastery Die on next Action against them). Gun does -1 dmg than usual on its own." },
       { id: "advanced_heat_gun", name: "Advanced Heat Gun", tier: 2, description: "Deals +2 damage but it has to cool down next turn." },
       { id: "obsidian_gun", name: "Advanced Obsidian Gun", tier: 2, description: "Obsidian gun deals an extra +1 dmg when the target only has physical or xenic defenses (but is completely blocked by onyx shielding)." },
       { id: "stamina_gun", name: "Stamina Gun", tier: 2, description: "The target gets to subtract one from their Stamina Used Total." },
       { id: "recon_gun", name: "Recon Gun", tier: 2, description: "Gun shoots tiny cameras, mics, or xeon sensors that stick to the target. These are easily destroyed, but blend into their environments. Can also shoot trackers." },
-      { id: "tranq_dart_gun", name: "Tranq Dart Gun", tier: 2, description: "Target's attacks are hampered, if it's a super good shot or if they're hit with multiple they can put the target to sleep (gives a +1d Mastery Die to all actions against target for 1 minute, 3 Tranq Darts puts the target to sleep)." },
-
-      { id: "advanced_healing_gun", name: "Advanced Healing Gun", tier: 3, description: "	Can heal up to 5 HP's worth of Injuries up to 5 times a day (one target, can't heal Critical Injuries)." },
-      { id: "uranium_gun", name: "Uranium Gun", tier: 3, description: "Deals +5 dmg but can only be used 3 times a day and inflicts a Minor Injury on its wielder when used.<br>On 4th time it explodes dealing 20 dmg to everything in a 10 ft radius and 10 dmg in the 10 ft after that. Everything surviving in a 100 ft radius takes a level of Spirit Decay." },
+      { id: "tranq_dart_gun", name: "Tranq Dart Gun", tier: 2, description: "Target's attacks are hampered; if it's a super good shot or if they're hit with multiple they can put the target to sleep (gives a +1d Mastery Die to all actions against target for 1 minute, 3 Tranq Darts puts the target to sleep)." },
+      { id: "advanced_healing_gun", name: "Advanced Healing Gun", tier: 3, trackUses: 5, trackLabel: "Adv. Healing shots (per day)", description: "Can heal up to 5 HP's worth of Injuries up to 5 times a day (one target, can't heal Critical Injuries)." },
+      { id: "uranium_gun", name: "Uranium Gun", tier: 3, trackUses: 3, trackLabel: "Uranium shots (4th = EXPLOSION!)", description: "Deals +5 dmg but can only be used 3 times a day and inflicts a Minor Injury on its wielder when used.<br>On 4th time it explodes dealing 20 dmg to everything in a 10 ft radius and 10 dmg in the 10 ft after that. Everything surviving in a 100 ft radius takes a level of Spirit Decay." },
       { id: "gravity_nullifier_gun", name: "Gravity Nullifier Gun", tier: 3, description: "Target's gravity is nullified for the next three turns." },
       { id: "buff_gun", name: "Buff Gun", tier: 3, description: "The target gets a +2d Mastery Die for the next minute (can't stack with another Buff Gun effect)." },
       { id: "force_gun", name: "Force Gun", tier: 3, description: "On hit forces the target to move up to 15 ft in any direction." }
@@ -1360,27 +1357,24 @@ window.XRRPG_CLASS_DEFS = {
     levels: {
       1: {
         auto: ["All Tier I guns and effects available. 1 effect slot per gun. Max 2 Large guns on person.", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
-        choices: [{ type: "configure_guns", maxEffectsPerGun: 1, maxEffectTier: 1, label: "Configure your guns (1 Tier I effect each)" }]
+        choices: []
       },
       2: {
         auto: ["All Tier II guns and effects available. 2 effect slots per gun."],
-        choices: [{ type: "configure_guns", maxEffectsPerGun: 2, maxEffectTier: 2, label: "Configure guns (up to 2 effects each, Tier I–II)" }]
+        choices: []
       },
       3: {
         auto: ["All guns and effects available. 3 effect slots per gun. Max 3 Large guns on person."],
-        choices: [{ type: "configure_guns", maxEffectsPerGun: 3, maxEffectTier: 3, label: "Configure guns (up to 3 effects each, all tiers)" }]
+        choices: []
       }
     },
-    resources: [
-      { id: "healing_gun_uses", label: "Healing Gun shots", maxPerDay: 5 },
-      { id: "adv_healing_gun_uses", label: "Advanced Healing Gun shots", maxPerDay: 5 },
-      { id: "uranium_gun_uses", label: "Uranium Gun shots (destroys on 4th use)", maxPerDay: 3 }
-    ]
+    resources: []
   },
 
   "Swordmaster": {
     stat: "Any",
     archetype: "Technologists",
+    maxLevel: 3,
     chromaRequired: null,
     swordPowers: [
       { id: "cold_heat", name: "Cold / Heat", tier: 1, description: "Cold: 2 dmg + Frozen (+1d MD on next Action against target). Heat: +1 dmg but heat power has to cool down next turn." },
@@ -1406,7 +1400,7 @@ window.XRRPG_CLASS_DEFS = {
     },
     resources: [
       { id: "powerful_attack", label: "Powerful Attacks", maxPerDay: 3 },
-      { id: "second_wind_uses", label: "Second Wind", maxPerDay: 3 }
+      { id: "second_wind_uses", label: "Second Wind", maxPerDay: 3, minLevel: 3 }
     ]
   }
 
