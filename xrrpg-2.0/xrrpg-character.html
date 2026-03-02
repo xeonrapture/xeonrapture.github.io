@@ -759,11 +759,204 @@
       renderClassAbilitiesSection();
     }
 
+    // ── DRONE MANAGEMENT ─────────────────────────────────────────────────────
+
+    function getDroneSlots(cls) {
+      const choices = getClassChoices(cls);
+      if (!choices.drone_slots) choices.drone_slots = { active: [null, null, null, null], docked: null };
+      // Ensure active is always 4 slots (padded with nulls)
+      while (choices.drone_slots.active.length < 4) choices.drone_slots.active.push(null);
+      return choices.drone_slots;
+    }
+
+    function droneHpMax(classLevel) {
+      return classLevel >= 3 ? 5 : classLevel >= 2 ? 4 : 3;
+    }
+
+    function newDrone(classLevel) {
+      return { name: '', hp: droneHpMax(classLevel), effects: [], resources: {} };
+    }
+
+    function saveDroneSlots(cls, slots) {
+      const choices = getClassChoices(cls);
+      choices.drone_slots = slots;
+      setClassChoices(cls, choices);
+      renderClassAbilitiesSection();
+    }
+
+    function addActiveDrone(cls, slotIdx) {
+      const classLevel = getClassLevel(cls);
+      const slots = getDroneSlots(cls);
+      if (slots.active[slotIdx] !== null) return;
+      slots.active[slotIdx] = newDrone(classLevel);
+      saveDroneSlots(cls, slots);
+    }
+
+    function removeActiveDrone(cls, slotIdx) {
+      const slots = getDroneSlots(cls);
+      slots.active[slotIdx] = null;
+      saveDroneSlots(cls, slots);
+    }
+
+    function addDockedDrone(cls) {
+      const classLevel = getClassLevel(cls);
+      const slots = getDroneSlots(cls);
+      if (slots.docked !== null) return;
+      slots.docked = newDrone(classLevel);
+      saveDroneSlots(cls, slots);
+    }
+
+    function removeDockedDrone(cls) {
+      const slots = getDroneSlots(cls);
+      slots.docked = null;
+      saveDroneSlots(cls, slots);
+    }
+
+    function dockActiveDrone(cls, activeIdx) {
+      // Swap active[activeIdx] with docked slot
+      const slots = getDroneSlots(cls);
+      const temp = slots.active[activeIdx];
+      slots.active[activeIdx] = slots.docked;
+      slots.docked = temp;
+      saveDroneSlots(cls, slots);
+    }
+
+    function undockDroneToSlot(cls, activeIdx) {
+      // Swap docked drone into active[activeIdx]
+      const slots = getDroneSlots(cls);
+      const temp = slots.docked;
+      slots.docked = slots.active[activeIdx];
+      slots.active[activeIdx] = temp;
+      saveDroneSlots(cls, slots);
+    }
+
+    function updateDroneHp(cls, activeIdx, isDocked, delta) {
+      const classLevel = getClassLevel(cls);
+      const slots = getDroneSlots(cls);
+      const drone = isDocked ? slots.docked : slots.active[activeIdx];
+      if (!drone) return;
+      const max = droneHpMax(classLevel);
+      drone.hp = Math.max(0, Math.min(max, (drone.hp ?? max) + delta));
+      saveDroneSlots(cls, slots);
+    }
+
+    function updateDroneName(cls, activeIdx, isDocked, name) {
+      const slots = getDroneSlots(cls);
+      const drone = isDocked ? slots.docked : slots.active[activeIdx];
+      if (!drone) return;
+      drone.name = name;
+      const choices = getClassChoices(cls);
+      choices.drone_slots = slots;
+      setClassChoices(cls, choices);
+      scheduleAutosave();
+    }
+
+    function toggleDroneEffect(cls, activeIdx, isDocked, effectId, checked, maxEffects) {
+      const slots = getDroneSlots(cls);
+      const drone = isDocked ? slots.docked : slots.active[activeIdx];
+      if (!drone) return;
+      if (!drone.effects) drone.effects = {};
+      if (checked) {
+        const count = Object.values(drone.effects).filter(Boolean).length;
+        if (count >= maxEffects) return;
+        drone.effects[effectId] = true;
+      } else {
+        delete drone.effects[effectId];
+        // Also clear per-drone resource for this effect
+        if (drone.resources) delete drone.resources[effectId + '_uses'];
+      }
+      saveDroneSlots(cls, slots);
+    }
+
+    function updateDroneRes(cls, activeIdx, isDocked, resKey, delta, resMax) {
+      const slots = getDroneSlots(cls);
+      const drone = isDocked ? slots.docked : slots.active[activeIdx];
+      if (!drone) return;
+      if (!drone.resources) drone.resources = {};
+      const cur = drone.resources[resKey] || 0;
+      drone.resources[resKey] = Math.max(0, Math.min(resMax, cur + delta));
+      saveDroneSlots(cls, slots);
+    }
+
+    // ── GUN MANAGEMENT ───────────────────────────────────────────────────────
+
+    function getGunList(cls) {
+      const choices = getClassChoices(cls);
+      if (!choices.gun_list) choices.gun_list = [];
+      return choices.gun_list;
+    }
+
+    function saveGunList(cls, guns) {
+      const choices = getClassChoices(cls);
+      choices.gun_list = guns;
+      setClassChoices(cls, choices);
+      renderClassAbilitiesSection();
+    }
+
+    function addGun(cls) {
+      const guns = getGunList(cls);
+      guns.push({ name: '', effects: {}, resources: {} });
+      saveGunList(cls, guns);
+    }
+
+    function removeGun(cls, idx) {
+      const guns = getGunList(cls);
+      guns.splice(idx, 1);
+      saveGunList(cls, guns);
+    }
+
+    function updateGunName(cls, idx, name) {
+      const guns = getGunList(cls);
+      if (!guns[idx]) return;
+      guns[idx].name = name;
+      const choices = getClassChoices(cls);
+      choices.gun_list = guns;
+      setClassChoices(cls, choices);
+      scheduleAutosave();
+    }
+
+    function toggleGunEffect(cls, idx, effectId, checked, maxEffects) {
+      const guns = getGunList(cls);
+      if (!guns[idx]) return;
+      if (!guns[idx].effects) guns[idx].effects = {};
+      if (checked) {
+        const count = Object.values(guns[idx].effects).filter(Boolean).length;
+        if (count >= maxEffects) return;
+        guns[idx].effects[effectId] = true;
+      } else {
+        delete guns[idx].effects[effectId];
+        if (guns[idx].resources) delete guns[idx].resources[effectId + '_uses'];
+      }
+      saveGunList(cls, guns);
+    }
+
+    function updateGunRes(cls, gunIdx, resKey, delta, resMax) {
+      const guns = getGunList(cls);
+      if (!guns[gunIdx]) return;
+      if (!guns[gunIdx].resources) guns[gunIdx].resources = {};
+      const cur = guns[gunIdx].resources[resKey] || 0;
+      guns[gunIdx].resources[resKey] = Math.max(0, Math.min(resMax, cur + delta));
+      saveGunList(cls, guns);
+    }
+
     function resetDailyResources() {
       if (!character.base_stats.class_ability_choices) return;
       for (const cls of Object.keys(character.base_stats.class_ability_choices)) {
         const choices = character.base_stats.class_ability_choices[cls];
         if (choices.resources) choices.resources = {};
+        // Reset per-drone resources
+        if (choices.drone_slots) {
+          for (const drone of choices.drone_slots.active) {
+            if (drone) drone.resources = {};
+          }
+          if (choices.drone_slots.docked) choices.drone_slots.docked.resources = {};
+        }
+        // Reset per-gun resources
+        if (choices.gun_list) {
+          for (const gun of choices.gun_list) {
+            if (gun) gun.resources = {};
+          }
+        }
       }
       scheduleAutosave();
       renderClassAbilitiesSection();
@@ -809,6 +1002,82 @@
       });
       body.querySelectorAll('[data-uninstall-all]').forEach(btn => {
         btn.onclick = () => uninstallAllEffects(btn.dataset.cls);
+      });
+
+      // ── Drone management events ────────────────────────────────────
+      body.querySelectorAll('[data-drone-add-active]').forEach(btn => {
+        btn.onclick = () => addActiveDrone(btn.dataset.cls, Number(btn.dataset.droneAddActive));
+      });
+      body.querySelectorAll('[data-drone-remove-active]').forEach(btn => {
+        btn.onclick = () => removeActiveDrone(btn.dataset.cls, Number(btn.dataset.droneRemoveActive));
+      });
+      body.querySelectorAll('[data-drone-add-docked]').forEach(btn => {
+        btn.onclick = () => addDockedDrone(btn.dataset.cls);
+      });
+      body.querySelectorAll('[data-drone-remove-docked]').forEach(btn => {
+        btn.onclick = () => removeDockedDrone(btn.dataset.cls);
+      });
+      body.querySelectorAll('[data-drone-dock-active]').forEach(btn => {
+        btn.onclick = () => dockActiveDrone(btn.dataset.cls, Number(btn.dataset.droneDockActive));
+      });
+      body.querySelectorAll('[data-drone-undock-to]').forEach(btn => {
+        btn.onclick = () => undockDroneToSlot(btn.dataset.cls, Number(btn.dataset.droneUndockTo));
+      });
+      body.querySelectorAll('[data-drone-hp-inc]').forEach(btn => {
+        btn.onclick = () => updateDroneHp(btn.dataset.cls, Number(btn.dataset.activeIdx), false, 1);
+      });
+      body.querySelectorAll('[data-drone-hp-dec]').forEach(btn => {
+        btn.onclick = () => updateDroneHp(btn.dataset.cls, Number(btn.dataset.activeIdx), false, -1);
+      });
+      body.querySelectorAll('[data-drone-hp-inc-docked]').forEach(btn => {
+        btn.onclick = () => updateDroneHp(btn.dataset.cls, -1, true, 1);
+      });
+      body.querySelectorAll('[data-drone-hp-dec-docked]').forEach(btn => {
+        btn.onclick = () => updateDroneHp(btn.dataset.cls, -1, true, -1);
+      });
+      body.querySelectorAll('[data-drone-effect]').forEach(cb => {
+        cb.onchange = () => toggleDroneEffect(cb.dataset.cls, Number(cb.dataset.activeIdx), false, cb.dataset.effectId, cb.checked, Number(cb.dataset.maxEffects));
+      });
+      body.querySelectorAll('[data-drone-effect-docked]').forEach(cb => {
+        cb.onchange = () => toggleDroneEffect(cb.dataset.cls, -1, true, cb.dataset.effectId, cb.checked, Number(cb.dataset.maxEffects));
+      });
+      body.querySelectorAll('[data-drone-res-inc]').forEach(btn => {
+        btn.onclick = () => updateDroneRes(btn.dataset.cls, Number(btn.dataset.activeIdx), false, btn.dataset.resKey, 1, Number(btn.dataset.resMax));
+      });
+      body.querySelectorAll('[data-drone-res-dec]').forEach(btn => {
+        btn.onclick = () => updateDroneRes(btn.dataset.cls, Number(btn.dataset.activeIdx), false, btn.dataset.resKey, -1, Number(btn.dataset.resMax));
+      });
+      body.querySelectorAll('[data-drone-res-inc-docked]').forEach(btn => {
+        btn.onclick = () => updateDroneRes(btn.dataset.cls, -1, true, btn.dataset.resKey, 1, Number(btn.dataset.resMax));
+      });
+      body.querySelectorAll('[data-drone-res-dec-docked]').forEach(btn => {
+        btn.onclick = () => updateDroneRes(btn.dataset.cls, -1, true, btn.dataset.resKey, -1, Number(btn.dataset.resMax));
+      });
+      body.querySelectorAll('[data-drone-name-active]').forEach(input => {
+        input.onchange = () => updateDroneName(input.dataset.cls, Number(input.dataset.droneNameActive), false, input.value);
+      });
+      body.querySelectorAll('[data-drone-name-docked]').forEach(input => {
+        input.onchange = () => updateDroneName(input.dataset.cls, -1, true, input.value);
+      });
+
+      // ── Gun management events ──────────────────────────────────────
+      body.querySelectorAll('[data-gun-add]').forEach(btn => {
+        btn.onclick = () => addGun(btn.dataset.cls);
+      });
+      body.querySelectorAll('[data-gun-remove]').forEach(btn => {
+        btn.onclick = () => removeGun(btn.dataset.cls, Number(btn.dataset.gunRemove));
+      });
+      body.querySelectorAll('[data-gun-name]').forEach(input => {
+        input.onchange = () => updateGunName(input.dataset.cls, Number(input.dataset.gunName), input.value);
+      });
+      body.querySelectorAll('[data-gun-effect]').forEach(cb => {
+        cb.onchange = () => toggleGunEffect(cb.dataset.cls, Number(cb.dataset.gunIdx), cb.dataset.effectId, cb.checked, Number(cb.dataset.maxEffects));
+      });
+      body.querySelectorAll('[data-gun-res-inc]').forEach(btn => {
+        btn.onclick = () => updateGunRes(btn.dataset.cls, Number(btn.dataset.gunIdx), btn.dataset.resKey, 1, Number(btn.dataset.resMax));
+      });
+      body.querySelectorAll('[data-gun-res-dec]').forEach(btn => {
+        btn.onclick = () => updateGunRes(btn.dataset.cls, Number(btn.dataset.gunIdx), btn.dataset.resKey, -1, Number(btn.dataset.resMax));
       });
 
       initCollapsibles();
@@ -1120,36 +1389,211 @@
         }
       }
 
-      // ── DRONEMASTER: drone effects by tier ───────────────────────
+      // ── DRONEMASTER: drone management + reference ────────────────
       if (cls === 'Dronemaster' && def.droneEffectPool) {
-        const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
-        for (let t = 1; t <= maxTier; t++) {
+        const maxActive = classLevel >= 3 ? 4 : classLevel >= 2 ? 3 : 2;
+        const maxEffectsPerDrone = classLevel >= 2 ? 2 : 1;
+        const maxEffectTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
+        const hpMax = droneHpMax(classLevel);
+        const connRange = classLevel >= 3 ? 'Unlimited' : classLevel >= 2 ? '30 ft' : '20 ft';
+        const maxHeight = classLevel >= 3 ? 'Unlimited' : classLevel >= 2 ? '20 ft' : '10 ft';
+
+        if (!choices.drone_slots) choices.drone_slots = { active: [null, null, null, null], docked: null };
+        while (choices.drone_slots.active.length < 4) choices.drone_slots.active.push(null);
+        const activeDrones = choices.drone_slots.active;
+        const dockedDrone = choices.drone_slots.docked;
+        const availEffects = def.droneEffectPool.filter(e => e.tier <= maxEffectTier);
+
+        // Info header
+        html += `<div class="xrrpg-ability-bubble">`;
+        html += `<div class="xrrpg-ability-row"><strong>Drone Connection Range:</strong> ${connRange} &nbsp;|&nbsp; <strong>Max Height:</strong> ${maxHeight}</div>`;
+        html += `<div class="xrrpg-ability-row"><strong>Drone Shooting Range:</strong> Always 30 ft</div>`;
+        html += `<div class="xrrpg-ability-row"><strong>HP per Drone:</strong> ${hpMax} &nbsp;|&nbsp; <strong>Active Slots:</strong> ${maxActive} &nbsp;|&nbsp; <strong>Effects per Drone:</strong> up to ${maxEffectsPerDrone}</div>`;
+        html += `</div>`;
+
+        // Active drone slots
+        for (let i = 0; i < maxActive; i++) {
+          const drone = activeDrones[i] || null;
+          const selectedEffects = drone?.effects || {};
+          const selectedCount = Object.values(selectedEffects).filter(Boolean).length;
+
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.4rem;">`;
+          html += `<strong>Active Drone Slot ${i + 1}</strong>`;
+          html += `<div style="display:flex; gap:0.4rem; flex-wrap:wrap;">`;
+          if (drone) {
+            html += `<button type="button" class="xr-btn-secondary" style="font-size:0.8rem; padding:0.2rem 0.6rem;" data-drone-dock-active="${i}" data-cls="${cls}">${dockedDrone ? 'Swap with Docked' : 'Dock'}</button>`;
+            html += `<button type="button" class="xr-btn-secondary" style="font-size:0.8rem; padding:0.2rem 0.6rem;" data-drone-remove-active="${i}" data-cls="${cls}">Remove</button>`;
+          } else {
+            html += `<button type="button" class="xr-btn-secondary" style="font-size:0.8rem; padding:0.2rem 0.6rem;" data-drone-add-active="${i}" data-cls="${cls}">+ Add Drone</button>`;
+          }
+          html += `</div></div>`;
+
+          if (drone) {
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;">`;
+            html += `<label style="display:flex; align-items:center; gap:0.4rem;"><strong>Name:</strong> <input type="text" value="${(drone.name || '').replace(/"/g, '&quot;')}" data-drone-name-active="${i}" data-cls="${cls}" style="flex:1; min-width:140px;"></label>`;
+            html += `</div>`;
+            const curHp = drone.hp ?? hpMax;
+            html += `<div class="xrrpg-resource-tracker" style="margin-left:1rem;"><span class="label">HP</span>`;
+            html += `<button type="button" data-drone-hp-dec data-active-idx="${i}" data-cls="${cls}">−</button>`;
+            html += `<span class="value">${curHp} / ${hpMax}</span>`;
+            html += `<button type="button" data-drone-hp-inc data-active-idx="${i}" data-cls="${cls}">+</button></div>`;
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.4rem;"><strong>Effects</strong> <span class="muted">(${selectedCount}/${maxEffectsPerDrone}):</span></div>`;
+            html += `<div style="margin-left:1rem; display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.3rem;">`;
+            for (const eff of availEffects) {
+              const isSel = !!selectedEffects[eff.id];
+              const atMax = !isSel && selectedCount >= maxEffectsPerDrone;
+              html += `<label style="display:flex; align-items:center; gap:0.25rem; cursor:${atMax ? 'default' : 'pointer'};"><input type="checkbox" data-drone-effect data-active-idx="${i}" data-cls="${cls}" data-effect-id="${eff.id}" data-max-effects="${maxEffectsPerDrone}" ${isSel ? 'checked' : ''} ${atMax ? 'disabled' : ''}> <span style="opacity:${atMax && !isSel ? '0.5' : '1'}">${eff.name}</span></label>`;
+            }
+            html += `</div>`;
+            // Per-drone resource trackers for selected trackable effects
+            for (const eff of availEffects) {
+              if (!selectedEffects[eff.id] || !eff.trackUses) continue;
+              const resKey = eff.id + '_uses';
+              const cur = (drone.resources || {})[resKey] || 0;
+              html += `<div class="xrrpg-resource-tracker" style="margin-left:1rem;"><span class="label">${eff.trackLabel || eff.name + ' uses'}</span>`;
+              html += `<button type="button" data-drone-res-dec data-active-idx="${i}" data-cls="${cls}" data-res-key="${resKey}" data-res-max="${eff.trackUses}">−</button>`;
+              html += `<span class="value">${cur} / ${eff.trackUses}</span>`;
+              html += `<button type="button" data-drone-res-inc data-active-idx="${i}" data-cls="${cls}" data-res-key="${resKey}" data-res-max="${eff.trackUses}">+</button></div>`;
+            }
+          } else {
+            html += `<div class="xrrpg-ability-row muted" style="margin-left:1rem;">Empty — click "+ Add Drone" to configure this slot.</div>`;
+          }
+          html += `</div>`;
+        }
+
+        // Docked drone slot
+        html += `<div class="xrrpg-ability-bubble">`;
+        html += `<div class="xrrpg-ability-row" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.4rem;">`;
+        html += `<strong>Docked Drone</strong>`;
+        html += `<div style="display:flex; gap:0.4rem; flex-wrap:wrap;">`;
+        if (dockedDrone) {
+          // Provide a swap button for each non-null active slot + empty slots
+          for (let i = 0; i < maxActive; i++) {
+            html += `<button type="button" class="xr-btn-secondary" style="font-size:0.8rem; padding:0.2rem 0.6rem;" data-drone-undock-to="${i}" data-cls="${cls}">${activeDrones[i] ? `Swap w/ Slot ${i+1}` : `Deploy to Slot ${i+1}`}</button>`;
+          }
+          html += `<button type="button" class="xr-btn-secondary" style="font-size:0.8rem; padding:0.2rem 0.6rem;" data-drone-remove-docked data-cls="${cls}">Remove</button>`;
+        } else {
+          html += `<button type="button" class="xr-btn-secondary" style="font-size:0.8rem; padding:0.2rem 0.6rem;" data-drone-add-docked data-cls="${cls}">+ Add Drone</button>`;
+        }
+        html += `</div></div>`;
+
+        if (dockedDrone) {
+          const dSelectedEffects = dockedDrone.effects || {};
+          const dSelectedCount = Object.values(dSelectedEffects).filter(Boolean).length;
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem;">`;
+          html += `<label style="display:flex; align-items:center; gap:0.4rem;"><strong>Name:</strong> <input type="text" value="${(dockedDrone.name || '').replace(/"/g, '&quot;')}" data-drone-name-docked data-cls="${cls}" style="flex:1; min-width:140px;"></label>`;
+          html += `</div>`;
+          const curHp = dockedDrone.hp ?? hpMax;
+          html += `<div class="xrrpg-resource-tracker" style="margin-left:1rem;"><span class="label">HP</span>`;
+          html += `<button type="button" data-drone-hp-dec-docked data-cls="${cls}">−</button>`;
+          html += `<span class="value">${curHp} / ${hpMax}</span>`;
+          html += `<button type="button" data-drone-hp-inc-docked data-cls="${cls}">+</button></div>`;
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.4rem;"><strong>Effects</strong> <span class="muted">(${dSelectedCount}/${maxEffectsPerDrone}):</span></div>`;
+          html += `<div style="margin-left:1rem; display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.3rem;">`;
+          for (const eff of availEffects) {
+            const isSel = !!dSelectedEffects[eff.id];
+            const atMax = !isSel && dSelectedCount >= maxEffectsPerDrone;
+            html += `<label style="display:flex; align-items:center; gap:0.25rem; cursor:${atMax ? 'default' : 'pointer'};"><input type="checkbox" data-drone-effect-docked data-cls="${cls}" data-effect-id="${eff.id}" data-max-effects="${maxEffectsPerDrone}" ${isSel ? 'checked' : ''} ${atMax ? 'disabled' : ''}> <span style="opacity:${atMax && !isSel ? '0.5' : '1'}">${eff.name}</span></label>`;
+          }
+          html += `</div>`;
+          for (const eff of availEffects) {
+            if (!dSelectedEffects[eff.id] || !eff.trackUses) continue;
+            const resKey = eff.id + '_uses';
+            const cur = (dockedDrone.resources || {})[resKey] || 0;
+            html += `<div class="xrrpg-resource-tracker" style="margin-left:1rem;"><span class="label">${eff.trackLabel || eff.name + ' uses'}</span>`;
+            html += `<button type="button" data-drone-res-dec-docked data-cls="${cls}" data-res-key="${resKey}" data-res-max="${eff.trackUses}">−</button>`;
+            html += `<span class="value">${cur} / ${eff.trackUses}</span>`;
+            html += `<button type="button" data-drone-res-inc-docked data-cls="${cls}" data-res-key="${resKey}" data-res-max="${eff.trackUses}">+</button></div>`;
+          }
+        } else {
+          html += `<div class="xrrpg-ability-row muted" style="margin-left:1rem;">No drone currently docked.</div>`;
+        }
+        html += `</div>`;
+
+        // Reference table: available effects by tier
+        html += `<div class="xrrpg-ability-bubble">`;
+        html += `<div class="xrrpg-ability-row"><strong>Drone Effect Reference:</strong></div>`;
+        for (let t = 1; t <= maxEffectTier; t++) {
           const tierEffects = def.droneEffectPool.filter(e => e.tier === t);
           if (!tierEffects.length) continue;
-          html += `<div class="xrrpg-ability-bubble">`;
-          html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Drone Effects:</strong></div>`;
+          html += `<div class="xrrpg-ability-row" style="margin-top:0.4rem;"><strong>Tier ${t}:</strong></div>`;
           for (const e of tierEffects) {
-            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${e.name}</strong></div>`;
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${e.name}</strong>${e.trackUses ? ` <span class="xrrpg-tier-badge">${e.trackUses}/day</span>` : ''}</div>`;
             if (e.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${e.description}</p>`;
           }
-          html += `</div>`;
         }
+        html += `</div>`;
       }
 
-      // ── GUNSLINGER: gun pool by tier ─────────────────────────────
+      // ── GUNSLINGER: gun management + reference ───────────────────
       if (cls === 'Gunslinger' && def.gunPool) {
-        const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
-        for (let t = 1; t <= maxTier; t++) {
-          const tierGuns = def.gunPool.filter(g => g.tier === t);
-          if (!tierGuns.length) continue;
+        const maxEffectsPerGun = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
+        const maxEffectTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
+        const maxLargeGuns = classLevel >= 3 ? 3 : 2;
+        const availGunEffects = def.gunPool.filter(e => e.tier <= maxEffectTier);
+
+        if (!choices.gun_list) choices.gun_list = [];
+        const guns = choices.gun_list;
+
+        // Info header
+        html += `<div class="xrrpg-ability-bubble">`;
+        html += `<div class="xrrpg-ability-row"><strong>Effects per Gun:</strong> up to ${maxEffectsPerGun} &nbsp;|&nbsp; <strong>Max Large Guns:</strong> ${maxLargeGuns}</div>`;
+        html += `</div>`;
+
+        // Gun list
+        for (let i = 0; i < guns.length; i++) {
+          const gun = guns[i];
+          const selEffects = gun.effects || {};
+          const selCount = Object.values(selEffects).filter(Boolean).length;
+
           html += `<div class="xrrpg-ability-bubble">`;
-          html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Gun Effects:</strong></div>`;
-          for (const g of tierGuns) {
-            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${g.name}</strong></div>`;
-            if (g.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${g.description}</p>`;
+          html += `<div class="xrrpg-ability-row" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.4rem;">`;
+          html += `<strong>Gun ${i + 1}${gun.name ? ': ' + gun.name : ''}</strong>`;
+          html += `<button type="button" class="xr-btn-secondary" style="font-size:0.8rem; padding:0.2rem 0.6rem;" data-gun-remove="${i}" data-cls="${cls}">Remove Gun</button>`;
+          html += `</div>`;
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.3rem;">`;
+          html += `<label style="display:flex; align-items:center; gap:0.4rem;"><strong>Name:</strong> <input type="text" value="${(gun.name || '').replace(/"/g, '&quot;')}" data-gun-name="${i}" data-cls="${cls}" style="flex:1; min-width:140px;"></label>`;
+          html += `</div>`;
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.4rem;"><strong>Effects</strong> <span class="muted">(${selCount}/${maxEffectsPerGun}):</span></div>`;
+          html += `<div style="margin-left:1rem; display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.3rem;">`;
+          for (const eff of availGunEffects) {
+            const isSel = !!selEffects[eff.id];
+            const atMax = !isSel && selCount >= maxEffectsPerGun;
+            html += `<label style="display:flex; align-items:center; gap:0.25rem; cursor:${atMax ? 'default' : 'pointer'};"><input type="checkbox" data-gun-effect data-gun-idx="${i}" data-cls="${cls}" data-effect-id="${eff.id}" data-max-effects="${maxEffectsPerGun}" ${isSel ? 'checked' : ''} ${atMax ? 'disabled' : ''}> <span style="opacity:${atMax && !isSel ? '0.5' : '1'}">${eff.name}</span></label>`;
+          }
+          html += `</div>`;
+          // Per-gun resource trackers for selected trackable effects
+          for (const eff of availGunEffects) {
+            if (!selEffects[eff.id] || !eff.trackUses) continue;
+            const resKey = eff.id + '_uses';
+            const cur = (gun.resources || {})[resKey] || 0;
+            html += `<div class="xrrpg-resource-tracker" style="margin-left:1rem;"><span class="label">${eff.trackLabel || eff.name + ' uses'}</span>`;
+            html += `<button type="button" data-gun-res-dec data-gun-idx="${i}" data-cls="${cls}" data-res-key="${resKey}" data-res-max="${eff.trackUses}">−</button>`;
+            html += `<span class="value">${cur} / ${eff.trackUses}</span>`;
+            html += `<button type="button" data-gun-res-inc data-gun-idx="${i}" data-cls="${cls}" data-res-key="${resKey}" data-res-max="${eff.trackUses}">+</button></div>`;
           }
           html += `</div>`;
         }
+
+        // Add gun button
+        html += `<div class="xrrpg-ability-bubble">`;
+        html += `<button type="button" class="xr-btn-secondary" data-gun-add data-cls="${cls}">+ Add Gun</button>`;
+        html += `</div>`;
+
+        // Reference table: gun effects by tier
+        html += `<div class="xrrpg-ability-bubble">`;
+        html += `<div class="xrrpg-ability-row"><strong>Gun Effect Reference:</strong></div>`;
+        for (let t = 1; t <= maxEffectTier; t++) {
+          const tierGuns = def.gunPool.filter(g => g.tier === t);
+          if (!tierGuns.length) continue;
+          html += `<div class="xrrpg-ability-row" style="margin-top:0.4rem;"><strong>Tier ${t}:</strong></div>`;
+          for (const g of tierGuns) {
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${g.name}</strong>${g.trackUses ? ` <span class="xrrpg-tier-badge">${g.trackUses}/day</span>` : ''}</div>`;
+            if (g.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${g.description}</p>`;
+          }
+        }
+        html += `</div>`;
       }
 
       // ── SWORDMASTER: sword powers by tier ────────────────────────
