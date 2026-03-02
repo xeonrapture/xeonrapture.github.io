@@ -375,7 +375,7 @@ window.XRRPG_CLASS_DEFS = {
       { id: "bend_fate", name: "Bend Fate", descriptions: [
         "Take a consequence from a willing target within 15 ft.",
         "Take a consequence from a willing target within 15 ft, or from an unwilling target within 30 ft.",
-        "Take a consequence from any target within 50 ft. Can also transfer it to a different target (3x/day)."
+        "Take a consequence from a willing or unwilling target within 50 ft. Can also transfer it to a different target instead of taking it yourself (3x/day)."
       ]},
       { id: "invigorate", name: "Invigorate", descriptions: [
         "Grant +1d MD to the next Action of any visible target.",
@@ -408,9 +408,9 @@ window.XRRPG_CLASS_DEFS = {
         "Heal target 5 HP's worth of Injuries. Can heal Critical Injuries (3x/day)."
       ]},
       { id: "chaos", name: "Chaos", descriptions: [
-        "Roll a d8 and cast the corresponding Tier I <a href='/xr/XRRGP+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> spell without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier I spell for free; every consecutive 8 also lets you pick a free spell.",
-        "Roll a d8 and cast the corresponding Tier II <a href='/xr/XRRGP+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> spell without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier II spell for free; every consecutive 8 also lets you pick a free spell.",
-        "Roll a d8 and cast the corresponding Tier III <a href='/xr/XRRGP+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> spell without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier III spell for free; every consecutive 8 also lets you pick a free spell."
+        "Roll a d8 and cast the corresponding Tier I <a href='https://xeonrapture.com/xr/XRRPG+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> Chaos spell (1. Prestidigitation, 2. Mending, 3. Charm, 4. Little Heal, 5. Electric Zap, 6. Comprehend Languages, 7. Clone Image, 8. Breath of Chaos) without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier I spell for free; every consecutive 8 also lets you pick a free spell.",
+        "Roll a d8 and cast the corresponding Tier II <a href='https://xeonrapture.com/xr/XRRPG+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> Chaos spell (1. Petrify, 2. Poison, 3. Scrying, 4. Illusion, 5. Ghostwalk, 6. Solid Illusion, 7. Pocket Dimension, 8. Touch of Chaos) without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier II spell for free; every consecutive 8 also lets you pick a free spell.",
+        "Roll a d8 and cast the corresponding Tier III <a href='https://xeonrapture.com/xr/XRRPG+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> Chaos spell (1. Xenic Plane Portal, 2. Swap Places, 3. Stasis Lock, 4. Animate Object, 5. Tiny Pocket Hut, 6. Enbiggen, 7. Ensmallen, 8. Call of Chaos) without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier III spell for free; every consecutive 8 also lets you pick a free spell."
       ]}
     ],
     devilEmotions: [
