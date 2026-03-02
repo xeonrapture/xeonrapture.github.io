@@ -374,7 +374,7 @@ window.XRRPG_CLASS_DEFS = {
       ]},
       { id: "bend_fate", name: "Bend Fate", descriptions: [
         "Take a consequence from a willing target within 15 ft.",
-        "Take a consequence from a willing target within 15 ft (no action), OR from an unwilling target within 30 ft (costs an Action).",
+        "Take a consequence from a willing target within 15 ft, or from an unwilling target within 30 ft.",
         "Take a consequence from any target within 50 ft. Can also transfer it to a different target (3x/day)."
       ]},
       { id: "invigorate", name: "Invigorate", descriptions: [
@@ -408,9 +408,9 @@ window.XRRPG_CLASS_DEFS = {
         "Heal target 5 HP's worth of Injuries. Can heal Critical Injuries (3x/day)."
       ]},
       { id: "chaos", name: "Chaos", descriptions: [
-        "Cast Enchanter Chaos at Tier I.",
-        "Cast Enchanter Chaos at Tier II.",
-        "Cast Enchanter Chaos at Tier III."
+        "Roll a d8 and cast the corresponding Tier I <a href='/xr/XRRGP+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> spell without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier I spell for free; every consecutive 8 also lets you pick a free spell.",
+        "Roll a d8 and cast the corresponding Tier II <a href='/xr/XRRGP+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> spell without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier II spell for free; every consecutive 8 also lets you pick a free spell.",
+        "Roll a d8 and cast the corresponding Tier III <a href='/xr/XRRGP+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> spell without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier III spell for free; every consecutive 8 also lets you pick a free spell."
       ]}
     ],
     devilEmotions: [
@@ -653,26 +653,27 @@ window.XRRPG_CLASS_DEFS = {
     archetype: "Magicians",
     chromaRequired: null,
     maxLevel: 4,
+    baseRange: { 1: 20, 2: 30, 3: 50, 4: 50 },
     spellPool: [
-      { id: "terrifying_melody", name: "Terrifying Melody", tier: 1, description: "Reveal horrifying vision to enemy: 2 dmg on Success (psychic)." },
-      { id: "song_of_health", name: "Song of Health", tier: 1, description: "Heal people you choose in range (can heal Minor Injuries)." },
-      { id: "song_of_acuity", name: "Song of Acuity", tier: 1, concentration: true, description: "Everyone in range: +2d MD for sense checks for 10 min." },
-      { id: "song_of_breath", name: "Song of Breath", tier: 1, concentration: true, description: "Create atmosphere everywhere in range centered on you." },
-      { id: "healing_melody", name: "Healing Melody", tier: 1, description: "Heal one target (Severe Injuries or two Minor Injuries)." },
-      { id: "slowing_melody", name: "Slowing Melody", tier: 1, description: "Slow enemy's actions for ~10 sec (overcome mental defenses; +1d MD against them)." },
-      { id: "rejuvenating_melody", name: "Rejuvenating Melody", tier: 1, concentration: true, description: "Target ally: +1d MD for 10 min." },
-      { id: "charming_melody", name: "Charming Melody", tier: 1, concentration: true, description: "Overcome enemy's mental defenses to charm them." },
-      { id: "personal_illusion", name: "Personal Illusion", tier: 1, concentration: true, description: "Single target illusion (up to 50 ft radius, target can't see you can't see it)." },
-      { id: "song_of_bolstering", name: "Song of Bolstering", tier: 2, concentration: true, description: "All allies in range: +2d MD to either Vig+End or Int+Wit for 10 min." },
-      { id: "song_of_discord", name: "Song of Discord", tier: 2, description: "Overcome any number of enemies' mental defenses: +1d MD on next Action against each." },
-      { id: "song_of_life", name: "Song of Life", tier: 2, concentration: true, description: "Heal up to 3 HP distributed among allies per round (stamina each round, no Critical)." },
-      { id: "fortification_melody", name: "Fortification Melody", tier: 2, concentration: true, description: "One ally: reduce damage received by 1 (stamina each round)." },
-      { id: "thwarting_melody", name: "Thwarting Melody", tier: 2, description: "Overcome enemy's confidence: -2 dmg on their next attack, hesitation and safer choices." },
-      { id: "group_illusion", name: "Group Illusion", tier: 2, concentration: true, description: "Illusion for any number of enemies (up to 50 ft radius sphere)." },
-      { id: "song_of_rejuvination", name: "Song of Rejuvenation", tier: 3, concentration: true, description: "Allies in range: +2d MD (stamina each round, 10 min)." },
-      { id: "song_of_thwarting", name: "Song of Thwarting", tier: 3, description: "Overcome any number of enemies' confidence: -2 dmg, hesitation, safer choices." },
-      { id: "passionate_melody", name: "Passionate Melody", tier: 3, description: "Allow ally one extremely empowered action: +4d MD on one Action." },
-      { id: "delusion", name: "Delusion", tier: 3, concentration: true, description: "Full-sensory illusion encapsulating enemy's entire world, or plant a belief in their head (stamina/round)." }
+      { id: "terrifying_melody", name: "Terrifying Melody", tier: 1, range: "r x 2", description: "Reveal horrifying vision to enemy: 2 dmg on Success (psychic)." },
+      { id: "song_of_health", name: "Song of Health", tier: 1, range: "r", description: "Heal people you choose in range (can heal Minor Injuries)." },
+      { id: "song_of_acuity", name: "Song of Acuity", tier: 1, range: "r / 2", concentration: true, description: "Everyone in range: +2d MD for sense checks for 10 min." },
+      { id: "song_of_breath", name: "Song of Breath", tier: 1, range: "r x 2", concentration: true, description: "Create atmosphere everywhere in range centered on you." },
+      { id: "healing_melody", name: "Healing Melody", tier: 1, range: "r / 2", description: "Heal one target (Severe Injuries or two Minor Injuries)." },
+      { id: "slowing_melody", name: "Slowing Melody", tier: 1, range: "r", description: "Slow enemy's actions for ~10 sec (overcome mental defenses; +1d MD against them)." },
+      { id: "rejuvenating_melody", name: "Rejuvenating Melody", tier: 1, range: "r", concentration: true, description: "Target ally: +1d MD for 10 min." },
+      { id: "charming_melody", name: "Charming Melody", tier: 1, range: "r", concentration: true, description: "Overcome enemy's mental defenses to charm them." },
+      { id: "personal_illusion", name: "Personal Illusion", tier: 1, range: "r", concentration: true, description: "Single target illusion (up to 50 ft radius, target can't see you can't see it)." },
+      { id: "song_of_bolstering", name: "Song of Bolstering", tier: 2, range: "r / 2", concentration: true, description: "All allies in range: +2d MD to either Vig+End or Int+Wit for 10 min." },
+      { id: "song_of_discord", name: "Song of Discord", tier: 2, range: "r", description: "Overcome any number of enemies' mental defenses: +1d MD on next Action against each." },
+      { id: "song_of_life", name: "Song of Life", tier: 2, range: "r / 2", concentration: true, description: "Heal up to 3 HP distributed among allies per round (stamina each round, no Critical)." },
+      { id: "fortification_melody", name: "Fortification Melody", tier: 2, range: "r", concentration: true, description: "One ally: reduce damage received by 1 (stamina each round)." },
+      { id: "thwarting_melody", name: "Thwarting Melody", tier: 2, range: "r x 2", description: "Overcome enemy's confidence: -2 dmg on their next attack, hesitation and safer choices." },
+      { id: "group_illusion", name: "Group Illusion", tier: 2, range: "r", concentration: true, description: "Illusion for any number of enemies (up to 50 ft radius sphere)." },
+      { id: "song_of_rejuvination", name: "Song of Rejuvenation", tier: 3, range: "r / 2", concentration: true, description: "Allies in range: +2d MD (stamina each round, 10 min)." },
+      { id: "song_of_thwarting", name: "Song of Thwarting", tier: 3, range: "r x 2", description: "Overcome any number of enemies' confidence: -2 dmg, hesitation, safer choices." },
+      { id: "passionate_melody", name: "Passionate Melody", tier: 3, range: "r", description: "Allow ally one extremely empowered action: +4d MD on one Action." },
+      { id: "delusion", name: "Delusion", tier: 3, range: "r", concentration: true, description: "Full-sensory illusion encapsulating enemy's entire world, or plant a belief in their head (stamina/round)." }
     ],
     levels: {
       1: {
@@ -705,42 +706,43 @@ window.XRRPG_CLASS_DEFS = {
     archetype: "Magicians",
     chromaRequired: null,
     maxLevel: 4,
+    baseRange: { 1: 20, 2: 30, 3: 50, 4: 50 },
     spellPool: [
       // Red Spells
-      { id: "heat_ray", name: "Heat Ray", tier: 1, color: "Red", description: "3 dmg on Success. Can't use red spells next turn." },
-      { id: "scorching_bomb", name: "Scorching Bomb", tier: 1, color: "Red", aoe: true, description: "AOE 2 dmg on Success. Can upcast to Tier II: 3 dmg, can't use red next turn." },
-      { id: "lighten_target", name: "Lighten Target", tier: 1, color: "Red", concentration: true, description: "Nullify fall dmg, double throw distance, half weight of object." },
-      { id: "sense_up", name: "Sense Up", tier: 1, color: "Green", concentration: true, description: "Amplify all senses of a target (or nullify with consent). At Tier II can nullify unwilling." },
-      { id: "healing_physic", name: "Healing", tier: 1, color: "Green", description: "Can heal Minor Injuries." },
-      { id: "send_thoughts", name: "Send Thoughts", tier: 1, color: "Gray", description: "Send thoughts to others; they can send a little back." },
-      { id: "xeon_sensing", name: "Xeon Sensing", tier: 1, color: "Gray", concentration: true, description: "See or reveal xenic spirits and other xeon sources including tech and magic items." },
-      { id: "cold_ray", name: "Cold Ray", tier: 1, color: "Blue", description: "2 dmg + Frozen debuff (+1d MD on next Action against them)." },
-      { id: "freezing_bomb", name: "Freezing Bomb", tier: 1, color: "Blue", aoe: true, description: "AOE 2 dmg. Upcast: 2 dmg + Frozen (+1d MD)." },
-      { id: "grippy_target", name: "Grippy Target", tier: 1, color: "Blue", concentration: true, description: "On ally: climb proficiently. On small object: stick to surfaces." },
-      { id: "scorch_ray", name: "Scorch Ray", tier: 2, color: "Red", description: "4 dmg on Success. Can't use red spells next turn." },
-      { id: "percussive_bomb", name: "Percussive Bomb", tier: 2, color: "Red", aoe: true, description: "2 dmg in 15 ft radius. Enemies pushed to edge of radius." },
-      { id: "high_jump", name: "High Jump", tier: 2, color: "Red", concentration: true, description: "Jump up to 30 ft. Lasts 1 hr." },
-      { id: "slippery_target", name: "Slippery Target", tier: 2, color: "Red", concentration: true, description: "Target can't move well; +1d MD on Actions against them while active." },
-      { id: "lighten_group", name: "Lighten Group", tier: 2, color: "Red", concentration: true, aoe: true, description: "Nullify fall dmg, double throw distance, half weight of group." },
-      { id: "freeze_ray", name: "Freeze Ray", tier: 2, color: "Blue", description: "2 dmg + Advanced Frozen (+2d MD on next Action against them)." },
-      { id: "force_field", name: "Force Field", tier: 2, color: "Blue", concentration: true, aoe: true, description: "Ignore Minor Injuries from xenic attacks (breaks on Severe)." },
-      { id: "leaden_foe", name: "Leaden Foe", tier: 2, color: "Blue", concentration: true, description: "Triple fall dmg, lock target in place, 2 dmg/turn on Success." },
-      { id: "electromag_seeing", name: "Electromagnetic Seeing", tier: 2, color: "Green", concentration: true, description: "See full electromagnetic spectrum (heat signatures, X-rays, radio waves)." },
-      { id: "atmosphere_physic", name: "Atmosphere", tier: 2, color: "Green", concentration: true, aoe: true, description: "Create breathable atmosphere in range." },
-      { id: "create_darkness", name: "Create Darkness", tier: 2, color: "Gray", concentration: true, aoe: true, description: "No one can see in range unless they have heat vision or xeon sensing." },
-      { id: "binding", name: "Binding", tier: 2, color: "Gray", concentration: true, description: "Xenic tethers: up to 400 lbs, 5 tethers, 5 min. Manipulate length/direction." },
-      { id: "onyx_shielding_physic", name: "Onyx Shielding", tier: 2, color: "Gray", concentration: true, aoe: true, description: "Defense vs onyx/obsidian/physical. Flat surface only. Ignore Minor from physical." },
-      { id: "flash_heat_trigger", name: "Flash Heat Trigger", tier: 3, color: "Red", concentration: true, aoe: true, description: "Heat blast in triggering rune. Spec conditions or manual (r×2). Lasts 1 day. 3 dmg, can't use red next turn." },
-      { id: "heat_wall", name: "Heat Wall", tier: 3, color: "Red", concentration: true, aoe: true, description: "40 ft wall (can bend). Heat damage 10 ft radius on one side (3 dmg, can't use red next turn)." },
-      { id: "force_wave_physic", name: "Force Wave", tier: 3, color: "Red", aoe: true, description: "Move everything in a 30 ft cube in one direction." },
-      { id: "slippery_group", name: "Slippery Group", tier: 3, color: "Red", concentration: true, aoe: true, description: "Enemies stuck/slippery; +1d MD on Actions against them." },
-      { id: "flash_cold_trigger", name: "Flash Cold Trigger", tier: 3, color: "Blue", concentration: true, aoe: true, description: "Cold blast in triggering rune. 2 dmg + Advanced Frozen (+2d MD on next two Actions against them). Lasts 1 day." },
-      { id: "cold_wall", name: "Cold Wall", tier: 3, color: "Blue", concentration: true, aoe: true, description: "40 ft wall (can bend). Frozen debuff (+1d MD) and 2 dmg on one side." },
-      { id: "grippy_group", name: "Grippy Group", tier: 3, color: "Blue", concentration: true, aoe: true, description: "Enemies stuck to ground, can't move; +1d MD on Actions against them." },
-      { id: "life_force", name: "Life Force", tier: 3, color: "Green", concentration: true, aoe: true, description: "Allies: +1d MD continuously. Stamina each round." },
-      { id: "shade", name: "Shade", tier: 3, color: "Gray", concentration: true, description: "Make someone a stealthy shade (invisible, move silently)." },
-      { id: "triggered_spell", name: "Triggered Spell", tier: 3, color: "Clear", description: "Attach any existing spell to a triggering rune. Lasts 1 day. Costs ≥2 Stamina." },
-      { id: "ranged_spell", name: "Ranged Spell", tier: 3, color: "Clear", description: "Cast any existing spell at r×4 range. Costs ≥2 Stamina." },
+      { id: "heat_ray", name: "Heat Ray", tier: 1, color: "Red", range: "r x 2", description: "3 dmg on Success. Can't use red spells next turn." },
+      { id: "scorching_bomb", name: "Scorching Bomb", tier: 1, color: "Red", range: "r", aoe: true, description: "AOE 2 dmg on Success. Can upcast to Tier II: 3 dmg, can't use red next turn." },
+      { id: "lighten_target", name: "Lighten Target", tier: 1, color: "Red", range: "r", concentration: true, description: "Nullify fall dmg, double throw distance, half weight of object." },
+      { id: "sense_up", name: "Sense Up", tier: 1, color: "Green", range: "r / 2", concentration: true, description: "Amplify all senses of a target (or nullify with consent). At Tier II can nullify unwilling." },
+      { id: "healing_physic", name: "Healing", tier: 1, color: "Green", range: "r", description: "Can heal Minor Injuries." },
+      { id: "send_thoughts", name: "Send Thoughts", tier: 1, color: "Gray", range: "r", description: "Send thoughts to others; they can send a little back." },
+      { id: "xeon_sensing", name: "Xeon Sensing", tier: 1, color: "Gray", range: "r x 2", concentration: true, description: "See or reveal xenic spirits and other xeon sources including tech and magic items." },
+      { id: "cold_ray", name: "Cold Ray", tier: 1, color: "Blue", range: "r x 2", description: "2 dmg + Frozen debuff (+1d MD on next Action against them)." },
+      { id: "freezing_bomb", name: "Freezing Bomb", tier: 1, color: "Blue", range: "r", aoe: true, description: "AOE 2 dmg. Upcast: 2 dmg + Frozen (+1d MD)." },
+      { id: "grippy_target", name: "Grippy Target", tier: 1, color: "Blue", range: "r", concentration: true, description: "On ally: climb proficiently. On small object: stick to surfaces." },
+      { id: "scorch_ray", name: "Scorch Ray", tier: 2, color: "Red", range: "r x 2", description: "4 dmg on Success. Can't use red spells next turn." },
+      { id: "percussive_bomb", name: "Percussive Bomb", tier: 2, color: "Red", range: "r x 2", aoe: true, description: "2 dmg in 15 ft radius. Enemies pushed to edge of radius." },
+      { id: "high_jump", name: "High Jump", tier: 2, color: "Red", range: "0", concentration: true, description: "Jump up to 30 ft. Lasts 1 hr." },
+      { id: "slippery_target", name: "Slippery Target", tier: 2, color: "Red", range: "r", concentration: true, description: "Target can't move well; +1d MD on Actions against them while active." },
+      { id: "lighten_group", name: "Lighten Group", tier: 2, color: "Red", range: "r", concentration: true, aoe: true, description: "Nullify fall dmg, double throw distance, half weight of group." },
+      { id: "freeze_ray", name: "Freeze Ray", tier: 2, color: "Blue", range: "r x 2", description: "2 dmg + Advanced Frozen (+2d MD on next Action against them)." },
+      { id: "force_field", name: "Force Field", tier: 2, color: "Blue", range: "r / 2", concentration: true, aoe: true, description: "Ignore Minor Injuries from xenic attacks (breaks on Severe)." },
+      { id: "leaden_foe", name: "Leaden Foe", tier: 2, color: "Blue", range: "r", concentration: true, description: "Triple fall dmg, lock target in place, 2 dmg/turn on Success." },
+      { id: "electromag_seeing", name: "Electromagnetic Seeing", tier: 2, color: "Green", range: "r / 2", concentration: true, description: "See full electromagnetic spectrum (heat signatures, X-rays, radio waves)." },
+      { id: "atmosphere_physic", name: "Atmosphere", tier: 2, color: "Green", range: "r", concentration: true, aoe: true, description: "Create breathable atmosphere in range." },
+      { id: "create_darkness", name: "Create Darkness", tier: 2, color: "Gray", range: "r", concentration: true, aoe: true, description: "No one can see in range unless they have heat vision or xeon sensing." },
+      { id: "binding", name: "Binding", tier: 2, color: "Gray", range: "r", concentration: true, description: "Xenic tethers: up to 400 lbs, 5 tethers, 5 min. Manipulate length/direction." },
+      { id: "onyx_shielding_physic", name: "Onyx Shielding", tier: 2, color: "Gray", range: "r / 2", concentration: true, aoe: true, description: "Defense vs onyx/obsidian/physical. Flat surface only. Ignore Minor from physical." },
+      { id: "flash_heat_trigger", name: "Flash Heat Trigger", tier: 3, color: "Red", range: "r", concentration: true, aoe: true, description: "Heat blast in triggering rune. Spec conditions or manual (r×2). Lasts 1 day. 3 dmg, can't use red next turn." },
+      { id: "heat_wall", name: "Heat Wall", tier: 3, color: "Red", range: "r", concentration: true, aoe: true, description: "40 ft wall (can bend). Heat damage 10 ft radius on one side (3 dmg, can't use red next turn)." },
+      { id: "force_wave_physic", name: "Force Wave", tier: 3, color: "Red", range: "r", aoe: true, description: "Move everything in a 30 ft cube in one direction." },
+      { id: "slippery_group", name: "Slippery Group", tier: 3, color: "Red", range: "r", concentration: true, aoe: true, description: "Enemies stuck/slippery; +1d MD on Actions against them." },
+      { id: "flash_cold_trigger", name: "Flash Cold Trigger", tier: 3, color: "Blue", range: "r", concentration: true, aoe: true, description: "Cold blast in triggering rune. 2 dmg + Advanced Frozen (+2d MD on next two Actions against them). Lasts 1 day." },
+      { id: "cold_wall", name: "Cold Wall", tier: 3, color: "Blue", range: "r", concentration: true, aoe: true, description: "40 ft wall (can bend). Frozen debuff (+1d MD) and 2 dmg on one side." },
+      { id: "grippy_group", name: "Grippy Group", tier: 3, color: "Blue", range: "r", concentration: true, aoe: true, description: "Enemies stuck to ground, can't move; +1d MD on Actions against them." },
+      { id: "life_force", name: "Life Force", tier: 3, color: "Green", range: "r / 2", concentration: true, aoe: true, description: "Allies: +1d MD continuously. Stamina each round." },
+      { id: "shade", name: "Shade", tier: 3, color: "Gray", range: "0", concentration: true, description: "Make someone a stealthy shade (invisible, move silently)." },
+      { id: "triggered_spell", name: "Triggered Spell", tier: 3, color: "Clear", range: "r", description: "Attach any existing spell to a triggering rune. Lasts 1 day. Costs ≥2 Stamina." },
+      { id: "ranged_spell", name: "Ranged Spell", tier: 3, color: "Clear", range: "r x 4", description: "Cast any existing spell at r×4 range. Costs ≥2 Stamina." },
       { id: "amplified_spell", name: "Amplified Spell", tier: 3, color: "Clear", description: "Cast any existing spell with +2 extra damage. Costs ≥2 Stamina." },
       { id: "empowered_spell", name: "Empowered Spell", tier: 3, color: "Clear", description: "Cast any existing spell with +2d MD. Costs ≥2 Stamina." }
     ],
@@ -838,32 +840,32 @@ window.XRRPG_CLASS_DEFS = {
     substanceNote: "You need the listed material to cast each spell — feel free to just buy it or go on a small quest to find it!",
     spellPool: [
       // Tier I
-      { id: "prestidigitation", name: "Prestidigitation", tier: 1, range: "30 ft", substance: "Predigitase (orange, red, green, yellow gem)", description: "Create a small magical effect: gust of wind, small illusion (2 ft square), ground rumble, open/close doors, light or put out fires, harmless sparkles, clean or soil a small area. Cannot do damage unless very creative." },
-      { id: "mending", name: "Mending", tier: 1, range: "15 ft", substance: "Dioptase (dark green gem)", description: "Mend a non-magical, non-xenic object (2 ft square max). Can mend larger objects with multiple uses." },
-      { id: "charm_enc", name: "Charm", tier: 1, range: "15 ft", substance: "Rose Quartz (light pink with white streaks)", concentration: true, description: "[Concentration] +2d MD bonus to interpersonal Actions for up to 10 min." },
-      { id: "little_heal_enc", name: "Little Heal", tier: 1, range: "30 ft", substance: "Amber (golden orange gem)", description: "Heal up to 3 HP's worth of Injuries distributed among any amount of targets." },
-      { id: "electric_zap", name: "Electric Zap", tier: 1, range: "30 ft", substance: "Barite (light blue or yellow gem)", description: "Zap a target, deals 3 dmg on Success." },
-      { id: "comprehend_languages", name: "Comprehend and Speak Languages", tier: 1, range: "—", substance: "Tincalconite (white solid gem or powder)", concentration: true, description: "[Concentration] For the next 10 min you can comprehend and speak any language (certain ancient or secret languages have protections against this)." },
-      { id: "clone_image", name: "Clone Image", tier: 1, range: "50 ft", substance: "Gypsum (soft clear gem)", concentration: true, description: "[Concentration] Create an illusory version of yourself you can command to do whatever you like. It can interact with the world physically but can't deal damage or use your xenic abilities." },
-      { id: "breath_of_chaos", name: "Breath of Chaos", tier: 1, range: "—", substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier I Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier I spell for free; every consecutive 8 you roll also lets you pick a free spell." },
+      { id: "prestidigitation", name: "Prestidigitation", tier: 1, roll: 1, range: "30 ft", substance: "Predigitase (orange, red, green, yellow gem)", description: "Create a small magical effect: gust of wind, small illusion (2 ft square), ground rumble, open/close doors, light or put out fires, harmless sparkles, clean or soil a small area. Cannot do damage unless very creative." },
+      { id: "mending", name: "Mending", tier: 1, roll: 2, range: "15 ft", substance: "Dioptase (dark green gem)", description: "Mend a non-magical, non-xenic object (2 ft square max). Can mend larger objects with multiple uses." },
+      { id: "charm_enc", name: "Charm", tier: 1, roll: 3, range: "15 ft", substance: "Rose Quartz (light pink with white streaks)", concentration: true, description: "[Concentration] +2d MD bonus to interpersonal Actions for up to 10 min." },
+      { id: "little_heal_enc", name: "Little Heal", tier: 1, roll: 4, range: "30 ft", substance: "Amber (golden orange gem)", description: "Heal up to 3 HP's worth of Injuries distributed among any amount of targets." },
+      { id: "electric_zap", name: "Electric Zap", tier: 1, roll: 5, range: "30 ft", substance: "Barite (light blue or yellow gem)", description: "Zap a target, deals 3 dmg on Success." },
+      { id: "comprehend_languages", name: "Comprehend and Speak Languages", tier: 1, roll: 6, range: "—", substance: "Tincalconite (white solid gem or powder)", concentration: true, description: "[Concentration] For the next 10 min you can comprehend and speak any language (certain ancient or secret languages have protections against this)." },
+      { id: "clone_image", name: "Clone Image", tier: 1, roll: 7, range: "50 ft", substance: "Gypsum (soft clear gem)", concentration: true, description: "[Concentration] Create an illusory version of yourself you can command to do whatever you like. It can interact with the world physically but can't deal damage or use your xenic abilities." },
+      { id: "breath_of_chaos", name: "Breath of Chaos", tier: 1, roll: 8, range: "—", substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier I Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier I spell for free; every consecutive 8 you roll also lets you pick a free spell." },
       // Tier II
-      { id: "petrify", name: "Petrify", tier: 2, range: "30 ft", substance: "Cerussite (clear white crystal shards)", concentration: true, description: "[Concentration] Partially petrify a target: +1d MD on all Actions against them for up to 1 min. Three successes against the same target = full petrification for 1 hour." },
-      { id: "poison_enc", name: "Poison", tier: 2, range: "30 ft", substance: "Peridot (light green gem)", description: "Inflict poison upon a target: next two Actions against this target get +2d MD." },
-      { id: "scrying", name: "Scrying", tier: 2, range: "100 ft", substance: "Purpurite (deep purple rare gem)", concentration: true, description: "[Concentration] See remotely from up to 100 ft away (eyes must be closed). Can also be used to see into the xenic plane." },
-      { id: "illusion_enc", name: "Illusion", tier: 2, range: "100 ft", substance: "Garnet (any color)", concentration: true, description: "[Concentration] Create an illusion up to 50 ft square." },
-      { id: "ghostwalk", name: "Ghostwalk", tier: 2, range: "—", substance: "Amazonite (light blue gem)", concentration: true, description: "[Concentration] Become ethereal: you're immaterial, can move through cracks and through substances up to 5 ft thick. Can't attack, take damage, cast spells, or use abilities in this form. Lasts up to 10 min." },
-      { id: "solid_illusion", name: "Solid Illusion", tier: 2, range: "50 ft", substance: "Onidium (white, brown, black gem)", concentration: true, description: "[Concentration] Create an object out of xeon up to 30 ft square (max 1000 lbs). Must start stationary on the ground." },
-      { id: "pocket_dimension", name: "Pocket Dimension", tier: 2, range: "30 ft", substance: "Pomjite (purple and gray gem)", description: "Create a small rift in the xenic plane: 3×3×3 ft cube, holds unlimited weight, entrance up to 3×3 ft. You can change dimensions (max 27 cubic ft). Location can't change while open. You can open it from within; no one else can." },
-      { id: "touch_of_chaos", name: "Touch of Chaos", tier: 2, range: "—", substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier II Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier II spell for free." },
+      { id: "petrify", name: "Petrify", tier: 2, roll: 1, range: "30 ft", substance: "Cerussite (clear white crystal shards)", concentration: true, description: "[Concentration] Partially petrify a target: +1d MD on all Actions against them for up to 1 min. Three successes against the same target = full petrification for 1 hour." },
+      { id: "poison_enc", name: "Poison", tier: 2, roll: 2, range: "30 ft", substance: "Peridot (light green gem)", description: "Inflict poison upon a target: next two Actions against this target get +2d MD." },
+      { id: "scrying", name: "Scrying", tier: 2, roll: 3, range: "100 ft", substance: "Purpurite (deep purple rare gem)", concentration: true, description: "[Concentration] See remotely from up to 100 ft away (eyes must be closed). Can also be used to see into the xenic plane." },
+      { id: "illusion_enc", name: "Illusion", tier: 2, roll: 4, range: "100 ft", substance: "Garnet (any color)", concentration: true, description: "[Concentration] Create an illusion up to 50 ft square." },
+      { id: "ghostwalk", name: "Ghostwalk", tier: 2, roll: 5, range: "—", substance: "Amazonite (light blue gem)", concentration: true, description: "[Concentration] Become ethereal: you're immaterial, can move through cracks and through substances up to 5 ft thick. Can't attack, take damage, cast spells, or use abilities in this form. Lasts up to 10 min." },
+      { id: "solid_illusion", name: "Solid Illusion", tier: 2, roll: 6, range: "50 ft", substance: "Onidium (white, brown, black gem)", concentration: true, description: "[Concentration] Create an object out of xeon up to 30 ft square (max 1000 lbs). Must start stationary on the ground." },
+      { id: "pocket_dimension", name: "Pocket Dimension", tier: 2, roll: 7, range: "30 ft", substance: "Pomjite (purple and gray gem)", description: "Create a small rift in the xenic plane: 3×3×3 ft cube, holds unlimited weight, entrance up to 3×3 ft. You can change dimensions (max 27 cubic ft). Location can't change while open. You can open it from within; no one else can." },
+      { id: "touch_of_chaos", name: "Touch of Chaos", tier: 2, roll: 8, range: "—", substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier II Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier II spell for free." },
       // Tier III
-      { id: "xenic_portal", name: "Xenic Plane Portal", tier: 3, range: "15 ft", substance: "Malachite (bright green and dark green gem)", description: "Create a portal into or out of the xenic plane." },
-      { id: "swap_places", name: "Swap Places", tier: 3, range: "100 ft (unwilling) / 10 miles (willing)", substance: "Black Rutile (clear gem with black streaks)", description: "Swap places with a person or creature, or swap two creatures. Willing targets: no Action needed (still costs Stamina), range up to 10 miles if you know both targets. Unwilling targets: must see them and do an Action Roll." },
-      { id: "stasis_lock", name: "Stasis Lock", tier: 3, range: "50 ft", substance: "Wolframite (blue metal)", concentration: true, description: "[Concentration] Lock a person or thing to a fixed point in space for up to 10 minutes." },
-      { id: "animate_object", name: "Animate Object", tier: 3, range: "15 ft", substance: "Topaz (clear crystal, many colors)", concentration: true, description: "[Concentration] Animate an object up to 10×10×10 ft. Follows your orders; large objects can deal up to 4 dmg on Success." },
-      { id: "tiny_pocket_hut", name: "Tiny Pocket Hut", tier: 3, range: "30 ft", substance: "Pomjite (purple and gray gem)", description: "Create a large rift in the xenic plane: 20×20×20 ft Pocket Dimension with the same rules as Pocket Dimension." },
-      { id: "enbiggen", name: "Enbiggen", tier: 3, range: "15 ft", substance: "Fluorite (green and purple gem)", concentration: true, description: "[Concentration] Double the size of an ally or yourself: weight ×8, End and Vig get +2d MD, deal +3 extra damage. Lasts up to 1 minute." },
-      { id: "ensmallen", name: "Ensmallen", tier: 3, range: "15 ft", substance: "Fluorite (green and purple gem)", concentration: true, description: "[Concentration] Half the size of an ally or yourself: weight ÷8, Int gets +2d MD, speed +50 ft. Lasts up to 1 minute." },
-      { id: "call_of_chaos", name: "Call of Chaos", tier: 3, range: "—", substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier III Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier III spell for free." }
+      { id: "xenic_portal", name: "Xenic Plane Portal", tier: 3, roll: 1, range: "15 ft", substance: "Malachite (bright green and dark green gem)", description: "Create a portal into or out of the xenic plane." },
+      { id: "swap_places", name: "Swap Places", tier: 3, roll: 2, range: "100 ft (unwilling) / 10 miles (willing)", substance: "Black Rutile (clear gem with black streaks)", description: "Swap places with a person or creature, or swap two creatures. Willing targets: no Action needed (still costs Stamina), range up to 10 miles if you know both targets. Unwilling targets: must see them and do an Action Roll." },
+      { id: "stasis_lock", name: "Stasis Lock", tier: 3, roll: 3, range: "50 ft", substance: "Wolframite (blue metal)", concentration: true, description: "[Concentration] Lock a person or thing to a fixed point in space for up to 10 minutes." },
+      { id: "animate_object", name: "Animate Object", tier: 3, roll: 4, range: "15 ft", substance: "Topaz (clear crystal, many colors)", concentration: true, description: "[Concentration] Animate an object up to 10×10×10 ft. Follows your orders; large objects can deal up to 4 dmg on Success." },
+      { id: "tiny_pocket_hut", name: "Tiny Pocket Hut", tier: 3, roll: 5, range: "30 ft", substance: "Pomjite (purple and gray gem)", description: "Create a large rift in the xenic plane: 20×20×20 ft Pocket Dimension with the same rules as Pocket Dimension." },
+      { id: "enbiggen", name: "Enbiggen", tier: 3, roll: 6, range: "15 ft", substance: "Fluorite (green and purple gem)", concentration: true, description: "[Concentration] Double the size of an ally or yourself: weight ×8, End and Vig get +2d MD, deal +3 extra damage. Lasts up to 1 minute." },
+      { id: "ensmallen", name: "Ensmallen", tier: 3, roll: 7, range: "15 ft", substance: "Fluorite (green and purple gem)", concentration: true, description: "[Concentration] Half the size of an ally or yourself: weight ÷8, Int gets +2d MD, speed +50 ft. Lasts up to 1 minute." },
+      { id: "call_of_chaos", name: "Call of Chaos", tier: 3, roll: 8, range: "—", substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier III Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier III spell for free." }
     ],
     chaosTableMinor: [
       { roll: 1,  name: "Self-Petrify",  range: "—",     effect: "Paralyzes you for a turn (cannot take Actions)." },
@@ -1084,35 +1086,36 @@ window.XRRPG_CLASS_DEFS = {
         }
       }
     ],
+    spiritRange: { 1: 40, 2: 60, 3: 80, 4: 90, 5: 90, 6: 90 },
     levels: {
       1: {
-        auto: ["Spirit Range 40 ft. You see the xenic plane equal to Mystic Level times per day (10 min each).", "Character Level ÷ 3 (min 1) bonus MD on spirit checks (no stamina)."],
+        auto: ["You see the xenic plane equal to Mystic Level times per day (10 min each).", "Character Level ÷ 3 (min 1) bonus MD on spirit checks (no stamina)."],
         choices: [{ type: "pick_spirits", count: 3, label: "Pick 3 spirits (start at Tier I)" }]
       },
       2: {
-        auto: ["Spirit Range 60 ft."],
+        auto: [],
         choices: [{ type: "upgrade_spirits", count: 2, label: "Upgrade 2 spirits" }]
       },
       3: {
-        auto: ["Spirit Range 80 ft."],
+        auto: [],
         choices: [{ type: "upgrade_spirits", count: 2, label: "Upgrade 2 spirits" }]
       },
       4: {
-        auto: ["Spirit Range 90 ft."],
+        auto: [],
         choices: [
           { type: "pick_spirits", count: 1, startTier: 2, label: "Gain 1 new spirit at Tier II" },
           { type: "upgrade_spirits", count: 1, label: "Upgrade 1 spirit" }
         ]
       },
       5: {
-        auto: ["Spirit Range 90 ft."],
+        auto: [],
         choices: [
           { type: "pick_spirits", count: 1, startTier: 2, label: "Gain 1 new spirit at Tier II" },
           { type: "upgrade_spirits", count: 1, toTier: 3, label: "Upgrade 1 spirit" }
         ]
       },
       6: {
-        auto: ["Spirit Range 90 ft."],
+        auto: [],
         choices: [{ type: "upgrade_spirits", count: 2, toTier: 3, label: "Upgrade 2 spirits" }]
       }
     },
