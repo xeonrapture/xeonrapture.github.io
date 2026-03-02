@@ -408,9 +408,9 @@ window.XRRPG_CLASS_DEFS = {
         "Heal target 5 HP's worth of Injuries. Can heal Critical Injuries (3x/day)."
       ]},
       { id: "chaos", name: "Chaos", descriptions: [
-        "Roll a d8 and cast the corresponding Tier I <a href='https://xeonrapture.com/xr/XRRPG+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> Chaos spell (1. Prestidigitation, 2. Mending, 3. Charm, 4. Little Heal, 5. Electric Zap, 6. Comprehend Languages, 7. Clone Image, 8. Breath of Chaos) without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier I spell for free; every consecutive 8 also lets you pick a free spell.",
-        "Roll a d8 and cast the corresponding Tier II <a href='https://xeonrapture.com/xr/XRRPG+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> Chaos spell (1. Petrify, 2. Poison, 3. Scrying, 4. Illusion, 5. Ghostwalk, 6. Solid Illusion, 7. Pocket Dimension, 8. Touch of Chaos) without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier II spell for free; every consecutive 8 also lets you pick a free spell.",
-        "Roll a d8 and cast the corresponding Tier III <a href='https://xeonrapture.com/xr/XRRPG+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> Chaos spell (1. Xenic Plane Portal, 2. Swap Places, 3. Stasis Lock, 4. Animate Object, 5. Tiny Pocket Hut, 6. Enbiggen, 7. Ensmallen, 8. Call of Chaos) without spending stamina (1/turn). You <em>must</em> cast that spell, even if disruptive. Roll 8 = pick any Tier III spell for free; every consecutive 8 also lets you pick a free spell."
+        "Cast the Tier I <a href='https://xeonrapture.com/xr/XRRPG+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> Chaos spell (Breath of Chaos) without spending stamina (1/turn): Roll a d8 --> you <em>must</em> cast the corresponding spell of that Enchanter Spell Tier, even if disruptive. Roll 8 = cast any Tier I spell for free; every consecutive 8 also lets you pick a free spell.",
+        "Cast the Tier I/II <a href='https://xeonrapture.com/xr/XRRPG+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> Chaos spell (Breath of Chaos or Touch of Chaos) without spending stamina (1/turn): Roll a d8 --> you <em>must</em> cast the corresponding spell of that Enchanter Spell Tier, even if disruptive. Roll 8 = cast any spell of the corresponding spell tier for free; every consecutive 8 also lets you pick a free spell.",
+        "Cast the Tier I/II/III <a href='https://xeonrapture.com/xr/XRRPG+2.0/Classes/Magicians/Enchanter' target='_blank'>Enchanter</a> Chaos spell (Breath of Chaos, Touch of Chaos, or Call of Chaos) without spending stamina (1/turn): Roll a d8 --> you <em>must</em> cast the corresponding spell of that Enchanter Spell Tier, even if disruptive. Roll 8 = cast any spell of the corresponding spell tier for free; every consecutive 8 also lets you pick a free spell."
       ]}
     ],
     devilEmotions: [
@@ -1206,24 +1206,24 @@ window.XRRPG_CLASS_DEFS = {
     archetype: "Technologists",
     chromaRequired: null,
     droneEffectPool: [
-      { id: "beam", name: "Beam", tier: 1, description: "Basic attack beam, deals damage at range." },
-      { id: "shielding", name: "Shielding", tier: 1, description: "Provides a defensive shield bubble to an ally." },
-      { id: "hacking", name: "Hacking", tier: 1, description: "Hack into nearby electronic systems." },
-      { id: "recon", name: "Recon", tier: 1, description: "Scouting and surveillance: relay visuals back to you." },
-      { id: "healing_drone", name: "Healing", tier: 1, description: "Heals an ally (5×/day per drone)." },
-      { id: "advanced_beam", name: "Advanced Beam", tier: 2, description: "Stronger attack beam with additional effects." },
-      { id: "animal_mech", name: "Animal Mech", tier: 2, description: "Drone takes on animal-like form for traversal or combat." },
-      { id: "atmosphere_drone", name: "Atmosphere", tier: 2, description: "Drone generates a breathable atmosphere bubble." },
-      { id: "onyx_drone", name: "Onyx", tier: 2, description: "Drone projects onyx shielding." },
-      { id: "advanced_recon", name: "Advanced Recon", tier: 2, description: "More detailed reconnaissance with xenic detection." },
-      { id: "projector", name: "Projector", tier: 2, description: "Projects illusions or displays information." },
-      { id: "xeon_binding_drone", name: "Xeon Binding", tier: 3, description: "Drone creates xenic tethers." },
-      { id: "inertial_dampening_drone", name: "Inertial Dampening", tier: 3, description: "Drone dampens inertial forces around a target." },
-      { id: "weight_control_drone", name: "Weight Control", tier: 3, description: "Drone controls weight of targets in range." },
-      { id: "advanced_healing", name: "Advanced Healing", tier: 3, description: "Stronger healing (5×/day per drone)." },
-      { id: "diamond", name: "Diamond", tier: 3, description: "Extreme defense — diamond-hard shielding." },
-      { id: "force_wave_drone", name: "Force Wave", tier: 3, description: "Drone emits a force wave pushing enemies back." },
-      { id: "advanced_hacking", name: "Advanced Hacking", tier: 3, description: "Hack complex systems (1×/day per target per drone)." }
+      { id: "beam", name: "Beam", tier: 1, description: "Can fire a ice ray that inflicts the Frozen debuff (grants +1d Mastery Die on next Action against them). Fire beam deals +1 damage but it has to cool down next turn." },
+      { id: "shielding", name: "Shielding", tier: 1, description: "Can hover around a person and give them a bonus to defense against beam damage (target ignores Minor Injuries from xenic sources, but the shield breaks if it takes Severe or higher)" },
+      { id: "hacking", name: "Hacking", tier: 1, description: "Can do a check for it to hack into things remotely; it can also look things up on the web. Hacking can't be used to disrupt weapons or other combat machinery." },
+      { id: "recon", name: "Recon", tier: 1, description: "The Recon Drone has a range of 500 ft and you can see through its eyes and hear through its ears." },
+      { id: "healing_drone", name: "Healing", tier: 1, description: "Can heal up to 2 HP's worth of Injuries up to 5 times a day (one target). Can also heal other drones and repair them if they've been destroyed (but if they've been disintegrated then tough luck)." },
+      { id: "advanced_beam", name: "Advanced Beam", tier: 2, description: "Ice ray inflicts Advanced Frozen debuff (grants +2d Mastery Die on next Action against them). Fire beam deals +2 damage but it has to cool down next turn." },
+      { id: "animal_mech", name: "Animal Mech", tier: 2, description: "This mech drone is in the shape of a small animal. This animal can do up to 2 damage on a Success during combat, but it has all the abilities of the animal otherwise. May be used to scout." },
+      { id: "atmosphere_drone", name: "Atmosphere", tier: 2, description: "Creates a 30 ft radius bubble of atmosphere." },
+      { id: "onyx_drone", name: "Onyx", tier: 2, description: "Can hover around a person and give them a defense bonus against physical damage (target ignores Minor Injuries from physical sources). It can also create floating black platforms (up to 2 at a time)." },
+      { id: "advanced_recon", name: "Advanced Recon", tier: 2, description: "The Advanced Recon Drone has extremely advanced auditory and visual sensors. It can also go semi-invisible, making it extremely stealthy, and can sense sources of xeon." },
+      { id: "projector", name: "Projector", tier: 2, description: "Can create holographic projections up to a 20 ft square." },
+      { id: "xeon_binding_drone", name: "Xeon Binding", tier: 3, description: "	Can bind two things together with a white glowing tether. This tether can last up to 5 minutes, and the drone can have up to 3 tethers going at a time. The tethers can hold up to 1000 lbs, and the drone can manipulate the direction and length of these tethers (max 30 ft). It can also attempt to move another person but it's not quite as effective at that." },
+      { id: "inertial_dampening_drone", name: "Inertial Dampening", tier: 3, description: "	This drone can shoot a blue beam at a person to either stop them moving (no charge) or hamper the person's attacks and defense for the next turn (has to charge for 1 turn, +2d Mastery Dice on Actions against this target)." },
+      { id: "weight_control_drone", name: "Weight Control", tier: 3, description: "Can shoot an orb of blue or red xeon at a person:<br>- Blue makes them go up to 2x their weight, which stops them in their tracks for the turn and damages them 2 on a Success<br>- Red makes them extra light, which makes them easier to push around" },
+      { id: "advanced_healing", name: "Advanced Healing", tier: 3, description: "	Can heal up to 5 HP's worth of Injuries up to 5 times a day (any amount of targets, can't heal Critical Injuries)." },
+      { id: "diamond", name: "Diamond", tier: 3, description: "When hit by beam attacks (blue or red) it amplifies them, multiplying the amount damage they do by 1.5. Has to cooldown for a turn after use." },
+      { id: "force_wave_drone", name: "Force Wave", tier: 3, description: "Can create force waves in up to a 30 ft cube in any direction. These force waves can throw up to 500 lbs of weight (if the weight is spread out), and anyone caught in it must attempt to resist the effect." },
+      { id: "advanced_hacking", name: "Advanced Hacking", tier: 3, description: "You can now attempt to hack cybermods, weaponry, and most other technological objects. If successful all the enemy's cybermods go down for a turn, or the select tech or weaponry goes down. This ability can only be used on any individual person or object once per day." }
     ],
     levels: {
       1: {
@@ -1254,7 +1254,7 @@ window.XRRPG_CLASS_DEFS = {
     emitterNote: "Emitters are small devices you throw (20 ft by hand) or launch from a gun. They stick to floors, walls, or ceilings, stay tethered to you, and return when spent or dismissed. Upgraded emitters can also perform the abilities of their lower-tier counterparts.",
     emitterPool: [
       { id: "blue_shield",        name: "Blue Shield",           tier: 1, description: "Blocks xenic damage (can be destroyed by sustained fire). Does not block sight. Ignore Minor Injuries from xenic sources; Severe Injuries break it." },
-      { id: "onyx_shield",        name: "Onyx Shield",           tier: 1, description: "Must be a flat surface (no curves). Blocks physical, onyx, and obsidian damage. Ignore Minor Injuries from physical sources; Severe Injuries break it. Surface holds up to 2,000 lbs." },
+      { id: "onyx_shield",        name: "Onyx Shield",           tier: 1, description: "Shield itself has to to be a flat surface, no curves! Blocks physical, onyx, and obsidian dmg. Ignore Minor Injuries from physical sources, Severe Injuries break it Surface can hold up to 2000 lbs of weight. Does not block sight!" },
       { id: "healing_zone",       name: "Healing Zone",          tier: 1, description: "Heals a Minor Injury for everyone in range every round it's active." },
       { id: "damage_zone",        name: "Damage Zone",           tier: 1, description: "Deals 1 damage to everyone in range every round it's active." },
       { id: "force_wall",         name: "Force Wall",            tier: 2, description: "Creates a wall or chamber of invisible force in range. Takes strength to overcome." },
@@ -1263,8 +1263,8 @@ window.XRRPG_CLASS_DEFS = {
       { id: "buff_zone",          name: "Buff Zone",             tier: 2, description: "Empowers everyone in range: +1d Mastery Die to all Actions." },
       { id: "debuff_zone",        name: "Debuff Zone",           tier: 2, description: "Debuffs everyone in range: +1d Mastery Die on all Actions done against targets in range." },
       { id: "atmosphere_zone",    name: "Atmosphere Zone",       tier: 2, description: "Generates breathable atmosphere in range." },
-      { id: "adv_onyx_shield",    name: "Advanced Onyx Shield",  tier: 3, description: "Full box of onyx to contain or protect. Ignore up to Severe Injuries from physical sources; breaks on Critical Injuries." },
-      { id: "adv_blue_shield",    name: "Advanced Blue Shield",  tier: 3, description: "Intense xenic shield. Ignore up to Severe Injuries from xenic sources; breaks on Critical Injuries." },
+      { id: "adv_onyx_shield",    name: "Advanced Onyx Shield",  tier: 3, description: "Can now make full boxes of onyx to contain or protect, rules are same as Onyx Shield above except you ignore up to Severe Injuries from physical sources, breaks on Critical Injuries." },
+      { id: "adv_blue_shield",    name: "Advanced Blue Shield",  tier: 3, description: "	More intense xenic shield. Ignore up to Severe Injuries from physical sources, breaks on Critical Injuries." },
       { id: "adv_healing_zone",   name: "Advanced Healing Zone", tier: 3, description: "Heals everyone in range up to 2 HP's worth of Injuries per turn it's active." },
       { id: "adv_buff_zone",      name: "Advanced Buff Zone",    tier: 3, description: "Empowers everyone in range: +2d Mastery Dice to all Actions." },
       { id: "adv_debuff_zone",    name: "Advanced Debuff Zone",  tier: 3, description: "Debuffs everyone in range: +2d Mastery Dice on all Actions done against targets in range." }
@@ -1299,7 +1299,7 @@ window.XRRPG_CLASS_DEFS = {
       { id: "obsidian",        name: "Obsidian",          tier: 1, description: "Throws out small black daggers that do physical damage." },
       { id: "healing",         name: "Healing",           tier: 1, description: "Heals up to 3 HP's worth of Injuries to everyone in range." },
       { id: "sticky",          name: "Sticky",            tier: 1, description: "Everyone caught in the blast has half movement for the next round." },
-      { id: "force",           name: "Force",             tier: 2, description: "Doesn't do damage. Forces everything up to 500 lbs within range away from the center to the rim. Objects hitting something take damage." },
+      { id: "force",           name: "Force",             tier: 2, description: "	Doesn't do damage, but forces everything up to 500 lbs within its range away from the center of the blast to the rim of it. If any object caught in the blast hits anything it will take damage." },
       { id: "atmosphere",      name: "Atmosphere",        tier: 2, description: "Creates atmosphere in its area for the next 30 minutes." },
       { id: "darkness",        name: "Darkness",          tier: 2, description: "Creates impenetrable darkness within range. Sound and xeon sensors still work." },
       { id: "adv_heat",        name: "Advanced Heat",     tier: 2, description: "Deals 4 damage on Success. Cannon can't throw Heat Bombs next turn." },
@@ -1307,7 +1307,7 @@ window.XRRPG_CLASS_DEFS = {
       { id: "stamina",         name: "Stamina",           tier: 2, description: "Gives everyone in range +1d Mastery Die for their next Action." },
       { id: "cluster",         name: "Cluster Explosion", tier: 3, description: "Does 5 damage on Success. Flows around corners." },
       { id: "adv_obsidian",    name: "Advanced Obsidian", tier: 3, description: "Obsidian shards shred the defenses of anyone inside." },
-      { id: "tentacle",        name: "Tentacle",          tier: 3, description: "Pick three targets within double your AOE range. 5 ft-wide beams of energy arc from the bomb to each target, hitting everything in between. Does 4 dmg to everything hit." },
+      { id: "tentacle",        name: "Tentacle",          tier: 3, description: "Pick three targets within double your AOE range. 5 ft-wide beams of energy arc from the bomb and hits the targets and everyone in between the target and the bomb. Does 4 dmg to everything hit." },
       { id: "structure",       name: "Structure",         tier: 3, description: "Does 3 dmg on Success but does double damage to structures." },
       { id: "adv_stamina",     name: "Advanced Stamina",  tier: 3, description: "Gives everyone in range +2d Mastery Dice for their next Action." },
       { id: "slippery",        name: "Slippery",          tier: 3, description: "Decreases friction for everything in range. Targets have half movement and +1d Mastery Die on all Actions done against them for the next 10 seconds." }
@@ -1336,18 +1336,26 @@ window.XRRPG_CLASS_DEFS = {
     archetype: "Technologists",
     chromaRequired: null,
     gunPool: [
-      { id: "healing_gun", name: "Healing Gun", tier: 1, description: "Fires healing bolts at allies (5×/day)." },
-      { id: "freeze_gun", name: "Freeze Gun", tier: 1, description: "Inflicts Frozen debuff on hit." },
-      { id: "heat_gun", name: "Heat Gun", tier: 1, description: "Fire damage, may ignite targets." },
-      { id: "damage_gun", name: "Damage Gun", tier: 1, description: "Standard combat damage." },
-      { id: "binding_gun", name: "Binding Gun", tier: 1, description: "Fires xenic tethers to bind targets." },
-      { id: "advanced_healing_gun", name: "Advanced Healing Gun", tier: 2, description: "Stronger healing bolts (5×/day)." },
-      { id: "advanced_damage_gun", name: "Advanced Damage Gun", tier: 2, description: "High-power damage." },
-      { id: "scatter_gun", name: "Scatter Gun", tier: 2, description: "AOE burst in a cone." },
-      { id: "onyx_gun", name: "Onyx Gun", tier: 2, description: "Fires obsidian/onyx bolts that bypass xenic defenses." },
-      { id: "uranium_gun", name: "Uranium Gun", tier: 3, description: "Devastating damage; 3×/day (4th use destroys the gun)." },
-      { id: "gravity_gun", name: "Gravity Gun", tier: 3, description: "Manipulate gravity and mass of targets." },
-      { id: "xenic_gun", name: "Xenic Gun", tier: 3, description: "Fire raw xenic energy for varied effects." }
+      { id: "healing_gun", name: "Healing Gun", tier: 1, description: "	Heals a 2 HP's worth of Injuries up to 5 times a day (one target)." },
+      { id: "freeze_gun", name: "Cold Gun", tier: 1, description: "	Inflicts Frozen (grants +1d Mastery Die on next Action against them). Gun does -1 dmg than usual (can't go below 0)." },
+      { id: "heat_gun", name: "Heat Gun", tier: 1, description: "Deals +1 damage but it has to cool down next turn." },
+      { id: "onyx_gun", name: "Onyx Gun", tier: 1, description: "Normal percussive gun, does physical damage" },
+      { id: "grapple_gun", name: "Grapple Gun", tier: 1, description: "Can use to either move yourself to any place within 30 ft of you or attempt to attach to an enemy and move them to you, 30 ft range." },
+      { id: "hacking_gun", name: "Hacking Gun", tier: 1, description: "Shoots a small device that hooks into the target's computer, enabling hacking." },
+
+      
+      { id: "advanced_cold_gun", name: "Advanced Cold Gun", tier: 2, description: "Inflicts Advanced Frozen debuff (grants +2d Mastery Die on next Action against them). Gun does -1 dmg than usual on its own." },
+      { id: "advanced_heat_gun", name: "Advanced Heat Gun", tier: 2, description: "Deals +2 damage but it has to cool down next turn." },
+      { id: "obsidian_gun", name: "Advanced Obsidian Gun", tier: 2, description: "Obsidian gun deals an extra +1 dmg when the target only has physical or xenic defenses (but is completely blocked by onyx shielding)." },
+      { id: "stamina_gun", name: "Stamina Gun", tier: 2, description: "The target gets to subtract one from their Stamina Used Total." },
+      { id: "recon_gun", name: "Recon Gun", tier: 2, description: "Gun shoots tiny cameras, mics, or xeon sensors that stick to the target. These are easily destroyed, but blend into their environments. Can also shoot trackers." },
+      { id: "tranq_dart_gun", name: "Tranq Dart Gun", tier: 2, description: "Target's attacks are hampered, if it's a super good shot or if they're hit with multiple they can put the target to sleep (gives a +1d Mastery Die to all actions against target for 1 minute, 3 Tranq Darts puts the target to sleep)." },
+
+      { id: "advanced_healing_gun", name: "Advanced Healing Gun", tier: 3, description: "	Can heal up to 5 HP's worth of Injuries up to 5 times a day (one target, can't heal Critical Injuries)." },
+      { id: "uranium_gun", name: "Uranium Gun", tier: 3, description: "Deals +5 dmg but can only be used 3 times a day and inflicts a Minor Injury on its wielder when used.<br>On 4th time it explodes dealing 20 dmg to everything in a 10 ft radius and 10 dmg in the 10 ft after that. Everything surviving in a 100 ft radius takes a level of Spirit Decay." },
+      { id: "gravity_nullifier_gun", name: "Gravity Nullifier Gun", tier: 3, description: "Target's gravity is nullified for the next three turns." },
+      { id: "buff_gun", name: "Buff Gun", tier: 3, description: "The target gets a +2d Mastery Die for the next minute (can't stack with another Buff Gun effect)." },
+      { id: "force_gun", name: "Force Gun", tier: 3, description: "On hit forces the target to move up to 15 ft in any direction." }
     ],
     levels: {
       1: {
@@ -1375,10 +1383,10 @@ window.XRRPG_CLASS_DEFS = {
     archetype: "Technologists",
     chromaRequired: null,
     swordPowers: [
-      { id: "cold_heat", name: "Cold / Heat", tier: 1, description: "Cold: 2 dmg + Frozen (+1d MD on next Action). Heat: +1 dmg but cools down next turn." },
+      { id: "cold_heat", name: "Cold / Heat", tier: 1, description: "Cold: 2 dmg + Frozen (+1d MD on next Action against target). Heat: +1 dmg but heat power has to cool down next turn." },
       { id: "weight_control_sword", name: "Weight Control", tier: 1, description: "Control your weight and sword weight (1/4× to 2×)." },
       { id: "force", name: "Force", tier: 2, description: "Force target in any direction up to 15 ft." },
-      { id: "obsidian", name: "Obsidian", tier: 2, description: "+1 dmg vs targets with only physical or xenic defenses (completely blocked by onyx)." },
+      { id: "obsidian", name: "Obsidian", tier: 2, description: "+1 dmg vs targets with only physical or xenic defenses (completely blocked by onyx shielding)." },
       { id: "second_wind", name: "Second Wind", tier: 3, description: "Heal yourself up to 5 HP worth of Injuries (3×/day)." },
       { id: "reflect", name: "Reflect", tier: 3, description: "Reflect xenic effects back to origin or to another target. Massive damage potential based on what's reflected." }
     ],
