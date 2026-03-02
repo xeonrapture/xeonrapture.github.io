@@ -374,8 +374,8 @@ window.XRRPG_CLASS_DEFS = {
       ]},
       { id: "bend_fate", name: "Bend Fate", descriptions: [
         "Take a consequence from a willing target within 15 ft.",
-        "Take a consequence from a willing or unwilling target within 30 ft.",
-        "Take a consequence from any target within 50 ft. Transfer it to another target (3x/day)."
+        "Take a consequence from a willing target within 15 ft (no action), OR from an unwilling target within 30 ft (costs an Action).",
+        "Take a consequence from any target within 50 ft. Can also transfer it to a different target (3x/day)."
       ]},
       { id: "invigorate", name: "Invigorate", descriptions: [
         "Grant +1d MD to the next Action of any visible target.",
@@ -414,18 +414,66 @@ window.XRRPG_CLASS_DEFS = {
       ]}
     ],
     devilEmotions: [
-      { id: "fear", label: "Fear", ability: "Terrify: Target terrified, +1d/+2d/+3d MD on Actions against them for up to 3 turns." },
-      { id: "lust", label: "Lust / Attraction", ability: "Charm: Target charmed, treats you like close friend (breaks if attacked)." },
-      { id: "anger", label: "Anger", ability: "Rage: 3/4/5 dmg attack, 3x/day." },
-      { id: "grief", label: "Grief", ability: "Numbness: Target deals -1/-2/-3 dmg for 10 min." },
-      { id: "protectiveness", label: "Protectiveness", ability: "Sacrifice: Take 1/2/3 dmg to block up to 3x that dmg done to allies (10 min, can block Critical)." },
-      { id: "joy", label: "Joy / Worship", ability: "Glory: Heal up to 4/5/6 HP distributed among self and allies within 10/20/30 ft." },
-      { id: "pride", label: "Pride", ability: "Hubris: Take 1/2/3 dmg to roll that many additional MD on your next Action." },
-      { id: "envy", label: "Envy / Greed", ability: "Steal Vitality: Take 2/3/4 HP from target and heal yourself that much." },
-      { id: "anxiety", label: "Anxiety", ability: "Preparation: Bank of 3d MD for you or allies to use anytime today (resets on Deep Rest, max 3d)." },
-      { id: "shame", label: "Shame", ability: "Disappear: Invisible for 1/3/6 hours (breaks on attack or stamina ability)." },
-      { id: "love", label: "Love", ability: "Selflessness: Heal someone else 3/5/7 HP. At lvl 3 can heal Critical Injuries." },
-      { id: "disgust", label: "Disgust", ability: "Revulsion: Wave of force pushes everything 30/50/70 ft away. At lvl 3 choose exemptions." }
+      { id: "fear", label: "Fear", ability: "Terrify: Target terrified, +1d/+2d/+3d MD on Actions against them for up to 3 turns.", descriptions: [
+        "Terrify: Target terrified, +1d MD on Actions against them for up to 3 turns.",
+        "Terrify: Target terrified, +2d MD on Actions against them for up to 3 turns.",
+        "Terrify: Target terrified, +3d MD on Actions against them for up to 3 turns."
+      ]},
+      { id: "lust", label: "Lust / Attraction", ability: "Charm: Target charmed, treats you like close friend (breaks if attacked).", descriptions: [
+        "Charm: Target charmed, treats you like close friend (breaks if attacked).",
+        "Charm: Target charmed, treats you like close friend (breaks if attacked).",
+        "Charm: Target charmed, treats you like close friend (breaks if attacked)."
+      ]},
+      { id: "anger", label: "Anger", ability: "Rage: 3/4/5 dmg attack, 3x/day.", descriptions: [
+        "Rage: 3 dmg attack, 3×/day.",
+        "Rage: 4 dmg attack, 3×/day.",
+        "Rage: 5 dmg attack, 3×/day."
+      ]},
+      { id: "grief", label: "Grief", ability: "Numbness: Target deals -1/-2/-3 dmg for 10 min.", descriptions: [
+        "Numbness: Target deals -1 dmg for 10 min.",
+        "Numbness: Target deals -2 dmg for 10 min.",
+        "Numbness: Target deals -3 dmg for 10 min."
+      ]},
+      { id: "protectiveness", label: "Protectiveness", ability: "Sacrifice: Take 1/2/3 dmg to block up to 3x that dmg done to allies (10 min, can block Critical).", descriptions: [
+        "Sacrifice: Take 1 dmg to block up to 3 dmg done to allies (10 min, can block Critical).",
+        "Sacrifice: Take 2 dmg to block up to 6 dmg done to allies (10 min, can block Critical).",
+        "Sacrifice: Take 3 dmg to block up to 9 dmg done to allies (10 min, can block Critical)."
+      ]},
+      { id: "joy", label: "Joy / Worship", ability: "Glory: Heal up to 4/5/6 HP distributed among self and allies within 10/20/30 ft.", descriptions: [
+        "Glory: Heal up to 4 HP distributed among self and allies within 10 ft.",
+        "Glory: Heal up to 5 HP distributed among self and allies within 20 ft.",
+        "Glory: Heal up to 6 HP distributed among self and allies within 30 ft."
+      ]},
+      { id: "pride", label: "Pride", ability: "Hubris: Take 1/2/3 dmg to roll that many additional MD on your next Action.", descriptions: [
+        "Hubris: Take 1 dmg to roll 1 additional MD on your next Action.",
+        "Hubris: Take 2 dmg to roll 2 additional MD on your next Action.",
+        "Hubris: Take 3 dmg to roll 3 additional MD on your next Action."
+      ]},
+      { id: "envy", label: "Envy / Greed", ability: "Steal Vitality: Take 2/3/4 HP from target and heal yourself that much.", descriptions: [
+        "Steal Vitality: Take 2 HP from target and heal yourself that much.",
+        "Steal Vitality: Take 3 HP from target and heal yourself that much.",
+        "Steal Vitality: Take 4 HP from target and heal yourself that much."
+      ]},
+      { id: "anxiety", label: "Anxiety", ability: "Preparation: Bank of 3d MD for you or allies to use anytime today (resets on Deep Rest, max 3d).", descriptions: [
+        "Preparation: Bank of 3d MD for you or allies to use anytime today (resets on Deep Rest, max 3d).",
+        "Preparation: Bank of 3d MD for you or allies to use anytime today (resets on Deep Rest, max 3d).",
+        "Preparation: Bank of 3d MD for you or allies to use anytime today (resets on Deep Rest, max 3d)."
+      ]},
+      { id: "shame", label: "Shame", ability: "Disappear: Invisible for 1/3/6 hours (breaks on attack or stamina ability).", descriptions: [
+        "Disappear: Invisible for 1 hour (breaks on attack or stamina ability).",
+        "Disappear: Invisible for 3 hours (breaks on attack or stamina ability).",
+        "Disappear: Invisible for 6 hours (breaks on attack or stamina ability)."
+      ]},
+      { id: "love", label: "Love", ability: "Selflessness: Heal someone else 3/5/7 HP. At lvl 3 can heal Critical Injuries.", descriptions: [
+        "Selflessness: Heal someone else 3 HP.",
+        "Selflessness: Heal someone else 5 HP.",
+        "Selflessness: Heal someone else 7 HP. Can heal Critical Injuries."
+      ]},
+      { id: "disgust", label: "Disgust", ability: "Revulsion: Wave of force pushes everything 30/50/70 ft away. At lvl 3 choose exemptions.", descriptions: [
+        "Revulsion: Wave of force pushes everything 30 ft away.",
+        "Revulsion: Wave of force pushes everything 50 ft away.",
+        "Revulsion: Wave of force pushes everything 70 ft away. Can choose exemptions."
+      ]}
     ],
     levels: {
       1: {
@@ -464,6 +512,7 @@ window.XRRPG_CLASS_DEFS = {
     stat: "Vigor, Endurance, or Intuition",
     archetype: "Mages",
     chromaRequired: null,
+    maxLevel: 6,
     elementPool: [
       { id: "stone", name: "Stone", tier: "I", focus: "++defense", levelAbilities: {
         1: "You can turn your skin to stone, giving you a plus to defense (ignore Minor Injuries from physical sources)\nCan turn an object to stone or grab a block of stone out of a surface and throw it, dealing damage (2 dmg on success)",
@@ -603,6 +652,7 @@ window.XRRPG_CLASS_DEFS = {
     stat: "Intuition",
     archetype: "Magicians",
     chromaRequired: null,
+    maxLevel: 4,
     spellPool: [
       { id: "terrifying_melody", name: "Terrifying Melody", tier: 1, description: "Reveal horrifying vision to enemy: 2 dmg on Success (psychic)." },
       { id: "song_of_health", name: "Song of Health", tier: 1, description: "Heal people you choose in range (can heal Minor Injuries)." },
@@ -626,22 +676,22 @@ window.XRRPG_CLASS_DEFS = {
     ],
     levels: {
       1: {
-        auto: ["Passive emotion suggestion when performing (listeners can reject at will, no stamina).", "Max Spell Tier I. Max Concentration 2, 10 min. Range 20 ft."],
+        auto: ["Passive emotion suggestion when performing (listeners can reject at will, no stamina).", { text: "Max Spell Tier I. Max Concentration 2, 10 min. Range 20 ft.", key: "descriptor" }],
         choices: [
           { type: "text", id: "artform", label: "Instrument / Artform" },
           { type: "pick_spells", count: 6, maxTier: 1, label: "Pick 6 Tier I spells" }
         ]
       },
       2: {
-        auto: ["Max Spell Tier II. Max Concentration 3, 30 min. Range 30 ft."],
+        auto: [{ text: "Max Spell Tier II. Max Concentration 3, 30 min. Range 30 ft.", key: "descriptor" }],
         choices: [{ type: "pick_spells", count: 4, maxTier: 2, label: "Pick 4 more spells (10 total, Tier I–II)" }]
       },
       3: {
-        auto: ["Max Spell Tier III. Max Concentration 4, 1 hr. Range 50 ft."],
+        auto: [{ text: "Max Spell Tier III. Max Concentration 4, 1 hr. Range 50 ft.", key: "descriptor" }],
         choices: [{ type: "pick_spells", count: 4, maxTier: 3, label: "Pick 4 more spells (14 total, Tier I–III)" }]
       },
       4: {
-        auto: ["Know all spells. Max Concentration 6, 3 hr."],
+        auto: [{ text: "Know all spells. Max Concentration 6, 3 hr.", key: "descriptor" }],
         choices: []
       }
     },
@@ -654,6 +704,7 @@ window.XRRPG_CLASS_DEFS = {
     stat: "Any",
     archetype: "Magicians",
     chromaRequired: null,
+    maxLevel: 4,
     spellPool: [
       // Red Spells
       { id: "heat_ray", name: "Heat Ray", tier: 1, color: "Red", description: "3 dmg on Success. Can't use red spells next turn." },
@@ -695,22 +746,22 @@ window.XRRPG_CLASS_DEFS = {
     ],
     levels: {
       1: {
-        auto: ["Max Spell Tier I. Max Concentration 1, 10 min. Range 20 ft."],
+        auto: [{ text: "Max Spell Tier I. Max Concentration 1, 10 min. Range 20 ft.", key: "descriptor" }],
         choices: [
           { type: "pick_one", id: "casting_style", label: "Pick a spellcasting style", options: ["Chroma Generalist: +1d MD if prev spell was opposite color (Red↔Blue, Green↔Gray)", "Chroma Specialist: +1d MD if prev spell same color (also removes Red Heat cooldown)", "AOE Caster: +1d MD if spell is AOE", "Single-Target Caster: +1d MD if spell has one target"] },
           { type: "pick_spells", count: 9, maxTier: 1, label: "Pick 9 Tier I spells" }
         ]
       },
       2: {
-        auto: ["Max Spell Tier II. Max Concentration 2, 30 min. Range 30 ft."],
+        auto: [{ text: "Max Spell Tier II. Max Concentration 2, 30 min. Range 30 ft.", key: "descriptor" }],
         choices: [{ type: "pick_spells", count: 6, maxTier: 2, label: "Pick 6 more spells (15 total, Tier I–II)" }]
       },
       3: {
-        auto: ["Max Spell Tier III. Max Concentration 3, 1 hr. Range 50 ft."],
+        auto: [{ text: "Max Spell Tier III. Max Concentration 3, 1 hr. Range 50 ft.", key: "descriptor" }],
         choices: [{ type: "pick_spells", count: 6, maxTier: 3, label: "Pick 6 more spells (21 total, Tier I–III)" }]
       },
       4: {
-        auto: ["Know all spells. Max Concentration 5, 3 hr."],
+        auto: [{ text: "Know all spells. Max Concentration 5, 3 hr.", key: "descriptor" }],
         choices: []
       }
     },
@@ -723,6 +774,7 @@ window.XRRPG_CLASS_DEFS = {
     stat: "Any",
     archetype: "Magicians",
     chromaRequired: null,
+    maxLevel: 4,
     baseRange: { 1: 20, 2: 30, 3: 50, 4: 50 },
     spellPool: [
       // Red
@@ -754,27 +806,27 @@ window.XRRPG_CLASS_DEFS = {
     ],
     levels: {
       1: {
-        auto: ["Max Spell Tier I. Max Concentration 2, 10 min. Range (r) = 20 ft.", "Possessors can't use the same spell more than once in a row (thrall spirits tire out). Can combine multiple spells in one Action for 1 Stamina."],
+        auto: [{ text: "Max Spell Tier I. Max Concentration 2, 10 min. Range (r) = 20 ft.", key: "descriptor" }, "Possessors can't use the same spell more than once in a row (thrall spirits tire out). Can combine multiple spells in one Action for 1 Stamina."],
         choices: [{ type: "pick_spells", count: 7, maxTier: 1, label: "Pick 7 Tier I spells" }]
       },
       2: {
-        auto: ["Max Spell Tier II. Max Concentration 3, 30 min. Range (r) = 30 ft."],
+        auto: [{ text: "Max Spell Tier II. Max Concentration 3, 30 min. Range (r) = 30 ft.", key: "descriptor" }],
         choices: [{ type: "pick_spells", count: 4, maxTier: 2, label: "Pick 4 more spells (11 total, Tier I–II)" }]
       },
       3: {
-        auto: ["Max Spell Tier III. Max Concentration 4, 1 hr. Range (r) = 50 ft."],
+        auto: [{ text: "Max Spell Tier III. Max Concentration 4, 1 hr. Range (r) = 50 ft.", key: "descriptor" }],
         choices: [{ type: "pick_spells", count: 4, maxTier: 3, label: "Pick 4 more spells (15 total, Tier I–III)" }]
       },
       4: {
-        auto: ["Know all spells. Max Concentration 5, 3 hr. Range (r) = 50 ft."],
+        auto: [{ text: "Know all spells. Max Concentration 5, 3 hr. Range (r) = 50 ft.", key: "descriptor" }],
         choices: []
       }
     },
     resources: [
       { id: "concentration_active", label: "Active Concentration", maxByLevel: { 1: 2, 2: 3, 3: 4, 4: 5 } },
-      { id: "raise_dead_i_uses", label: "Raise Dead/Create Construct (3 HP servant)", maxPerDay: 3 },
-      { id: "raise_dead_ii_uses", label: "Raise Dead/Create Construct II (5 HP, Special)", maxPerDay: 3 },
-      { id: "raise_dead_iii_uses", label: "Raise Dead/Create Construct III Elite (7 HP)", maxPerDay: 2 }
+      { id: "raise_dead_i_uses", label: "Raise Dead/Create Construct (3 HP servant)", maxPerDay: 3, requiresSpell: "Raise Dead/Create Construct" },
+      { id: "raise_dead_ii_uses", label: "Raise Dead/Create Construct II (5 HP, Special)", maxPerDay: 3, requiresSpell: "Raise Dead/Create Construct II" },
+      { id: "raise_dead_iii_uses", label: "Raise Dead/Create Construct III Elite (7 HP)", maxPerDay: 2, requiresSpell: "Raise Dead/Create Construct III (Elite)" }
     ]
   },
 
@@ -782,6 +834,7 @@ window.XRRPG_CLASS_DEFS = {
     stat: "Vigor or Intuition",
     archetype: "Magicians",
     chromaRequired: null,
+    maxLevel: 3,
     substanceNote: "You need the listed material to cast each spell — feel free to just buy it or go on a small quest to find it!",
     spellPool: [
       // Tier I
@@ -838,15 +891,15 @@ window.XRRPG_CLASS_DEFS = {
     ],
     levels: {
       1: {
-        auto: ["All Tier I spells available (see spell list below).", "Pocket Space: Carry up to 3 handheld items in a pocket dimension (rip a small hole in space anywhere; the hole can't move without closing/reopening it).", "Max Concentration 1, 10 min."],
+        auto: [{ text: "All Tier I spells available (see spell list below).", key: "spell_tier" }, "Pocket Space: Carry up to 3 handheld items in a pocket dimension (rip a small hole in space anywhere; the hole can't move without closing/reopening it).", { text: "Max Concentration 1, 10 min.", key: "concentration" }],
         choices: []
       },
       2: {
-        auto: ["All Tier I and II spells available.", "Chaos: Roll on the Minor Chaos Table for 0 stamina (3×/day) — roll d10. You must enact the effect.", "Max Concentration 2, 30 min."],
+        auto: [{ text: "All Tier I and II spells available.", key: "spell_tier" }, { text: "Chaos: Roll on the Minor Chaos Table for 0 stamina (3×/day) — roll d10. You must enact the effect.", key: "chaos_ability" }, { text: "Max Concentration 2, 30 min.", key: "concentration" }],
         choices: []
       },
       3: {
-        auto: ["All Tier I, II, and III spells available.", "Controlled Chaos: Roll a d20 on the full Chaos Table and pick the result you want — 3×/day, 0 stamina. Replaces the level 2 Chaos ability.", "Max Concentration 3, 1 hr."],
+        auto: [{ text: "All Tier I, II, and III spells available.", key: "spell_tier" }, { text: "Controlled Chaos: Roll a d20 on the full Chaos Table and pick the result you want — 3×/day, 0 stamina. Replaces the level 2 Chaos ability.", key: "chaos_ability" }, { text: "Max Concentration 3, 1 hr.", key: "concentration" }],
         choices: []
       }
     },
@@ -900,15 +953,15 @@ window.XRRPG_CLASS_DEFS = {
     ],
     levels: {
       1: {
-        auto: ["All Tier I elemental techniques available (element must be present in range)."],
+        auto: [{ text: "All Tier I elemental techniques available (element must be present in range).", key: "technique_tier" }],
         choices: [{ type: "pick_one", id: "specialty", label: "Pick your elemental specialty", options: ["Red: +1 dmg on all elemental technique attacks", "Blue: +1d MD on Actions against moving targets", "Green: may exempt any target or area from your AOE techniques", "Gray: all techniques get 2× range"] }]
       },
       2: {
-        auto: ["All Tier II elemental techniques available."],
+        auto: [{ text: "All Tier I and II elemental techniques available.", key: "technique_tier" }],
         choices: []
       },
       3: {
-        auto: ["All Tier III elemental techniques available."],
+        auto: [{ text: "All Tier I, II, and III elemental techniques available.", key: "technique_tier" }],
         choices: []
       }
     },
@@ -1038,29 +1091,29 @@ window.XRRPG_CLASS_DEFS = {
       },
       2: {
         auto: ["Spirit Range 60 ft."],
-        choices: [{ type: "upgrade_spirits", count: 2, label: "Upgrade 2 spirits to Tier II" }]
+        choices: [{ type: "upgrade_spirits", count: 2, label: "Upgrade 2 spirits" }]
       },
       3: {
         auto: ["Spirit Range 80 ft."],
-        choices: [{ type: "upgrade_spirits", count: 2, label: "Upgrade 2 spirits to Tier III" }]
+        choices: [{ type: "upgrade_spirits", count: 2, label: "Upgrade 2 spirits" }]
       },
       4: {
         auto: ["Spirit Range 90 ft."],
         choices: [
           { type: "pick_spirits", count: 1, startTier: 2, label: "Gain 1 new spirit at Tier II" },
-          { type: "upgrade_spirits", count: 1, label: "Upgrade 1 spirit to Tier II" }
+          { type: "upgrade_spirits", count: 1, label: "Upgrade 1 spirit" }
         ]
       },
       5: {
         auto: ["Spirit Range 90 ft."],
         choices: [
           { type: "pick_spirits", count: 1, startTier: 2, label: "Gain 1 new spirit at Tier II" },
-          { type: "upgrade_spirits", count: 1, toTier: 3, label: "Upgrade 1 spirit to Tier III" }
+          { type: "upgrade_spirits", count: 1, toTier: 3, label: "Upgrade 1 spirit" }
         ]
       },
       6: {
         auto: ["Spirit Range 90 ft."],
-        choices: [{ type: "upgrade_spirits", count: 2, toTier: 3, label: "Upgrade 2 spirits to Tier III" }]
+        choices: [{ type: "upgrade_spirits", count: 2, toTier: 3, label: "Upgrade 2 spirits" }]
       }
     },
     resources: [
@@ -1125,20 +1178,18 @@ window.XRRPG_CLASS_DEFS = {
       1: {
         auto: ["Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina). Takes 30 min and tools to switch effects."],
         choices: [
-          { type: "pick_effects", knownCount: 6, installedCount: 4, label: "Know 6 effects; install 4 into your suit" }
+          { type: "pick_effects", count: 6, installedCount: 4, label: "Know 6 effects; install 4 into your suit" }
         ]
       },
       2: {
         auto: [],
         choices: [
-          { type: "pick_effects", knownCount: 8, installedCount: 6, label: "Know 8 effects (pick 2 more); install 6" }
+          { type: "pick_effects", count: 8, installedCount: 6, label: "Know 8 effects (pick 2 more); install 6" }
         ]
       },
       3: {
         auto: ["Know all 12 effects."],
-        choices: [
-          { type: "pick_effects", knownCount: 12, installedCount: 8, label: "Install 8 effects from all 12 known" }
-        ]
+        choices: []
       }
     },
     resources: [

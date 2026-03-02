@@ -80,12 +80,29 @@
         <div id="classIntro" class="muted"></div>
       </div>
 
+      <div data-step="4" class="wizard-step hidden">
+        <p class="muted" style="margin-bottom:0.75rem;">Level 1 class choices:</p>
+        <div id="wizardLevelChoices"></div>
+      </div>
+
       <div class="xr-modal-actions">
         <button id="prevStepBtn" type="button">Back</button>
         <button id="nextStepBtn" type="button">Next</button>
         <button id="saveBtn" type="button" class="hidden">Create</button>
       </div>
       <div id="modalMsg" class="mono muted"></div>
+    </div>
+  </div>
+
+  <div id="deleteConfirmModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Delete Character</h2>
+      <p id="deleteConfirmMsg"></p>
+      <div class="xr-modal-actions">
+        <button id="cancelDeleteBtn" type="button">Cancel</button>
+        <button id="confirmDeleteBtn" type="button" style="background:var(--color-danger,#c0392b); color:#fff; border:none; padding:0.4rem 1rem; border-radius:4px; cursor:pointer;">Delete</button>
+      </div>
     </div>
   </div>
 
@@ -232,13 +249,36 @@
       return { valid: true, message: '' };
     }
 
+    const CLASS_ARCHETYPES = {
+      'Warrior': 'Adepts', 'Mentalist': 'Adepts', 'Tank': 'Adepts', 'Druid': 'Adepts',
+      'Elementalist': 'Spiritualists', 'Summoner': 'Spiritualists', 'Mystic': 'Spiritualists',
+      'Alchemist': 'Magicians', 'Physic': 'Magicians', 'Possessor': 'Magicians', 'Bard': 'Magicians', 'Enchanter': 'Magicians',
+      'Sorcerer': 'Mages', 'Warlock': 'Mages', 'Cleric': 'Mages', 'Demititan': 'Mages',
+      'Emitter Specialist': 'Technologists', 'Dronemaster': 'Technologists', 'Brawler': 'Technologists',
+      'Explosives Expert': 'Technologists', 'Gunslinger': 'Technologists', 'Swordmaster': 'Technologists'
+    };
+    const ARCHETYPE_ORDER = ['Adepts', 'Magicians', 'Mages', 'Spiritualists', 'Technologists'];
     const classInput = document.getElementById('classInput');
-    classNames.forEach(name => {
-      const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      classInput.appendChild(opt);
-    });
+    (function populateClassSelectWithGroups(selectEl) {
+      const byArchetype = {};
+      classNames.forEach(name => {
+        const archetype = CLASS_ARCHETYPES[name] || 'Other';
+        if (!byArchetype[archetype]) byArchetype[archetype] = [];
+        byArchetype[archetype].push(name);
+      });
+      ARCHETYPE_ORDER.forEach(archetype => {
+        if (!byArchetype[archetype]) return;
+        const group = document.createElement('optgroup');
+        group.label = archetype;
+        byArchetype[archetype].forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          group.appendChild(opt);
+        });
+        selectEl.appendChild(group);
+      });
+    })(classInput);
 
     function classChromaRequirement(cls) {
       return ADEPT_CHROMA_REQUIREMENTS[String(cls || '').trim()] || null;
@@ -431,16 +471,32 @@
       await withLoading('Refreshing character list…', loadCharacters);
     }
 
-    async function deleteCharacter(characterId) {
+    let pendingDeleteId = null;
+    const deleteModal = document.getElementById('deleteConfirmModal');
+    document.getElementById('cancelDeleteBtn').onclick = () => {
+      pendingDeleteId = null;
+      deleteModal.classList.add('hidden');
+    };
+    deleteModal.querySelector('.xr-modal-backdrop').onclick = () => {
+      pendingDeleteId = null;
+      deleteModal.classList.add('hidden');
+    };
+    document.getElementById('confirmDeleteBtn').onclick = async () => {
+      if (!pendingDeleteId) return;
+      const id = pendingDeleteId;
+      pendingDeleteId = null;
+      deleteModal.classList.add('hidden');
+      const { error } = await sb.from('xrrpg_characters').delete().eq('id', id).eq('user_id', currentUser.id);
+      if (error) { alert(error.message); return; }
+      await withLoading('Refreshing character list…', loadCharacters);
+    };
+
+    function deleteCharacter(characterId) {
       const char = characters.find(item => item.id === characterId);
       if (!char) return;
-      if (!window.confirm(`Delete ${char.name || 'this character'}? This cannot be undone.`)) return;
-      const { error } = await sb.from('xrrpg_characters').delete().eq('id', characterId).eq('user_id', currentUser.id);
-      if (error) {
-        alert(error.message);
-        return;
-      }
-      await withLoading('Refreshing character list…', loadCharacters);
+      document.getElementById('deleteConfirmMsg').textContent = `Delete "${char.name || 'this character'}"? This cannot be undone.`;
+      pendingDeleteId = characterId;
+      deleteModal.classList.remove('hidden');
     }
 
     window.exportCharacter = exportCharacter;
@@ -489,19 +545,150 @@
       };
     }
 
+    function renderWizardLevelChoices(cls) {
+      const container = document.getElementById('wizardLevelChoices');
+      if (!container) return;
+      container.innerHTML = '';
+      const def = window.XRRPG_CLASS_DEFS?.[cls];
+      if (!def) return;
+      const levelDef = def.levels?.[1];
+      if (!levelDef?.choices?.length) {
+        container.innerHTML = '<p class="muted">No additional choices needed for this class at level 1.</p>';
+        return;
+      }
+      let html = '';
+      for (const choice of levelDef.choices) {
+        if (choice.type === 'pick_advanced_power') {
+          const pool = def.advancedPowers || [];
+          const opts = pool.map(p => `<option value="${p.name}" data-desc="${(p.tiers[0] || '').replace(/"/g, '&quot;')}">${p.name}</option>`).join('');
+          html += `<div class="xrrpg-choice-block"><label><strong>${choice.label || 'Choose Advanced Power'}:</strong><br>
+            <select data-choice-id="advanced_power"><option value="">-- Select --</option>${opts}</select>
+            <p class="xrrpg-ability-desc xrrpg-choice-desc" style="margin-top:0.3rem;"></p>
+          </label></div>`;
+        } else if (choice.type === 'pick_specialized_powers') {
+          const pool = def.specializedPowers || [];
+          const checks = pool.map(p => `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="specialized_power" value="${p.name}"> <strong>${p.name}</strong><br><span class="xrrpg-ability-desc">${p.descriptions?.[0] || ''}</span></label>`).join('');
+          html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} Specialized Powers`}:</legend>${checks}</fieldset>`;
+        } else if (choice.type === 'pick_one') {
+          if (choice.id === 'devil_emotion') {
+            const opts = (def.devilEmotions || []).map(e => `<option value="${e.label}">${e.label}</option>`).join('');
+            html += `<div class="xrrpg-choice-block"><label><strong>${choice.label}:</strong><br>
+              <select data-choice-id="${choice.id}"><option value="">-- Select --</option>${opts}</select>
+            </label></div>`;
+          } else {
+            const opts = choice.options.map(o => `<option value="${o}">${o}</option>`).join('');
+            html += `<div class="xrrpg-choice-block"><label><strong>${choice.label}:</strong><br>
+              <select data-choice-id="${choice.id}"><option value="">-- Select --</option>${opts}</select>
+            </label></div>`;
+          }
+        } else if (choice.type === 'text') {
+          html += `<div class="xrrpg-choice-block"><label><strong>${choice.label}:</strong><br>
+            <input type="text" data-choice-id="${choice.id}" style="width:100%;">
+          </label></div>`;
+        } else if (choice.type === 'pick_spells') {
+          const pool = def.spellPool || [];
+          const filtered = pool.filter(s => !choice.maxTier || s.tier <= choice.maxTier);
+          const checks = filtered.map(s => {
+            const tags = [s.color ? `[${s.color}]` : null, s.concentration ? '[Conc]' : null, s.aoe ? '[AOE]' : null].filter(Boolean).join(' ');
+            return `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="spell" value="${s.name}"> <strong>${s.name}</strong>${tags ? ` <span class="muted">${tags}</span>` : ''}<br><span class="xrrpg-ability-desc">${s.description}</span></label>`;
+          }).join('');
+          html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} spells`}:</legend>${checks}</fieldset>`;
+        } else if (choice.type === 'pick_spirits') {
+          const pool = def.spiritTypes || [];
+          if (!pool.length) {
+            html += `<div class="xrrpg-choice-block"><p class="muted">No spirit types defined.</p></div>`;
+          } else {
+            const checks = pool.map(s => `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="spirit" value="${s.name}"> <strong>${s.name}</strong> <span class="muted">(${s.focus})</span><br><span class="xrrpg-ability-desc">${s.description}</span></label>`).join('');
+            html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} spirits`}:</legend>${checks}</fieldset>`;
+          }
+        } else if (choice.type === 'pick_elements') {
+          const pool = (def.elementPool || []).filter(e => e.tier === choice.tier);
+          const checks = pool.map(e => {
+            const previewText = e.levelAbilities?.[1]?.replace(/\n/g, '<br>') || e.description || '';
+            return `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="element" value="${e.name}"> <strong>${e.name}</strong>${e.focus ? ` <span class="muted">(${e.focus})</span>` : ''}<br><span class="xrrpg-ability-desc">${previewText}</span></label>`;
+          }).join('');
+          html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} elements`}:</legend>${checks}</fieldset>`;
+        } else if (choice.type === 'pick_effects') {
+          const pool = def.effectPool || [];
+          const checks = pool.map(e => `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="effect" value="${e.name}"> <strong>${e.name}</strong><br><span class="xrrpg-ability-desc">${e.description}</span></label>`).join('');
+          html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} effects`}:</legend>${checks}</fieldset>`;
+        }
+      }
+      container.innerHTML = html;
+      container.querySelectorAll('.xrrpg-pick-fieldset').forEach(fs => {
+        const limit = parseInt(fs.dataset.limit || '0');
+        if (!limit) return;
+        const boxes = Array.from(fs.querySelectorAll('input[type=checkbox]:not([disabled])'));
+        const enforce = () => {
+          const checked = boxes.filter(b => b.checked).length;
+          boxes.forEach(b => { if (!b.checked) b.disabled = checked >= limit; });
+        };
+        boxes.forEach(b => b.addEventListener('change', enforce));
+        enforce();
+      });
+      container.querySelectorAll('select[data-choice-id]').forEach(sel => {
+        const descEl = sel.parentElement.querySelector('.xrrpg-choice-desc');
+        if (!descEl) return;
+        const update = () => { descEl.textContent = sel.options[sel.selectedIndex]?.dataset.desc || ''; };
+        sel.addEventListener('change', update);
+        update();
+      });
+    }
+
+    function readWizardLevelChoices() {
+      const container = document.getElementById('wizardLevelChoices');
+      if (!container) return {};
+      const result = {};
+      container.querySelectorAll('[data-choice-id]').forEach(el => {
+        const id = el.dataset.choiceId;
+        if (el.tagName === 'SELECT' || (el.tagName === 'INPUT' && el.type === 'text')) {
+          result[id] = el.value;
+        } else if (el.type === 'checkbox' && el.checked) {
+          if (!result[id]) result[id] = [];
+          result[id].push(el.value);
+        }
+      });
+      return result;
+    }
+
+    function wizardChoicesToClassChoices(cls, raw) {
+      const result = {};
+      if (raw.advanced_power) result.advanced_powers = [raw.advanced_power];
+      if (raw.devil_name) result.devil_name = raw.devil_name;
+      if (raw.devil_description) result.devil_description = raw.devil_description;
+      if (raw.devil_emotion) result.devil_emotion = raw.devil_emotion;
+      if (raw.spell?.length) result.spells_known = raw.spell;
+      if (raw.spirit?.length) result.spirits = raw.spirit.map(type => ({ type, tier: 1 }));
+      if (raw.specialized_power?.length) result.specialized_powers = raw.specialized_power;
+      if (raw.effect?.length) result.effects_known = raw.effect;
+      if (raw.element?.length) {
+        const def = window.XRRPG_CLASS_DEFS?.[cls];
+        const tier = def?.levels?.[1]?.choices?.find(c => c.type === 'pick_elements')?.tier || 'I';
+        result.elements = raw.element.map(name => ({ name, tier }));
+      }
+      // Generic pick_one choices
+      const def = window.XRRPG_CLASS_DEFS?.[cls];
+      for (const choice of (def?.levels?.[1]?.choices || [])) {
+        if (choice.type === 'pick_one' && raw[choice.id]) result[choice.id] = raw[choice.id];
+      }
+      return result;
+    }
+
     let wizardStep = 1;
+    const WIZARD_MAX_STEPS = 4;
     const modal = document.getElementById('charModal');
     const wizardStepLabel = document.getElementById('wizardStepLabel');
     function setStep(step) {
-      wizardStep = Math.max(1, Math.min(3, step));
-      wizardStepLabel.textContent = `Step ${wizardStep} / 3`;
+      wizardStep = Math.max(1, Math.min(WIZARD_MAX_STEPS, step));
+      wizardStepLabel.textContent = `Step ${wizardStep} / ${WIZARD_MAX_STEPS}`;
       document.querySelectorAll('.wizard-step').forEach(el => {
         el.classList.toggle('hidden', Number(el.dataset.step) !== wizardStep);
       });
       document.getElementById('prevStepBtn').classList.toggle('hidden', wizardStep === 1);
-      document.getElementById('nextStepBtn').classList.toggle('hidden', wizardStep === 3);
-      document.getElementById('saveBtn').classList.toggle('hidden', wizardStep !== 3);
+      document.getElementById('nextStepBtn').classList.toggle('hidden', wizardStep === WIZARD_MAX_STEPS);
+      document.getElementById('saveBtn').classList.toggle('hidden', wizardStep !== WIZARD_MAX_STEPS);
       if (wizardStep === 3) renderStartingClassDetails();
+      if (wizardStep === 4) renderWizardLevelChoices(classInput.value);
     }
 
     document.getElementById('newCharacterBtn').onclick = () => { modal.classList.remove('hidden'); setStep(1); };
@@ -554,6 +741,8 @@
         currentUser = currentUser || await requireUser();
         const base_stats = buildStatsFromWizard();
         const class_progression = [{ class: cls, tier: 1, level_acquired: 1 }];
+        const rawWizardChoices = readWizardLevelChoices();
+        const l1Choices = wizardChoicesToClassChoices(cls, rawWizardChoices);
 
         const { data, error } = await sb.from('xrrpg_characters').insert({
           user_id: currentUser.id,
@@ -562,7 +751,7 @@
             ...base_stats,
             species,
             chroma,
-            class_ability_choices: {}
+            class_ability_choices: Object.keys(l1Choices).length ? { [cls]: l1Choices } : {}
           },
           class_progression,
           skills: []
