@@ -1082,6 +1082,44 @@
         }
       }
 
+      // ── EMITTER SPECIALIST: emitter types by tier ────────────────
+      if (cls === 'Emitter Specialist' && def.emitterPool) {
+        if (def.emitterNote) {
+          html += `<div class="xrrpg-ability-bubble"><div class="xrrpg-ability-row"><span class="muted">${def.emitterNote}</span></div></div>`;
+        }
+        const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
+        for (let t = 1; t <= maxTier; t++) {
+          const tierEmitters = def.emitterPool.filter(e => e.tier === t);
+          if (!tierEmitters.length) continue;
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Emitters:</strong></div>`;
+          for (const e of tierEmitters) {
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${e.name}</strong></div>`;
+            if (e.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${e.description}</p>`;
+          }
+          html += `</div>`;
+        }
+      }
+
+      // ── EXPLOSIVES EXPERT: bomb types by tier ────────────────────
+      if (cls === 'Explosives Expert' && def.bombPool) {
+        if (def.bombNote) {
+          html += `<div class="xrrpg-ability-bubble"><div class="xrrpg-ability-row"><span class="muted">${def.bombNote}</span></div></div>`;
+        }
+        const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
+        for (let t = 1; t <= maxTier; t++) {
+          const tierBombs = def.bombPool.filter(b => b.tier === t);
+          if (!tierBombs.length) continue;
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Bombs:</strong></div>`;
+          for (const b of tierBombs) {
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${b.name}</strong>${b.unlimited ? ' <span class="muted">[Unlimited]</span>' : ''}</div>`;
+            if (b.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${b.description}</p>`;
+          }
+          html += `</div>`;
+        }
+      }
+
       // ── DRONEMASTER: drone effects by tier ───────────────────────
       if (cls === 'Dronemaster' && def.droneEffectPool) {
         const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
