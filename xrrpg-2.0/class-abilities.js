@@ -1365,7 +1365,7 @@ window.XRRPG_CLASS_DEFS = {
     ],
     levels: {
       1: {
-        auto: ["All Tier I guns and effects available. 1 effect slot per gun. Max 2 Large guns on person.", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
+        auto: ["All Tier I guns and effects available. 1 effect slot per gun.", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
         choices: []
       },
       2: {
