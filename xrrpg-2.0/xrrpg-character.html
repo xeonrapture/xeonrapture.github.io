@@ -23,7 +23,6 @@
     <section class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Character</h2>
-        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
       </div>
       <div class="collapsible-body">
         <div class="sheet-actions">
@@ -44,7 +43,7 @@
         <div class="xrrpg-core-stats-card">
           <h3>Level & Mastery</h3>
           <div class="xrrpg-stat-line xrrpg-stat-line--compact">
-            <label title="Character level from 1 to 9.">Level <input id="levelInput" type="number" min="1" max="9" /></label>
+            <label title="Character level from 0 to 9.">Level <input id="levelInput" type="number" min="0" max="9" /></label>
             <label title="Mastery die used for class actions.">Mastery Die <input id="masteryDieInput" /></label>
           </div>
         </div>
@@ -352,6 +351,7 @@
     };
 
     const LEVELING_RULES = {
+      0: { stamina_base: 10, skill_mode: null, stat_points: 0, stat_bonus: 0, skill_points: 0, powerful_item_limit: 2, powerful_item_max: 1 },
       1: { stamina_base: 12, skill_mode: 'add_or_plus1', stat_points: 0, stat_bonus: 1, skill_points: 0, powerful_item_limit: 2, powerful_item_max: 1 },
       2: { stamina_base: 14, skill_mode: 'stat', stat_points: 1, stat_bonus: 1, skill_points: 0, powerful_item_limit: 3, powerful_item_max: 1 },
       3: { stamina_base: 16, skill_mode: 'skill_plus2', stat_points: 0, stat_bonus: 1, skill_points: 2, powerful_item_limit: 3, powerful_item_max: 1 },
@@ -493,7 +493,7 @@
         ...character.base_stats,
         species: document.getElementById('speciesInput').value.trim(),
         chroma: document.getElementById('chromaInput').value.trim(),
-        level: Number(document.getElementById('levelInput').value) || 1,
+        level: Number(document.getElementById('levelInput').value) || 0,
         hp: Number(document.getElementById('hpInput').value) || 0,
         current_hp: Number(document.getElementById('currentHpInput').value) || 0,
         vigor: Number(document.getElementById('vigorInput').value) || 0,
@@ -685,7 +685,7 @@
       const cls = document.getElementById('levelClassSelect').value;
       const progression = character.class_progression || [];
       const tier = progression.filter(item => item.class === cls).length + 1;
-      const currentLevel = Number(document.getElementById('levelInput').value) || 1;
+      const currentLevel = Number(document.getElementById('levelInput').value) || 0;
       const level = Math.min(9, currentLevel + 1);
       document.getElementById('levelClassSummary').textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
       document.getElementById('levelClassTrackSummary').textContent = `This will set Character Level ${level} and ${cls} to Class Level ${tier}.`;
@@ -760,6 +760,23 @@
     function uninstallAllEffects(cls) {
       const choices = getClassChoices(cls);
       choices.effects_installed = [];
+      setClassChoices(cls, choices);
+      renderClassAbilitiesSection();
+    }
+
+    function updateBombInventory(cls, bombId, delta) {
+      const def = getClassDef(cls);
+      const classLevel = getClassLevel(cls);
+      const storageMax = def?.storageByLevel?.[classLevel] || 10;
+      const choices = getClassChoices(cls);
+      if (!choices.bomb_inventory) choices.bomb_inventory = {};
+      const current = choices.bomb_inventory[bombId] || 0;
+      if (delta > 0) {
+        const trackableBombs = (def?.bombPool || []).filter(b => !b.unlimited);
+        const totalStored = trackableBombs.reduce((sum, b) => sum + (choices.bomb_inventory[b.id] || 0), 0);
+        if (totalStored >= storageMax) return;
+      }
+      choices.bomb_inventory[bombId] = Math.max(0, current + delta);
       setClassChoices(cls, choices);
       renderClassAbilitiesSection();
     }
@@ -1138,6 +1155,14 @@
         btn.onclick = () => updateGunRes(btn.dataset.cls, Number(btn.dataset.gunIdx), btn.dataset.resKey, -1, Number(btn.dataset.resMax));
       });
 
+      // ── Bomb inventory events ──────────────────────────────────────
+      body.querySelectorAll('[data-bomb-inv-inc]').forEach(btn => {
+        btn.onclick = () => updateBombInventory(btn.dataset.cls, btn.dataset.bombInvInc, 1);
+      });
+      body.querySelectorAll('[data-bomb-inv-dec]').forEach(btn => {
+        btn.onclick = () => updateBombInventory(btn.dataset.cls, btn.dataset.bombInvDec, -1);
+      });
+
       initCollapsibles();
       applyOwnershipPermissions();
     }
@@ -1426,11 +1451,20 @@
         }
       }
 
-      // ── EXPLOSIVES EXPERT: bomb types by tier ────────────────────
+      // ── EXPLOSIVES EXPERT: bomb inventory by tier ────────────────
       if (cls === 'Explosives Expert' && def.bombPool) {
         if (def.bombNote) {
           html += `<div class="xrrpg-ability-bubble"><div class="xrrpg-ability-row"><span class="muted">${def.bombNote}</span></div></div>`;
         }
+        const storageMax = def.storageByLevel?.[classLevel] || 10;
+        const bombInv = choices.bomb_inventory || {};
+        const trackableBombs = def.bombPool.filter(b => !b.unlimited);
+        const totalStored = trackableBombs.reduce((sum, b) => sum + (bombInv[b.id] || 0), 0);
+
+        html += `<div class="xrrpg-ability-bubble">`;
+        html += `<div class="xrrpg-ability-row"><strong>Bombs Stored:</strong> ${totalStored} / ${storageMax}</div>`;
+        html += `</div>`;
+
         const maxTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
         for (let t = 1; t <= maxTier; t++) {
           const tierBombs = def.bombPool.filter(b => b.tier === t);
@@ -1438,7 +1472,19 @@
           html += `<div class="xrrpg-ability-bubble">`;
           html += `<div class="xrrpg-ability-row"><strong>Tier ${t} Bombs:</strong></div>`;
           for (const b of tierBombs) {
-            html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${b.name}</strong>${b.unlimited ? ' <span class="muted">[Unlimited]</span>' : ''}</div>`;
+            if (b.unlimited) {
+              html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${b.name}</strong> <span class="muted">[Unlimited]</span></div>`;
+            } else {
+              const count = bombInv[b.id] || 0;
+              html += `<div class="xrrpg-ability-row" style="margin-left:1rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">`;
+              html += `<strong>${b.name}</strong>`;
+              html += `<div style="display:flex; align-items:center; gap:0.25rem;">`;
+              html += `<button type="button" class="xr-btn-secondary" style="font-size:0.8rem; padding:0.15rem 0.5rem;" data-bomb-inv-dec="${b.id}" data-cls="${cls}">−</button>`;
+              html += `<span style="min-width:1.5rem; text-align:center;">${count}</span>`;
+              html += `<button type="button" class="xr-btn-secondary" style="font-size:0.8rem; padding:0.15rem 0.5rem;" data-bomb-inv-inc="${b.id}" data-cls="${cls}">+</button>`;
+              html += `</div>`;
+              html += `</div>`;
+            }
             if (b.description) html += `<p class="xrrpg-ability-desc" style="margin-left:1rem;">${b.description}</p>`;
           }
           html += `</div>`;
@@ -1600,20 +1646,15 @@
       if (cls === 'Gunslinger' && def.gunPool) {
         const maxEffectsPerGun = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
         const maxEffectTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
-        const maxLargeGuns = classLevel >= 3 ? 3 : 2;
         const availGunEffects = def.gunPool.filter(e => e.tier <= maxEffectTier);
         const availGunTypes = (def.gunTypes || []).filter(t => t.tier <= maxEffectTier);
 
         if (!choices.gun_list) choices.gun_list = [];
         const guns = choices.gun_list;
 
-        // Info header — large gun count uses derived model size (falls back to gun_type for old data)
-        const largeGunCount = guns.filter(g => {
-          const md = (def.gunTypes || []).find(t => t.id === g.gun_model);
-          return md ? md.size === 'large' : g.gun_type === 'large';
-        }).length;
+        // Info header
         html += `<div class="xrrpg-ability-bubble">`;
-        html += `<div class="xrrpg-ability-row"><strong>Effects per Gun:</strong> up to ${maxEffectsPerGun} &nbsp;|&nbsp; <strong>Large Guns:</strong> ${largeGunCount} / ${maxLargeGuns}</div>`;
+        html += `<div class="xrrpg-ability-row"><strong>Effects per Gun:</strong> up to ${maxEffectsPerGun}</div>`;
         html += `</div>`;
 
         // Gun list
@@ -2204,7 +2245,7 @@
       document.getElementById('nameInput').value = character.name || '';
       document.getElementById('speciesInput').value = s.species || '';
       document.getElementById('chromaInput').value = s.chroma || '';
-      document.getElementById('levelInput').value = s.level || 1;
+      document.getElementById('levelInput').value = s.level ?? 0;
       document.getElementById('hpInput').value = s.hp || 0;
       document.getElementById('currentHpInput').value = s.current_hp ?? s.hp ?? 0;
       document.getElementById('vigorInput').value = s.vigor || 0;
@@ -2399,7 +2440,7 @@
       await withLoading('Applying level up…', async () => {
       const cls = document.getElementById('levelClassSelect').value;
       const progression = [...(character.class_progression || [])];
-      const currentLevel = Number(document.getElementById('levelInput').value) || 1;
+      const currentLevel = Number(document.getElementById('levelInput').value) || 0;
       const level = Math.min(9, currentLevel + 1);
       const currentClassLevel = progression.filter(item => item.class === cls).length;
       const tier = currentClassLevel + 1;

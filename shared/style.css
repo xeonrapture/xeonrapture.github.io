@@ -511,6 +511,7 @@ label textarea {
 .wr-scope .actions {
   display: flex;
   gap: 0.25rem;
+  align-items: center;
 }
 
 .wr-scope .action-btn {

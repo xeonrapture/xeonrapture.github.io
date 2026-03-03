@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XRRPG Campaigns</title>
+  <link rel="stylesheet" href="/shared/style.css">
+</head>
+<body class="wr-scope">
+  <div id="nav"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/shared/auth.js"></script>
+  <script src="/shared/nav.js"></script>
+
+  <main class="wrap">
+    <header>
+      <div style="display:flex; align-items:center; gap:0.5rem; justify-content:space-between; flex-wrap:wrap;">
+        <a class="action-btn" href="/xrrpg-2.0/xrrpg-character-manager.html" aria-label="Back to XRRPG character manager">
+          <span aria-hidden="true">←</span>
+          <span>Back to XRRPG</span>
+        </a>
+      </div>
+      <h1>XRRPG Campaigns</h1>
+    </header>
+
+    <div style="display:grid; gap:1rem; grid-template-columns:1fr;" class="wr-mt-1">
+      <section class="card">
+        <h2>Create Campaign</h2>
+        <label>Campaign name
+          <input id="newCampaignName" type="text" maxlength="80" placeholder="Weekend Run" />
+        </label>
+        <button id="createCampaignBtn" type="button">Create Campaign</button>
+        <div id="createStatus" class="mono muted wr-mt-0-5"></div>
+      </section>
+
+      <section class="card">
+        <h2>Your XRRPG Campaigns</h2>
+        <div id="campaignList">Loading campaigns…</div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const sb = window.supabaseClient;
+
+    let currentUser = null;
+    let memberships = [];
+
+    async function requireUser() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) {
+        window.location.href = "/login.html";
+        throw new Error("No user");
+      }
+      return user;
+    }
+
+    async function loadCampaigns() {
+      currentUser = await requireUser();
+      const { data, error } = await sb
+        .from("campaign_members")
+        .select("campaign_id, role, campaigns(id, name, gm_user_id, system)")
+        .eq("user_id", currentUser.id)
+        .order("joined_at", { ascending: true });
+
+      const list = document.getElementById("campaignList");
+      if (error) {
+        list.textContent = `Failed to load campaigns: ${error.message}`;
+        return;
+      }
+
+      memberships = (data || []).filter(m => m.campaigns?.system === 'xrrpg');
+      if (!memberships.length) {
+        list.innerHTML = '<p class="muted">No XRRPG campaigns yet. Create one above or accept an invite from Notifications.</p>';
+        return;
+      }
+
+      list.innerHTML = memberships.map(m => {
+        const role = m.role === 'gm' ? 'GM' : 'Player';
+        return `<div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; padding:0.5rem 0; border-bottom:1px solid var(--border, #333);">
+          <div>
+            <strong>${m.campaigns?.name || 'Unnamed Campaign'}</strong>
+            <span class="muted" style="margin-left:0.5rem;">${role}</span>
+          </div>
+          <a class="action-btn" href="/xrrpg-2.0/xrrpg-campaign.html?id=${m.campaign_id}">View Campaign</a>
+        </div>`;
+      }).join('');
+    }
+
+    document.getElementById("createCampaignBtn").onclick = async () => {
+      const name = document.getElementById("newCampaignName").value.trim();
+      const status = document.getElementById("createStatus");
+      status.textContent = '';
+      if (!name) { status.textContent = "Enter a campaign name first."; return; }
+
+      const { data: insertedCampaign, error: campaignError } = await sb.from("campaigns")
+        .insert({ name, gm_user_id: currentUser.id, status: "active", system: "xrrpg" })
+        .select("id, name")
+        .single();
+
+      if (campaignError || !insertedCampaign) {
+        status.textContent = `Failed to create campaign: ${campaignError?.message || "Unknown error"}`;
+        return;
+      }
+
+      const { error: gmMembershipError } = await sb.from("campaign_members").insert({
+        campaign_id: insertedCampaign.id,
+        user_id: currentUser.id,
+        role: "gm"
+      });
+      if (gmMembershipError) {
+        status.textContent = `Campaign created, but failed to register you as GM: ${gmMembershipError.message}`;
+        return;
+      }
+
+      document.getElementById("newCampaignName").value = "";
+      status.textContent = `Campaign "${insertedCampaign.name}" created.`;
+      await loadCampaigns();
+    };
+
+    loadCampaigns();
+  </script>
+</body>
+</html>
