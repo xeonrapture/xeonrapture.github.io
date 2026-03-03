@@ -1,4 +1,4 @@
-/* ===== Global XR Tools Theme ===== */
+/* ===== Global XR App Theme ===== */
 
 @import url("https://fonts.googleapis.com/css2?family=Goudy+Bookletter+1911&family=MedievalSharp&family=Orbitron:wght@400..900&display=swap&family=Share+Tech&display=swap&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
 
@@ -148,6 +148,13 @@ p {
   align-items: center;
   justify-content: flex-end;
   gap: 0.4rem;
+}
+
+.xr-nav-group-toggle:hover,
+.xr-nav-group-toggle:active {
+  border: 0;
+  box-shadow: none;
+  transform: none;
 }
 
 .xr-nav-group-toggle::after {
@@ -1449,7 +1456,7 @@ label textarea {
   margin-top: 0.75rem;
 }
 
-/* ===== XR Tools styles (scoped) ===== */
+/* ===== XR App styles (scoped) ===== */
 .tools-scope .wrap {
   max-width: 760px;
   margin: 2rem auto;
@@ -2062,6 +2069,28 @@ select,
 @media (max-width: 980px) {
   .wr-scope .xrrpg-stat-line {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .wr-scope .xrrpg-core-stats-grid,
+  .wr-scope .xrrpg-resource-grid,
+  .wr-scope .xrrpg-resource-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .wr-scope .xrrpg-inline-fields {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wr-scope .xrrpg-inline-fields label {
+    min-width: 0;
+  }
+
+  .wr-scope .xrrpg-injury-item {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 

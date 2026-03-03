@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>XRRPG Campaigns</title>
+  <title>Campaigns | XR App</title>
   <link rel="stylesheet" href="/shared/style.css">
 </head>
 <body class="wr-scope">
@@ -21,7 +21,7 @@
           <span>Back to Profile</span>
         </a>
       </div>
-      <h1>XRRPG Campaigns</h1>
+      <h1>Campaign Management</h1>
     </header>
 
     <div style="display:grid; gap:1rem; grid-template-columns:1fr;" class="wr-mt-1">
@@ -30,12 +30,18 @@
         <label>Campaign name
           <input id="newCampaignName" type="text" maxlength="80" placeholder="Weekend Run" />
         </label>
+        <label>System
+          <select id="newCampaignSystem">
+            <option value="xrrpg">XRRPG</option>
+            <option value="webrunning">Webrunning</option>
+          </select>
+        </label>
         <button id="createCampaignBtn" type="button">Create Campaign</button>
         <div id="createStatus" class="mono muted wr-mt-0-5"></div>
       </section>
 
       <section class="card">
-        <h2>Your XRRPG Campaigns</h2>
+        <h2>Your Campaigns</h2>
         <div id="campaignList">Loading campaigns…</div>
       </section>
     </div>
@@ -70,22 +76,18 @@
         return;
       }
 
-      memberships = (data || []).filter(m => m.campaigns?.system === 'xrrpg');
+      memberships = data || [];
       if (!memberships.length) {
-        list.innerHTML = '<p class="muted">No XRRPG campaigns yet. Create one above or accept an invite from Notifications.</p>';
+        list.innerHTML = '<p class="muted">No campaigns yet. Create one above or accept an invite from Notifications.</p>';
         return;
       }
 
-      list.innerHTML = memberships.map(m => {
+      list.innerHTML = `<table class="table-full"><thead><tr><th>Name</th><th>System</th><th>Role</th><th></th></tr></thead><tbody>${memberships.map(m => {
         const role = m.role === 'gm' ? 'GM' : 'Player';
-        return `<div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; padding:0.5rem 0; border-bottom:1px solid var(--border, #333);">
-          <div>
-            <strong>${m.campaigns?.name || 'Unnamed Campaign'}</strong>
-            <span class="muted" style="margin-left:0.5rem;">${role}</span>
-          </div>
-          <a class="action-btn" href="/xrrpg-2.0/xrrpg-campaign.html?id=${m.campaign_id}">View Campaign</a>
-        </div>`;
-      }).join('');
+        const system = (m.campaigns?.system || 'xrrpg').toLowerCase();
+        const viewHref = system === 'webrunning' ? `/webrunning-2.0/webrunning-character-manager.html?campaign=${m.campaign_id}` : `/xrrpg-2.0/xrrpg-campaign.html?id=${m.campaign_id}`;
+        return `<tr><td><strong>${m.campaigns?.name || 'Unnamed Campaign'}</strong></td><td>${system}</td><td>${role}</td><td><a class="action-btn" href="${viewHref}">View</a></td></tr>`;
+      }).join('')}</tbody></table>`;
     }
 
     document.getElementById("createCampaignBtn").onclick = async () => {
@@ -94,8 +96,9 @@
       status.textContent = '';
       if (!name) { status.textContent = "Enter a campaign name first."; return; }
 
+      const system = document.getElementById('newCampaignSystem').value;
       const { data: insertedCampaign, error: campaignError } = await sb.from("campaigns")
-        .insert({ name, gm_user_id: currentUser.id, status: "active", system: "xrrpg" })
+        .insert({ name, gm_user_id: currentUser.id, status: "active", system })
         .select("id, name")
         .single();
 

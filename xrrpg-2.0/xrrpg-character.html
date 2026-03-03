@@ -20,7 +20,7 @@
       <div id="ownershipNotice" class="mono muted hidden"></div>
     </header>
 
-    <section class="card collapsible" data-collapsible>
+    <section id="characterSection" class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Character</h2>
       </div>
@@ -33,7 +33,7 @@
       </div>
     </section>
 
-    <section class="card collapsible" data-collapsible>
+    <section id="coreStatsSection" class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Core Stats</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -71,7 +71,7 @@
       </div>
     </section>
 
-    <section class="card collapsible" data-collapsible>
+    <section id="healthSection" class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Health & Injuries</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -88,7 +88,7 @@
       </div>
     </section>
 
-    <section class="card collapsible" data-collapsible>
+    <section id="resourcesSection" class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Resource Tracking</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -125,7 +125,7 @@
       </div>
     </section>
 
-    <section class="card collapsible" data-collapsible>
+    <section id="skillsSection" class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Skills</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -146,7 +146,7 @@
       </div>
     </section>
 
-    <section class="card collapsible" data-collapsible>
+    <section id="classDetailsSection" class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Class Details</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -157,7 +157,7 @@
       </div>
     </section>
 
-    <section class="card collapsible" data-collapsible>
+    <section id="inventorySection" class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Inventory</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -167,7 +167,7 @@
       </div>
     </section>
 
-    <section class="card collapsible" data-collapsible>
+    <section id="characterNotesSection" class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>Character Notes</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -183,7 +183,7 @@
       </div>
     </section>
 
-    <section class="card collapsible" data-collapsible>
+    <section id="historySection" class="card collapsible" data-collapsible>
       <div class="collapsible-header">
         <h2>History</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
@@ -638,9 +638,19 @@
       return ADEPT_CHROMA_REQUIREMENTS[String(cls || '').trim()] || null;
     }
 
+    function chromaAllowsClass(chroma, required) {
+      if (!required) return true;
+      const clean = String(chroma || '').trim();
+      if (clean === required) return true;
+      const mixedMatch = clean.match(/^Mixed \(([^/]+)\/([^\)]+)\)$/i);
+      if (!mixedMatch) return false;
+      const colors = [mixedMatch[1].trim(), mixedMatch[2].trim()];
+      return colors.includes(required);
+    }
+
     function validateClassChromaRequirement(cls, chroma) {
       const required = classChromaRequirement(cls);
-      if (!required || chroma === required) return { valid: true, message: '' };
+      if (chromaAllowsClass(chroma, required)) return { valid: true, message: '' };
       return {
         valid: false,
         message: `${cls} can only be selected by ${required} chroma characters.`
@@ -2536,6 +2546,20 @@
         return;
       }
 
+      if (rule.skill_mode === 'skill_plus2' && !choiceValues.skill_new_name?.trim()) {
+        document.getElementById('levelMsg').textContent = 'This level requires adding a new skill (+2).';
+        return;
+      }
+
+      if (rule.skill_mode === 'add_or_plus1') {
+        const hasNew = !!choiceValues.skill_new_name?.trim();
+        const hasBoost = !!choiceValues.skill_boost?.trim();
+        if (!hasNew && !hasBoost) {
+          document.getElementById('levelMsg').textContent = 'Choose a new skill or select a skill to boost by +1.';
+          return;
+        }
+      }
+
       const base_stats = {
         ...before,
         level,
@@ -2892,6 +2916,51 @@
         }
         renderHistory();
       };
+    });
+
+
+    function focusSection(section) {
+      if (!section) return;
+      section.classList.remove('collapsed');
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const focusTarget = section.querySelector('h2, h3, button, input, select, textarea') || section;
+      if (focusTarget instanceof HTMLElement) {
+        if (!focusTarget.hasAttribute('tabindex') && !['BUTTON','INPUT','SELECT','TEXTAREA'].includes(focusTarget.tagName)) {
+          focusTarget.setAttribute('tabindex', '-1');
+        }
+        focusTarget.focus({ preventScroll: true });
+      }
+    }
+
+    function hasAccel(event) {
+      return event.ctrlKey || event.metaKey;
+    }
+
+    function isTypingTarget(target) {
+      return target instanceof HTMLElement && target.closest('input, textarea, select, [contenteditable=true]') !== null;
+    }
+
+    const sectionHotkeys = {
+      c: document.getElementById('characterSection'),
+      s: document.getElementById('coreStatsSection'),
+      h: document.getElementById('healthSection'),
+      r: document.getElementById('resourcesSection'),
+      k: document.getElementById('skillsSection'),
+      a: document.getElementById('classAbilitiesSection'),
+      d: document.getElementById('classDetailsSection'),
+      i: document.getElementById('inventorySection'),
+      n: document.getElementById('characterNotesSection'),
+      y: document.getElementById('historySection')
+    };
+
+    document.addEventListener('keydown', (event) => {
+      if (isTypingTarget(event.target)) return;
+      if (!hasAccel(event) || !event.altKey) return;
+      const key = event.key.toLowerCase();
+      if (Object.prototype.hasOwnProperty.call(sectionHotkeys, key)) {
+        event.preventDefault();
+        focusSection(sectionHotkeys[key]);
+      }
     });
 
     (async () => {
