@@ -1335,6 +1335,15 @@ window.XRRPG_CLASS_DEFS = {
     archetype: "Technologists",
     maxLevel: 3,
     chromaRequired: null,
+    gunTypes: [
+      { id: "pistol",      name: "Pistol",      tier: 1, size: "small", dmg: 1, maxRange: "150 ft",    special: "+2 HP healing and +1d MD on non-damage effects." },
+      { id: "shotgun",     name: "Shotgun",     tier: 1, size: "large", dmg: 2, maxRange: "100 ft",    special: "Can hit up to 2 targets within 5 ft of each other." },
+      { id: "rifle",       name: "Rifle",       tier: 1, size: "large", dmg: 2, minRange: "30 ft",  maxRange: "2,500 ft" },
+      { id: "revolver",    name: "Revolver",    tier: 2, size: "small", dmg: 2, maxRange: "150 ft" },
+      { id: "musket",      name: "Musket",      tier: 2, size: "large", dmg: 4, minRange: "15 ft",  maxRange: "1,000 ft", special: "Every other turn only (charge time)." },
+      { id: "machine_gun", name: "Machine Gun", tier: 3, size: "large", dmg: 3, maxRange: "2,500 ft",  special: "Can hit up to 3 targets per attack." },
+      { id: "sniper",      name: "Sniper",      tier: 3, size: "large", dmg: 4, minRange: "100 ft", maxRange: "5,000 ft" }
+    ],
     gunPool: [
       { id: "healing_gun", name: "Healing Gun", tier: 1, trackUses: 5, trackLabel: "Healing shots (per day)", description: "Heals 2 HP's worth of Injuries up to 5 times a day (one target)." },
       { id: "freeze_gun", name: "Cold Gun", tier: 1, description: "Inflicts Frozen (grants +1d Mastery Die on next Action against them). Gun does -1 dmg than usual (can't go below 0)." },

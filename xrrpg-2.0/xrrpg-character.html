@@ -100,7 +100,7 @@
           <h3>Powerful Items</h3>
           <div class="xrrpg-resource-fields">
             <label title="Max number of powerful items you can actively use.">Powerful Item Limit <input id="powerfulItemLimitInput" type="number" min="0" /></label>
-            <label title="Absolute cap for powerful item upgrades.">Powerful Item Max Tier <input id="powerfulItemMaxInput" type="number" min="0" /></label>
+            <label title="Absolute cap for powerful item upgrades.">Powerful Item Max Tier <input id="powerfulItemMaxInput" type="number" min="0" /> <span id="powerfulItemMaxBadge" class="xrrpg-tier-badge"></span></label>
           </div>
         </div>
         <div class="xrrpg-resource-card">
@@ -450,6 +450,11 @@
       return 'd4';
     }
 
+    function toRomanNumeral(n) {
+      const map = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI', 7: 'VII', 8: 'VIII', 9: 'IX' };
+      return map[Number(n)] || (n > 0 ? String(n) : '—');
+    }
+
     function parseNotes() {
       if (!character?.notes) return {};
       try {
@@ -688,7 +693,7 @@
       link.href = classUrl(cls);
       link.textContent = `Open ${cls} level-up page`;
       document.getElementById('levelMsg').textContent = `Advancing ${cls} to class level ${tier}.`;
-      buildLevelChoiceUI(cls, tier);
+      buildLevelChoiceUI(cls, tier, level);
     }
 
     // --- Class Abilities helpers ---
@@ -851,6 +856,25 @@
       scheduleAutosave();
     }
 
+    function updateDroneEffectsFromSelects(cls, activeIdx, isDocked) {
+      const body = document.getElementById('classAbilitiesBody');
+      if (!body) return;
+      const selects = isDocked
+        ? body.querySelectorAll(`[data-drone-effect-slot][data-cls="${cls}"][data-drone-docked]`)
+        : body.querySelectorAll(`[data-drone-effect-slot][data-cls="${cls}"]:not([data-drone-docked])[data-active-idx="${activeIdx}"]`);
+      const newEffectIds = Array.from(selects).map(s => s.value).filter(Boolean);
+      const slots = getDroneSlots(cls);
+      const drone = isDocked ? slots.docked : slots.active[activeIdx];
+      if (!drone) return;
+      const oldEffectIds = Object.keys(drone.effects || {}).filter(k => drone.effects[k]);
+      for (const id of oldEffectIds) {
+        if (!newEffectIds.includes(id) && drone.resources) delete drone.resources[id + '_uses'];
+      }
+      drone.effects = {};
+      for (const id of newEffectIds) drone.effects[id] = true;
+      saveDroneSlots(cls, slots);
+    }
+
     function toggleDroneEffect(cls, activeIdx, isDocked, effectId, checked, maxEffects) {
       const slots = getDroneSlots(cls);
       const drone = isDocked ? slots.docked : slots.active[activeIdx];
@@ -895,7 +919,37 @@
 
     function addGun(cls) {
       const guns = getGunList(cls);
-      guns.push({ name: '', effects: {}, resources: {} });
+      guns.push({ name: '', gun_model: '', gun_type: 'small', effects: {}, resources: {} });
+      saveGunList(cls, guns);
+    }
+
+    function updateGunModel(cls, gunIdx, modelId) {
+      const guns = getGunList(cls);
+      if (!guns[gunIdx]) return;
+      guns[gunIdx].gun_model = modelId;
+      // Derive size (small/large) from model definition for large-gun limit tracking
+      const def = getClassDef(cls);
+      const modelDef = def?.gunTypes?.find(t => t.id === modelId);
+      guns[gunIdx].gun_type = modelDef?.size || 'small';
+      const choices = getClassChoices(cls);
+      choices.gun_list = guns;
+      setClassChoices(cls, choices);
+      renderClassAbilitiesSection();
+    }
+
+    function updateGunEffectsFromSelects(cls, gunIdx) {
+      const body = document.getElementById('classAbilitiesBody');
+      if (!body) return;
+      const selects = body.querySelectorAll(`[data-gun-effect-slot][data-cls="${cls}"][data-gun-idx="${gunIdx}"]`);
+      const newEffectIds = Array.from(selects).map(s => s.value).filter(Boolean);
+      const guns = getGunList(cls);
+      if (!guns[gunIdx]) return;
+      const oldEffectIds = Object.keys(guns[gunIdx].effects || {}).filter(k => guns[gunIdx].effects[k]);
+      for (const id of oldEffectIds) {
+        if (!newEffectIds.includes(id) && guns[gunIdx].resources) delete guns[gunIdx].resources[id + '_uses'];
+      }
+      guns[gunIdx].effects = {};
+      for (const id of newEffectIds) guns[gunIdx].effects[id] = true;
       saveGunList(cls, guns);
     }
 
@@ -1035,11 +1089,12 @@
       body.querySelectorAll('[data-drone-hp-dec-docked]').forEach(btn => {
         btn.onclick = () => updateDroneHp(btn.dataset.cls, -1, true, -1);
       });
-      body.querySelectorAll('[data-drone-effect]').forEach(cb => {
-        cb.onchange = () => toggleDroneEffect(cb.dataset.cls, Number(cb.dataset.activeIdx), false, cb.dataset.effectId, cb.checked, Number(cb.dataset.maxEffects));
-      });
-      body.querySelectorAll('[data-drone-effect-docked]').forEach(cb => {
-        cb.onchange = () => toggleDroneEffect(cb.dataset.cls, -1, true, cb.dataset.effectId, cb.checked, Number(cb.dataset.maxEffects));
+      body.querySelectorAll('[data-drone-effect-slot]').forEach(sel => {
+        sel.onchange = () => {
+          const isDocked = sel.hasAttribute('data-drone-docked');
+          const activeIdx = isDocked ? -1 : Number(sel.dataset.activeIdx);
+          updateDroneEffectsFromSelects(sel.dataset.cls, activeIdx, isDocked);
+        };
       });
       body.querySelectorAll('[data-drone-res-inc]').forEach(btn => {
         btn.onclick = () => updateDroneRes(btn.dataset.cls, Number(btn.dataset.activeIdx), false, btn.dataset.resKey, 1, Number(btn.dataset.resMax));
@@ -1070,8 +1125,11 @@
       body.querySelectorAll('[data-gun-name]').forEach(input => {
         input.onchange = () => updateGunName(input.dataset.cls, Number(input.dataset.gunName), input.value);
       });
-      body.querySelectorAll('[data-gun-effect]').forEach(cb => {
-        cb.onchange = () => toggleGunEffect(cb.dataset.cls, Number(cb.dataset.gunIdx), cb.dataset.effectId, cb.checked, Number(cb.dataset.maxEffects));
+      body.querySelectorAll('[data-gun-effect-slot]').forEach(sel => {
+        sel.onchange = () => updateGunEffectsFromSelects(sel.dataset.cls, Number(sel.dataset.gunIdx));
+      });
+      body.querySelectorAll('[data-gun-model]').forEach(sel => {
+        sel.onchange = () => updateGunModel(sel.dataset.cls, Number(sel.dataset.gunIdx), sel.value);
       });
       body.querySelectorAll('[data-gun-res-inc]').forEach(btn => {
         btn.onclick = () => updateGunRes(btn.dataset.cls, Number(btn.dataset.gunIdx), btn.dataset.resKey, 1, Number(btn.dataset.resMax));
@@ -1191,7 +1249,8 @@
             }
             html += `</div>`;
           }
-        } else if (def.archetype !== 'Adepts') {
+        } else if (def.archetype !== 'Adepts' && cls !== 'Dronemaster') {
+          // Dronemaster: skip auto-text since the drone management info header already shows all this info
           for (let lvl = 1; lvl <= classLevel; lvl++) {
             for (const auto of def.levels[lvl]?.auto || []) {
               const text = typeof auto === 'string' ? auto : auto.text;
@@ -1438,12 +1497,19 @@
             html += `<button type="button" data-drone-hp-dec data-active-idx="${i}" data-cls="${cls}">−</button>`;
             html += `<span class="value">${curHp} / ${hpMax}</span>`;
             html += `<button type="button" data-drone-hp-inc data-active-idx="${i}" data-cls="${cls}">+</button></div>`;
-            html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.4rem;"><strong>Effects</strong> <span class="muted">(${selectedCount}/${maxEffectsPerDrone}):</span></div>`;
-            html += `<div style="margin-left:1rem; display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.3rem;">`;
-            for (const eff of availEffects) {
-              const isSel = !!selectedEffects[eff.id];
-              const atMax = !isSel && selectedCount >= maxEffectsPerDrone;
-              html += `<label style="display:flex; align-items:center; gap:0.25rem; cursor:${atMax ? 'default' : 'pointer'};"><input type="checkbox" data-drone-effect data-active-idx="${i}" data-cls="${cls}" data-effect-id="${eff.id}" data-max-effects="${maxEffectsPerDrone}" ${isSel ? 'checked' : ''} ${atMax ? 'disabled' : ''}> <span style="opacity:${atMax && !isSel ? '0.5' : '1'}">${eff.name}</span></label>`;
+            html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.4rem;"><strong>Effects:</strong></div>`;
+            html += `<div style="margin-left:1rem; display:flex; flex-direction:column; gap:0.3rem; margin-top:0.3rem;">`;
+            const selIds = Object.keys(selectedEffects).filter(k => selectedEffects[k]);
+            for (let slot = 0; slot < maxEffectsPerDrone; slot++) {
+              const curVal = selIds[slot] || '';
+              const otherVals = selIds.filter((_, idx) => idx !== slot);
+              html += `<label style="display:flex; align-items:center; gap:0.4rem;">Effect ${slot + 1}: <select data-drone-effect-slot="${slot}" data-active-idx="${i}" data-cls="${cls}" style="flex:1;">`;
+              html += `<option value="">-- None --</option>`;
+              for (const eff of availEffects) {
+                const disabledOther = otherVals.includes(eff.id);
+                html += `<option value="${eff.id}" ${curVal === eff.id ? 'selected' : ''} ${disabledOther ? 'disabled' : ''}>${eff.name} (T${eff.tier})</option>`;
+              }
+              html += `</select></label>`;
             }
             html += `</div>`;
             // Per-drone resource trackers for selected trackable effects
@@ -1489,12 +1555,19 @@
           html += `<button type="button" data-drone-hp-dec-docked data-cls="${cls}">−</button>`;
           html += `<span class="value">${curHp} / ${hpMax}</span>`;
           html += `<button type="button" data-drone-hp-inc-docked data-cls="${cls}">+</button></div>`;
-          html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.4rem;"><strong>Effects</strong> <span class="muted">(${dSelectedCount}/${maxEffectsPerDrone}):</span></div>`;
-          html += `<div style="margin-left:1rem; display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.3rem;">`;
-          for (const eff of availEffects) {
-            const isSel = !!dSelectedEffects[eff.id];
-            const atMax = !isSel && dSelectedCount >= maxEffectsPerDrone;
-            html += `<label style="display:flex; align-items:center; gap:0.25rem; cursor:${atMax ? 'default' : 'pointer'};"><input type="checkbox" data-drone-effect-docked data-cls="${cls}" data-effect-id="${eff.id}" data-max-effects="${maxEffectsPerDrone}" ${isSel ? 'checked' : ''} ${atMax ? 'disabled' : ''}> <span style="opacity:${atMax && !isSel ? '0.5' : '1'}">${eff.name}</span></label>`;
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.4rem;"><strong>Effects:</strong></div>`;
+          html += `<div style="margin-left:1rem; display:flex; flex-direction:column; gap:0.3rem; margin-top:0.3rem;">`;
+          const dSelIds = Object.keys(dSelectedEffects).filter(k => dSelectedEffects[k]);
+          for (let slot = 0; slot < maxEffectsPerDrone; slot++) {
+            const curVal = dSelIds[slot] || '';
+            const otherVals = dSelIds.filter((_, idx) => idx !== slot);
+            html += `<label style="display:flex; align-items:center; gap:0.4rem;">Effect ${slot + 1}: <select data-drone-effect-slot="${slot}" data-drone-docked data-cls="${cls}" style="flex:1;">`;
+            html += `<option value="">-- None --</option>`;
+            for (const eff of availEffects) {
+              const disabledOther = otherVals.includes(eff.id);
+              html += `<option value="${eff.id}" ${curVal === eff.id ? 'selected' : ''} ${disabledOther ? 'disabled' : ''}>${eff.name} (T${eff.tier})</option>`;
+            }
+            html += `</select></label>`;
           }
           html += `</div>`;
           for (const eff of availEffects) {
@@ -1532,35 +1605,57 @@
         const maxEffectTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
         const maxLargeGuns = classLevel >= 3 ? 3 : 2;
         const availGunEffects = def.gunPool.filter(e => e.tier <= maxEffectTier);
+        const availGunTypes = (def.gunTypes || []).filter(t => t.tier <= maxEffectTier);
 
         if (!choices.gun_list) choices.gun_list = [];
         const guns = choices.gun_list;
 
-        // Info header
+        // Info header — large gun count uses derived model size (falls back to gun_type for old data)
+        const largeGunCount = guns.filter(g => {
+          const md = (def.gunTypes || []).find(t => t.id === g.gun_model);
+          return md ? md.size === 'large' : g.gun_type === 'large';
+        }).length;
         html += `<div class="xrrpg-ability-bubble">`;
-        html += `<div class="xrrpg-ability-row"><strong>Effects per Gun:</strong> up to ${maxEffectsPerGun} &nbsp;|&nbsp; <strong>Max Large Guns:</strong> ${maxLargeGuns}</div>`;
+        html += `<div class="xrrpg-ability-row"><strong>Effects per Gun:</strong> up to ${maxEffectsPerGun} &nbsp;|&nbsp; <strong>Large Guns:</strong> ${largeGunCount} / ${maxLargeGuns}</div>`;
         html += `</div>`;
 
         // Gun list
         for (let i = 0; i < guns.length; i++) {
           const gun = guns[i];
           const selEffects = gun.effects || {};
-          const selCount = Object.values(selEffects).filter(Boolean).length;
+          const modelDef = (def.gunTypes || []).find(t => t.id === gun.gun_model);
 
           html += `<div class="xrrpg-ability-bubble">`;
           html += `<div class="xrrpg-ability-row" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.4rem;">`;
           html += `<strong>Gun ${i + 1}${gun.name ? ': ' + gun.name : ''}</strong>`;
           html += `<button type="button" class="xr-btn-secondary" style="font-size:0.8rem; padding:0.2rem 0.6rem;" data-gun-remove="${i}" data-cls="${cls}">Remove Gun</button>`;
           html += `</div>`;
-          html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.3rem;">`;
-          html += `<label style="display:flex; align-items:center; gap:0.4rem;"><strong>Name:</strong> <input type="text" value="${(gun.name || '').replace(/"/g, '&quot;')}" data-gun-name="${i}" data-cls="${cls}" style="flex:1; min-width:140px;"></label>`;
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.3rem; display:flex; flex-wrap:wrap; gap:0.6rem; align-items:center;">`;
+          html += `<label style="display:flex; align-items:center; gap:0.4rem;"><strong>Name:</strong> <input type="text" value="${(gun.name || '').replace(/"/g, '&quot;')}" data-gun-name="${i}" data-cls="${cls}" style="min-width:120px;"></label>`;
+          html += `<label style="display:flex; align-items:center; gap:0.4rem;"><strong>Model:</strong> <select data-gun-model="${i}" data-gun-idx="${i}" data-cls="${cls}">`;
+          html += `<option value="">-- Select --</option>`;
+          for (const gt of availGunTypes) {
+            const rangeStr = gt.minRange ? `${gt.minRange}–${gt.maxRange}` : gt.maxRange;
+            html += `<option value="${gt.id}" ${gun.gun_model === gt.id ? 'selected' : ''}>${gt.name} (${gt.size === 'large' ? 'L' : 'S'}, ${gt.dmg} dmg, ${rangeStr})</option>`;
+          }
+          html += `</select></label>`;
           html += `</div>`;
-          html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.4rem;"><strong>Effects</strong> <span class="muted">(${selCount}/${maxEffectsPerGun}):</span></div>`;
-          html += `<div style="margin-left:1rem; display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.3rem;">`;
-          for (const eff of availGunEffects) {
-            const isSel = !!selEffects[eff.id];
-            const atMax = !isSel && selCount >= maxEffectsPerGun;
-            html += `<label style="display:flex; align-items:center; gap:0.25rem; cursor:${atMax ? 'default' : 'pointer'};"><input type="checkbox" data-gun-effect data-gun-idx="${i}" data-cls="${cls}" data-effect-id="${eff.id}" data-max-effects="${maxEffectsPerGun}" ${isSel ? 'checked' : ''} ${atMax ? 'disabled' : ''}> <span style="opacity:${atMax && !isSel ? '0.5' : '1'}">${eff.name}</span></label>`;
+          if (modelDef?.special) {
+            html += `<div class="xrrpg-ability-desc" style="margin-left:1rem; margin-top:0.2rem;">${modelDef.special}</div>`;
+          }
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.4rem;"><strong>Effects:</strong></div>`;
+          html += `<div style="margin-left:1rem; display:flex; flex-direction:column; gap:0.3rem; margin-top:0.3rem;">`;
+          const gunSelIds = Object.keys(selEffects).filter(k => selEffects[k]);
+          for (let slot = 0; slot < maxEffectsPerGun; slot++) {
+            const curVal = gunSelIds[slot] || '';
+            const otherVals = gunSelIds.filter((_, idx) => idx !== slot);
+            html += `<label style="display:flex; align-items:center; gap:0.4rem;">Effect ${slot + 1}: <select data-gun-effect-slot="${slot}" data-gun-idx="${i}" data-cls="${cls}" style="flex:1;">`;
+            html += `<option value="">-- None --</option>`;
+            for (const eff of availGunEffects) {
+              const disabledOther = otherVals.includes(eff.id);
+              html += `<option value="${eff.id}" ${curVal === eff.id ? 'selected' : ''} ${disabledOther ? 'disabled' : ''}>${eff.name} (T${eff.tier})</option>`;
+            }
+            html += `</select></label>`;
           }
           html += `</div>`;
           // Per-gun resource trackers for selected trackable effects
@@ -1580,6 +1675,22 @@
         html += `<div class="xrrpg-ability-bubble">`;
         html += `<button type="button" class="xr-btn-secondary" data-gun-add data-cls="${cls}">+ Add Gun</button>`;
         html += `</div>`;
+
+        // Reference table: gun models by tier
+        if (def.gunTypes?.length) {
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Gun Models Reference:</strong></div>`;
+          for (let t = 1; t <= maxEffectTier; t++) {
+            const tierTypes = def.gunTypes.filter(g => g.tier === t);
+            if (!tierTypes.length) continue;
+            html += `<div class="xrrpg-ability-row" style="margin-top:0.4rem;"><strong>Tier ${t}:</strong></div>`;
+            for (const g of tierTypes) {
+              const rangeStr = g.minRange ? `${g.minRange}–${g.maxRange}` : g.maxRange;
+              html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${g.name}</strong> <span class="xrrpg-tier-badge">${g.size === 'large' ? 'Large' : 'Small'}</span> — ${g.dmg} dmg | ${rangeStr}${g.special ? ` | ${g.special}` : ''}</div>`;
+            }
+          }
+          html += `</div>`;
+        }
 
         // Reference table: gun effects by tier
         html += `<div class="xrrpg-ability-bubble">`;
@@ -1760,16 +1871,18 @@
       return html;
     }
 
-    function buildLevelChoiceUI(cls, classLevel) {
+    function buildLevelChoiceUI(cls, classLevel, characterLevel) {
       const container = document.getElementById('levelUpChoices');
       if (!container) return;
       container.innerHTML = '';
 
       const def = getClassDef(cls);
-      if (!def) return;
+      const rule = characterLevel ? levelRule(characterLevel) : null;
 
-      const levelDef = def.levels?.[classLevel] || def.levels?.['default'];
-      if (!levelDef?.choices?.length) return;
+      const levelDef = def?.levels?.[classLevel] || def?.levels?.['default'];
+      const hasClassChoices = !!(levelDef?.choices?.length);
+      const hasStatUpgrade = !!(rule?.stat_points > 0);
+      if (!hasClassChoices && !hasStatUpgrade) return;
 
       const choices = getClassChoices(cls);
       let html = '';
@@ -1879,6 +1992,20 @@
           }).join('');
           html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${newCount}"><legend>${choice.label || `Pick ${newCount} new effects`} (${known.length} already known):</legend>${checks}</fieldset>`;
         }
+      }
+
+      // ── STAT UPGRADE PROMPT ──────────────────────────────────────────
+      if (rule?.stat_points > 0) {
+        const bonus = rule.stat_bonus > 1 ? `+${rule.stat_bonus}` : '+1';
+        html += `<div class="xrrpg-choice-block"><label><strong>Basic Stat Upgrade (${bonus} to one stat):</strong><br>
+          <select data-choice-id="stat_upgrade">
+            <option value="">-- Select Stat --</option>
+            <option value="vigor">Vigor</option>
+            <option value="endurance">Endurance</option>
+            <option value="intuition">Intuition</option>
+            <option value="wit">Wit</option>
+          </select>
+        </label></div>`;
       }
 
       container.innerHTML = html;
@@ -2091,7 +2218,10 @@
       document.getElementById('staminaTotalInput').value = s.stamina_max ?? s.stamina_total ?? (10 + (s.intuition || 0) + (s.wit || 0));
       document.getElementById('staminaUsedInput').value = s.stamina ?? s.stamina_used ?? 0;
       document.getElementById('powerfulItemLimitInput').value = s.powerful_item_limit || 0;
-      document.getElementById('powerfulItemMaxInput').value = s.powerful_item_max || 0;
+      const piMax = s.powerful_item_max || 0;
+      document.getElementById('powerfulItemMaxInput').value = piMax;
+      const piMaxBadge = document.getElementById('powerfulItemMaxBadge');
+      if (piMaxBadge) piMaxBadge.textContent = toRomanNumeral(piMax);
       document.getElementById('partyTierInput').value = s.party_tier || 1;
       document.getElementById('xenicDecayInput').value = s.xenic_decay_level || 0;
       document.getElementById('timesCleansedInput').value = s.times_cleansed || 0;
@@ -2272,10 +2402,17 @@
       const progression = [...(character.class_progression || [])];
       const currentLevel = Number(character.base_stats?.level || 1);
       const level = Math.min(9, currentLevel + 1);
-      const tier = progression.filter(item => item.class === cls).length + 1;
+      const currentClassLevel = progression.filter(item => item.class === cls).length;
+      const tier = currentClassLevel + 1;
       const classChromaValidation = validateClassChromaRequirement(cls, String(character.base_stats?.chroma || '').trim());
       if (!classChromaValidation.valid) {
         document.getElementById('levelMsg').textContent = classChromaValidation.message;
+        return;
+      }
+      // Enforce class max level
+      const clsDef = getClassDef(cls);
+      if (clsDef?.maxLevel && currentClassLevel >= clsDef.maxLevel) {
+        document.getElementById('levelMsg').textContent = `${cls} is already at maximum class level (${clsDef.maxLevel}).`;
         return;
       }
       progression.push({ class: cls, tier, level_acquired: level });
@@ -2286,6 +2423,13 @@
 
       const before = character.base_stats || {};
       const rule = levelRule(level);
+
+      // Validate stat upgrade if required
+      if (rule.stat_points > 0 && !choiceValues.stat_upgrade) {
+        document.getElementById('levelMsg').textContent = 'Please select a stat to upgrade before applying.';
+        return;
+      }
+
       const base_stats = {
         ...before,
         level,
@@ -2295,6 +2439,17 @@
         powerful_item_limit: rule.powerful_item_limit,
         powerful_item_max: rule.powerful_item_max
       };
+
+      // Apply basic stat upgrade
+      if (rule.stat_points > 0 && choiceValues.stat_upgrade) {
+        const stat = choiceValues.stat_upgrade;
+        const bonus = rule.stat_bonus || 1;
+        base_stats[stat] = (Number(before[stat] || 0)) + bonus;
+        if (stat === 'intuition' || stat === 'wit') {
+          base_stats.stamina_max = staminaMaxForLevel(level, base_stats.intuition, base_stats.wit);
+          base_stats.stamina_total = base_stats.stamina_max;
+        }
+      }
 
       const { error } = await sb.from('xrrpg_characters')
         .update({ class_progression: progression, base_stats, updated_at: new Date().toISOString() })
@@ -2533,6 +2688,12 @@
             el.addEventListener('input', () => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; });
           }
         });
+        // Keep powerful item max tier badge in sync with manual edits
+        const piMaxInput = document.getElementById('powerfulItemMaxInput');
+        const piMaxBadge = document.getElementById('powerfulItemMaxBadge');
+        if (piMaxInput && piMaxBadge) {
+          piMaxInput.addEventListener('input', () => { piMaxBadge.textContent = toRomanNumeral(Number(piMaxInput.value) || 0); });
+        }
       } catch (error) {
         document.getElementById('status').textContent = error.message;
       }

@@ -339,9 +339,22 @@
       return String(basic?.name || '').trim();
     }
 
+    function classNeedsStep4(cls) {
+      const def = window.XRRPG_CLASS_DEFS?.[cls];
+      return (def?.levels?.[1]?.choices?.length || 0) > 0;
+    }
+
     function renderStartingClassDetails() {
       const cls = classInput.value;
       document.getElementById('classIntro').textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
+      // If currently on step 3, update button visibility based on whether this class needs step 4
+      if (wizardStep === 3) {
+        const needsStep4 = classNeedsStep4(cls);
+        const effectiveMax = needsStep4 ? WIZARD_MAX_STEPS : 3;
+        document.getElementById('nextStepBtn').classList.toggle('hidden', !needsStep4);
+        document.getElementById('saveBtn').classList.toggle('hidden', needsStep4);
+        wizardStepLabel.textContent = `Step 3 / ${effectiveMax}`;
+      }
     }
 
     async function requireUser() {
@@ -679,14 +692,16 @@
     const modal = document.getElementById('charModal');
     const wizardStepLabel = document.getElementById('wizardStepLabel');
     function setStep(step) {
-      wizardStep = Math.max(1, Math.min(WIZARD_MAX_STEPS, step));
-      wizardStepLabel.textContent = `Step ${wizardStep} / ${WIZARD_MAX_STEPS}`;
+      const needsStep4 = classNeedsStep4(classInput.value);
+      const effectiveMax = needsStep4 ? WIZARD_MAX_STEPS : 3;
+      wizardStep = Math.max(1, Math.min(effectiveMax, step));
+      wizardStepLabel.textContent = `Step ${wizardStep} / ${effectiveMax}`;
       document.querySelectorAll('.wizard-step').forEach(el => {
         el.classList.toggle('hidden', Number(el.dataset.step) !== wizardStep);
       });
       document.getElementById('prevStepBtn').classList.toggle('hidden', wizardStep === 1);
-      document.getElementById('nextStepBtn').classList.toggle('hidden', wizardStep === WIZARD_MAX_STEPS);
-      document.getElementById('saveBtn').classList.toggle('hidden', wizardStep !== WIZARD_MAX_STEPS);
+      document.getElementById('nextStepBtn').classList.toggle('hidden', wizardStep === effectiveMax);
+      document.getElementById('saveBtn').classList.toggle('hidden', wizardStep !== effectiveMax);
       if (wizardStep === 3) renderStartingClassDetails();
       if (wizardStep === 4) renderWizardLevelChoices(classInput.value);
     }
