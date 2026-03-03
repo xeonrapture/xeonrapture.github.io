@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>XRRPG Characters</title>
+  <title>XRRPG Characters | XR App</title>
   <link rel="stylesheet" href="/shared/style.css">
 </head>
 <body class="wr-scope">
@@ -55,17 +55,11 @@
         <div class="xrrpg-inline-fields">
           <label>Chroma <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Chroma" target="_blank" rel="noopener noreferrer">rules</a>
             <select id="chromaInput">
-              <option>Red</option><option>Blue</option><option>Green</option><option>Grey</option><option>Clear</option>
+              <option>Red</option><option>Blue</option><option>Green</option><option>Grey</option><option>Clear</option><option>Mixed</option>
             </select>
           </label>
-          <label>Preset
-            <select id="statPresetSelect">
-              <option value="plus2">+2 to chroma stat and +1 to a different stat</option>
-              <option value="plus3">+3 chroma stat, +1 to one stat, and -1 to one stat</option>
-              <option value="dual2">+2 to two chroma stats and -1 to one stat</option>
-              <option value="clear">Clear chroma (+1 to three stats)</option>
-            </select>
-          </label>
+          <label id="mixedChromaWrap" class="hidden">Mixed Chroma Colors <select id="mixedChromaInput"></select> <select id="mixedChromaInputTwo"></select></label>
+
           <label id="bonusStatWrap">+1 bonus stat <select id="bonusStat"></select></label>
           <label id="secondBonusStatWrap">Second +2 stat <select id="secondBonusStat"></select></label>
           <label id="thirdBonusStatWrap" class="hidden">Third +1 stat <select id="thirdBonusStat"></select></label>
@@ -153,7 +147,7 @@
       'Gunslinger': 'Technologist gun crafter with more effects per gun per level.',
       'Swordmaster': 'Technologist sword/beam fighter with stronger attack scaling.'
     };
-    const speciesOptions = ['Humans','Drokk','Exoziniks','Kaldi','Pbosh','Rtolka','Cyclops','Walua','Osadona','Oro'];
+    const speciesOptions = ['Ydilikian Human','Valdan Human','Drokk','Exoziniks','Kaldi','Pbosh','Rtolka','Cyclops','Walua','Osadona','Oro'];
     let currentUser = null;
     let characters = [];
     let sortState = { key: 'name', direction: 'asc' };
@@ -183,12 +177,16 @@
       }
     }
 
+    window.addEventListener('error', () => clearLoading());
+    window.addEventListener('unhandledrejection', () => clearLoading());
+
     const stats = ['vigor','endurance','intuition','wit'];
     const bonusStat = document.getElementById('bonusStat');
     const penaltyStat = document.getElementById('penaltyStat');
     const secondBonusStat = document.getElementById('secondBonusStat');
     const thirdBonusStat = document.getElementById('thirdBonusStat');
-    const statPresetSelect = document.getElementById('statPresetSelect');
+    const mixedChromaInput = document.getElementById('mixedChromaInput');
+    const mixedChromaInputTwo = document.getElementById('mixedChromaInputTwo');
     [bonusStat, penaltyStat, secondBonusStat, thirdBonusStat].forEach(select => {
       stats.forEach(stat => {
         const opt = document.createElement('option');
@@ -207,40 +205,51 @@
       speciesInput.appendChild(opt);
     });
 
-    function updateStatSetupVisibility() {
-      const preset = statPresetSelect.value;
-      document.getElementById('penaltyStatWrap').classList.toggle('hidden', !(preset === 'plus3' || preset === 'dual2'));
-      document.getElementById('secondBonusStatWrap').classList.toggle('hidden', !(preset === 'dual2' || preset === 'clear'));
-      document.getElementById('thirdBonusStatWrap').classList.toggle('hidden', preset !== 'clear');
+    ['Red','Blue','Green','Grey'].forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      mixedChromaInput.appendChild(opt.cloneNode(true));
+      mixedChromaInputTwo.appendChild(opt);
+    });
+
+        function updateStatSetupVisibility() {
+      const chroma = chromaInput.value;
+      const isClear = chroma === 'Clear';
+      const isMixed = chroma === 'Mixed';
+      document.getElementById('mixedChromaWrap').classList.toggle('hidden', !isMixed);
+      document.getElementById('bonusStatWrap').classList.toggle('hidden', isMixed);
+      document.getElementById('secondBonusStatWrap').classList.toggle('hidden', !isMixed && !isClear);
+      document.getElementById('thirdBonusStatWrap').classList.toggle('hidden', !isClear);
+      document.getElementById('penaltyStatWrap').classList.toggle('hidden', !isMixed);
     }
-    statPresetSelect.addEventListener('change', updateStatSetupVisibility);
+    chromaInput.addEventListener('change', updateStatSetupVisibility);
+    mixedChromaInput.addEventListener('change', () => { updateStatSetupVisibility(); syncClassOptionsByChroma(); });
+    mixedChromaInputTwo.addEventListener('change', () => { updateStatSetupVisibility(); syncClassOptionsByChroma(); });
     updateStatSetupVisibility();
 
     function validateStatSelections() {
       const chroma = chromaInput.value;
       const chromaMap = { Red: 'vigor', Blue: 'endurance', Green: 'intuition', Grey: 'wit' };
-      const preset = statPresetSelect.value;
       const usedStats = [];
-      const take = (value) => {
-        if (!value) return;
-        usedStats.push(value);
-      };
-      if (preset !== 'clear' && chromaMap[chroma]) {
-        take(chromaMap[chroma]);
-      }
-      if (preset === 'plus2') {
-        take(bonusStat.value);
-      } else if (preset === 'plus3') {
-        take(bonusStat.value);
+      const take = (value) => { if (value) usedStats.push(value); };
+
+      if (chroma === 'Mixed') {
+        if (!mixedChromaInput.value || !mixedChromaInputTwo.value) {
+          return { valid: false, message: 'Pick a second chroma for mixed chroma characters.' };
+        }
+        const main = chromaMap[chromaInput.value];
+        const secondMain = chromaMap[mixedChromaInputTwo.value];
+        take(main);
+        take(secondMain);
         take(penaltyStat.value);
-      } else if (preset === 'dual2') {
-        take(secondBonusStat.value);
-        take(penaltyStat.value);
-      } else {
-        usedStats.length = 0;
+      } else if (chroma === 'Clear') {
         take(bonusStat.value);
         take(secondBonusStat.value);
         take(thirdBonusStat.value);
+      } else {
+        take(chromaMap[chroma]);
+        take(bonusStat.value);
       }
 
       const seen = new Set();
@@ -299,9 +308,10 @@
 
     function syncClassOptionsByChroma() {
       const chroma = chromaInput.value;
+      const allowedChromas = chroma === 'Mixed' ? [mixedChromaInput.value, mixedChromaInputTwo.value].filter(v => v && v !== 'Mixed') : [chroma];
       Array.from(classInput.options).forEach(option => {
         const required = classChromaRequirement(option.value);
-        option.disabled = !!required && chroma !== required;
+        option.disabled = !!required && !allowedChromas.includes(required);
       });
       if (classInput.selectedOptions[0]?.disabled) {
         const fallback = Array.from(classInput.options).find(option => !option.disabled);
@@ -524,24 +534,20 @@
     function buildStatsFromWizard() {
       const chroma = document.getElementById('chromaInput').value;
       const chromaMap = { Red: 'vigor', Blue: 'endurance', Green: 'intuition', Grey: 'wit' };
-      const main = chromaMap[chroma] || 'vigor';
-      const preset = statPresetSelect.value;
       const result = { vigor: 0, endurance: 0, intuition: 0, wit: 0 };
-      if (preset === 'plus2') {
-        result[main] += 2;
-        result[bonusStat.value] += 1;
-      } else if (preset === 'plus3') {
-        result[main] += 3;
-        result[bonusStat.value] += 1;
+
+      if (chroma === 'Mixed') {
+        result[chromaMap[mixedChromaInput.value]] += 2;
+        result[chromaMap[mixedChromaInputTwo.value]] += 2;
         result[penaltyStat.value] -= 1;
-      } else if (preset === 'dual2') {
-        result[main] += 2;
-        result[secondBonusStat.value] += 2;
-        result[penaltyStat.value] -= 1;
-      } else {
+      } else if (chroma === 'Clear') {
         result[bonusStat.value] += 1;
         result[secondBonusStat.value] += 1;
         result[thirdBonusStat.value] += 1;
+      } else {
+        const main = chromaMap[chroma] || 'vigor';
+        result[main] += 2;
+        result[bonusStat.value] += 1;
       }
       const max_hp = 10 + result.vigor + (2 * result.endurance);
       // Characters start at level 1; level 1 stamina base is 12
@@ -772,7 +778,7 @@
           base_stats: {
             ...base_stats,
             species,
-            chroma,
+            chroma: chromaValue,
             class_ability_choices: Object.keys(l1Choices).length ? { [cls]: l1Choices } : {}
           },
           class_progression,
