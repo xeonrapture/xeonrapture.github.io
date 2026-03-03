@@ -223,7 +223,7 @@
         const char = charById[a.xrrpg_character_id];
         if (!char) return '';
         const isOwn = a.user_id === currentUser.id;
-        const link = `/xrrpg-2.0/xrrpg-character.html?id=${char.id}${!isOwn ? '&readonly=1' : ''}`;
+        const link = `/xrrpg-2.0/xrrpg-character.html?id=${char.id}&from_campaign=${campaignId}${!isOwn ? '&readonly=1' : ''}`;
         const classSummary = classProgressionSummary(char.class_progression);
         const stats = statBlurb(char.base_stats || {});
         const playerName = userById[a.user_id] || 'Unknown player';
