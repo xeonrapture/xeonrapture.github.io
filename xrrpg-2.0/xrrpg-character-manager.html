@@ -60,10 +60,16 @@
           </label>
           <label id="mixedChromaWrap" class="hidden">Mixed Chroma Colors <select id="mixedChromaInput"></select> <select id="mixedChromaInputTwo"></select></label>
 
+          <label id="chromaModeWrap" class="hidden">Bonus mode
+            <select id="chromaMode">
+              <option value="standard">+2 main / +1 other (Standard)</option>
+              <option value="enhanced">+3 main / +1 other / −1 penalty (Enhanced)</option>
+            </select>
+          </label>
           <label id="bonusStatWrap">+1 bonus stat <select id="bonusStat"></select></label>
-          <label id="secondBonusStatWrap">Second +2 stat <select id="secondBonusStat"></select></label>
+          <label id="secondBonusStatWrap">Second +1 stat <select id="secondBonusStat"></select></label>
           <label id="thirdBonusStatWrap" class="hidden">Third +1 stat <select id="thirdBonusStat"></select></label>
-          <label id="penaltyStatWrap">Penalty stat <select id="penaltyStat"></select></label>
+          <label id="penaltyStatWrap">Penalty stat (−1) <select id="penaltyStat"></select></label>
         </div>
       </div>
 
@@ -217,13 +223,17 @@
       const chroma = chromaInput.value;
       const isClear = chroma === 'Clear';
       const isMixed = chroma === 'Mixed';
+      const isSingle = !isClear && !isMixed;
+      const isEnhanced = isSingle && document.getElementById('chromaMode').value === 'enhanced';
       document.getElementById('mixedChromaWrap').classList.toggle('hidden', !isMixed);
+      document.getElementById('chromaModeWrap').classList.toggle('hidden', !isSingle);
       document.getElementById('bonusStatWrap').classList.toggle('hidden', isMixed);
-      document.getElementById('secondBonusStatWrap').classList.toggle('hidden', !isMixed && !isClear);
+      document.getElementById('secondBonusStatWrap').classList.toggle('hidden', !isClear);
       document.getElementById('thirdBonusStatWrap').classList.toggle('hidden', !isClear);
-      document.getElementById('penaltyStatWrap').classList.toggle('hidden', !isMixed);
+      document.getElementById('penaltyStatWrap').classList.toggle('hidden', !isMixed && !isEnhanced);
     }
     chromaInput.addEventListener('change', updateStatSetupVisibility);
+    document.getElementById('chromaMode').addEventListener('change', updateStatSetupVisibility);
     mixedChromaInput.addEventListener('change', () => { updateStatSetupVisibility(); syncClassOptionsByChroma(); });
     mixedChromaInputTwo.addEventListener('change', () => { updateStatSetupVisibility(); syncClassOptionsByChroma(); });
     updateStatSetupVisibility();
@@ -236,9 +246,9 @@
 
       if (chroma === 'Mixed') {
         if (!mixedChromaInput.value || !mixedChromaInputTwo.value) {
-          return { valid: false, message: 'Pick a second chroma for mixed chroma characters.' };
+          return { valid: false, message: 'Pick both chroma colors for mixed chroma characters.' };
         }
-        const main = chromaMap[chromaInput.value];
+        const main = chromaMap[mixedChromaInput.value];
         const secondMain = chromaMap[mixedChromaInputTwo.value];
         take(main);
         take(secondMain);
@@ -248,8 +258,10 @@
         take(secondBonusStat.value);
         take(thirdBonusStat.value);
       } else {
+        const isEnhanced = document.getElementById('chromaMode').value === 'enhanced';
         take(chromaMap[chroma]);
         take(bonusStat.value);
+        if (isEnhanced) take(penaltyStat.value);
       }
 
       const seen = new Set();
@@ -546,8 +558,15 @@
         result[thirdBonusStat.value] += 1;
       } else {
         const main = chromaMap[chroma] || 'vigor';
-        result[main] += 2;
-        result[bonusStat.value] += 1;
+        const isEnhanced = document.getElementById('chromaMode').value === 'enhanced';
+        if (isEnhanced) {
+          result[main] += 3;
+          result[bonusStat.value] += 1;
+          result[penaltyStat.value] -= 1;
+        } else {
+          result[main] += 2;
+          result[bonusStat.value] += 1;
+        }
       }
       const max_hp = 10 + result.vigor + (2 * result.endurance);
       // Characters start at level 1; level 1 stamina base is 12
@@ -778,7 +797,7 @@
           base_stats: {
             ...base_stats,
             species,
-            chroma: chromaValue,
+            chroma,
             class_ability_choices: Object.keys(l1Choices).length ? { [cls]: l1Choices } : {}
           },
           class_progression,
