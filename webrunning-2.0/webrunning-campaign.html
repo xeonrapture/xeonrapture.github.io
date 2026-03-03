@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Webrunning Campaign</title>
+  <link rel="stylesheet" href="/shared/style.css">
+  <style>
+    .campaign-character-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 700px) {
+      .campaign-character-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1100px) {
+      .campaign-character-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .char-card {
+      border: 1px solid var(--border, #333);
+      border-radius: 8px;
+      padding: 1rem;
+      background: var(--panel, #111);
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .char-card-name {
+      font-weight: bold;
+      font-size: 1.05rem;
+      text-decoration: none;
+      color: var(--accent, #7ecfff);
+    }
+    .char-card-name:hover { text-decoration: underline; }
+    .char-stat-line {
+      font-size: 0.85rem;
+      color: var(--text-muted, #aaa);
+    }
+  </style>
+</head>
+<body class="wr-scope">
+  <div id="nav"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/shared/auth.js"></script>
+  <script src="/shared/nav.js"></script>
+
+  <main class="wrap">
+    <header>
+      <div style="display:flex; align-items:center; gap:0.5rem; justify-content:space-between; flex-wrap:wrap;">
+        <a class="action-btn" href="/xrrpg-2.0/xrrpg-campaigns.html" aria-label="Back to campaigns">
+          <span aria-hidden="true">←</span>
+          <span>Back to Campaigns</span>
+        </a>
+      </div>
+      <h1 id="campaignTitle">Campaign</h1>
+      <div id="campaignMeta" class="muted"></div>
+    </header>
+
+    <section id="gmSection" class="card wr-mt-1 hidden">
+      <h2>Invite a Player</h2>
+      <label>Invite player from friends list
+        <select id="inviteFriendSelect"><option value="">-- Select friend --</option></select>
+      </label>
+      <button id="invitePlayerBtn" type="button">Send Invite</button>
+      <div id="inviteStatus" class="mono muted wr-mt-0-5"></div>
+    </section>
+
+    <section id="playerSection" class="card wr-mt-1 hidden">
+      <h2>Your Character for this Campaign</h2>
+      <label>Select your Webrunning character
+        <select id="playerCharacterSelect"></select>
+      </label>
+      <button id="savePlayerCharacterBtn" type="button">Save Character</button>
+      <div id="playerStatus" class="mono muted wr-mt-0-5"></div>
+    </section>
+
+    <section class="card wr-mt-1">
+      <h2>Members</h2>
+      <div id="memberList" class="muted">Loading members…</div>
+    </section>
+
+    <section class="card wr-mt-1">
+      <h2>Characters</h2>
+      <div id="characterGrid" class="campaign-character-grid">Loading characters…</div>
+    </section>
+  </main>
+
+  <script>
+    const sb = window.supabaseClient;
+    const params = new URLSearchParams(window.location.search);
+    const campaignId = params.get("id");
+
+    let currentUser = null;
+    let myRole = null;
+    let playerCharacters = [];
+    let friends = [];
+
+    async function requireUser() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) {
+        window.location.href = "/login.html";
+        throw new Error("No user");
+      }
+      return user;
+    }
+
+    function statBlurb(char) {
+      const level = char.level ?? 0;
+      const hp = char.hp ?? 0;
+      const power = char.power ?? 0;
+      const defense = char.defense ?? 0;
+      const speed = char.speed ?? 0;
+      const intel = char.intelligence ?? 0;
+      const luck = char.luck ?? 0;
+      return `Lv ${level} • HP ${hp} • Luck ${luck} • P ${power} | D ${defense} | S ${speed} | I ${intel}`;
+    }
+
+    async function loadPage() {
+      if (!campaignId) {
+        document.getElementById("campaignTitle").textContent = "No campaign selected";
+        return;
+      }
+
+      currentUser = await requireUser();
+
+      const [{ data: campaign }, { data: membership }] = await Promise.all([
+        sb.from("campaigns").select("id, name, gm_user_id, system").eq("id", campaignId).single(),
+        sb.from("campaign_members").select("role").eq("campaign_id", campaignId).eq("user_id", currentUser.id).maybeSingle()
+      ]);
+
+      if (!campaign || campaign.system !== 'webrunning') {
+        document.getElementById("campaignTitle").textContent = "Campaign not found";
+        document.getElementById("campaignMeta").textContent = "This campaign does not exist or is not a Webrunning campaign.";
+        return;
+      }
+
+      document.title = `${campaign.name} — Webrunning Campaign`;
+      document.getElementById("campaignTitle").textContent = campaign.name;
+      myRole = membership?.role || null;
+      const isGm = myRole === 'gm';
+      const isPlayer = myRole === 'player';
+
+      document.getElementById("gmSection").classList.toggle("hidden", !isGm);
+      document.getElementById("playerSection").classList.toggle("hidden", !isPlayer);
+
+      if (isGm) await loadFriendOptions();
+      if (isPlayer) await loadPlayerCharacterOptions();
+
+      await Promise.all([loadMembers(), loadCharacters()]);
+    }
+
+    async function loadMembers() {
+      const memberListEl = document.getElementById("memberList");
+      const { data: members, error } = await sb
+        .from("campaign_members")
+        .select("user_id, role")
+        .eq("campaign_id", campaignId)
+        .order("joined_at", { ascending: true });
+
+      if (error) { memberListEl.textContent = `Error: ${error.message}`; return; }
+
+      const ids = (members || []).map(m => m.user_id);
+      const { data: profiles } = ids.length
+        ? await sb.from("profile_directory").select("id, username").in("id", ids)
+        : { data: [] };
+      const byId = Object.fromEntries((profiles || []).map(p => [p.id, p.username || "(no username)"]));
+
+      memberListEl.innerHTML = (members || []).map(m =>
+        `<div>• <strong>${byId[m.user_id] || m.user_id}</strong> — ${m.role === 'gm' ? 'GM' : 'Player'}</div>`
+      ).join('') || 'No members yet.';
+    }
+
+    async function loadCharacters() {
+      const grid = document.getElementById("characterGrid");
+
+      const { data: assignments, error } = await sb
+        .from("campaign_character_assignments")
+        .select("user_id, webrunning_character_id")
+        .eq("campaign_id", campaignId)
+        .eq("character_system", "webrunning")
+        .order("assigned_at", { ascending: true });
+
+      if (error) { grid.textContent = `Error: ${error.message}`; return; }
+      if (!assignments?.length) {
+        grid.innerHTML = '<p class="muted">No characters assigned to this campaign yet.</p>';
+        return;
+      }
+
+      const charIds = assignments.map(a => a.webrunning_character_id).filter(Boolean);
+      const { data: chars = [] } = charIds.length
+        ? await sb.from("webrunning_characters").select("id, name, level, hp, luck, power, defense, speed, intelligence, essence").in("id", charIds)
+        : { data: [] };
+
+      const charById = Object.fromEntries(chars.map(c => [c.id, c]));
+      const userIds = [...new Set(assignments.map(a => a.user_id))];
+      const { data: profiles = [] } = userIds.length
+        ? await sb.from("profile_directory").select("id, username").in("id", userIds)
+        : { data: [] };
+      const userById = Object.fromEntries(profiles.map(p => [p.id, p.username || p.id]));
+
+      grid.innerHTML = assignments.map(a => {
+        const char = charById[a.webrunning_character_id];
+        if (!char) return '';
+        const isOwn = a.user_id === currentUser.id;
+        const link = `/webrunning-2.0/webrunning-character.html?id=${char.id}${!isOwn ? '&readonly=1' : ''}`;
+        const stats = statBlurb(char);
+        const playerName = userById[a.user_id] || 'Unknown player';
+        return `<div class="char-card">
+          <a class="char-card-name" href="${link}">${char.name || 'Unnamed Character'}</a>
+          <div class="char-stat-line">${stats}</div>
+          <div class="char-stat-line" style="margin-top:0.2rem;">Player: ${playerName}</div>
+        </div>`;
+      }).join('');
+    }
+
+    async function loadFriendOptions() {
+      const { data, error } = await sb
+        .from("friendships")
+        .select("user_a, user_b")
+        .or(`user_a.eq.${currentUser.id},user_b.eq.${currentUser.id}`);
+
+      if (error) return;
+      const friendIds = (data || []).map(row => row.user_a === currentUser.id ? row.user_b : row.user_a);
+      if (!friendIds.length) return;
+
+      const { data: profiles } = await sb.from("profile_directory").select("id, username").in("id", friendIds);
+      friends = profiles || [];
+      const select = document.getElementById("inviteFriendSelect");
+      friends.forEach(f => {
+        const opt = document.createElement("option");
+        opt.value = f.id;
+        opt.textContent = f.username || f.id;
+        select.appendChild(opt);
+      });
+    }
+
+    async function loadPlayerCharacterOptions() {
+      const [{ data: chars }, { data: assignment }] = await Promise.all([
+        sb.from("webrunning_characters").select("id, name, level").eq("user_id", currentUser.id).order("created_at", { ascending: true }),
+        sb.from("campaign_character_assignments")
+          .select("webrunning_character_id")
+          .eq("campaign_id", campaignId)
+          .eq("user_id", currentUser.id)
+          .eq("character_system", "webrunning")
+          .maybeSingle()
+      ]);
+
+      playerCharacters = chars || [];
+      const sel = document.getElementById("playerCharacterSelect");
+      sel.innerHTML = '<option value="">-- No character selected --</option>';
+      playerCharacters.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = `${c.name || 'Unnamed'} (Lv ${c.level ?? 0})`;
+        sel.appendChild(opt);
+      });
+      sel.value = assignment?.webrunning_character_id || "";
+
+      const status = document.getElementById("playerStatus");
+      if (!playerCharacters.length) {
+        status.textContent = "You have no Webrunning characters yet.";
+      } else {
+        status.textContent = assignment?.webrunning_character_id ? "Your current campaign character is selected below." : "No campaign character selected yet.";
+      }
+    }
+
+    document.getElementById("invitePlayerBtn").onclick = async () => {
+      const inviteeId = document.getElementById("inviteFriendSelect").value;
+      const status = document.getElementById("inviteStatus");
+      status.textContent = "";
+      if (!inviteeId) { status.textContent = "Select a friend to invite."; return; }
+
+      const { error } = await sb.from("campaign_invites").insert({
+        campaign_id: campaignId,
+        inviter_user_id: currentUser.id,
+        invitee_user_id: inviteeId,
+        status: "pending",
+        required_character_system: "webrunning"
+      });
+
+      if (error) { status.textContent = `Failed to invite: ${error.message}`; return; }
+      status.textContent = "Invite sent.";
+      document.getElementById("inviteFriendSelect").value = "";
+    };
+
+    document.getElementById("savePlayerCharacterBtn").onclick = async () => {
+      const selectedCharId = document.getElementById("playerCharacterSelect").value || null;
+      const status = document.getElementById("playerStatus");
+      status.textContent = "";
+
+      await sb.from("campaign_character_assignments")
+        .delete()
+        .eq("campaign_id", campaignId)
+        .eq("user_id", currentUser.id)
+        .eq("character_system", "webrunning");
+
+      if (!selectedCharId) {
+        status.textContent = "Cleared your character for this campaign.";
+        await loadCharacters();
+        return;
+      }
+
+      const { error } = await sb.from("campaign_character_assignments").insert({
+        campaign_id: campaignId,
+        user_id: currentUser.id,
+        character_id: selectedCharId,
+        character_system: "webrunning",
+        xrrpg_character_id: null,
+        webrunning_character_id: selectedCharId
+      });
+
+      if (error) { status.textContent = `Failed to save: ${error.message}`; return; }
+
+      const char = playerCharacters.find(c => c.id === selectedCharId);
+      status.textContent = `Selected ${char?.name || "your character"} for this campaign.`;
+      await loadCharacters();
+    };
+
+    loadPage();
+  </script>
+</body>
+</html>

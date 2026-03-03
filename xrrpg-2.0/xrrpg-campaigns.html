@@ -85,7 +85,7 @@
       list.innerHTML = `<table class="table-full"><thead><tr><th>Name</th><th>System</th><th>Role</th><th></th></tr></thead><tbody>${memberships.map(m => {
         const role = m.role === 'gm' ? 'GM' : 'Player';
         const system = (m.campaigns?.system || 'xrrpg').toLowerCase();
-        const viewHref = system === 'webrunning' ? `/webrunning-2.0/webrunning-character-manager.html?campaign=${m.campaign_id}` : `/xrrpg-2.0/xrrpg-campaign.html?id=${m.campaign_id}`;
+        const viewHref = system === 'webrunning' ? `/webrunning-2.0/webrunning-campaign.html?id=${m.campaign_id}` : `/xrrpg-2.0/xrrpg-campaign.html?id=${m.campaign_id}`;
         return `<tr><td><strong>${m.campaigns?.name || 'Unnamed Campaign'}</strong></td><td>${system}</td><td>${role}</td><td><a class="action-btn" href="${viewHref}">View</a></td></tr>`;
       }).join('')}</tbody></table>`;
     }

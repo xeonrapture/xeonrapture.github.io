@@ -2110,10 +2110,18 @@
             </label>` : ''}
           </div>`;
         } else if (rule.skill_mode === 'skill_plus2') {
+          const skillOpts2 = existingSkills.map(s => `<option value="${s.name}">${s.name} (+${s.bonus})</option>`).join('');
           html += `<div class="xrrpg-choice-block">
-            <label><strong>New Skill (+2):</strong><br>
+            <p class="muted" style="margin:0 0 0.5rem;"><strong>Skill Upgrade (+2):</strong> Add a new skill with +2, or boost an existing skill by +2.</p>
+            <label style="display:block;margin-bottom:0.4rem;">New skill name (or leave blank to boost instead):<br>
               <input type="text" data-choice-id="skill_new_name" placeholder="Skill name" style="width:100%;margin-top:0.25rem;">
             </label>
+            ${existingSkills.length ? `<label style="display:block;">Or boost an existing skill +2:<br>
+              <select data-choice-id="skill_boost" style="margin-top:0.25rem;">
+                <option value="">-- Don't boost --</option>
+                ${skillOpts2}
+              </select>
+            </label>` : ''}
           </div>`;
         }
       }
@@ -2546,9 +2554,13 @@
         return;
       }
 
-      if (rule.skill_mode === 'skill_plus2' && !choiceValues.skill_new_name?.trim()) {
-        document.getElementById('levelMsg').textContent = 'This level requires adding a new skill (+2).';
-        return;
+      if (rule.skill_mode === 'skill_plus2') {
+        const hasNew = !!choiceValues.skill_new_name?.trim();
+        const hasBoost = !!choiceValues.skill_boost?.trim();
+        if (!hasNew && !hasBoost) {
+          document.getElementById('levelMsg').textContent = 'This level requires adding or boosting a skill (+2).';
+          return;
+        }
       }
 
       if (rule.skill_mode === 'add_or_plus1') {
@@ -2587,10 +2599,11 @@
       if (rule.skill_mode && choiceValues.skill_new_name?.trim()) {
         updatedSkills.push({ name: choiceValues.skill_new_name.trim(), bonus: Number(choiceValues.skill_new_bonus || 2) });
         skillsChanged = true;
-      } else if (rule.skill_mode === 'add_or_plus1' && choiceValues.skill_boost?.trim()) {
+      } else if (choiceValues.skill_boost?.trim()) {
         const skillIdx = updatedSkills.findIndex(s => s.name === choiceValues.skill_boost);
         if (skillIdx >= 0) {
-          updatedSkills[skillIdx] = { ...updatedSkills[skillIdx], bonus: updatedSkills[skillIdx].bonus + 1 };
+          const boostAmount = rule.skill_mode === 'skill_plus2' ? 2 : 1;
+          updatedSkills[skillIdx] = { ...updatedSkills[skillIdx], bonus: updatedSkills[skillIdx].bonus + boostAmount };
           skillsChanged = true;
         }
       }
@@ -2820,7 +2833,7 @@
       let updateData = {};
 
       if (undo.type === 'level_up') {
-        // Remove only the specific progression entry that was added
+        // Remove only the specific class progression entry that was added
         const prog = [...(fresh.class_progression || [])];
         const entryIdx = [...prog].reverse().findIndex(e =>
           e.class === undo.remove_entry.class &&
@@ -2829,17 +2842,14 @@
         );
         if (entryIdx >= 0) prog.splice(prog.length - 1 - entryIdx, 1);
 
-        // Restore only the specific stat fields that changed
-        const bs = { ...fresh.base_stats, ...undo.restore_base_stats };
-
-        // Restore class choices for that class only
+        // Only restore class ability choices for that class — leave level, stats, and skills unchanged
+        const bs = { ...fresh.base_stats };
         if (undo.restore_class_choices) {
           if (!bs.class_ability_choices) bs.class_ability_choices = {};
           bs.class_ability_choices[undo.restore_class_choices.cls] = undo.restore_class_choices.choices;
         }
 
         updateData = { class_progression: prog, base_stats: bs };
-        if (undo.restore_skills !== undefined) updateData.skills = undo.restore_skills;
 
       } else if (undo.type === 'injury') {
         // Remove the specific injury that was added and restore HP
