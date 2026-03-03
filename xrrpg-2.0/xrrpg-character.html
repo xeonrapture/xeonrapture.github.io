@@ -685,7 +685,7 @@
       const cls = document.getElementById('levelClassSelect').value;
       const progression = character.class_progression || [];
       const tier = progression.filter(item => item.class === cls).length + 1;
-      const currentLevel = Number(character.base_stats?.level || 1);
+      const currentLevel = Number(document.getElementById('levelInput').value) || 1;
       const level = Math.min(9, currentLevel + 1);
       document.getElementById('levelClassSummary').textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
       document.getElementById('levelClassTrackSummary').textContent = `This will set Character Level ${level} and ${cls} to Class Level ${tier}.`;
@@ -1251,13 +1251,10 @@
           }
         } else if (def.archetype !== 'Adepts' && cls !== 'Dronemaster') {
           // Dronemaster: skip auto-text since the drone management info header already shows all this info
-          for (let lvl = 1; lvl <= classLevel; lvl++) {
-            for (const auto of def.levels[lvl]?.auto || []) {
-              const text = typeof auto === 'string' ? auto : auto.text;
-              const key = typeof auto === 'object' ? auto.key : null;
-              if (key && highestKeyLevel[key] !== lvl) continue;
-              html += `<div class="xrrpg-ability-bubble"><div class="xrrpg-ability-row">${text}</div></div>`;
-            }
+          // Only show the highest (current) class level's auto abilities to avoid one bubble per tier
+          for (const auto of def.levels[classLevel]?.auto || []) {
+            const text = typeof auto === 'string' ? auto : auto.text;
+            html += `<div class="xrrpg-ability-bubble"><div class="xrrpg-ability-row">${text}</div></div>`;
           }
         }
       }
@@ -2397,10 +2394,12 @@
 
     document.getElementById('confirmLevelBtn').onclick = async () => {
       if (!canEdit) return;
+      // Cancel any pending autosave to prevent it from overwriting the level-up changes
+      if (autosaveTimer) { window.clearTimeout(autosaveTimer); autosaveTimer = null; }
       await withLoading('Applying level up…', async () => {
       const cls = document.getElementById('levelClassSelect').value;
       const progression = [...(character.class_progression || [])];
-      const currentLevel = Number(character.base_stats?.level || 1);
+      const currentLevel = Number(document.getElementById('levelInput').value) || 1;
       const level = Math.min(9, currentLevel + 1);
       const currentClassLevel = progression.filter(item => item.class === cls).length;
       const tier = currentClassLevel + 1;
@@ -2421,7 +2420,8 @@
       const choiceValues = readLevelChoices(cls, tier);
       applyLevelChoices(cls, tier, choiceValues);
 
-      const before = character.base_stats || {};
+      // Use current input values as the base to ensure stats reflect what's on screen
+      const before = readStatsFromInputs();
       const rule = levelRule(level);
 
       // Validate stat upgrade if required
