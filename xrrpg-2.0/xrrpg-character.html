@@ -919,18 +919,22 @@
 
     function addGun(cls) {
       const guns = getGunList(cls);
-      guns.push({ name: '', gun_type: 'small', effects: {}, resources: {} });
+      guns.push({ name: '', gun_model: '', gun_type: 'small', effects: {}, resources: {} });
       saveGunList(cls, guns);
     }
 
-    function updateGunType(cls, gunIdx, gunType) {
+    function updateGunModel(cls, gunIdx, modelId) {
       const guns = getGunList(cls);
       if (!guns[gunIdx]) return;
-      guns[gunIdx].gun_type = gunType;
+      guns[gunIdx].gun_model = modelId;
+      // Derive size (small/large) from model definition for large-gun limit tracking
+      const def = getClassDef(cls);
+      const modelDef = def?.gunTypes?.find(t => t.id === modelId);
+      guns[gunIdx].gun_type = modelDef?.size || 'small';
       const choices = getClassChoices(cls);
       choices.gun_list = guns;
       setClassChoices(cls, choices);
-      scheduleAutosave();
+      renderClassAbilitiesSection();
     }
 
     function updateGunEffectsFromSelects(cls, gunIdx) {
@@ -1124,8 +1128,8 @@
       body.querySelectorAll('[data-gun-effect-slot]').forEach(sel => {
         sel.onchange = () => updateGunEffectsFromSelects(sel.dataset.cls, Number(sel.dataset.gunIdx));
       });
-      body.querySelectorAll('[data-gun-type]').forEach(sel => {
-        sel.onchange = () => updateGunType(sel.dataset.cls, Number(sel.dataset.gunIdx), sel.value);
+      body.querySelectorAll('[data-gun-model]').forEach(sel => {
+        sel.onchange = () => updateGunModel(sel.dataset.cls, Number(sel.dataset.gunIdx), sel.value);
       });
       body.querySelectorAll('[data-gun-res-inc]').forEach(btn => {
         btn.onclick = () => updateGunRes(btn.dataset.cls, Number(btn.dataset.gunIdx), btn.dataset.resKey, 1, Number(btn.dataset.resMax));
@@ -1601,12 +1605,16 @@
         const maxEffectTier = classLevel >= 3 ? 3 : classLevel >= 2 ? 2 : 1;
         const maxLargeGuns = classLevel >= 3 ? 3 : 2;
         const availGunEffects = def.gunPool.filter(e => e.tier <= maxEffectTier);
+        const availGunTypes = (def.gunTypes || []).filter(t => t.tier <= maxEffectTier);
 
         if (!choices.gun_list) choices.gun_list = [];
         const guns = choices.gun_list;
 
-        // Info header
-        const largeGunCount = guns.filter(g => g.gun_type === 'large').length;
+        // Info header — large gun count uses derived model size (falls back to gun_type for old data)
+        const largeGunCount = guns.filter(g => {
+          const md = (def.gunTypes || []).find(t => t.id === g.gun_model);
+          return md ? md.size === 'large' : g.gun_type === 'large';
+        }).length;
         html += `<div class="xrrpg-ability-bubble">`;
         html += `<div class="xrrpg-ability-row"><strong>Effects per Gun:</strong> up to ${maxEffectsPerGun} &nbsp;|&nbsp; <strong>Large Guns:</strong> ${largeGunCount} / ${maxLargeGuns}</div>`;
         html += `</div>`;
@@ -1615,19 +1623,26 @@
         for (let i = 0; i < guns.length; i++) {
           const gun = guns[i];
           const selEffects = gun.effects || {};
+          const modelDef = (def.gunTypes || []).find(t => t.id === gun.gun_model);
 
           html += `<div class="xrrpg-ability-bubble">`;
           html += `<div class="xrrpg-ability-row" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.4rem;">`;
           html += `<strong>Gun ${i + 1}${gun.name ? ': ' + gun.name : ''}</strong>`;
           html += `<button type="button" class="xr-btn-secondary" style="font-size:0.8rem; padding:0.2rem 0.6rem;" data-gun-remove="${i}" data-cls="${cls}">Remove Gun</button>`;
           html += `</div>`;
-          html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.3rem; display:flex; flex-wrap:wrap; gap:0.6rem;">`;
-          html += `<label style="display:flex; align-items:center; gap:0.4rem;"><strong>Name:</strong> <input type="text" value="${(gun.name || '').replace(/"/g, '&quot;')}" data-gun-name="${i}" data-cls="${cls}" style="min-width:140px;"></label>`;
-          html += `<label style="display:flex; align-items:center; gap:0.4rem;"><strong>Type:</strong> <select data-gun-type="${i}" data-gun-idx="${i}" data-cls="${cls}">`;
-          html += `<option value="small" ${(gun.gun_type || 'small') !== 'large' ? 'selected' : ''}>Small</option>`;
-          html += `<option value="large" ${gun.gun_type === 'large' ? 'selected' : ''}>Large</option>`;
+          html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.3rem; display:flex; flex-wrap:wrap; gap:0.6rem; align-items:center;">`;
+          html += `<label style="display:flex; align-items:center; gap:0.4rem;"><strong>Name:</strong> <input type="text" value="${(gun.name || '').replace(/"/g, '&quot;')}" data-gun-name="${i}" data-cls="${cls}" style="min-width:120px;"></label>`;
+          html += `<label style="display:flex; align-items:center; gap:0.4rem;"><strong>Model:</strong> <select data-gun-model="${i}" data-gun-idx="${i}" data-cls="${cls}">`;
+          html += `<option value="">-- Select --</option>`;
+          for (const gt of availGunTypes) {
+            const rangeStr = gt.minRange ? `${gt.minRange}–${gt.maxRange}` : gt.maxRange;
+            html += `<option value="${gt.id}" ${gun.gun_model === gt.id ? 'selected' : ''}>${gt.name} (${gt.size === 'large' ? 'L' : 'S'}, ${gt.dmg} dmg, ${rangeStr})</option>`;
+          }
           html += `</select></label>`;
           html += `</div>`;
+          if (modelDef?.special) {
+            html += `<div class="xrrpg-ability-desc" style="margin-left:1rem; margin-top:0.2rem;">${modelDef.special}</div>`;
+          }
           html += `<div class="xrrpg-ability-row" style="margin-left:1rem; margin-top:0.4rem;"><strong>Effects:</strong></div>`;
           html += `<div style="margin-left:1rem; display:flex; flex-direction:column; gap:0.3rem; margin-top:0.3rem;">`;
           const gunSelIds = Object.keys(selEffects).filter(k => selEffects[k]);
@@ -1660,6 +1675,22 @@
         html += `<div class="xrrpg-ability-bubble">`;
         html += `<button type="button" class="xr-btn-secondary" data-gun-add data-cls="${cls}">+ Add Gun</button>`;
         html += `</div>`;
+
+        // Reference table: gun models by tier
+        if (def.gunTypes?.length) {
+          html += `<div class="xrrpg-ability-bubble">`;
+          html += `<div class="xrrpg-ability-row"><strong>Gun Models Reference:</strong></div>`;
+          for (let t = 1; t <= maxEffectTier; t++) {
+            const tierTypes = def.gunTypes.filter(g => g.tier === t);
+            if (!tierTypes.length) continue;
+            html += `<div class="xrrpg-ability-row" style="margin-top:0.4rem;"><strong>Tier ${t}:</strong></div>`;
+            for (const g of tierTypes) {
+              const rangeStr = g.minRange ? `${g.minRange}–${g.maxRange}` : g.maxRange;
+              html += `<div class="xrrpg-ability-row" style="margin-left:1rem;"><strong>${g.name}</strong> <span class="xrrpg-tier-badge">${g.size === 'large' ? 'Large' : 'Small'}</span> — ${g.dmg} dmg | ${rangeStr}${g.special ? ` | ${g.special}` : ''}</div>`;
+            }
+          }
+          html += `</div>`;
+        }
 
         // Reference table: gun effects by tier
         html += `<div class="xrrpg-ability-bubble">`;
