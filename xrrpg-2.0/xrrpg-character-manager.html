@@ -158,14 +158,18 @@
     let characters = [];
     let sortState = { key: 'name', direction: 'asc' };
 
+    let _loadingSafetyTimer = null;
     function setLoading(message = 'Loading…') {
       const overlay = document.getElementById('loadingOverlay');
       const text = document.getElementById('loadingOverlayText');
       if (text) text.textContent = message;
       if (overlay) overlay.classList.remove('hidden');
+      if (_loadingSafetyTimer) clearTimeout(_loadingSafetyTimer);
+      _loadingSafetyTimer = setTimeout(() => clearLoading(), 15000);
     }
 
     function clearLoading() {
+      if (_loadingSafetyTimer) { clearTimeout(_loadingSafetyTimer); _loadingSafetyTimer = null; }
       const overlay = document.getElementById('loadingOverlay');
       if (overlay) overlay.classList.add('hidden');
     }
@@ -413,10 +417,12 @@
           <td>${s.endurance || 0}</td>
           <td>${s.intuition || 0}</td>
           <td>${s.wit || 0}</td>
-          <td class="actions">
-            <a class="action-btn" href="/xrrpg-2.0/xrrpg-character.html?id=${c.id}" title="Edit" aria-label="Edit"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 9-9-3-3-9 9-1 4z"></path><path d="M13 7l3 3"></path></svg></a>
-            <button class="action-btn" onclick="exportCharacter('${c.id}')" title="Export" aria-label="Export"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14V3"></path><path d="M8 7l4-4 4 4"></path><path d="M4 14v6h16v-6"></path></svg></button>
-            <button class="action-btn" onclick="deleteCharacter('${c.id}')" title="Delete" aria-label="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
+          <td style="vertical-align:middle;">
+            <div class="actions">
+              <a class="action-btn" href="/xrrpg-2.0/xrrpg-character.html?id=${c.id}" title="Edit" aria-label="Edit"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 9-9-3-3-9 9-1 4z"></path><path d="M13 7l3 3"></path></svg></a>
+              <button class="action-btn" onclick="exportCharacter('${c.id}')" title="Export" aria-label="Export"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14V3"></path><path d="M8 7l4-4 4 4"></path><path d="M4 14v6h16v-6"></path></svg></button>
+              <button class="action-btn" onclick="deleteCharacter('${c.id}')" title="Delete" aria-label="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
+            </div>
           </td>
         `;
         table.appendChild(row);
@@ -538,10 +544,11 @@
         result[thirdBonusStat.value] += 1;
       }
       const max_hp = 10 + result.vigor + (2 * result.endurance);
-      const stamina_total = 10 + result.intuition + result.wit;
+      // Characters start at level 1; level 1 stamina base is 12
+      const stamina_total = 12 + result.intuition + result.wit;
       return {
         ...result,
-        level: 0,
+        level: 1,
         hp: max_hp,
         current_hp: max_hp,
         mastery_die: 'd4',
@@ -549,8 +556,8 @@
         stamina: 0,
         stamina_max: stamina_total,
         stamina_total,
-        powerful_item_limit: chroma === 'Clear' ? 2 : 0,
-        powerful_item_max: chroma === 'Clear' ? 2 : 0,
+        powerful_item_limit: 2,
+        powerful_item_max: 1,
         party_tier: 1,
         xenic_decay_level: 0,
         times_cleansed: 0,
@@ -755,7 +762,7 @@
         if (!classChromaValidation.valid) { msg.textContent = classChromaValidation.message; return; }
         currentUser = currentUser || await requireUser();
         const base_stats = buildStatsFromWizard();
-        const class_progression = [{ class: cls, tier: 1, level_acquired: 0 }];
+        const class_progression = [{ class: cls, tier: 1, level_acquired: 1 }];
         const rawWizardChoices = readWizardLevelChoices();
         const l1Choices = wizardChoicesToClassChoices(cls, rawWizardChoices);
 

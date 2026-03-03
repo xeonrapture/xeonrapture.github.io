@@ -282,6 +282,16 @@
     const sb = window.supabaseClient;
     const params = new URLSearchParams(window.location.search);
     const characterId = params.get('id');
+    const fromCampaignId = params.get('from_campaign');
+    if (fromCampaignId) {
+      const backBtn = document.querySelector('a[href="/xrrpg-2.0/xrrpg-character-manager.html"]');
+      if (backBtn) {
+        backBtn.href = `/xrrpg-2.0/xrrpg-campaign.html?id=${fromCampaignId}`;
+        backBtn.setAttribute('aria-label', 'Back to campaign');
+        const label = backBtn.querySelector('span:not([aria-hidden])');
+        if (label) label.textContent = 'Back to Campaign';
+      }
+    }
     const classNames = [
       'Warrior','Mentalist','Tank','Druid','Elementalist','Summoner','Mystic','Alchemist','Physic','Possessor','Bard','Enchanter','Sorcerer','Warlock','Cleric','Demititan','Emitter Specialist','Dronemaster','Brawler','Explosives Expert','Gunslinger','Swordmaster'
     ];
@@ -363,14 +373,18 @@
       9: { stamina_base: 30, skill_mode: 'stat', stat_points: 1, stat_bonus: 2, skill_points: 0, powerful_item_limit: 9, powerful_item_max: 3 }
     };
 
+    let _loadingSafetyTimer = null;
     function setLoading(message = 'Loading…') {
       const overlay = document.getElementById('loadingOverlay');
       const text = document.getElementById('loadingOverlayText');
       if (text) text.textContent = message;
       if (overlay) overlay.classList.remove('hidden');
+      if (_loadingSafetyTimer) clearTimeout(_loadingSafetyTimer);
+      _loadingSafetyTimer = setTimeout(() => clearLoading(), 15000);
     }
 
     function clearLoading() {
+      if (_loadingSafetyTimer) { clearTimeout(_loadingSafetyTimer); _loadingSafetyTimer = null; }
       const overlay = document.getElementById('loadingOverlay');
       if (overlay) overlay.classList.add('hidden');
     }
@@ -403,6 +417,21 @@
       document.querySelectorAll('[data-resource-inc], [data-resource-dec]').forEach(btn => {
         btn.disabled = readOnly;
       });
+      // Disable all drone management controls
+      document.querySelectorAll(
+        '[data-drone-add-active], [data-drone-remove-active], [data-drone-add-docked], [data-drone-remove-docked],' +
+        '[data-drone-dock-active], [data-drone-undock-to], [data-drone-hp-inc], [data-drone-hp-dec],' +
+        '[data-drone-hp-inc-docked], [data-drone-hp-dec-docked], [data-drone-res-inc], [data-drone-res-dec],' +
+        '[data-drone-res-inc-docked], [data-drone-res-dec-docked]'
+      ).forEach(btn => { btn.disabled = readOnly; });
+      document.querySelectorAll('[data-drone-name-active], [data-drone-name-docked], [data-drone-effect-slot]').forEach(el => { el.disabled = readOnly; });
+      // Disable all gun management controls
+      document.querySelectorAll('[data-gun-add], [data-gun-remove], [data-gun-res-inc], [data-gun-res-dec]').forEach(btn => { btn.disabled = readOnly; });
+      document.querySelectorAll('[data-gun-name], [data-gun-effect-slot], [data-gun-model]').forEach(el => { el.disabled = readOnly; });
+      // Disable bomb inventory and brawler effect controls
+      document.querySelectorAll('[data-bomb-inv-inc], [data-bomb-inv-dec], [data-install-effect], [data-uninstall-all]').forEach(btn => { btn.disabled = readOnly; });
+      // Disable the Reset Daily button
+      document.querySelectorAll('[data-reset-daily]').forEach(btn => { btn.disabled = readOnly; });
     }
 
     const CLASS_ARCHETYPES = {
@@ -1055,7 +1084,7 @@
         body.innerHTML += renderClassSubsection(cls, classLevel, choices);
       }
 
-      body.innerHTML += `<div style="margin-top:1rem;"><button type="button" onclick="resetDailyResources()" class="xr-btn-secondary">Reset Daily (Deep Rest)</button></div>`;
+      body.innerHTML += `<div style="margin-top:1rem;"><button type="button" data-reset-daily onclick="resetDailyResources()" class="xr-btn-secondary">Reset Daily (Deep Rest)</button></div>`;
 
       // Restore collapsed state before binding events
       body.querySelectorAll('[data-collapsible][data-class]').forEach(el => {
@@ -1920,12 +1949,13 @@
       const levelDef = def?.levels?.[classLevel] || def?.levels?.['default'];
       const hasClassChoices = !!(levelDef?.choices?.length);
       const hasStatUpgrade = !!(rule?.stat_points > 0);
-      if (!hasClassChoices && !hasStatUpgrade) return;
+      const hasSkillMode = !!(rule?.skill_mode);
+      if (!hasClassChoices && !hasStatUpgrade && !hasSkillMode) return;
 
       const choices = getClassChoices(cls);
       let html = '';
 
-      for (const choice of levelDef.choices) {
+      for (const choice of (levelDef?.choices || [])) {
         if (choice.type === 'pick_advanced_power') {
           const pool = def.advancedPowers || def[choice.pool] || [];
           const tierCount = {};
@@ -2044,6 +2074,38 @@
             <option value="wit">Wit</option>
           </select>
         </label></div>`;
+      }
+
+      // ── SKILL UPGRADE PROMPT ─────────────────────────────────────────
+      if (rule?.skill_mode) {
+        const existingSkills = character.skills || [];
+        if (rule.skill_mode === 'add_or_plus1') {
+          const skillOpts = existingSkills.map(s => `<option value="${s.name}">${s.name} (+${s.bonus})</option>`).join('');
+          html += `<div class="xrrpg-choice-block">
+            <p class="muted" style="margin:0 0 0.5rem;"><strong>Skill Upgrade:</strong> Add a new skill, or boost an existing one by +1.</p>
+            <label style="display:block;margin-bottom:0.4rem;">New skill name (leave blank to boost instead):<br>
+              <input type="text" data-choice-id="skill_new_name" placeholder="Skill name" style="width:100%;margin-top:0.25rem;">
+            </label>
+            <label style="display:block;margin-bottom:0.4rem;">Bonus type for new skill:<br>
+              <select data-choice-id="skill_new_bonus" style="margin-top:0.25rem;">
+                <option value="2">+2 (General)</option>
+                <option value="3">+3 (Specific)</option>
+              </select>
+            </label>
+            ${existingSkills.length ? `<label style="display:block;">Or boost existing skill +1:<br>
+              <select data-choice-id="skill_boost" style="margin-top:0.25rem;">
+                <option value="">-- Don't boost --</option>
+                ${skillOpts}
+              </select>
+            </label>` : ''}
+          </div>`;
+        } else if (rule.skill_mode === 'skill_plus2') {
+          html += `<div class="xrrpg-choice-block">
+            <label><strong>New Skill (+2):</strong><br>
+              <input type="text" data-choice-id="skill_new_name" placeholder="Skill name" style="width:100%;margin-top:0.25rem;">
+            </label>
+          </div>`;
+        }
       }
 
       container.innerHTML = html;
@@ -2457,7 +2519,10 @@
       }
       progression.push({ class: cls, tier, level_acquired: level });
 
-      const prevState = cloneCharacterState();
+      // Capture pre-level-up class choices for specific undo
+      const prevClassChoicesForCls = JSON.parse(JSON.stringify(character.base_stats?.class_ability_choices?.[cls] || {}));
+      const skillsBefore = [...(character.skills || [])];
+
       const choiceValues = readLevelChoices(cls, tier);
       applyLevelChoices(cls, tier, choiceValues);
 
@@ -2492,8 +2557,29 @@
         }
       }
 
+      // Apply skill upgrade from level-up prompt
+      let updatedSkills = [...skillsBefore];
+      let skillsChanged = false;
+      if (rule.skill_mode && choiceValues.skill_new_name?.trim()) {
+        updatedSkills.push({ name: choiceValues.skill_new_name.trim(), bonus: Number(choiceValues.skill_new_bonus || 2) });
+        skillsChanged = true;
+      } else if (rule.skill_mode === 'add_or_plus1' && choiceValues.skill_boost?.trim()) {
+        const skillIdx = updatedSkills.findIndex(s => s.name === choiceValues.skill_boost);
+        if (skillIdx >= 0) {
+          updatedSkills[skillIdx] = { ...updatedSkills[skillIdx], bonus: updatedSkills[skillIdx].bonus + 1 };
+          skillsChanged = true;
+        }
+      }
+
+      const updatePayload = {
+        class_progression: progression,
+        base_stats,
+        updated_at: new Date().toISOString()
+      };
+      if (skillsChanged) updatePayload.skills = updatedSkills;
+
       const { error } = await sb.from('xrrpg_characters')
-        .update({ class_progression: progression, base_stats, updated_at: new Date().toISOString() })
+        .update(updatePayload)
         .eq('id', characterId)
         .eq('user_id', currentUser.id);
       if (error) {
@@ -2501,7 +2587,31 @@
         return;
       }
 
-      await addHistory('level_up', `${cls} advanced to class level ${tier}.`, { class: cls, class_level: tier, undo: { character: prevState } });
+      // Build specific-delta undo payload
+      const undoStatsBefore = {
+        level: currentLevel,
+        mastery_die: before.mastery_die,
+        stamina_max: before.stamina_max,
+        stamina_total: before.stamina_total,
+        powerful_item_limit: before.powerful_item_limit,
+        powerful_item_max: before.powerful_item_max
+      };
+      if (rule.stat_points > 0 && choiceValues.stat_upgrade) {
+        undoStatsBefore[choiceValues.stat_upgrade] = before[choiceValues.stat_upgrade];
+        if (choiceValues.stat_upgrade === 'intuition' || choiceValues.stat_upgrade === 'wit') {
+          undoStatsBefore.stamina_max = before.stamina_max;
+          undoStatsBefore.stamina_total = before.stamina_total;
+        }
+      }
+      const undoPayload = {
+        type: 'level_up',
+        remove_entry: { class: cls, tier, level_acquired: level },
+        restore_base_stats: undoStatsBefore,
+        restore_class_choices: { cls, choices: prevClassChoicesForCls },
+        ...(skillsChanged ? { restore_skills: skillsBefore } : {})
+      };
+
+      await addHistory('level_up', `${cls} advanced to class level ${tier}.`, { class: cls, class_level: tier, undo: undoPayload });
       levelModal.classList.add('hidden');
       await loadCharacter();
       document.getElementById('status').textContent = `Level up applied: ${cls} class level ${tier}.`;
@@ -2518,13 +2628,12 @@
       if (!target) return;
       injuries[target.injuryIndex] = { ...injuries[target.injuryIndex], debuff_resolved: true };
       base_stats.injuries = injuries;
-      const previousState = cloneCharacterState();
       const { error } = await sb.from('xrrpg_characters').update({ base_stats, updated_at: new Date().toISOString() }).eq('id', characterId).eq('user_id', currentUser.id);
       if (error) {
         document.getElementById('status').textContent = error.message;
         return;
       }
-      await addHistory('resolve_debuff', `Resolved ${type} injury debuff.`, { type, undo: { character: previousState } });
+      await addHistory('resolve_debuff', `Resolved ${type} injury debuff.`, { type, undo: { type: 'resolve_debuff', injury_global_idx: target.injuryIndex, injury_type: type } });
       await loadCharacter();
       document.getElementById('status').textContent = `${type} debuff resolved.`;
       });
@@ -2540,14 +2649,13 @@
         .filter(row => row.injury.type === type);
       const target = matchingIndexes[index];
       if (!target) return;
+      const hpBeforeHeal = Number(base_stats.current_hp ?? base_stats.hp ?? 0);
       const [removed] = injuries.splice(target.injuryIndex, 1);
       base_stats.injuries = injuries;
       const healedAmount = Number(removed?.damage || 0);
       const maxHp = Number(base_stats.hp || 0);
-      const currentHp = Number(base_stats.current_hp ?? maxHp);
-      base_stats.current_hp = Math.min(maxHp, currentHp + healedAmount);
+      base_stats.current_hp = Math.min(maxHp, hpBeforeHeal + healedAmount);
 
-      const previousState = cloneCharacterState();
       const { error } = await sb.from('xrrpg_characters')
         .update({ base_stats, updated_at: new Date().toISOString() })
         .eq('id', characterId)
@@ -2556,7 +2664,7 @@
         document.getElementById('status').textContent = error.message;
         return;
       }
-      await addHistory('heal_injury', `Healed ${type} injury: ${removed.label || 'unnamed'} (+${Number(removed.damage || 0)} HP).`, { type, label: removed.label || '', healed_hp: Number(removed.damage || 0), undo: { character: previousState } });
+      await addHistory('heal_injury', `Healed ${type} injury: ${removed.label || 'unnamed'} (+${Number(removed.damage || 0)} HP).`, { type, label: removed.label || '', healed_hp: Number(removed.damage || 0), undo: { type: 'heal_injury', restore_injury: removed, restore_hp: hpBeforeHeal } });
       await loadCharacter();
       document.getElementById('status').textContent = `Healed ${type} injury.`;
       });
@@ -2579,12 +2687,13 @@
       const damageByType = { minor: 1, severe: 2, critical: 3 };
       const damage = damageByType[type] || 1;
       const base_stats = { ...(character.base_stats || {}) };
-      const currentHp = Number(base_stats.current_hp ?? base_stats.hp ?? 0);
-      base_stats.current_hp = Math.max(0, currentHp - damage);
+      const hpBeforeInjury = Number(base_stats.current_hp ?? base_stats.hp ?? 0);
+      base_stats.current_hp = Math.max(0, hpBeforeInjury - damage);
       if (!Array.isArray(base_stats.injuries)) base_stats.injuries = [];
-      base_stats.injuries.push({ type, label, damage, at: new Date().toISOString() });
+      const newInjury = { type, label, damage, at: new Date().toISOString() };
+      const injuryIdx = base_stats.injuries.length;
+      base_stats.injuries.push(newInjury);
 
-      const previousState = cloneCharacterState();
       const { error } = await sb.from('xrrpg_characters')
         .update({ base_stats, updated_at: new Date().toISOString() })
         .eq('id', characterId)
@@ -2594,7 +2703,7 @@
         return;
       }
 
-      await addHistory('injury', `${type.toUpperCase()} injury: ${label || 'unnamed'} (${damage} dmg). ${injuryDebuff(type)}`, { type, label, damage, debuff: injuryDebuff(type), undo: { character: previousState } });
+      await addHistory('injury', `${type.toUpperCase()} injury: ${label || 'unnamed'} (${damage} dmg). ${injuryDebuff(type)}`, { type, label, damage, debuff: injuryDebuff(type), undo: { type: 'injury', injury_at: newInjury.at, injury_idx: injuryIdx, restore_hp: hpBeforeInjury } });
       injuryModal.classList.add('hidden');
       await loadCharacter();
       document.getElementById('status').textContent = `Applied ${type} injury (${damage} dmg).`;
@@ -2604,7 +2713,7 @@
 
     async function persistSkills(nextSkills, historyLabel, trackHistory = true) {
       if (!canEdit) return;
-      const previousState = cloneCharacterState();
+      const skillsBefore = [...(character.skills || [])];
       const { error } = await sb.from('xrrpg_characters')
         .update({ skills: nextSkills, updated_at: new Date().toISOString() })
         .eq('id', characterId)
@@ -2616,7 +2725,7 @@
       character.skills = nextSkills;
       renderSkillList();
       if (trackHistory) {
-        await addHistory('skills', historyLabel, { undo: { character: previousState } });
+        await addHistory('skills', historyLabel, { undo: { type: 'skills', restore_skills: skillsBefore } });
       }
       document.getElementById('status').textContent = 'Saved automatically.';
     }
@@ -2675,16 +2784,94 @@
       if (!canEdit) return;
       return withLoading('Undoing history event…', async () => {
       const row = history.find(item => item.id === historyId);
-      const snapshot = row?.event_payload?.undo?.character;
-      if (!snapshot) return;
-      const { error } = await sb.from('xrrpg_characters').update({
-        name: snapshot.name,
-        notes: snapshot.notes,
-        base_stats: snapshot.base_stats,
-        class_progression: snapshot.class_progression,
-        skills: snapshot.skills,
-        updated_at: new Date().toISOString()
-      }).eq('id', characterId).eq('user_id', currentUser.id);
+      const undo = row?.event_payload?.undo;
+      if (!undo) return;
+
+      // Fetch fresh character state from DB so we only reverse what this event changed
+      const { data: fresh, error: fetchErr } = await sb.from('xrrpg_characters')
+        .select('id, name, base_stats, class_progression, skills, notes')
+        .eq('id', characterId).single();
+      if (fetchErr || !fresh) { document.getElementById('status').textContent = fetchErr?.message || 'Could not fetch character.'; return; }
+
+      let updateData = {};
+
+      if (undo.type === 'level_up') {
+        // Remove only the specific progression entry that was added
+        const prog = [...(fresh.class_progression || [])];
+        const entryIdx = [...prog].reverse().findIndex(e =>
+          e.class === undo.remove_entry.class &&
+          e.tier === undo.remove_entry.tier &&
+          e.level_acquired === undo.remove_entry.level_acquired
+        );
+        if (entryIdx >= 0) prog.splice(prog.length - 1 - entryIdx, 1);
+
+        // Restore only the specific stat fields that changed
+        const bs = { ...fresh.base_stats, ...undo.restore_base_stats };
+
+        // Restore class choices for that class only
+        if (undo.restore_class_choices) {
+          if (!bs.class_ability_choices) bs.class_ability_choices = {};
+          bs.class_ability_choices[undo.restore_class_choices.cls] = undo.restore_class_choices.choices;
+        }
+
+        updateData = { class_progression: prog, base_stats: bs };
+        if (undo.restore_skills !== undefined) updateData.skills = undo.restore_skills;
+
+      } else if (undo.type === 'injury') {
+        // Remove the specific injury that was added and restore HP
+        const bs = { ...fresh.base_stats };
+        const injuries = [...(bs.injuries || [])];
+        // Find by timestamp (most reliable), fall back to stored index
+        const injIdx = undo.injury_at
+          ? injuries.findIndex(inj => inj.at === undo.injury_at)
+          : (undo.injury_idx ?? -1);
+        if (injIdx >= 0) injuries.splice(injIdx, 1);
+        bs.injuries = injuries;
+        bs.current_hp = undo.restore_hp;
+        updateData = { base_stats: bs };
+
+      } else if (undo.type === 'heal_injury') {
+        // Re-add the injury that was healed and restore HP
+        const bs = { ...fresh.base_stats };
+        const injuries = [...(bs.injuries || [])];
+        injuries.push(undo.restore_injury);
+        bs.injuries = injuries;
+        bs.current_hp = undo.restore_hp;
+        updateData = { base_stats: bs };
+
+      } else if (undo.type === 'resolve_debuff') {
+        // Un-resolve the debuff on the specific injury
+        const bs = { ...fresh.base_stats };
+        const injuries = [...(bs.injuries || [])];
+        const idx = undo.injury_global_idx;
+        if (idx !== undefined && injuries[idx]) {
+          const inj = { ...injuries[idx] };
+          delete inj.debuff_resolved;
+          injuries[idx] = inj;
+        }
+        bs.injuries = injuries;
+        updateData = { base_stats: bs };
+
+      } else if (undo.type === 'skills') {
+        updateData = { skills: undo.restore_skills };
+
+      } else if (undo.character) {
+        // Legacy snapshot-based undo (backward compat)
+        const snapshot = undo.character;
+        updateData = {
+          name: snapshot.name,
+          notes: snapshot.notes,
+          base_stats: snapshot.base_stats,
+          class_progression: snapshot.class_progression,
+          skills: snapshot.skills
+        };
+      } else {
+        return;
+      }
+
+      updateData.updated_at = new Date().toISOString();
+      const { error } = await sb.from('xrrpg_characters').update(updateData)
+        .eq('id', characterId).eq('user_id', currentUser.id);
       if (error) {
         document.getElementById('status').textContent = error.message;
         return;
