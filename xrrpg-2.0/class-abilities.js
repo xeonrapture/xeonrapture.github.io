@@ -490,7 +490,7 @@ window.XRRPG_CLASS_DEFS = {
         choices: [{ type: "pick_specialized_powers", count: 2, label: "Pick 2 more Specialized Powers (6 total)" }]
       },
       3: {
-        auto: ["Devil Form: Merge with devil (+2d MD on everything). Lasts 10 min. 3x/day. Note: the devil may try to influence your actions or personality while merged — their emotions and appetites may heavily affect yours."],
+        auto: ["Devil Form: Merge with devil (+2d MD on everything). Lasts 10 min. 3x/day. Note: while this is active, however, the devil might be trying to get into your ear and get you to do certain things, or their personality and appetites might heavily affect yours. "],
         choices: [{ type: "pick_specialized_powers", count: 2, label: "Pick 2 more Specialized Powers (8 total)" }]
       },
       4: {
@@ -837,7 +837,7 @@ window.XRRPG_CLASS_DEFS = {
     archetype: "Magicians",
     chromaRequired: null,
     maxLevel: 3,
-    substanceNote: "You need the listed material to cast each spell — feel free to just buy it or go on a small quest to find it!",
+    substanceNote: "You need the listed material to cast each spell — feel free to find a place to buy it or go on a small quest to find it.",
     spellPool: [
       // Tier I
       { id: "prestidigitation", name: "Prestidigitation", tier: 1, roll: 1, range: "30 ft", substance: "Predigitase (orange, red, green, yellow gem)", description: "Create a small magical effect: gust of wind, small illusion (2 ft square), ground rumble, open/close doors, light or put out fires, harmless sparkles, clean or soil a small area. Cannot do damage unless very creative." },
