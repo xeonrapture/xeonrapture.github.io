@@ -1273,11 +1273,11 @@ window.XRRPG_CLASS_DEFS = {
         choices: []
       },
       2: {
-        auto: ["All Tier I and II emitters available. 5 active emitters max. Duration 2 min. Radius 20 ft. Gun range 60 ft."],
+        auto: ["All Tier I and II emitters available. 5 active emitters max. Duration 2 min. Radius 20 ft. Gun range 60 ft.", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
         choices: []
       },
       3: {
-        auto: ["All emitters available. 7 active emitters max. Duration 5 min. Radius 50 ft. Gun range 150 ft."],
+        auto: ["All emitters available. 7 active emitters max. Duration 5 min. Radius 50 ft. Gun range 150 ft.", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
         choices: []
       }
     },
@@ -1317,17 +1317,16 @@ window.XRRPG_CLASS_DEFS = {
         choices: []
       },
       2: {
-        auto: ["All Tier I and II bombs available. 9 bombs per day. Store up to 15. AOE 25 ft. Cannon range 70 ft."],
+        auto: ["All Tier I and II bombs available. 9 bombs per day. Store up to 15. AOE 25 ft. Cannon range 70 ft.", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
         choices: []
       },
       3: {
-        auto: ["All bombs available. 15 bombs per day. Store up to 20. AOE 50 ft. Cannon range 150 ft."],
+        auto: ["All bombs available. 15 bombs per day. Store up to 20. AOE 50 ft. Cannon range 150 ft.", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
         choices: []
       }
     },
-    resources: [
-      { id: "bombs_made_today", label: "Bombs made today", maxPerDay: 7, maxByLevel: { 1: 7, 2: 9, 3: 15 } }
-    ]
+    storageByLevel: { 1: 10, 2: 15, 3: 20 },
+    resources: []
   },
 
   "Gunslinger": {
@@ -1369,11 +1368,11 @@ window.XRRPG_CLASS_DEFS = {
         choices: []
       },
       2: {
-        auto: ["All Tier II guns and effects available. 2 effect slots per gun."],
+        auto: ["All Tier II guns and effects available. 2 effect slots per gun.", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
         choices: []
       },
       3: {
-        auto: ["All guns and effects available. 3 effect slots per gun. Max 3 Large guns on person."],
+        auto: ["All guns and effects available. 3 effect slots per gun. Max 3 Large guns on person.", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
         choices: []
       }
     },
