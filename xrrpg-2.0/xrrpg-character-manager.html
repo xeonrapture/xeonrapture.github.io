@@ -472,18 +472,20 @@
         const card = document.createElement('div');
         card.className = 'char-card';
         card.innerHTML = `
-          <div class="char-card-header">
-            <div class="char-card-name">${c.name}</div>
+          <div class="char-card-row">
+            <div class="char-card-info">
+              <div class="char-card-name">${c.name}</div>
+              <div class="char-card-sub">${classSummary}</div>
+              <div class="char-card-stats">
+                <span class="char-card-stat">Lvl ${s.level ?? 0}</span>
+                <span class="char-card-stat">Vig ${s.vigor || 0}</span>
+                <span class="char-card-stat">End ${s.endurance || 0}</span>
+                <span class="char-card-stat">Intu ${s.intuition || 0}</span>
+                <span class="char-card-stat">Wit ${s.wit || 0}</span>
+                <span class="char-card-stat">Credits ${s.credits || 0}</span>
+              </div>
+            </div>
             <div class="char-card-actions">${actionsSVG(c.id)}</div>
-          </div>
-          <div class="char-card-sub">${classSummary}</div>
-          <div class="char-card-stats">
-            <span class="char-card-stat">Lvl ${s.level ?? 0}</span>
-            <span class="char-card-stat">Vig ${s.vigor || 0}</span>
-            <span class="char-card-stat">End ${s.endurance || 0}</span>
-            <span class="char-card-stat">Intu ${s.intuition || 0}</span>
-            <span class="char-card-stat">Wit ${s.wit || 0}</span>
-            <span class="char-card-stat">Credits ${s.credits || 0}</span>
           </div>
         `;
         cards.appendChild(card);

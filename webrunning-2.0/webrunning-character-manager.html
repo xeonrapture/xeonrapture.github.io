@@ -257,20 +257,22 @@
         const card = document.createElement("div");
         card.className = "char-card";
         card.innerHTML = `
-          <div class="char-card-header">
-            <div class="char-card-name">${c.name}</div>
+          <div class="char-card-row">
+            <div class="char-card-info">
+              <div class="char-card-name">${c.name}</div>
+              <div class="char-card-stats">
+                <span class="char-card-stat">Lvl ${s(c,"level")}</span>
+                <span class="char-card-stat">HP ${s(c,"hp")}</span>
+                <span class="char-card-stat">XP ${s(c,"xp")}</span>
+                <span class="char-card-stat">Luck ${s(c,"luck")}</span>
+                <span class="char-card-stat">P ${s(c,"power")}</span>
+                <span class="char-card-stat">D ${s(c,"defense")}</span>
+                <span class="char-card-stat">S ${s(c,"speed")}</span>
+                <span class="char-card-stat">I ${s(c,"intelligence")}</span>
+                <span class="char-card-stat">Slots ${s(c,"inventory_slots")}</span>
+              </div>
+            </div>
             <div class="char-card-actions">${wrActionsSVG(c.id)}</div>
-          </div>
-          <div class="char-card-stats">
-            <span class="char-card-stat">Lvl ${s(c,"level")}</span>
-            <span class="char-card-stat">HP ${s(c,"hp")}</span>
-            <span class="char-card-stat">XP ${s(c,"xp")}</span>
-            <span class="char-card-stat">Luck ${s(c,"luck")}</span>
-            <span class="char-card-stat">P ${s(c,"power")}</span>
-            <span class="char-card-stat">D ${s(c,"defense")}</span>
-            <span class="char-card-stat">S ${s(c,"speed")}</span>
-            <span class="char-card-stat">I ${s(c,"intelligence")}</span>
-            <span class="char-card-stat">Slots ${s(c,"inventory_slots")}</span>
           </div>
         `;
         cards.appendChild(card);
