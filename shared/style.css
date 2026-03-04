@@ -510,6 +510,9 @@ label textarea {
   border-bottom: 1px solid var(--border, #333);
   text-align: left;
   font-size: 0.9rem;
+  /* Ok so here's the TABLE WRAPPING FIX maybe */
+  word-break: break-word;
+  white-space: normal;
 }
 
 .wr-scope .table-full th {
@@ -1898,10 +1901,10 @@ select,
     overflow-x: auto;
   }
 
-  .wr-scope .table-full th,
+  /* .wr-scope .table-full th,
   .wr-scope .table-full td {
     white-space: nowrap;
-  }
+  } */
 
   /* Character manager: hide table, show cards */
   .wr-scope .char-manager-table {
