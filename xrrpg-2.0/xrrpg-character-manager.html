@@ -15,7 +15,22 @@
       <button id="importCharacterBtn" aria-label="Import character" title="Import character JSON"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="M8 11l4 4 4-4"></path><path d="M4 20h16"></path></svg></button>
       <input id="importCharacterInput" type="file" accept="application/json,.json" class="hidden" />
     </div>
-    <table class="table-full">
+
+    <div class="char-sort-bar" id="charSortBar">
+      <span class="char-sort-label">Sort:</span>
+      <button type="button" class="table-sort" data-sort="name">Name</button>
+      <button type="button" class="table-sort" data-sort="level">Lvl</button>
+      <button type="button" class="table-sort" data-sort="class">Class</button>
+      <button type="button" class="table-sort" data-sort="credits">Credits</button>
+      <button type="button" class="table-sort" data-sort="vigor">Vig</button>
+      <button type="button" class="table-sort" data-sort="endurance">End</button>
+      <button type="button" class="table-sort" data-sort="intuition">Intu</button>
+      <button type="button" class="table-sort" data-sort="wit">Wit</button>
+    </div>
+
+    <div id="charCards" class="char-card-grid"></div>
+
+    <table class="table-full char-manager-table">
       <thead>
         <tr>
           <th><button type="button" class="table-sort" data-sort="name">Name</button></th>
@@ -387,34 +402,93 @@
       });
     }
 
+    function classPathText(c) {
+      const highest = {};
+      (c.class_progression || []).forEach(p => {
+        if (!highest[p.class] || p.tier > highest[p.class]) highest[p.class] = p.tier;
+      });
+      const entries = Object.entries(highest);
+      return entries.length ? entries.map(([cls, tier]) => `${cls} T${tier}`).join(', ') : '—';
+    }
+
+    function updateSortButtons() {
+      document.querySelectorAll('.table-sort').forEach(btn => {
+        const key = btn.dataset.sort;
+        let icon = btn.querySelector('.sort-icon');
+        if (!icon) {
+          icon = document.createElement('span');
+          icon.className = 'sort-icon';
+          icon.setAttribute('aria-hidden', 'true');
+          btn.appendChild(icon);
+        }
+        if (key === sortState.key) {
+          btn.setAttribute('data-dir', sortState.direction);
+          icon.textContent = sortState.direction === 'asc' ? '▲' : '▼';
+        } else {
+          btn.removeAttribute('data-dir');
+          icon.textContent = '';
+        }
+      });
+    }
+
+    const actionsSVG = (id) => `
+      <a class="action-btn" href="/xrrpg-2.0/xrrpg-character.html?id=${id}" title="Edit" aria-label="Edit"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 9-9-3-3-9 9-1 4z"></path><path d="M13 7l3 3"></path></svg></a>
+      <button class="action-btn" onclick="exportCharacter('${id}')" title="Export" aria-label="Export"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14V3"></path><path d="M8 7l4-4 4 4"></path><path d="M4 14v6h16v-6"></path></svg></button>
+      <button class="action-btn" onclick="deleteCharacter('${id}')" title="Delete" aria-label="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
+    `;
+
     function render() {
+      const cards = document.getElementById('charCards');
       if (!characters.length) {
         table.innerHTML = "<tr><td colspan='9'>No XRRPG characters yet.</td></tr>";
+        cards.innerHTML = '<p class="muted">No XRRPG characters yet.</p>';
+        updateSortButtons();
         return;
       }
       table.innerHTML = '';
+      cards.innerHTML = '';
       sortedCharacters().forEach(c => {
         const s = c.base_stats || {};
+        const classSummary = classPathText(c);
+
+        // Table row
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>${c.name}</td>
           <td>${s.level ?? 0}</td>
-          <td>${(() => { const highest = {}; (c.class_progression || []).forEach(p => { if (!highest[p.class] || p.tier > highest[p.class]) highest[p.class] = p.tier; }); const entries = Object.entries(highest); return entries.length ? entries.map(([cls, tier]) => `${cls} T${tier}`).join(', ') : '—'; })()}</td>
+          <td>${classSummary}</td>
           <td>${s.credits || 0}</td>
           <td>${s.vigor || 0}</td>
           <td>${s.endurance || 0}</td>
           <td>${s.intuition || 0}</td>
           <td>${s.wit || 0}</td>
           <td style="vertical-align:middle;">
-            <div class="actions">
-              <a class="action-btn" href="/xrrpg-2.0/xrrpg-character.html?id=${c.id}" title="Edit" aria-label="Edit"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 9-9-3-3-9 9-1 4z"></path><path d="M13 7l3 3"></path></svg></a>
-              <button class="action-btn" onclick="exportCharacter('${c.id}')" title="Export" aria-label="Export"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14V3"></path><path d="M8 7l4-4 4 4"></path><path d="M4 14v6h16v-6"></path></svg></button>
-              <button class="action-btn" onclick="deleteCharacter('${c.id}')" title="Delete" aria-label="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
-            </div>
+            <div class="actions">${actionsSVG(c.id)}</div>
           </td>
         `;
         table.appendChild(row);
+
+        // Card (mobile)
+        const card = document.createElement('div');
+        card.className = 'char-card';
+        card.innerHTML = `
+          <div class="char-card-header">
+            <div class="char-card-name">${c.name}</div>
+            <div class="char-card-actions">${actionsSVG(c.id)}</div>
+          </div>
+          <div class="char-card-sub">${classSummary}</div>
+          <div class="char-card-stats">
+            <span class="char-card-stat">Lvl ${s.level ?? 0}</span>
+            <span class="char-card-stat">Vig ${s.vigor || 0}</span>
+            <span class="char-card-stat">End ${s.endurance || 0}</span>
+            <span class="char-card-stat">Intu ${s.intuition || 0}</span>
+            <span class="char-card-stat">Wit ${s.wit || 0}</span>
+            <span class="char-card-stat">Credits ${s.credits || 0}</span>
+          </div>
+        `;
+        cards.appendChild(card);
       });
+      updateSortButtons();
     }
 
     async function loadCharacters() {
@@ -737,6 +811,7 @@
         render();
       };
     });
+    updateSortButtons();
 
     function buildChromaValue() {
       const chroma = chromaInput.value;

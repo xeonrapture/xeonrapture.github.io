@@ -2967,6 +2967,26 @@
       });
     }
 
+    function updateHistorySortButtons() {
+      document.querySelectorAll('.table-sort').forEach(btn => {
+        const key = btn.dataset.sort;
+        let icon = btn.querySelector('.sort-icon');
+        if (!icon) {
+          icon = document.createElement('span');
+          icon.className = 'sort-icon';
+          icon.setAttribute('aria-hidden', 'true');
+          btn.appendChild(icon);
+        }
+        if (key === historySort.key) {
+          btn.setAttribute('data-dir', historySort.direction);
+          icon.textContent = historySort.direction === 'asc' ? '▲' : '▼';
+        } else {
+          btn.removeAttribute('data-dir');
+          icon.textContent = '';
+        }
+      });
+    }
+
     document.querySelectorAll('.table-sort').forEach(button => {
       button.onclick = () => {
         const key = button.dataset.sort;
@@ -2976,8 +2996,10 @@
           historySort = { key, direction: 'asc' };
         }
         renderHistory();
+        updateHistorySortButtons();
       };
     });
+    updateHistorySortButtons();
 
 
     function focusSection(section) {

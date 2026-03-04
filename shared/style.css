@@ -516,6 +516,105 @@ label textarea {
   opacity: 0.8;
 }
 
+/* ── Table sort buttons ── */
+.wr-scope .table-sort {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  width: auto;
+}
+.wr-scope .table-sort:hover {
+  color: var(--accent);
+  background: rgba(122, 162, 255, 0.07);
+  box-shadow: none;
+}
+.wr-scope .table-sort .sort-icon {
+  font-size: 0.7em;
+  line-height: 1;
+  color: var(--muted);
+  transition: color 0.15s;
+  min-width: 0.75em;
+  display: inline-block;
+  text-align: center;
+}
+.wr-scope .table-sort[data-dir] .sort-icon {
+  color: var(--accent);
+}
+
+/* ── Character manager sort bar (mobile) ── */
+.wr-scope .char-sort-bar {
+  display: none;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.6rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.wr-scope .char-sort-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-right: 0.1rem;
+}
+
+/* ── Character cards (mobile) ── */
+.wr-scope .char-card-grid {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.wr-scope .char-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.85rem 0.95rem;
+}
+.wr-scope .char-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+.wr-scope .char-card-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  word-break: break-word;
+}
+.wr-scope .char-card-sub {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.45rem;
+}
+.wr-scope .char-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+.wr-scope .char-card-stat {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.8rem;
+}
+.wr-scope .char-card-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
 .wr-scope .actions {
   display: flex;
   gap: 0.25rem;
@@ -1804,6 +1903,28 @@ select,
     white-space: nowrap;
   }
 
+  /* Character manager: hide table, show cards */
+  .wr-scope .char-manager-table {
+    display: none !important;
+  }
+  .wr-scope .char-card-grid {
+    display: flex;
+  }
+  .wr-scope .char-sort-bar {
+    display: flex;
+  }
+  /* Sort buttons inside table-sort-bar: keep compact */
+  .wr-scope .char-sort-bar .table-sort {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.82rem;
+  }
+  .wr-scope .char-sort-bar .table-sort[data-dir] {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
   .wr-scope .xr-modal-card {
     width: calc(100% - 2rem);
     margin: 10vh auto;
@@ -1967,6 +2088,19 @@ select,
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 }
 
+/* Labels inside stat lines must stack text + input vertically so
+   the global width:100% on inputs at narrow widths doesn't overflow. */
+.wr-scope .xrrpg-stat-line label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.88rem;
+}
+.wr-scope .xrrpg-stat-line label input,
+.wr-scope .xrrpg-stat-line label select {
+  width: 100%;
+}
+
 .wr-scope .xrrpg-core-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -2010,6 +2144,25 @@ select,
   display: grid;
   gap: 0.7rem;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+/* Resource field labels stack text + input vertically */
+.wr-scope .xrrpg-resource-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.88rem;
+}
+.wr-scope .xrrpg-resource-fields label input,
+.wr-scope .xrrpg-resource-fields label select {
+  width: 100%;
+}
+
+/* sheet-actions labels also stack on any width to prevent inline overflow */
+.wr-scope .sheet-actions label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 .wr-scope .xrrpg-subtitle {
