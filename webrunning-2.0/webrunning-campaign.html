@@ -107,12 +107,13 @@
     }
 
     function statBlurb(char) {
-      const hp = char.hp ?? 0;
-      const power = char.power ?? 0;
-      const defense = char.defense ?? 0;
-      const speed = char.speed ?? 0;
-      const intel = char.intelligence ?? 0;
-      const luck = char.luck ?? 0;
+      const s = char.base_stats || {};
+      const hp = s.hp ?? 0;
+      const power = s.power ?? 0;
+      const defense = s.defense ?? 0;
+      const speed = s.speed ?? 0;
+      const intel = s.intelligence ?? 0;
+      const luck = s.luck ?? 0;
       return `HP ${hp} • Luck ${luck} • P ${power} | D ${defense} | S ${speed} | I ${intel}`;
     }
 
@@ -189,7 +190,7 @@
 
       const charIds = assignments.map(a => a.webrunning_character_id).filter(Boolean);
       const { data: chars = [] } = charIds.length
-        ? await sb.from("webrunning_characters").select("id, name, hp, luck, power, defense, speed, intelligence, essence").in("id", charIds)
+        ? await sb.from("webrunning_characters").select("id, name, base_stats").in("id", charIds)
         : { data: [] };
 
       const charById = Object.fromEntries(chars.map(c => [c.id, c]));

@@ -1282,7 +1282,9 @@ window.XRRPG_CLASS_DEFS = {
         choices: []
       }
     },
-    resources: []
+    resources: [
+      { id: "emitters_active", label: "Active Emitters", maxByLevel: { 1: 3, 2: 5, 3: 7 } }
+    ]
   },
 
   "Explosives Expert": {
