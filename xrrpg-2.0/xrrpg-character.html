@@ -15,6 +15,9 @@
           <span aria-hidden="true">←</span>
           <span>Back to XRRPG Character Manager</span>
         </a>
+        <button id="openHotkeysHelp" class="action-btn" type="button" aria-label="Show hotkeys" title="Show hotkeys">
+          <span>Hotkeys</span>
+        </button>
       </div>
       <h1>XRRPG Character Sheet</h1>
       <div id="ownershipNotice" class="mono muted hidden"></div>
@@ -221,11 +224,11 @@
       <div id="levelClassTrackSummary" class="muted"></div>
       <div id="levelUpChoices" class="xrrpg-notes-stack"></div>
       <p class="muted">Level-up reference: <a id="levelUpClassLink" href="#" target="_blank" rel="noopener noreferrer">Open class page</a></p>
+      <div id="levelMsg" class="mono muted"></div>
       <div class="xr-modal-actions">
         <button id="confirmLevelBtn" type="button">Apply</button>
         <button id="cancelLevelBtn" type="button">Cancel</button>
       </div>
-      <div id="levelMsg" class="mono muted"></div>
     </div>
   </div>
 
@@ -271,6 +274,47 @@
         <button id="cancelSkillModalBtn" type="button">Cancel</button>
       </div>
       <div id="skillModalMsg" class="mono muted"></div>
+    </div>
+  </div>
+
+  <div id="hotkeysModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Keyboard Hotkeys</h2>
+      <h3>Actions</h3>
+      <table>
+        <thead>
+          <tr><th>Action</th><th>Windows / Linux</th><th>Mac</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Save Character</td><td>Ctrl+S</td><td>Command+S</td></tr>
+          <tr><td>Collapse / Expand all sections</td><td>Ctrl+Alt+- / Ctrl+Alt++</td><td>Command+Option+- / Command+Option++</td></tr>
+          <tr><td>Show Hotkeys</td><td>Ctrl+Alt+/</td><td>Command+Option+/</td></tr>
+        </tbody>
+      </table>
+      <h3>Navigation</h3>
+      <table>
+        <thead>
+          <tr><th>Action</th><th>Windows / Linux</th><th>Mac</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Cycle sections ↑ / ↓</td><td>Ctrl+Alt+↑ / Ctrl+Alt+↓</td><td>Command+Option+↑ / Command+Option+↓</td></tr>
+          <tr><td>Go to top</td><td>Ctrl+Alt+T</td><td>Command+Option+T</td></tr>
+          <tr><td>Go to Character</td><td>Ctrl+Alt+C</td><td>Command+Option+C</td></tr>
+          <tr><td>Go to Core Stats</td><td>Ctrl+Alt+S</td><td>Command+Option+S</td></tr>
+          <tr><td>Go to Health</td><td>Ctrl+Alt+H</td><td>Command+Option+H</td></tr>
+          <tr><td>Go to Resources</td><td>Ctrl+Alt+R</td><td>Command+Option+R</td></tr>
+          <tr><td>Go to Skills</td><td>Ctrl+Alt+K</td><td>Command+Option+K</td></tr>
+          <tr><td>Go to Class Abilities</td><td>Ctrl+Alt+A</td><td>Command+Option+A</td></tr>
+          <tr><td>Go to Class Details</td><td>Ctrl+Alt+D</td><td>Command+Option+D</td></tr>
+          <tr><td>Go to Inventory</td><td>Ctrl+Alt+I</td><td>Command+Option+I</td></tr>
+          <tr><td>Go to Notes</td><td>Ctrl+Alt+N</td><td>Command+Option+N</td></tr>
+          <tr><td>Go to History</td><td>Ctrl+Alt+Y</td><td>Command+Option+Y</td></tr>
+        </tbody>
+      </table>
+      <div class="modal-actions">
+        <button id="closeHotkeysHelp" type="button" aria-label="Close hotkeys" title="Close hotkeys"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg><span>Close</span></button>
+      </div>
     </div>
   </div>
 
@@ -670,7 +714,7 @@
       const select = document.getElementById('levelClassSelect');
       Array.from(select.options).forEach(option => {
         const required = classChromaRequirement(option.value);
-        const chromaInvalid = !!required && chroma !== required;
+        const chromaInvalid = !!required && !chromaAllowsClass(chroma, required);
         const def = getClassDef(option.value);
         const classLevel = getClassLevel(option.value);
         const atMaxLevel = def?.maxLevel && classLevel >= def.maxLevel;
@@ -2320,6 +2364,7 @@
 
     function renderCharacter() {
       isRendering = true;
+      document.title = (character.name || 'Character') + ' — XRRPG Character Sheet';
       const s = character.base_stats || {};
       const notes = parseNotes();
       document.getElementById('nameInput').value = character.name || '';
@@ -2548,28 +2593,17 @@
       const before = readStatsFromInputs();
       const rule = levelRule(level);
 
-      // Validate stat upgrade if required
+      // Note on missing choices (non-blocking — level always goes up on confirm)
+      const missingNotes = [];
       if (rule.stat_points > 0 && !choiceValues.stat_upgrade) {
-        document.getElementById('levelMsg').textContent = 'Please select a stat to upgrade before applying.';
-        return;
+        missingNotes.push('no stat selected');
       }
-
-      if (rule.skill_mode === 'skill_plus2') {
-        const hasNew = !!choiceValues.skill_new_name?.trim();
-        const hasBoost = !!choiceValues.skill_boost?.trim();
-        if (!hasNew && !hasBoost) {
-          document.getElementById('levelMsg').textContent = 'This level requires adding or boosting a skill (+2).';
-          return;
-        }
+      if ((rule.skill_mode === 'skill_plus2' || rule.skill_mode === 'add_or_plus1') &&
+          !choiceValues.skill_new_name?.trim() && !choiceValues.skill_boost?.trim()) {
+        missingNotes.push('no skill selected');
       }
-
-      if (rule.skill_mode === 'add_or_plus1') {
-        const hasNew = !!choiceValues.skill_new_name?.trim();
-        const hasBoost = !!choiceValues.skill_boost?.trim();
-        if (!hasNew && !hasBoost) {
-          document.getElementById('levelMsg').textContent = 'Choose a new skill or select a skill to boost by +1.';
-          return;
-        }
+      if (missingNotes.length) {
+        document.getElementById('levelMsg').textContent = `Leveling up without: ${missingNotes.join(', ')}.`;
       }
 
       const base_stats = {
@@ -2963,13 +2997,92 @@
       y: document.getElementById('historySection')
     };
 
+    const hotkeysModal = document.getElementById('hotkeysModal');
+    const hotkeysBackdrop = hotkeysModal?.querySelector('.xr-modal-backdrop');
+    const closeHotkeysHelp = document.getElementById('closeHotkeysHelp');
+    const openHotkeysHelpBtn = document.getElementById('openHotkeysHelp');
+
+    function openHotkeysModal() { hotkeysModal?.classList.remove('hidden'); }
+    function closeHotkeysModal() { hotkeysModal?.classList.add('hidden'); }
+
+    openHotkeysHelpBtn?.addEventListener('click', openHotkeysModal);
+    closeHotkeysHelp?.addEventListener('click', closeHotkeysModal);
+    hotkeysBackdrop?.addEventListener('click', closeHotkeysModal);
+
+    const sectionList = Object.values(sectionHotkeys).filter(Boolean);
+
     document.addEventListener('keydown', (event) => {
-      if (isTypingTarget(event.target)) return;
-      if (!hasAccel(event) || !event.altKey) return;
-      const key = event.key.toLowerCase();
-      if (Object.prototype.hasOwnProperty.call(sectionHotkeys, key)) {
+      const accel = hasAccel(event);
+
+      // Escape: close any open modals
+      if (event.key === 'Escape') {
+        closeHotkeysModal();
+        return;
+      }
+
+      // Ctrl+S: save character
+      if (accel && !event.altKey && event.key === 's') {
         event.preventDefault();
-        focusSection(sectionHotkeys[key]);
+        persistCharacterDraft();
+        return;
+      }
+
+      if (!accel || !event.altKey) return;
+
+      const key = event.key;
+      const lkey = key.toLowerCase();
+
+      // Ctrl+Alt+/: show hotkeys
+      if (key === '/') {
+        event.preventDefault();
+        openHotkeysModal();
+        return;
+      }
+
+      // Ctrl+Alt+T: scroll to top
+      if (lkey === 't') {
+        event.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // Ctrl+Alt+- / Ctrl+Alt++: collapse/expand all
+      if (key === '-') {
+        event.preventDefault();
+        document.querySelectorAll('[data-collapsible]:not(.collapsed)').forEach(s => {
+          s.classList.add('collapsed');
+          updateCollapsibleButton(s);
+        });
+        return;
+      }
+      if (key === '+' || key === '=') {
+        event.preventDefault();
+        document.querySelectorAll('[data-collapsible].collapsed').forEach(s => {
+          s.classList.remove('collapsed');
+          updateCollapsibleButton(s);
+        });
+        return;
+      }
+
+      // Ctrl+Alt+↑ / ↓: cycle sections
+      if (key === 'ArrowUp' || key === 'ArrowDown') {
+        event.preventDefault();
+        const visible = sectionList.filter(s => s && !s.classList.contains('hidden'));
+        if (!visible.length) return;
+        const focused = document.activeElement?.closest('[data-collapsible]');
+        const idx = focused ? visible.indexOf(focused) : -1;
+        const next = key === 'ArrowDown'
+          ? visible[(idx + 1) % visible.length]
+          : visible[(idx - 1 + visible.length) % visible.length];
+        focusSection(next);
+        return;
+      }
+
+      // Ctrl+Alt+[letter]: navigate to section
+      if (isTypingTarget(event.target)) return;
+      if (Object.prototype.hasOwnProperty.call(sectionHotkeys, lkey)) {
+        event.preventDefault();
+        focusSection(sectionHotkeys[lkey]);
       }
     });
 

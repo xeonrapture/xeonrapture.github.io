@@ -49,7 +49,7 @@
   <main class="wrap">
     <header>
       <div style="display:flex; align-items:center; gap:0.5rem; justify-content:space-between; flex-wrap:wrap;">
-        <a class="action-btn" href="/xrrpg-2.0/xrrpg-campaigns.html" aria-label="Back to campaigns">
+        <a class="action-btn" href="/webrunning-2.0/webrunning-character-manager.html" aria-label="Back to Webrunning characters">
           <span aria-hidden="true">←</span>
           <span>Back to Campaigns</span>
         </a>
@@ -237,8 +237,10 @@
     }
 
     async function loadPlayerCharacterOptions() {
-      const [{ data: chars }, { data: assignment }] = await Promise.all([
-        sb.from("webrunning_characters").select("id, name, level").eq("user_id", currentUser.id).order("created_at", { ascending: true }),
+      const status = document.getElementById("playerStatus");
+
+      const [charsResult, assignmentResult] = await Promise.all([
+        sb.from("webrunning_characters").select("id, name, level").eq("user_id", currentUser.id),
         sb.from("campaign_character_assignments")
           .select("webrunning_character_id")
           .eq("campaign_id", campaignId)
@@ -247,7 +249,12 @@
           .maybeSingle()
       ]);
 
-      playerCharacters = chars || [];
+      if (charsResult.error) {
+        status.textContent = `Error loading characters: ${charsResult.error.message}`;
+        return;
+      }
+
+      playerCharacters = charsResult.data || [];
       const sel = document.getElementById("playerCharacterSelect");
       sel.innerHTML = '<option value="">-- No character selected --</option>';
       playerCharacters.forEach(c => {
@@ -256,13 +263,12 @@
         opt.textContent = `${c.name || 'Unnamed'} (Lv ${c.level ?? 0})`;
         sel.appendChild(opt);
       });
-      sel.value = assignment?.webrunning_character_id || "";
+      sel.value = assignmentResult.data?.webrunning_character_id || "";
 
-      const status = document.getElementById("playerStatus");
       if (!playerCharacters.length) {
-        status.textContent = "You have no Webrunning characters yet.";
+        status.textContent = "You have no Webrunning characters yet. Create one in the Character Manager first.";
       } else {
-        status.textContent = assignment?.webrunning_character_id ? "Your current campaign character is selected below." : "No campaign character selected yet.";
+        status.textContent = assignmentResult.data?.webrunning_character_id ? "Your current campaign character is selected below." : "No campaign character selected yet.";
       }
     }
 

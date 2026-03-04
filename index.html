@@ -5,97 +5,183 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Xeon Rapture Tools</title>
   <link rel="stylesheet" href="/shared/style.css">
+  <style>
+    .home-hero {
+      text-align: center;
+      padding: 2.5rem 1rem 1.5rem;
+    }
+    .home-hero h1 {
+      margin: 0 0 0.5rem;
+      font-size: 2.4rem;
+    }
+    .home-hero p {
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto 1.5rem;
+    }
+    .home-hero .hero-links {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .home-section {
+      margin-top: 2rem;
+    }
+    .home-section h2 {
+      margin: 0 0 1rem;
+      font-size: 1.2rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+    }
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 0.85rem;
+    }
+    .tool-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      background: var(--panel);
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+    .tool-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(122, 162, 255, 0.12);
+      color: var(--text);
+    }
+    .tool-card:visited { color: var(--text); }
+    .tool-card-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--accent);
+    }
+    .tool-card-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .ext-links {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .ext-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: border-color 0.18s;
+    }
+    .ext-link:hover { border-color: var(--accent); color: var(--accent); }
+    .ext-link:visited { color: var(--accent); }
+  </style>
 </head>
 
 <body class="wr-scope">
   <div id="nav"></div>
 
-  <main>
-    <h1>Xeon Rapture Tools</h1>
-    <p>Welcome in! This page is for various tools and utilities relating to the Xeon Rapture Universe, a work of sci-fantasy collaborative storytelling.</p>
+  <main class="wrap">
+    <div class="home-hero">
+      <h1>Xeon Rapture Tools</h1>
+      <p>Character sheets, gear generators, dice rollers, and campaign tools for the Xeon Rapture universe.</p>
+      <div class="hero-links">
+        <a class="action-btn" href="/xrrpg-2.0/xrrpg-character-manager.html">XRRPG Characters</a>
+        <a class="action-btn" href="/webrunning-2.0/webrunning-character-manager.html">Webrunning Characters</a>
+        <a class="action-btn" href="/xrrpg-2.0/xrrpg-campaigns.html">Campaigns</a>
+      </div>
+    </div>
 
-    <h2>All Tools</h2>
-    <div id="tools-list">Loading…</div>
+    <div class="home-section">
+      <h2>XRRPG 2.0</h2>
+      <div class="tool-grid">
+        <a class="tool-card" href="/xrrpg-2.0/xrrpg-character-manager.html">
+          <span class="tool-card-title">Character Manager</span>
+          <span class="tool-card-desc">Create, view, and manage your XRRPG characters.</span>
+        </a>
+        <a class="tool-card" href="/xrrpg-2.0/xrrpg-campaigns.html">
+          <span class="tool-card-title">Campaigns</span>
+          <span class="tool-card-desc">Browse and manage XRRPG campaigns as a GM or player.</span>
+        </a>
+      </div>
+    </div>
 
-    <h2>The Main Site</h2>
-    <ul class="tools-list">
-      <li><a href="https://publish.obsidian.md/xeonrapture/xr/Xeon+Rapture">Xeon Rapture Home Page</a></li>
-      <li><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules">XRRPG Rules</a></li>
-      <li><a href="https://forms.gle/Ptyf1a82r9AZLhgR7">Give Feedback/Report Bugs</a></li>
-    </ul>
+    <div class="home-section">
+      <h2>Webrunning 2.0</h2>
+      <div class="tool-grid">
+        <a class="tool-card" href="/webrunning-2.0/webrunning-character-manager.html">
+          <span class="tool-card-title">Character Manager</span>
+          <span class="tool-card-desc">Create, view, and manage your Webrunning characters.</span>
+        </a>
+        <a class="tool-card" href="/webrunning-2.0/webrunning-gear-generator.html">
+          <span class="tool-card-title">Gear Generator</span>
+          <span class="tool-card-desc">Generate randomized gear for Webrunning sessions.</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="home-section">
+      <h2>Utility Tools</h2>
+      <div class="tool-grid">
+        <a class="tool-card" href="/xr-tools/dice-roller.html">
+          <span class="tool-card-title">Dice Roller</span>
+          <span class="tool-card-desc">Roll any dice combination for your sessions.</span>
+        </a>
+        <a class="tool-card" href="/xr-tools/coord-calculator.html">
+          <span class="tool-card-title">Distance Calculator</span>
+          <span class="tool-card-desc">Calculate distances between Xeon Rapture system coordinates.</span>
+        </a>
+        <a class="tool-card" href="/xr-tools/date-calculator.html">
+          <span class="tool-card-title">Date Calculator</span>
+          <span class="tool-card-desc">Work with dates in the Xeon Rapture calendar system.</span>
+        </a>
+        <a class="tool-card" href="/xr-tools/xr-clock.html">
+          <span class="tool-card-title">XR Clock</span>
+          <span class="tool-card-desc">Track in-universe time during your sessions.</span>
+        </a>
+        <a class="tool-card" href="/xr-tools/xenic-plane-belief-roller.html">
+          <span class="tool-card-title">Xenic Plane Belief Roller</span>
+          <span class="tool-card-desc">Roll for belief outcomes on the Xenic Plane.</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="home-section">
+      <h2>The Main Site</h2>
+      <div class="ext-links">
+        <a class="ext-link" href="https://xeonrapture.com/xr/Xeon+Rapture" target="_blank" rel="noopener noreferrer">
+          <span>Xeon Rapture Home</span>
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+        <a class="ext-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules" target="_blank" rel="noopener noreferrer">
+          <span>XRRPG Rules</span>
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+        <a class="ext-link" href="https://forms.gle/Ptyf1a82r9AZLhgR7" target="_blank" rel="noopener noreferrer">
+          <span>Feedback / Bug Report</span>
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/shared/auth.js"></script>
   <script src="/shared/nav.js"></script>
-
-    <script>
-  (async () => {
-    const listHost = document.getElementById("tools-list");
-
-    try {   
-      const res = await fetch("/shared/nav.html");
-      const html = await res.text();   
-
-      // 4) Build grouped appendix from the same nav HTML
-      const temp = document.createElement("div");
-      temp.innerHTML = html;
-
-      const groups = temp.querySelectorAll(".xr-nav-group");
-
-      listHost.innerHTML = ""; // clear "Loading…"
-
-      // If you *don't* have groups yet, fall back to flat list
-      if (!groups.length) {
-        const ul = document.createElement("ul");
-        ul.className = "tools-list";
-
-        const links = temp.querySelectorAll("a");
-        for (const a of links) {
-          if (a.classList.contains("xr-brand")) continue;
-          const li = document.createElement("li");
-          const link = document.createElement("a");
-          link.href = a.href;
-          link.textContent = a.textContent;
-          li.appendChild(link);
-          ul.appendChild(li);
-        }
-
-        listHost.appendChild(ul);
-        return;
-      }
-
-      // Grouped mode
-      for (const g of groups) {
-        const title = g.querySelector(".xr-nav-title")?.textContent?.trim() || "Links";
-
-        const h = document.createElement("h3");
-        h.textContent = title;
-        listHost.appendChild(h);
-
-        const ul = document.createElement("ul");
-        ul.className = "tools-list";
-
-        const links = g.querySelectorAll("a");
-        for (const a of links) {
-          if (a.classList.contains("xr-brand")) continue;
-
-          const li = document.createElement("li");
-          const link = document.createElement("a");
-          link.href = a.href;
-          link.textContent = a.textContent;
-          li.appendChild(link);
-          ul.appendChild(li);
-        }
-
-        listHost.appendChild(ul);
-      }
-
-    } catch (e) {
-      console.error(e);
-      listHost.innerHTML = "<p>Failed to load tools list.</p>";
-    }
-  })();
-  </script>
 </body>
 </html>

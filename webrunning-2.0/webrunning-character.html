@@ -5888,6 +5888,9 @@
         gearHistory = editHistory.filter(item => ["delete", "modify"].includes(item.type));
 
         elements.nameInput.value = activeCharacter.name || "";
+        if (activeCharacter.name) {
+          document.title = activeCharacter.name + " — Webrunning Character Sheet";
+        }
         if (elements.notesInput) {
           elements.notesInput.value = activeCharacter.notes || "";
         }

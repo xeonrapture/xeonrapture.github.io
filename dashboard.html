@@ -4,74 +4,193 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>XR Profile</title>
-
   <link rel="stylesheet" href="/shared/style.css">
+  <style>
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .profile-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #0b0d12;
+      flex-shrink: 0;
+    }
+    .profile-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .profile-username {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .profile-email {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+    .dash-section {
+      margin-top: 1.5rem;
+    }
+    .dash-section h2 {
+      margin: 0 0 0.85rem;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.35rem;
+    }
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+    .dash-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      padding: 0.9rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+    .dash-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(122, 162, 255, 0.1);
+      color: var(--text);
+    }
+    .dash-card:visited { color: var(--text); }
+    .dash-card-title {
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .dash-card-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .profile-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+  </style>
 </head>
 
 <body class="wr-scope">
-  <!-- NAV -->
   <div id="nav"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/shared/auth.js"></script>
   <script src="/shared/nav.js"></script>
 
-  <!-- CONTENT -->
   <main class="wrap">
     <h1>Profile</h1>
-    <div class="card">
-      <div id="userInfo" class="mono muted">Loading user…</div>
 
-      <div class="wr-mt-1">
-        <button id="logoutBtn" aria-label="Log out" title="Log out"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h10v16H4z"></path><path d="M14 12h6"></path><path d="M18 9l3 3-3 3"></path></svg><span>Log out</span></button>
+    <div class="card">
+      <div class="profile-header">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <div class="profile-info">
+          <div class="profile-username">
+            <span id="usernameValue">(loading…)</span>
+            <button id="editUsernameBtn" type="button" aria-label="Edit username" title="Edit username" style="padding:0.25rem 0.5rem;">
+              <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 9-9-3-3-9 9-1 4z"></path><path d="M13 7l3 3"></path></svg>
+              <span>Edit</span>
+            </button>
+          </div>
+          <div class="profile-email" id="profileEmail"></div>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button id="logoutBtn" aria-label="Log out" title="Log out">
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h10v16H4z"></path><path d="M14 12h6"></path><path d="M18 9l3 3-3 3"></path></svg>
+          <span>Log out</span>
+        </button>
       </div>
     </div>
 
-    <div class="card wr-mt-1">
-      <h2>Next steps</h2>
-      <ul class="muted">
-        <li><a href="/webrunning-2.0/webrunning-character-manager.html">Webrunning Character Manager</a></li>
-        <li><a href="/xrrpg-2.0/xrrpg-character-manager.html">XRRPG Character Manager</a></li>
-        <li><a href="/xrrpg-2.0/xrrpg-campaigns.html">Campaign Manager</a></li>
-        <li><a href="/friends.html">Friends</a></li>
-        <li><a href="/notifications.html">Notifications</a></li>
-      </ul>
+    <div class="dash-section">
+      <h2>Characters</h2>
+      <div class="dash-grid">
+        <a class="dash-card" href="/xrrpg-2.0/xrrpg-character-manager.html">
+          <span class="dash-card-title">XRRPG Characters</span>
+          <span class="dash-card-desc">Manage your XRRPG 2.0 character sheets.</span>
+        </a>
+        <a class="dash-card" href="/webrunning-2.0/webrunning-character-manager.html">
+          <span class="dash-card-title">Webrunning Characters</span>
+          <span class="dash-card-desc">Manage your Webrunning 2.0 character sheets.</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <h2>Campaigns</h2>
+      <div class="dash-grid">
+        <a class="dash-card" href="/xrrpg-2.0/xrrpg-campaigns.html">
+          <span class="dash-card-title">XRRPG Campaigns</span>
+          <span class="dash-card-desc">View and manage XRRPG campaigns.</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <h2>Social</h2>
+      <div class="dash-grid">
+        <a class="dash-card" href="/friends.html">
+          <span class="dash-card-title">Friends</span>
+          <span class="dash-card-desc">View your friends list and send friend requests.</span>
+        </a>
+        <a class="dash-card" href="/notifications.html">
+          <span class="dash-card-title">Notifications</span>
+          <span class="dash-card-desc">Check your pending invites and notifications.</span>
+        </a>
+      </div>
     </div>
   </main>
 
   <div id="usernameModal" class="xr-modal hidden">
     <div class="xr-modal-backdrop"></div>
-
     <div class="xr-modal-card">
       <h2>Change username</h2>
-
-      <input
-        id="newUsername"
-        type="text"
-        maxlength="24"
-        placeholder="New username"
-        autocomplete="off"
-      />
-
+      <input id="newUsername" type="text" maxlength="24" placeholder="New username" autocomplete="off" />
       <div class="xr-modal-actions">
-        <button id="saveUsernameBtn" aria-label="Save username" title="Save username"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5z"></path><path d="M8 4v6h8V4"></path><path d="M8 16h8"></path></svg></button>
-        <button id="cancelUsernameBtn" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+        <button id="saveUsernameBtn" aria-label="Save username" title="Save username">
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5z"></path><path d="M8 4v6h8V4"></path><path d="M8 16h8"></path></svg>
+          <span>Save</span>
+        </button>
+        <button id="cancelUsernameBtn" aria-label="Cancel" title="Cancel">
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg>
+          <span>Cancel</span>
+        </button>
       </div>
-
       <div id="usernameModalMsg" class="mono muted">&nbsp;</div>
     </div>
   </div>
 
-  <!-- AUTH LOGIC -->
   <script>
   const sb = window.supabaseClient;
 
-  const userInfo = document.getElementById("userInfo");
   const logoutBtn = document.getElementById("logoutBtn");
 
   async function initDashboard() {
     const { data, error } = await sb.auth.getSession();
-
     if (error || !data.session) {
       window.location.href = "/login.html";
       return;
@@ -79,47 +198,34 @@
 
     const user = data.session.user;
 
-    // fetch profile
     const { data: profile, error: profileError } = await sb
       .from("profiles")
       .select("username")
       .eq("id", user.id)
       .single();
 
-    if (profileError) {
-      console.error(profileError);
-    }
+    if (profileError) console.error(profileError);
 
     currentUser = user;
     currentProfile = profile;
 
-
     const username = profile?.username ?? "(no username)";
-    const displayName =
-      user.user_metadata?.name ||
-      user.user_metadata?.full_name ||
-      "(no display name)";
+    document.getElementById("usernameValue").textContent = username;
+    document.getElementById("profileEmail").textContent = user.email;
 
-    userInfo.innerHTML = `
-      <div class="wr-inline-flex">
-        <span>Username: <strong id="usernameValue">${username}</strong></span>
-        <button id="editUsernameBtn" type="button" aria-label="Edit username" title="Edit username"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 9-9-3-3-9 9-1 4z"></path><path d="M13 7l3 3"></path></svg><span>Edit</span></button>
-      </div>
-      <div class="wr-mt-0-5">Email: ${user.email}</div>
-      <div>Name: ${displayName}</div>
-    `;
+    // Avatar initials
+    const initials = username !== "(no username)"
+      ? username.slice(0, 2).toUpperCase()
+      : (user.email?.[0] || "?").toUpperCase();
+    document.getElementById("profileAvatar").textContent = initials;
 
-    const editBtn = document.getElementById("editUsernameBtn");
-    editBtn.onclick = () => showModal(true);
-
+    document.getElementById("editUsernameBtn").onclick = () => showModal(true);
   }
 
   initDashboard();
 
   sb.auth.onAuthStateChange((_event, session) => {
-    if (!session) {
-      window.location.href = "/login.html";
-    }
+    if (!session) window.location.href = "/login.html";
   });
 
   logoutBtn.onclick = async () => {
@@ -127,7 +233,6 @@
     window.location.href = "/login.html";
   };
 
-  
   const modal = document.getElementById("usernameModal");
   const saveBtn = document.getElementById("saveUsernameBtn");
   const cancelBtn = document.getElementById("cancelUsernameBtn");
@@ -148,65 +253,28 @@
     modalMsg.style.color = error ? "red" : "inherit";
   }
 
-
-
-
-  // Close modal
   cancelBtn.onclick = () => showModal(false);
   modal.querySelector(".xr-modal-backdrop").onclick = () => showModal(false);
 
-  // Save username
   saveBtn.onclick = async () => {
     const username = input.value.trim();
-
-    if (!username) {
-      showModalMsg("Username cannot be empty.", true);
-      return;
-    }
-
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      showModalMsg("Only letters, numbers, and underscores allowed.", true);
-      return;
-    }
-
+    if (!username) { showModalMsg("Username cannot be empty.", true); return; }
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) { showModalMsg("Only letters, numbers, and underscores allowed.", true); return; }
     showModalMsg("Checking availability…");
 
     const { data: existing } = await sb
-      .from("profiles")
-      .select("id")
-      .eq("username", username)
-      .neq("id", currentUser.id)
-      .maybeSingle();
-
-    if (existing) {
-      showModalMsg("That username is already taken.", true);
-      return;
-    }
+      .from("profiles").select("id").eq("username", username).neq("id", currentUser.id).maybeSingle();
+    if (existing) { showModalMsg("That username is already taken.", true); return; }
 
     showModalMsg("Saving…");
+    const { error } = await sb.from("profiles").update({ username }).eq("id", currentUser.id);
+    if (error) { showModalMsg(error.message, true); return; }
 
-    const { error } = await sb
-      .from("profiles")
-      .update({ username })
-      .eq("id", currentUser.id);
-
-    if (error) {
-      showModalMsg(error.message, true);
-      return;
-    }
-
-    // Update local state + UI
     currentProfile.username = username;
     document.getElementById("usernameValue").textContent = username;
-
-
+    document.getElementById("profileAvatar").textContent = username.slice(0, 2).toUpperCase();
     showModal(false);
   };
-
-</script>
-
-
-
-
+  </script>
 </body>
 </html>
