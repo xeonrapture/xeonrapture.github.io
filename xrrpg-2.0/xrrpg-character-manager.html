@@ -37,7 +37,7 @@
     <div class="xr-modal-backdrop"></div>
     <div class="xr-modal-card">
       <h2>Create XRRPG Character</h2>
-      <p id="wizardStepLabel" class="muted">Step 1 / 3</p>
+      <p id="wizardStepLabel" class="muted">Step 1 / 2</p>
 
       <div data-step="1" class="wizard-step xrrpg-form-grid">
         <label>Name <input id="nameInput" maxlength="48" /></label>
@@ -71,19 +71,10 @@
           <label id="thirdBonusStatWrap" class="hidden">Third +1 stat <select id="thirdBonusStat"></select></label>
           <label id="penaltyStatWrap">Penalty stat (−1) <select id="penaltyStat"></select></label>
         </div>
+        <p class="muted" style="margin-top:0.75rem;">Your first class will be chosen when you level up to Level 1.</p>
       </div>
 
-      <div data-step="3" class="wizard-step xrrpg-form-grid hidden">
-        <label>Starting class <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Classes" target="_blank" rel="noopener noreferrer">rules</a>
-          <select id="classInput"></select>
-        </label>
-        <div id="classIntro" class="muted"></div>
-      </div>
-
-      <div data-step="4" class="wizard-step hidden">
-        <p class="muted" style="margin-bottom:0.75rem;">Starting class choices:</p>
-        <div id="wizardLevelChoices"></div>
-      </div>
+      <!-- class and class-choices steps removed; class is picked at first level-up -->
 
       <div class="xr-modal-actions">
         <button id="prevStepBtn" type="button">Back</button>
@@ -568,12 +559,16 @@
           result[bonusStat.value] += 1;
         }
       }
+      // Cap stats at 5
+      for (const s of ['vigor', 'endurance', 'intuition', 'wit']) {
+        result[s] = Math.min(5, Math.max(-5, result[s]));
+      }
       const max_hp = 10 + result.vigor + (2 * result.endurance);
-      // Characters start at level 1; level 1 stamina base is 12
-      const stamina_total = 12 + result.intuition + result.wit;
+      // Characters start at level 0; level 0 stamina base is 10
+      const stamina_total = 10 + result.intuition + result.wit;
       return {
         ...result,
-        level: 1,
+        level: 0,
         hp: max_hp,
         current_hp: max_hp,
         mastery_die: 'd4',
@@ -720,22 +715,18 @@
     }
 
     let wizardStep = 1;
-    const WIZARD_MAX_STEPS = 4;
+    const WIZARD_MAX_STEPS = 2;
     const modal = document.getElementById('charModal');
     const wizardStepLabel = document.getElementById('wizardStepLabel');
     function setStep(step) {
-      const needsStep4 = classNeedsStep4(classInput.value);
-      const effectiveMax = needsStep4 ? WIZARD_MAX_STEPS : 3;
-      wizardStep = Math.max(1, Math.min(effectiveMax, step));
-      wizardStepLabel.textContent = `Step ${wizardStep} / ${effectiveMax}`;
+      wizardStep = Math.max(1, Math.min(WIZARD_MAX_STEPS, step));
+      wizardStepLabel.textContent = `Step ${wizardStep} / ${WIZARD_MAX_STEPS}`;
       document.querySelectorAll('.wizard-step').forEach(el => {
         el.classList.toggle('hidden', Number(el.dataset.step) !== wizardStep);
       });
       document.getElementById('prevStepBtn').classList.toggle('hidden', wizardStep === 1);
-      document.getElementById('nextStepBtn').classList.toggle('hidden', wizardStep === effectiveMax);
-      document.getElementById('saveBtn').classList.toggle('hidden', wizardStep !== effectiveMax);
-      if (wizardStep === 3) renderStartingClassDetails();
-      if (wizardStep === 4) renderWizardLevelChoices(classInput.value);
+      document.getElementById('nextStepBtn').classList.toggle('hidden', wizardStep === WIZARD_MAX_STEPS);
+      document.getElementById('saveBtn').classList.toggle('hidden', wizardStep !== WIZARD_MAX_STEPS);
     }
 
     document.getElementById('newCharacterBtn').onclick = () => { modal.classList.remove('hidden'); setStep(1); };
@@ -772,24 +763,25 @@
       };
     });
 
+    function buildChromaValue() {
+      const chroma = chromaInput.value;
+      if (chroma === 'Mixed' && mixedChromaInput.value && mixedChromaInputTwo.value) {
+        return `Mixed (${mixedChromaInput.value}/${mixedChromaInputTwo.value})`;
+      }
+      return chroma;
+    }
+
     document.getElementById('saveBtn').onclick = async () => {
       const name = document.getElementById('nameInput').value.trim();
       const species = document.getElementById('speciesInput').value.trim();
-      const chroma = document.getElementById('chromaInput').value;
-      const cls = classInput.value;
       const msg = document.getElementById('modalMsg');
       msg.textContent = '';
       if (!name) { msg.textContent = 'Name required.'; return; }
       try {
         const validation = validateStatSelections();
         if (!validation.valid) { msg.textContent = validation.message; return; }
-        const classChromaValidation = validateClassChromaRequirement(cls, chroma);
-        if (!classChromaValidation.valid) { msg.textContent = classChromaValidation.message; return; }
         currentUser = currentUser || await requireUser();
         const base_stats = buildStatsFromWizard();
-        const class_progression = [{ class: cls, tier: 1, level_acquired: 1 }];
-        const rawWizardChoices = readWizardLevelChoices();
-        const l1Choices = wizardChoicesToClassChoices(cls, rawWizardChoices);
 
         const { data, error } = await sb.from('xrrpg_characters').insert({
           user_id: currentUser.id,
@@ -797,10 +789,10 @@
           base_stats: {
             ...base_stats,
             species,
-            chroma,
-            class_ability_choices: Object.keys(l1Choices).length ? { [cls]: l1Choices } : {}
+            chroma: buildChromaValue(),
+            class_ability_choices: {}
           },
-          class_progression,
+          class_progression: [],
           skills: []
         }).select('id').single();
         if (error) throw error;

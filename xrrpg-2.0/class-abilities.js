@@ -573,6 +573,7 @@ window.XRRPG_CLASS_DEFS = {
     stat: "Wit or Endurance",
     archetype: "Magicians",
     chromaRequired: null,
+    maxLevel: 3,
     potionPool: [
       { id: "basic_damage", name: "Basic Damage", minLevel: 1, unlimited: true, description: "Deals 2 dmg to one target." },
       { id: "basic_buff", name: "Basic Buff", minLevel: 1, unlimited: true, description: "Gives target +1d MD on next Action." },

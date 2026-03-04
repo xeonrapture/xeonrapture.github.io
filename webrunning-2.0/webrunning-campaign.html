@@ -240,7 +240,7 @@
       const status = document.getElementById("playerStatus");
 
       const [charsResult, assignmentResult] = await Promise.all([
-        sb.from("webrunning_characters").select("id, name, level").eq("user_id", currentUser.id),
+        sb.from("webrunning_characters").select("id, name").eq("user_id", currentUser.id),
         sb.from("campaign_character_assignments")
           .select("webrunning_character_id")
           .eq("campaign_id", campaignId)
@@ -260,7 +260,7 @@
       playerCharacters.forEach(c => {
         const opt = document.createElement("option");
         opt.value = c.id;
-        opt.textContent = `${c.name || 'Unnamed'} (Lv ${c.level ?? 0})`;
+        opt.textContent = c.name || 'Unnamed';
         sel.appendChild(opt);
       });
       sel.value = assignmentResult.data?.webrunning_character_id || "";

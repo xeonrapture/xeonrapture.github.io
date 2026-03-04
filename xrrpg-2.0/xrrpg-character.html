@@ -31,7 +31,7 @@
         <div class="sheet-actions">
           <label>Name <input id="nameInput" maxlength="48" /></label>
           <label>Species <input id="speciesInput" maxlength="48" /></label>
-          <label>Chroma <input id="chromaInput" maxlength="16" /></label>
+          <label>Chroma <input id="chromaInput" maxlength="24" /></label>
         </div>
       </div>
     </section>
@@ -61,10 +61,10 @@
       <div class="xrrpg-core-stats-card xrrpg-core-stats-card--full">
         <h3>Basic Stats</h3>
         <div class="xrrpg-stat-line xrrpg-stat-line--compact">
-          <label title="Vigor supports movement, power, and will.">Vigor <input id="vigorInput" type="number" /></label>
-          <label title="Endurance supports resilience and toughness.">Endurance <input id="enduranceInput" type="number" /></label>
-          <label title="Intuition supports dexterity, perception, and charisma.">Intuition <input id="intuitionInput" type="number" /></label>
-          <label title="Wit supports logic, innovation, and memory.">Wit <input id="witInput" type="number" /></label>
+          <label title="Vigor supports movement, power, and will.">Vigor <input id="vigorInput" type="number" min="0" max="5" /></label>
+          <label title="Endurance supports resilience and toughness.">Endurance <input id="enduranceInput" type="number" min="0" max="5" /></label>
+          <label title="Intuition supports dexterity, perception, and charisma.">Intuition <input id="intuitionInput" type="number" min="0" max="5" /></label>
+          <label title="Wit supports logic, innovation, and memory.">Wit <input id="witInput" type="number" min="0" max="5" /></label>
         </div>
       </div>
         <div class="xrrpg-row" style="margin-top:0.8rem;">
@@ -282,7 +282,7 @@
     <div class="xr-modal-card">
       <h2>Keyboard Hotkeys</h2>
       <h3>Actions</h3>
-      <table>
+      <div style="overflow-x:auto;"><table class="table-full">
         <thead>
           <tr><th>Action</th><th>Windows / Linux</th><th>Mac</th></tr>
         </thead>
@@ -291,9 +291,9 @@
           <tr><td>Collapse / Expand all sections</td><td>Ctrl+Alt+- / Ctrl+Alt++</td><td>Command+Option+- / Command+Option++</td></tr>
           <tr><td>Show Hotkeys</td><td>Ctrl+Alt+/</td><td>Command+Option+/</td></tr>
         </tbody>
-      </table>
+      </table></div>
       <h3>Navigation</h3>
-      <table>
+      <div style="overflow-x:auto;"><table class="table-full">
         <thead>
           <tr><th>Action</th><th>Windows / Linux</th><th>Mac</th></tr>
         </thead>
@@ -311,7 +311,7 @@
           <tr><td>Go to Notes</td><td>Ctrl+Alt+N</td><td>Command+Option+N</td></tr>
           <tr><td>Go to History</td><td>Ctrl+Alt+Y</td><td>Command+Option+Y</td></tr>
         </tbody>
-      </table>
+      </table></div>
       <div class="modal-actions">
         <button id="closeHotkeysHelp" type="button" aria-label="Close hotkeys" title="Close hotkeys"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg><span>Close</span></button>
       </div>
@@ -711,7 +711,7 @@
     }
 
     function syncLevelClassOptionsByChroma() {
-      const chroma = String(character?.base_stats?.chroma || '').trim();
+      const chroma = String(document.getElementById('chromaInput')?.value || character?.base_stats?.chroma || '').trim();
       const select = document.getElementById('levelClassSelect');
       Array.from(select.options).forEach(option => {
         const required = classChromaRequirement(option.value);
@@ -2120,13 +2120,24 @@
       // ── STAT UPGRADE PROMPT ──────────────────────────────────────────
       if (rule?.stat_points > 0) {
         const bonus = rule.stat_bonus > 1 ? `+${rule.stat_bonus}` : '+1';
-        html += `<div class="xrrpg-choice-block"><label><strong>Basic Stat Upgrade (${bonus} to one stat):</strong><br>
+        const curStats = {
+          vigor: Number(document.getElementById('vigorInput')?.value || 0),
+          endurance: Number(document.getElementById('enduranceInput')?.value || 0),
+          intuition: Number(document.getElementById('intuitionInput')?.value || 0),
+          wit: Number(document.getElementById('witInput')?.value || 0)
+        };
+        const statOpt = (val, label) => {
+          const cur = curStats[val];
+          const atMax = cur >= 5;
+          return `<option value="${val}" ${atMax ? 'disabled' : ''}>${label} (${cur}${atMax ? ' — MAX' : ''})</option>`;
+        };
+        html += `<div class="xrrpg-choice-block"><label><strong>Basic Stat Upgrade (${bonus} to one stat, max 5):</strong><br>
           <select data-choice-id="stat_upgrade">
             <option value="">-- Select Stat --</option>
-            <option value="vigor">Vigor</option>
-            <option value="endurance">Endurance</option>
-            <option value="intuition">Intuition</option>
-            <option value="wit">Wit</option>
+            ${statOpt('vigor', 'Vigor')}
+            ${statOpt('endurance', 'Endurance')}
+            ${statOpt('intuition', 'Intuition')}
+            ${statOpt('wit', 'Wit')}
           </select>
         </label></div>`;
       }
@@ -2572,7 +2583,7 @@
       const level = Math.min(9, currentLevel + 1);
       const currentClassLevel = progression.filter(item => item.class === cls).length;
       const tier = currentClassLevel + 1;
-      const classChromaValidation = validateClassChromaRequirement(cls, String(character.base_stats?.chroma || '').trim());
+      const classChromaValidation = validateClassChromaRequirement(cls, String(document.getElementById('chromaInput')?.value || character.base_stats?.chroma || '').trim());
       if (!classChromaValidation.valid) {
         document.getElementById('levelMsg').textContent = classChromaValidation.message;
         return;
@@ -2619,11 +2630,11 @@
         powerful_item_max: rule.powerful_item_max
       };
 
-      // Apply basic stat upgrade
+      // Apply basic stat upgrade (capped at 5)
       if (rule.stat_points > 0 && choiceValues.stat_upgrade) {
         const stat = choiceValues.stat_upgrade;
         const bonus = rule.stat_bonus || 1;
-        base_stats[stat] = (Number(before[stat] || 0)) + bonus;
+        base_stats[stat] = Math.min(5, (Number(before[stat] || 0)) + bonus);
         if (stat === 'intuition' || stat === 'wit') {
           base_stats.stamina_max = staminaMaxForLevel(level, base_stats.intuition, base_stats.wit);
           base_stats.stamina_total = base_stats.stamina_max;
