@@ -225,8 +225,8 @@
     }
     chromaInput.addEventListener('change', updateStatSetupVisibility);
     document.getElementById('chromaMode').addEventListener('change', updateStatSetupVisibility);
-    mixedChromaInput.addEventListener('change', () => { updateStatSetupVisibility(); syncClassOptionsByChroma(); });
-    mixedChromaInputTwo.addEventListener('change', () => { updateStatSetupVisibility(); syncClassOptionsByChroma(); });
+    mixedChromaInput.addEventListener('change', updateStatSetupVisibility);
+    mixedChromaInputTwo.addEventListener('change', updateStatSetupVisibility);
     updateStatSetupVisibility();
 
     function validateStatSelections() {
@@ -275,26 +275,6 @@
     };
     const ARCHETYPE_ORDER = ['Adepts', 'Magicians', 'Mages', 'Spiritualists', 'Technologists'];
     const classInput = document.getElementById('classInput');
-    (function populateClassSelectWithGroups(selectEl) {
-      const byArchetype = {};
-      classNames.forEach(name => {
-        const archetype = CLASS_ARCHETYPES[name] || 'Other';
-        if (!byArchetype[archetype]) byArchetype[archetype] = [];
-        byArchetype[archetype].push(name);
-      });
-      ARCHETYPE_ORDER.forEach(archetype => {
-        if (!byArchetype[archetype]) return;
-        const group = document.createElement('optgroup');
-        group.label = archetype;
-        byArchetype[archetype].forEach(name => {
-          const opt = document.createElement('option');
-          opt.value = name;
-          opt.textContent = name;
-          group.appendChild(opt);
-        });
-        selectEl.appendChild(group);
-      });
-    })(classInput);
 
     function classChromaRequirement(cls) {
       return ADEPT_CHROMA_REQUIREMENTS[String(cls || '').trim()] || null;
@@ -310,6 +290,7 @@
     }
 
     function syncClassOptionsByChroma() {
+      if (!classInput) return;
       const chroma = chromaInput.value;
       const allowedChromas = chroma === 'Mixed' ? [mixedChromaInput.value, mixedChromaInputTwo.value].filter(v => v && v !== 'Mixed') : [chroma];
       Array.from(classInput.options).forEach(option => {
@@ -362,16 +343,10 @@
     }
 
     function renderStartingClassDetails() {
+      if (!classInput) return;
       const cls = classInput.value;
-      document.getElementById('classIntro').textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
-      // If currently on step 3, update button visibility based on whether this class needs step 4
-      if (wizardStep === 3) {
-        const needsStep4 = classNeedsStep4(cls);
-        const effectiveMax = needsStep4 ? WIZARD_MAX_STEPS : 3;
-        document.getElementById('nextStepBtn').classList.toggle('hidden', !needsStep4);
-        document.getElementById('saveBtn').classList.toggle('hidden', needsStep4);
-        wizardStepLabel.textContent = `Step 3 / ${effectiveMax}`;
-      }
+      const classIntroEl = document.getElementById('classIntro');
+      if (classIntroEl) classIntroEl.textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
     }
 
     async function requireUser() {
@@ -730,7 +705,7 @@
     }
 
     document.getElementById('newCharacterBtn').onclick = () => { modal.classList.remove('hidden'); setStep(1); };
-    classInput.onchange = () => renderStartingClassDetails();
+    if (classInput) classInput.onchange = () => renderStartingClassDetails();
     chromaInput.addEventListener('change', syncClassOptionsByChroma);
     modal.querySelector('.xr-modal-backdrop').onclick = () => modal.classList.add('hidden');
     document.getElementById('prevStepBtn').onclick = () => setStep(wizardStep - 1);
@@ -831,7 +806,6 @@
     };
 
     withLoading('Loading characters…', loadCharacters);
-    syncClassOptionsByChroma();
   </script>
 </body>
 </html>
