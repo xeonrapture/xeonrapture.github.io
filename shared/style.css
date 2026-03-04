@@ -2289,6 +2289,7 @@ select,
 .xrrpg-class-ability-subsection {
   padding: 0.75rem 0;
   border-bottom: 1px solid var(--border-color, #333);
+  overflow: hidden;
 }
 .xrrpg-class-ability-subsection:last-of-type { border-bottom: none; }
 
@@ -2361,6 +2362,9 @@ select,
   border-radius: 4px;
   padding: 0.5rem 0.75rem;
   margin: 0.5rem 0;
+  min-width: 0;          /* override fieldset default min-width: min-content */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .xrrpg-pick-fieldset legend {
@@ -2373,6 +2377,8 @@ select,
   padding: 0.3rem 0;
   border-bottom: 1px solid var(--border-color, #333);
   cursor: pointer;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .xrrpg-spell-option:last-child { border-bottom: none; }
