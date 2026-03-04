@@ -347,6 +347,7 @@
     let isRendering = false;
     let autosaveTimer = null;
     let canEdit = false;
+    let isMajorSave = false;
     const classAbilities = window.XRRPG_CLASS_ABILITIES || {};
     const ADEPT_CLASSES = new Set(['Warrior', 'Mentalist', 'Tank', 'Druid']);
     const ADEPT_CHROMA_REQUIREMENTS = {
@@ -2517,7 +2518,7 @@
     }
 
     async function persistCharacterDraft() {
-      if (!canEdit) return;
+      if (!canEdit || isMajorSave) return;
       const name = document.getElementById('nameInput').value.trim();
       const base_stats = readStatsFromInputs();
       const notes = readNotesFromInputs();
@@ -2562,6 +2563,8 @@
       if (!canEdit) return;
       // Cancel any pending autosave to prevent it from overwriting the level-up changes
       if (autosaveTimer) { window.clearTimeout(autosaveTimer); autosaveTimer = null; }
+      isMajorSave = true;
+      try {
       await withLoading('Applying level up…', async () => {
       const cls = document.getElementById('levelClassSelect').value;
       const progression = [...(character.class_progression || [])];
@@ -2687,6 +2690,9 @@
       await loadCharacter();
       document.getElementById('status').textContent = `Level up applied: ${cls} class level ${tier}.`;
       });
+      } finally {
+        isMajorSave = false;
+      }
     };
 
     async function resolveInjuryDebuff(type, index) {
