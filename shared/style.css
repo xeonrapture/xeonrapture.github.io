@@ -1586,7 +1586,7 @@ label textarea {
   border: 1px solid var(--border, #333);
   border-radius: 14px;
   padding: 0.9rem 1rem;
-  background: rgba(21, 26, 34, 0.2);
+  background: rgba(172, 204, 255, 0.568);
 }
 
 .wr-scope .ability-group h3 {
@@ -1660,7 +1660,7 @@ label textarea {
 }
 
 .wr-scope .status-toast {
-  background: rgba(18, 18, 18, 0.95);
+  background: rgba(255, 184, 184, 0.336);
   border: 1px solid var(--border, #333);
   border-radius: 12px;
   padding: 0.7rem 0.85rem;
@@ -1702,7 +1702,7 @@ label textarea {
   border: 1px solid var(--border, #333);
   border-radius: 12px;
   padding: 0.75rem;
-  background: rgba(21, 26, 34, 0.85);
+  background: rgba(141, 184, 255, 0.85);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1728,7 +1728,7 @@ label textarea {
 .tools-scope .card {
   border: 1px solid var(--border, #333);
   border-radius: 12px;
-  background: var(--panel, #161821);
+  background: var(--panel, #9caeff);
   padding: 1rem;
 }
 
@@ -1755,7 +1755,7 @@ label textarea {
   padding: 0.45rem 0.75rem;
   border-radius: 10px;
   border: 1px solid var(--border, #333);
-  background: #111;
+  background: #ff858554;
   color: var(--text, #eee);
   cursor: pointer;
 }
@@ -1837,7 +1837,7 @@ select,
 }
 
 .tools-scope .out {
-  background: #111;
+  background: #ff93934d;
   border: 1px solid var(--border, #333);
   border-radius: 10px;
   padding: 1rem;
@@ -1875,7 +1875,7 @@ select,
   max-width: 600px;
   margin: 2rem auto;
   padding: 1.5rem;
-  background: var(--panel, #161821);
+  background: var(--panel, #a3b4ff);
   border: 1px solid var(--border, #333);
   border-radius: 12px;
   text-align: center;
