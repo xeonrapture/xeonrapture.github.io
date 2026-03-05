@@ -10,7 +10,7 @@
   --muted: #999999;
   --accent: #7aa2ff;
   --border: #3c3c3c;
-  --shadow: 0 18px 45px rgba(28, 11, 39, 0.45);
+  --shadow: 0 18px 45px rgba(16, 6, 22, 0.45);
   --link: #8fd6ff;
   --link-visited: #c4a0ff;
   --nav-link: #e3dd6f;
@@ -53,7 +53,7 @@
     --overlay-bg: rgba(180, 185, 200, 0.78);
     --spinner-track: rgba(0, 0, 0, 0.15);
     --bubble-border: rgba(0, 0, 0, 0.10);
-    --bubble-bg: rgba(0, 0, 0, 0.03);
+    --bubble-bg: rgba(177, 177, 177, 0.03);
   }
 }
 
@@ -1171,7 +1171,7 @@ label textarea {
   border: 1px solid var(--border, #333);
   border-radius: 14px;
   padding: 0.85rem;
-  background: rgba(21, 26, 34, 0.85);
+  background: rgba(21, 26, 34, 0.39);
   display: grid;
   gap: 0.65rem;
 }
@@ -2326,7 +2326,7 @@ select,
   border: 1px solid var(--border, #333);
   border-radius: 12px;
   padding: 0.75rem;
-  background: color-mix(in srgb, var(--panel, #161821) 85%, #000 15%);
+  background: color-mix(in srgb, var(--panel, #16182179) 85%, #00000079 15%);
 }
 
 .wr-scope .xrrpg-resource-card h3 {
