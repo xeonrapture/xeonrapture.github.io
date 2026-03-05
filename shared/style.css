@@ -172,6 +172,8 @@ body {
   padding: 0;
   overflow-x: hidden;
   background-color: var(--background-primary);
+  font: var(--font-text-theme);
+  font-weight: var(--font-text-weight);
 }
 
 a:link {
