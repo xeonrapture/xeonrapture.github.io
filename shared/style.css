@@ -55,7 +55,7 @@
     --overlay-bg: rgba(180, 185, 200, 0.78);
     --spinner-track: rgba(0, 0, 0, 0.15);
     --bubble-border: rgba(0, 0, 0, 0.10);
-    --bubble-bg: rgba(190, 251, 255, 0.075);
+    --bubble-bg: rgba(255, 255, 255, 0.37);
 
     --background-primary: #fcf5e5;
     --h1-color: #2a9600;
@@ -127,7 +127,7 @@ html[data-theme="light"] {
   --overlay-bg: rgba(180, 185, 200, 0.78);
   --spinner-track: rgba(0, 0, 0, 0.15);
   --bubble-border: rgba(0, 0, 0, 0.10);
-  --bubble-bg: rgba(190, 251, 255, 0.075);
+  --bubble-bg: rgba(255, 255, 255, 0.37);
 
   --background-primary: #fcf5e5;
   --h1-color: #2a9600;
