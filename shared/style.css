@@ -19,7 +19,6 @@
   --spinner-track: rgba(255, 255, 255, 0.22);
   --bubble-border: rgba(255, 255, 255, 0.08);
   --bubble-bg: rgba(255, 255, 255, 0.03);
-  --bubble-bg-dark: rgba(255, 255, 255, 0.322);
 
   --background-primary: #1e1e1e;
   --h1-color: #71ff39;
@@ -57,7 +56,6 @@
     --spinner-track: rgba(0, 0, 0, 0.15);
     --bubble-border: rgba(0, 0, 0, 0.10);
     --bubble-bg: rgba(255, 255, 255, 0.774);
-    --bubble-bg-dark: rgba(160, 160, 160, 0.322);
 
     --background-primary: #fcf5e5;
     --h1-color: #2a9600;
@@ -94,7 +92,6 @@ html[data-theme="dark"] {
   --spinner-track: rgba(255, 255, 255, 0.22);
   --bubble-border: rgba(255, 255, 255, 0.08);
   --bubble-bg: rgba(255, 255, 255, 0.03);
-  --bubble-bg-dark: rgba(255, 255, 255, 0.322);
 
   --background-primary: #1e1e1e;
   --h1-color: #71ff39;
@@ -131,7 +128,6 @@ html[data-theme="light"] {
   --spinner-track: rgba(0, 0, 0, 0.15);
   --bubble-border: rgba(0, 0, 0, 0.10);
   --bubble-bg: rgba(255, 255, 255, 0.774);
-  --bubble-bg-dark: rgba(160, 160, 160, 0.322);
 
   --background-primary: #fcf5e5;
   --h1-color: #2a9600;
@@ -1400,7 +1396,7 @@ label textarea {
   bottom: 0.6rem;
   width: 2.2rem;
   border-radius: 14px;
-  background: var(--bubble-bg-dark);
+  background: var(--bubble-bg);
   border: 1px solid rgba(148, 163, 184, 0.35);
 }
 
