@@ -19,6 +19,21 @@
   --spinner-track: rgba(255, 255, 255, 0.22);
   --bubble-border: rgba(255, 255, 255, 0.08);
   --bubble-bg: rgba(255, 255, 255, 0.03);
+  --background-primary: #000000;
+  --h1-color: #71ff39;
+  --h2-color: #39e8ff;
+  --h3-color: #fc4646;
+  --h4-color: #6371f8;
+  --h5-color: #ff39b3;
+  --h6-color: #9539ff;
+  --h1-font: "Orbitron", cursive;
+  --h2-font: "Orbitron", cursive;
+  --h3-font: "Orbitron", cursive;
+  --h4-font: "Orbitron", cursive;
+  --h5-font: "Orbitron", cursive;
+  --h6-font: "Orbitron", cursive;
+  --font-text-theme: "Share Tech", sans-serif;
+  --font-text-weight: 300;
 }
 
 /* light mode — matches xeonrapture.com light */
@@ -59,6 +74,21 @@ html[data-theme="dark"] {
   --spinner-track: rgba(255, 255, 255, 0.22);
   --bubble-border: rgba(255, 255, 255, 0.08);
   --bubble-bg: rgba(255, 255, 255, 0.03);
+  --background-primary: #000000; 
+  --h1-color: #71ff39;
+  --h2-color: #39e8ff;
+  --h3-color: #fc4646;
+  --h4-color: #6371f8;
+  --h5-color: #ff39b3;
+  --h6-color: #9539ff;
+  --h1-font: "Orbitron", cursive;
+  --h2-font: "Orbitron", cursive;
+  --h3-font: "Orbitron", cursive;
+  --h4-font: "Orbitron", cursive;
+  --h5-font: "Orbitron", cursive;
+  --h6-font: "Orbitron", cursive;
+  --font-text-theme: "Share Tech", sans-serif;
+  --font-text-weight: 300;
 }
 
 /* explicit light override (user selected) */
@@ -78,6 +108,20 @@ html[data-theme="light"] {
   --spinner-track: rgba(0, 0, 0, 0.15);
   --bubble-border: rgba(0, 0, 0, 0.10);
   --bubble-bg: rgba(0, 0, 0, 0.03);
+  --background-primary: #fcf5e5;
+  --h1-color: #2a9600;
+  --h2-color: #008a9c;
+  --h3-color: #a00028;
+  --h4-color: #4b59dd;
+  --h5-color: #ba2278;
+  --h6-color: #4d00a5;
+  --h1-font: "MedievalSharp", sans-serif;
+  --h2-font: "MedievalSharp", sans-serif;
+  --h3-font: "MedievalSharp", sans-serif;
+  --h4-font: "MedievalSharp", sans-serif;
+  --h5-font: "MedievalSharp", sans-serif;
+  --h6-font: "MedievalSharp", sans-serif;
+  --font-text-theme: "Goudy Bookletter 1911", serif;
 }
 
 *, *::before, *::after {
@@ -86,7 +130,7 @@ html[data-theme="light"] {
 
 body {
   margin: 0;
-  font-family: "Share Tech", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  /*font-family: "Share Tech", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;*/
   background: var(--bg);
   color: var(--text);
   line-height: 1.55;
