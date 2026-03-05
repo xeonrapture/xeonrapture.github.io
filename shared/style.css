@@ -1850,7 +1850,10 @@ select,
     top: 64px;
   }
 
-  button,
+  button {
+    width: auto;
+  }
+
   input,
   select,
   textarea {
@@ -2294,6 +2297,21 @@ select,
   .wr-scope .xrrpg-resource-fields,
   .wr-scope .stat-inputs {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ── Vertical (sideways) table headers on small screens ── */
+@media (max-width: 600px) {
+  .wr-scope .table-full th,
+  .wr-scope .levelup-table th {
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    padding: 0.5rem 0.2rem;
+    vertical-align: bottom;
+    text-align: left;
+    max-height: 7rem;
+    font-size: 0.82rem;
   }
 }
 
