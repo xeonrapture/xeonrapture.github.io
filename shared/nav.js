@@ -1,4 +1,11 @@
 (async function () {
+  // Apply theme immediately to avoid flash of wrong theme
+  (function () {
+    const saved = localStorage.getItem('xr-theme');
+    const system = window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', saved || system);
+  })();
+
   const host = document.getElementById("nav");
   if (!host) return;
 
@@ -51,6 +58,28 @@
 
     window.addEventListener("resize", () => {
       closeNav();
+    });
+  }
+
+  // 🌗 Theme toggle
+  const themeBtn = host.querySelector('#themeToggleBtn');
+  function updateThemeBtn(theme) {
+    if (!themeBtn) return;
+    const isDark = theme === 'dark';
+    themeBtn.querySelector('.xr-theme-toggle-icon').textContent = isDark ? '☀' : '☾';
+    themeBtn.querySelector('.xr-theme-toggle-label').textContent = isDark ? 'Light mode' : 'Dark mode';
+    themeBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+  }
+  function currentTheme() {
+    return document.documentElement.getAttribute('data-theme') || 'dark';
+  }
+  updateThemeBtn(currentTheme());
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      const next = currentTheme() === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('xr-theme', next);
+      updateThemeBtn(next);
     });
   }
 
