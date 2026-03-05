@@ -1396,7 +1396,7 @@ label textarea {
   bottom: 0.6rem;
   width: 2.2rem;
   border-radius: 14px;
-  background: rgba(31, 41, 55, 0.301);
+  background: var(--bubble-bg);
   border: 1px solid rgba(148, 163, 184, 0.35);
 }
 
