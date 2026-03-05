@@ -111,9 +111,6 @@ html[data-theme="light"] {
   --bubble-bg: rgba(0, 0, 0, 0.03);
 
   --background-primary: #fcf5e5;
-  h1 {
-    color: #2a9600;
-  }
   --h1-color: #2a9600;
   --h2-color: #008a9c;
   --h3-color: #a00028;
@@ -137,7 +134,7 @@ html[data-theme="light"] {
 
 h1 {
   color: var(--h1-color);
-  font: var(--h1-font);
+  font-family: var(--h1-font);
 }
 
 h2 {
