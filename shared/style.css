@@ -19,6 +19,7 @@
   --spinner-track: rgba(255, 255, 255, 0.22);
   --bubble-border: rgba(255, 255, 255, 0.08);
   --bubble-bg: rgba(255, 255, 255, 0.03);
+
   --background-primary: #1e1e1e;
   --h1-color: #71ff39;
   --h2-color: #39e8ff;
@@ -34,6 +35,7 @@
   --h6-font: "Orbitron", cursive;
   --font-text-theme: "Share Tech", sans-serif;
   --font-text-weight: 300;
+  --toast-color: rgba(255, 184, 184, 0.336);
 }
 
 /* light mode — matches xeonrapture.com light */
@@ -53,7 +55,23 @@
     --overlay-bg: rgba(180, 185, 200, 0.78);
     --spinner-track: rgba(0, 0, 0, 0.15);
     --bubble-border: rgba(0, 0, 0, 0.10);
-    --bubble-bg: rgba(177, 177, 177, 0.03);
+    --bubble-bg: rgba(0, 0, 0, 0.03);
+
+    --background-primary: #fcf5e5;
+    --h1-color: #2a9600;
+    --h2-color: #008a9c;
+    --h3-color: #a00028;
+    --h4-color: #4b59dd;
+    --h5-color: #ba2278;
+    --h6-color: #4d00a5;
+    --h1-font: "MedievalSharp", sans-serif;
+    --h2-font: "MedievalSharp", sans-serif;
+    --h3-font: "MedievalSharp", sans-serif;
+    --h4-font: "MedievalSharp", sans-serif;
+    --h5-font: "MedievalSharp", sans-serif;
+    --h6-font: "MedievalSharp", sans-serif;
+    --font-text-theme: "Goudy Bookletter 1911", serif;
+    --toast-color: rgba(255, 184, 184, 0.336);
   }
 }
 
@@ -65,7 +83,7 @@ html[data-theme="dark"] {
   --muted: #999999;
   --accent: #7aa2ff;
   --border: #3c3c3c;
-  --shadow: 0 18px 45px rgba(28, 11, 39, 0.45);
+  --shadow: 0 18px 45px rgba(16, 6, 22, 0.45);
   --link: #8fd6ff;
   --link-visited: #c4a0ff;
   --nav-link: #e3dd6f;
@@ -75,7 +93,7 @@ html[data-theme="dark"] {
   --bubble-border: rgba(255, 255, 255, 0.08);
   --bubble-bg: rgba(255, 255, 255, 0.03);
 
-  --background-primary: #000000; 
+  --background-primary: #1e1e1e;
   --h1-color: #71ff39;
   --h2-color: #39e8ff;
   --h3-color: #fc4646;
@@ -90,6 +108,7 @@ html[data-theme="dark"] {
   --h6-font: "Orbitron", cursive;
   --font-text-theme: "Share Tech", sans-serif;
   --font-text-weight: 300;
+  --toast-color: rgba(255, 184, 184, 0.336);
 }
 
 /* explicit light override (user selected) */
@@ -124,6 +143,7 @@ html[data-theme="light"] {
   --h5-font: "MedievalSharp", sans-serif;
   --h6-font: "MedievalSharp", sans-serif;
   --font-text-theme: "Goudy Bookletter 1911", serif;
+  --toast-color: rgba(255, 184, 184, 0.336);
 }
 
 
@@ -1258,7 +1278,7 @@ label textarea {
   border-radius: 999px;
   border: 1px solid var(--tag-color, var(--border, #333));
   background: var(--tag-bg, rgba(255, 255, 255, 0.04));
-  color: #f8fafc;
+  color: var(--muted);
   font-weight: 600;
   letter-spacing: 0.01em;
 }
@@ -1278,7 +1298,7 @@ label textarea {
 .wr-scope .gear-tag.dual {
   background: linear-gradient(135deg, var(--tag-color), var(--tag-color-secondary));
   border-color: var(--tag-color);
-  color: #0b0f1a;
+  color: var(--muted);
 }
 
 .wr-scope .gear-stat--base {
@@ -1660,7 +1680,7 @@ label textarea {
 }
 
 .wr-scope .status-toast {
-  background: rgba(255, 184, 184, 0.336);
+  background: var(--toast-color);
   border: 1px solid var(--border, #333);
   border-radius: 12px;
   padding: 0.7rem 0.85rem;
