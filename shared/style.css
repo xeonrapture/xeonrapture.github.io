@@ -139,27 +139,27 @@ h1 {
 
 h2 {
   color: var(--h2-color);
-  font: var(--h2-font);
+  font-family: var(--h2-font);
 }
 
 h3 {
   color: var(--h3-color);
-  font: var(--h3-font);
+  font-family: var(--h3-font);
 }
 
 h4 {
   color: var(--h4-color);
-  font: var(--h4-font);
+  font-family: var(--h4-font);
 }
 
 h5 {
   color: var(--h5-color);
-  font: var(--h5-font);
+  font-family: var(--h5-font);
 }
 
 h6 {
   color: var(--h6-color);
-  font: var(--h6-font);
+  font-family: var(--h6-font);
 }
 
 
@@ -172,7 +172,7 @@ body {
   padding: 0;
   overflow-x: hidden;
   background-color: var(--background-primary);
-  font: var(--font-text-theme);
+  font-family: var(--font-text-theme);
   font-weight: var(--font-text-weight);
 }
 
