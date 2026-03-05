@@ -1171,7 +1171,7 @@ label textarea {
   border: 1px solid var(--border, #333);
   border-radius: 14px;
   padding: 0.85rem;
-  background: rgba(21, 26, 34, 0.144);
+  background: var(--bubble-bg);
   display: grid;
   gap: 0.65rem;
 }
@@ -1389,7 +1389,7 @@ label textarea {
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #cbd5f5;
+  color: var(--text);
   z-index: 1;
 }
 
@@ -1586,7 +1586,7 @@ label textarea {
   border: 1px solid var(--border, #333);
   border-radius: 14px;
   padding: 0.9rem 1rem;
-  background: rgba(172, 204, 255, 0.568);
+  background: var(--bubble-bg);
 }
 
 .wr-scope .ability-group h3 {
@@ -2305,7 +2305,7 @@ select,
   border: 1px solid var(--border, #333);
   border-radius: 12px;
   padding: 0.75rem;
-  background: color-mix(in srgb, var(--panel, #1618218e) 85%, #00000067 15%);
+  background: var(--bubble-bg);
 }
 
 .wr-scope .xrrpg-core-stats-card h3 {
@@ -2326,7 +2326,7 @@ select,
   border: 1px solid var(--border, #333);
   border-radius: 12px;
   padding: 0.75rem;
-  background: color-mix(in srgb, var(--panel, #16182179) 85%, #00000079 15%);
+  background: var(--bubble-bg);
 }
 
 .wr-scope .xrrpg-resource-card h3 {
