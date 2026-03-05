@@ -1171,7 +1171,7 @@ label textarea {
   border: 1px solid var(--border, #333);
   border-radius: 14px;
   padding: 0.85rem;
-  background: rgba(21, 26, 34, 0.39);
+  background: rgba(21, 26, 34, 0.144);
   display: grid;
   gap: 0.65rem;
 }
@@ -1376,7 +1376,7 @@ label textarea {
   bottom: 0.6rem;
   width: 2.2rem;
   border-radius: 14px;
-  background: rgba(31, 41, 55, 0.65);
+  background: rgba(31, 41, 55, 0.301);
   border: 1px solid rgba(148, 163, 184, 0.35);
 }
 
@@ -1586,7 +1586,7 @@ label textarea {
   border: 1px solid var(--border, #333);
   border-radius: 14px;
   padding: 0.9rem 1rem;
-  background: rgba(21, 26, 34, 0.8);
+  background: rgba(21, 26, 34, 0.2);
 }
 
 .wr-scope .ability-group h3 {
@@ -2305,7 +2305,7 @@ select,
   border: 1px solid var(--border, #333);
   border-radius: 12px;
   padding: 0.75rem;
-  background: color-mix(in srgb, var(--panel, #161821) 85%, #000 15%);
+  background: color-mix(in srgb, var(--panel, #1618218e) 85%, #00000067 15%);
 }
 
 .wr-scope .xrrpg-core-stats-card h3 {
