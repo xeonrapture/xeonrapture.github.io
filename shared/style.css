@@ -74,6 +74,7 @@ html[data-theme="dark"] {
   --spinner-track: rgba(255, 255, 255, 0.22);
   --bubble-border: rgba(255, 255, 255, 0.08);
   --bubble-bg: rgba(255, 255, 255, 0.03);
+
   --background-primary: #000000; 
   --h1-color: #71ff39;
   --h2-color: #39e8ff;
@@ -108,6 +109,7 @@ html[data-theme="light"] {
   --spinner-track: rgba(0, 0, 0, 0.15);
   --bubble-border: rgba(0, 0, 0, 0.10);
   --bubble-bg: rgba(0, 0, 0, 0.03);
+
   --background-primary: #fcf5e5;
   --h1-color: #2a9600;
   --h2-color: #008a9c;
@@ -124,9 +126,42 @@ html[data-theme="light"] {
   --font-text-theme: "Goudy Bookletter 1911", serif;
 }
 
+
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
+
+h1 {
+  color: var(--h1-color);
+  font: var(--h1-font);
+}
+
+h2 {
+  color: var(--h2-color);
+  font: var(--h2-font);
+}
+
+h3 {
+  color: var(--h3-color);
+  font: var(--h3-font);
+}
+
+h4 {
+  color: var(--h4-color);
+  font: var(--h4-font);
+}
+
+h5 {
+  color: var(--h5-color);
+  font: var(--h5-font);
+}
+
+h6 {
+  color: var(--h6-color);
+  font: var(--h6-font);
+}
+
 
 body {
   margin: 0;
@@ -136,6 +171,7 @@ body {
   line-height: 1.55;
   padding: 0;
   overflow-x: hidden;
+  background-color: var(--background-primary);
 }
 
 a:link {
