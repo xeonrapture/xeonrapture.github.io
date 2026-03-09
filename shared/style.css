@@ -2633,6 +2633,83 @@ select,
   text-align: center;
 }
 
+/* Drug tracking card */
+.xrrpg-drug-row {
+  border: 1px solid var(--border, #333);
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  margin-bottom: 0.5rem;
+}
+.xrrpg-drug-row-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+}
+.xrrpg-drug-row-header .drug-name {
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+}
+.drug-type-badge {
+  font-size: 0.72rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.drug-type-soft {
+  background: var(--accent-muted, #3a5a3a);
+  color: #c6f0c6;
+}
+.drug-type-hard {
+  background: var(--danger-muted, #5a2a2a);
+  color: #f0c6c6;
+}
+.drug-active-btn {
+  font-size: 0.78rem;
+  padding: 0.1rem 0.5rem;
+}
+.drug-active-btn.active {
+  background: var(--accent, #4a8a4a);
+  color: #fff;
+  border-color: var(--accent, #4a8a4a);
+}
+.drug-remove-btn {
+  font-size: 0.85rem;
+  padding: 0.05rem 0.4rem;
+  opacity: 0.6;
+}
+.drug-remove-btn:hover {
+  opacity: 1;
+}
+.xrrpg-drug-row-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.drug-tracker-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+.drug-tracker-row .drug-tracker-label {
+  min-width: 6rem;
+  color: var(--muted, #aaa);
+}
+.drug-tracker-row .drug-tracker-val {
+  min-width: 1.8rem;
+  text-align: center;
+  font-weight: 600;
+}
+.drug-dep-threshold {
+  font-size: 0.75rem;
+  opacity: 0.55;
+}
+
 .xrrpg-choice-block {
   margin: 0.5rem 0;
 }
