@@ -3853,7 +3853,7 @@
       const type = getConsumableType(gear);
       const effect = getConsumableEffectDetails(gear);
       if (type === "Healing") {
-        return `Healing consumable used. ${effect}`;
+        return `Healing consumable used. Apply this healing manually: ${effect}`;
       }
       if (type === "Energy") {
         return `Energy consumable used. ${effect}`;
@@ -3862,7 +3862,10 @@
         return `Gear Mod consumable used. ${effect}`;
       }
       if (type === "Gear Type Change" || type === "Gear Color Change") {
-        return `${type} consumable used (${effect}). Pick a gear piece and reroll all stats/abilities after the change.`;
+        return `${type} consumable used (${effect}).`;
+      }
+      if (type === "Local Shop Upgrade") {
+        return `Local Shop Upgrade consumable used. Apply this effect manually: ${effect}`;
       }
       return `${type || "Consumable"} used. ${effect}`;
     }
