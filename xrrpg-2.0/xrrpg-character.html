@@ -121,18 +121,19 @@
           </div>
         </div>
         <div class="xrrpg-resource-card">
-          <h3>Credits</h3>
-          <div class="xrrpg-resource-fields">
-            <label title="Currency available for purchases and upkeep.">Credits <input id="creditsInput" type="number" min="0" /></label>
-          </div>
+          <h3>Currency</h3>
+          <div id="currencyList" class="xrrpg-currency-list"></div>
+          <button id="addCurrencyBtn" type="button">+ Add Currency</button>
         </div>
         <div class="xrrpg-resource-card">
           <h3>Stress Meter</h3>
           <p class="xrrpg-rules-note"><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Modules/The+Stress+Meter" target="_blank" rel="noopener">Stress Meter rules ↗</a></p>
-          <div class="xrrpg-resource-fields">
-            <label title="Stress level (0–10). Higher levels impose increasing penalties.">Stress Level <input id="stressLevelInput" type="number" min="0" max="10" /></label>
+          <div class="xrrpg-stress-controls">
+            <button id="stressDecBtn" type="button" aria-label="Decrease stress">−</button>
+            <span id="stressValueDisplay" class="xrrpg-stress-value">0</span>
+            <button id="stressIncBtn" type="button" aria-label="Increase stress">+</button>
           </div>
-          <div id="stressEffectDisplay" style="font-size:0.82rem; margin-top:0.5rem; line-height:1.4;"></div>
+          <div id="stressEffectDisplay" class="xrrpg-stress-label"></div>
         </div>
         <div class="xrrpg-resource-card xrrpg-rep-card">
           <h3>Reputation &amp; Relationships</h3>
@@ -195,7 +196,6 @@
       </div>
       <div class="collapsible-body">
         <p class="xrrpg-rules-note"><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Resources/Cybermods" target="_blank" rel="noopener">Cybermod Rules ↗</a> — Tiered cybermods count against your Powerful Item Limit and must not exceed your Max Tier.</p>
-        <div id="activeBufsSummary" class="xrrpg-active-buffs" style="display:none;"></div>
         <div id="inventoryItemsList"></div>
         <div class="xrrpg-inv-add-controls">
           <details class="xrrpg-inv-add-panel">
@@ -205,8 +205,9 @@
               <label>Description<textarea id="invCustomDetails" placeholder="What does this item do?"></textarea></label>
               <label>Notes<textarea id="invCustomNotes" placeholder="Personal notes..."></textarea></label>
               <div style="font-size:0.85rem; font-weight:600; margin-top:0.3rem;">Buffs (when equipped)</div>
-              <div id="invCustomBuffs" class="xrrpg-buff-selector"></div>
-              <button type="button" id="invAddCustomBtn">Add Item</button>
+              <div id="invCustomBuffs" class="xrrpg-manual-buffs-list"></div>
+              <button type="button" id="invAddCustomBuffBtn">+ Add Buff</button>
+              <button type="button" id="invAddCustomBtn" style="margin-top:0.4rem;">Add Item</button>
             </div>
           </details>
           <details class="xrrpg-inv-add-panel">
@@ -528,9 +529,9 @@
       const editableIds = [
         'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
         'staminaTotalInput','staminaUsedInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
-        'partyTierInput','xenicDecayInput','timesCleansedInput','creditsInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput',
+        'partyTierInput','xenicDecayInput','timesCleansedInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput',
         'levelUpBtn','takeInjuryBtn','addSkillBtn','confirmLevelBtn','confirmInjuryBtn','saveSkillModalBtn','drugAddBtn','drugAddSelect',
-        'stressLevelInput','repAddBtn','repNameInput','invAddCustomBtn','invCustomName','invCustomDetails','invCustomNotes',
+        'stressDecBtn','stressIncBtn','addCurrencyBtn','repAddBtn','repNameInput','invAddCustomBtn','invAddCustomBuffBtn','invCustomName','invCustomDetails','invCustomNotes',
         'invAddCybermodBtn','invCybermodSelect'
       ];
       editableIds.forEach(id => {
@@ -656,8 +657,8 @@ function parseNotes() {
         party_tier: Number(document.getElementById('partyTierInput').value) || 1,
         xenic_decay_level: Number(document.getElementById('xenicDecayInput').value) || 0,
         times_cleansed: Number(document.getElementById('timesCleansedInput').value) || 0,
-        credits: Number(document.getElementById('creditsInput').value) || 0,
-        stress_level: Math.max(0, Math.min(10, Number(document.getElementById('stressLevelInput')?.value ?? 0)))
+        currency_entries: character.base_stats?.currency_entries ?? [],
+        stress_level: character.base_stats?.stress_level ?? 0
       };
     }
 
@@ -2591,19 +2592,39 @@ function parseNotes() {
     // =====================================================================
     // BUFF TYPES
     // =====================================================================
-    const BUFF_TYPES = [
-      { key: 'hp_bonus', label: 'Max HP Bonus' },
-      { key: 'perception_bonus', label: 'Perception Actions Bonus' },
-      { key: 'wit_action_bonus', label: 'Wit Actions Bonus (non-combat)' },
-      { key: 'stealth_bonus', label: 'Stealth Actions Bonus' },
-      { key: 'arm_action_bonus', label: 'Arm Actions Bonus' },
-      { key: 'arm_damage_bonus', label: 'Arm Damage Bonus' },
-      { key: 'leg_action_bonus', label: 'Leg Actions Bonus' },
-      { key: 'leg_damage_bonus', label: 'Leg / Kick Damage Bonus' },
-      { key: 'stabilize_bonus', label: 'Stabilize Check Bonus' },
-      { key: 'weapon_damage', label: 'Implanted Weapon Damage' },
-      { key: 'healing_charges', label: 'Medic Healing Charges / Day' },
-    ];
+    // Manual buff helpers (free-text per item)
+    function renderManualBuffSelector(containerId, existingBuffs) {
+      const wrap = document.getElementById(containerId);
+      if (!wrap) return;
+      const buffs = Array.isArray(existingBuffs) ? existingBuffs.filter(b => typeof b === 'string') : [];
+      wrap.innerHTML = buffs.map((text, i) => `
+        <div class="xrrpg-manual-buff-entry" data-buff-entry="${i}">
+          <input class="xrrpg-manual-buff-text" type="text" placeholder="e.g. +2 Max HP" value="${text.replace(/"/g, '&quot;').replace(/</g, '&lt;')}" data-buff-idx="${i}" />
+          <button type="button" data-buff-remove="${i}" style="opacity:0.55;">×</button>
+        </div>
+      `).join('');
+      wrap.querySelectorAll('[data-buff-remove]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.buffRemove);
+          const newBuffs = readManualBuffsFromSelector(containerId);
+          newBuffs.splice(idx, 1);
+          const inputs = wrap.querySelectorAll('[data-buff-idx]');
+          inputs.forEach((inp, i) => { if (i < newBuffs.length) inp.value = newBuffs[i]; });
+          renderManualBuffSelector(containerId, newBuffs);
+        });
+      });
+    }
+
+    function readManualBuffsFromSelector(containerId) {
+      const wrap = document.getElementById(containerId);
+      if (!wrap) return [];
+      return Array.from(wrap.querySelectorAll('.xrrpg-manual-buff-text')).map(inp => inp.value.trim()).filter(Boolean);
+    }
+
+    function buffSummaryText(buffs) {
+      if (!buffs || !buffs.length) return '';
+      return buffs.filter(b => typeof b === 'string').join(', ');
+    }
 
     // =====================================================================
     // STRESS METER
@@ -2624,16 +2645,80 @@ function parseNotes() {
 
     function renderStressEffect() {
       const display = document.getElementById('stressEffectDisplay');
-      if (!display) return;
+      const valueDisplay = document.getElementById('stressValueDisplay');
       const level = Math.max(0, Math.min(10, Number(character.base_stats?.stress_level ?? 0)));
+      if (valueDisplay) valueDisplay.textContent = level;
+      if (!display) return;
       display.textContent = STRESS_EFFECTS[level] || '';
-      display.className = level === 0 ? 'muted' : (level >= 7 ? 'text-danger' : level >= 4 ? 'text-warn' : 'muted');
+      display.className = 'xrrpg-stress-label ' + (level === 0 ? 'muted' : (level >= 7 ? 'text-danger' : level >= 4 ? 'text-warn' : 'muted'));
+    }
+
+    // =====================================================================
+    // CURRENCY TRACKER
+    // =====================================================================
+    function renderCurrencyEntries() {
+      const wrap = document.getElementById('currencyList');
+      if (!wrap) return;
+      const entries = character.base_stats?.currency_entries ?? [];
+      if (!entries.length) {
+        wrap.innerHTML = '<div class="muted" style="font-size:0.84rem;">No currencies tracked yet.</div>';
+        return;
+      }
+      wrap.innerHTML = entries.map((entry, idx) => `
+        <div class="xrrpg-currency-entry" data-cur-idx="${idx}">
+          <input class="xrrpg-currency-name" type="text" placeholder="Currency name" maxlength="48" value="${(entry.name || '').replace(/"/g, '&quot;').replace(/</g, '&lt;')}" data-cur-name="${idx}" ${!canEdit ? 'disabled' : ''} />
+          <div class="xrrpg-currency-controls">
+            <button type="button" data-cur-action="dec" data-cur-idx="${idx}" ${!canEdit ? 'disabled' : ''}>−</button>
+            <input class="xrrpg-currency-amount" type="number" value="${Number(entry.amount) || 0}" data-cur-amount="${idx}" ${!canEdit ? 'disabled' : ''} />
+            <button type="button" data-cur-action="inc" data-cur-idx="${idx}" ${!canEdit ? 'disabled' : ''}>+</button>
+            <button type="button" data-cur-action="remove" data-cur-idx="${idx}" style="opacity:0.55;" ${!canEdit ? 'disabled' : ''}>×</button>
+          </div>
+        </div>
+      `).join('');
+      wrap.querySelectorAll('[data-cur-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!canEdit) return;
+          const action = btn.dataset.curAction;
+          const idx = Number(btn.dataset.curIdx);
+          const entries = [...(character.base_stats?.currency_entries ?? [])];
+          if (action === 'remove') {
+            entries.splice(idx, 1);
+          } else if (action === 'inc') {
+            entries[idx] = { ...entries[idx], amount: (Number(entries[idx].amount) || 0) + 1 };
+          } else if (action === 'dec') {
+            entries[idx] = { ...entries[idx], amount: (Number(entries[idx].amount) || 0) - 1 };
+          }
+          character.base_stats = { ...(character.base_stats || {}), currency_entries: entries };
+          renderCurrencyEntries();
+          scheduleAutosave();
+        });
+      });
+      wrap.querySelectorAll('[data-cur-name]').forEach(input => {
+        input.addEventListener('input', () => {
+          const idx = Number(input.dataset.curName);
+          const entries = [...(character.base_stats?.currency_entries ?? [])];
+          entries[idx] = { ...entries[idx], name: input.value };
+          character.base_stats = { ...(character.base_stats || {}), currency_entries: entries };
+          scheduleAutosave();
+        });
+      });
+      wrap.querySelectorAll('[data-cur-amount]').forEach(input => {
+        input.addEventListener('change', () => {
+          const idx = Number(input.dataset.curAmount);
+          const entries = [...(character.base_stats?.currency_entries ?? [])];
+          entries[idx] = { ...entries[idx], amount: Number(input.value) || 0 };
+          character.base_stats = { ...(character.base_stats || {}), currency_entries: entries };
+          scheduleAutosave();
+        });
+      });
     }
 
     // =====================================================================
     // REPUTATION & RELATIONSHIPS
     // =====================================================================
     const REP_LABELS = {
+      '-7': 'Sworn enemy — will act against you at every opportunity.',
+      '-6': 'Deeply hostile — actively works to undermine or harm you.',
       '-5': 'Hates you — actively working to ruin/kill you.',
       '-4': "Dislikes intensely — will harm/sabotage if given the chance.",
       '-3': 'Solidified dislike — won\'t work with you, talks badly.',
@@ -2645,10 +2730,12 @@ function parseNotes() {
        '3': 'Likes you a lot! — wants to work with you.',
        '4': 'Really into you — deep trust, quite supportive.',
        '5': 'Loves you — implicit trust, willing to sacrifice a lot.',
+       '6': 'Devoted — would take serious risks for your sake.',
+       '7': 'Unshakeable bond — absolute trust, willing to sacrifice everything.',
     };
 
     function repLevelLabel(level) {
-      return REP_LABELS[String(Math.max(-5, Math.min(5, level)))] || '';
+      return REP_LABELS[String(Math.max(-7, Math.min(7, level)))] || '';
     }
 
     function renderReputation() {
@@ -2664,12 +2751,16 @@ function parseNotes() {
         const label = repLevelLabel(level);
         return `
           <div class="xrrpg-rep-entry">
-            <span class="rep-name">${entry.name.replace(/</g, '&lt;')}</span>
-            <button type="button" data-rep-action="dec" data-rep-idx="${idx}" ${!canEdit ? 'disabled' : ''}>−</button>
-            <span class="xrrpg-rep-level">${level >= 0 ? '+' : ''}${level}</span>
-            <button type="button" data-rep-action="inc" data-rep-idx="${idx}" ${!canEdit ? 'disabled' : ''}>+</button>
-            <span class="xrrpg-rep-label">${label}</span>
-            <button type="button" data-rep-action="remove" data-rep-idx="${idx}" style="opacity:0.55; font-size:0.8rem;" ${!canEdit ? 'disabled' : ''}>×</button>
+            <div class="xrrpg-rep-name-stack">
+              <span class="rep-name">${entry.name.replace(/</g, '&lt;')}</span>
+              <span class="xrrpg-rep-label">${label}</span>
+            </div>
+            <div class="xrrpg-rep-controls">
+              <button type="button" data-rep-action="dec" data-rep-idx="${idx}" ${!canEdit ? 'disabled' : ''}>−</button>
+              <span class="xrrpg-rep-level">${level >= 0 ? '+' : ''}${level}</span>
+              <button type="button" data-rep-action="inc" data-rep-idx="${idx}" ${!canEdit ? 'disabled' : ''}>+</button>
+              <button type="button" data-rep-action="remove" data-rep-idx="${idx}" class="xrrpg-rep-remove" ${!canEdit ? 'disabled' : ''}>×</button>
+            </div>
           </div>
         `;
       }).join('');
@@ -2687,9 +2778,9 @@ function parseNotes() {
       if (action === 'remove') {
         entries.splice(idx, 1);
       } else if (action === 'inc') {
-        entries[idx] = { ...entries[idx], level: Math.min(5, (entries[idx].level ?? 0) + 1) };
+        entries[idx] = { ...entries[idx], level: Math.min(7, (entries[idx].level ?? 0) + 1) };
       } else if (action === 'dec') {
-        entries[idx] = { ...entries[idx], level: Math.max(-5, (entries[idx].level ?? 0) - 1) };
+        entries[idx] = { ...entries[idx], level: Math.max(-7, (entries[idx].level ?? 0) - 1) };
       }
       character.base_stats = { ...(character.base_stats || {}), reputation_entries: entries };
       renderReputation();
@@ -2700,67 +2791,6 @@ function parseNotes() {
     // INVENTORY SYSTEM
     // =====================================================================
     const invEditingIds = new Set();
-
-    function buffSummaryText(buffs) {
-      if (!buffs || !buffs.length) return '';
-      return buffs.map(b => {
-        const bt = BUFF_TYPES.find(t => t.key === b.type);
-        const label = bt ? bt.label : b.type;
-        return `+${b.value} ${label}`;
-      }).join(', ');
-    }
-
-    function renderActiveBufsSummary() {
-      const wrap = document.getElementById('activeBufsSummary');
-      if (!wrap) return;
-      const items = character.base_stats?.inventory_items || [];
-      const equipped = items.filter(i => i.equipped);
-      const totals = {};
-      equipped.forEach(item => {
-        (item.buffs || []).forEach(b => {
-          totals[b.type] = (totals[b.type] || 0) + Number(b.value);
-        });
-      });
-      const keys = Object.keys(totals);
-      if (!keys.length) { wrap.style.display = 'none'; return; }
-      wrap.style.display = '';
-      const parts = keys.map(k => {
-        const bt = BUFF_TYPES.find(t => t.key === k);
-        return `<span><strong>+${totals[k]}</strong> ${bt ? bt.label : k}</span>`;
-      }).join('');
-      wrap.innerHTML = `<div class="xrrpg-active-buffs-title">Active Equipment Buffs</div><div class="xrrpg-active-buffs-items">${parts}</div>`;
-    }
-
-    function renderBuffSelector(containerId, existingBuffs) {
-      const wrap = document.getElementById(containerId);
-      if (!wrap) return;
-      wrap.innerHTML = BUFF_TYPES.map(bt => {
-        const existing = (existingBuffs || []).find(b => b.type === bt.key);
-        const checked = !!existing;
-        const val = existing ? existing.value : 1;
-        return `
-          <div class="xrrpg-buff-row">
-            <input type="checkbox" id="buff_${containerId}_${bt.key}" data-buff-key="${bt.key}" ${checked ? 'checked' : ''} />
-            <label for="buff_${containerId}_${bt.key}" style="flex:1; cursor:pointer;">${bt.label}</label>
-            <input type="number" id="buffval_${containerId}_${bt.key}" min="0" max="99" value="${val}" style="width:50px;" />
-          </div>
-        `;
-      }).join('');
-    }
-
-    function readBuffsFromSelector(containerId) {
-      const wrap = document.getElementById(containerId);
-      if (!wrap) return [];
-      const buffs = [];
-      wrap.querySelectorAll('input[type="checkbox"][data-buff-key]').forEach(cb => {
-        if (cb.checked) {
-          const key = cb.dataset.buffKey;
-          const valEl = document.getElementById(`buffval_${containerId}_${key}`);
-          buffs.push({ type: key, value: Number(valEl?.value ?? 1) });
-        }
-      });
-      return buffs;
-    }
 
     function equippedTieredCybermodCount() {
       const items = character.base_stats?.inventory_items || [];
@@ -2818,11 +2848,11 @@ function parseNotes() {
       const items = character.base_stats?.inventory_items || [];
       if (!items.length) {
         wrap.innerHTML = '<div class="muted" style="font-size:0.84rem; margin-bottom:0.5rem;">No items tracked yet.</div>';
-        renderActiveBufsSummary();
         return;
       }
       wrap.innerHTML = items.map((item, idx) => {
         const isEditing = invEditingIds.has(item.id);
+        const manualBuffs = Array.isArray(item.buffs) ? item.buffs.filter(b => typeof b === 'string') : [];
         const bufSummary = buffSummaryText(item.buffs);
         const tierBadge = item.is_cybermod && item.tier !== null
           ? `<span class="cybermod-tier-badge">Tier ${item.tier}</span>` : '';
@@ -2834,18 +2864,17 @@ function parseNotes() {
           if (item.is_cybermod) {
             const preset = CYBERMOD_PRESETS.find(p => p.key === item.cybermod_key);
             const presDesc = preset ? preset.description : (item.details || '');
-            const presBufRows = (preset?.buffs || []).map(b => {
-              const bt = BUFF_TYPES.find(t => t.key === b.type);
-              return `<div class="xrrpg-buff-row"><strong>+${b.value}</strong>&nbsp;${bt ? bt.label : b.type}</div>`;
-            }).join('');
-            const passiveText = (!preset?.buffs?.length || !presBufRows) ? '<div class="muted" style="font-size:0.8rem;">Passive / special ability — see effect description.</div>' : '';
             editPane = `
               <div class="xrrpg-inv-edit-pane">
                 <div>
                   <div style="font-size:0.8rem; font-weight:600; opacity:0.7; margin-bottom:0.2rem;">Effect</div>
                   <div class="xrrpg-effect-text">${presDesc.replace(/</g, '&lt;')}</div>
                 </div>
-                ${presBufRows ? `<div><div style="font-size:0.8rem; font-weight:600; opacity:0.7; margin-bottom:0.2rem;">Buffs</div><div class="xrrpg-buff-selector">${presBufRows}</div></div>` : passiveText}
+                <div>
+                  <div style="font-size:0.85rem; font-weight:600; margin-bottom:0.2rem;">Buffs (when equipped)</div>
+                  <div id="invEditBuffs_${idx}" class="xrrpg-manual-buffs-list"></div>
+                  <button type="button" data-inv-add-buff="${idx}">+ Add Buff</button>
+                </div>
                 <label>Notes<textarea data-inv-notes="${idx}" placeholder="Personal notes...">${(item.notes || '').replace(/</g, '&lt;')}</textarea></label>
                 <div class="xrrpg-row" style="gap:0.4rem;">
                   <button type="button" data-inv-save-edit="${idx}">Save</button>
@@ -2860,8 +2889,9 @@ function parseNotes() {
                 <label>Description<textarea data-inv-edit-details="${idx}" placeholder="What does this item do?">${(item.details || '').replace(/</g, '&lt;')}</textarea></label>
                 <label>Notes<textarea data-inv-notes="${idx}" placeholder="Personal notes...">${(item.notes || '').replace(/</g, '&lt;')}</textarea></label>
                 <div style="font-size:0.85rem; font-weight:600; margin-top:0.2rem;">Buffs (when equipped)</div>
-                <div id="invEditBuffs_${idx}" class="xrrpg-buff-selector"></div>
-                <div class="xrrpg-row" style="gap:0.4rem;">
+                <div id="invEditBuffs_${idx}" class="xrrpg-manual-buffs-list"></div>
+                <button type="button" data-inv-add-buff="${idx}">+ Add Buff</button>
+                <div class="xrrpg-row" style="gap:0.4rem; margin-top:0.4rem;">
                   <button type="button" data-inv-save-edit="${idx}">Save</button>
                   <button type="button" data-inv-cancel-edit="${idx}">Cancel</button>
                 </div>
@@ -2877,7 +2907,7 @@ function parseNotes() {
               ${tierBadge}
               ${equippedBadge}
             </div>
-            ${bufSummary ? `<div class="xrrpg-inv-item-buffs">${bufSummary}</div>` : (item.is_cybermod ? '<div class="xrrpg-inv-item-buffs muted">Passive / special ability</div>' : '')}
+            ${bufSummary ? `<div class="xrrpg-inv-item-buffs">${bufSummary}</div>` : ''}
             ${notesPreview}
             <div class="xrrpg-inv-item-btns">
               <button type="button" data-inv-equip="${idx}" ${!canEdit ? 'disabled' : ''}>${item.equipped ? 'Unequip' : 'Equip'}</button>
@@ -2889,11 +2919,23 @@ function parseNotes() {
         `;
       }).join('');
 
-      // Wire edit pane buff selectors
+      // Wire edit pane manual buff selectors
       items.forEach((item, idx) => {
-        if (invEditingIds.has(item.id) && !item.is_cybermod) {
-          renderBuffSelector(`invEditBuffs_${idx}`, item.buffs || []);
+        if (invEditingIds.has(item.id)) {
+          const manualBuffs = Array.isArray(item.buffs) ? item.buffs.filter(b => typeof b === 'string') : [];
+          renderManualBuffSelector(`invEditBuffs_${idx}`, manualBuffs);
         }
+      });
+
+      // Wire add buff buttons
+      wrap.querySelectorAll('[data-inv-add-buff]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.invAddBuff);
+          const containerId = `invEditBuffs_${idx}`;
+          const current = readManualBuffsFromSelector(containerId);
+          current.push('');
+          renderManualBuffSelector(containerId, current);
+        });
       });
 
       // Wire buttons
@@ -2928,7 +2970,6 @@ function parseNotes() {
         btn.addEventListener('click', () => handleInvDelete(Number(btn.dataset.invDelete)));
       });
 
-      renderActiveBufsSummary();
     }
 
     function handleInvEquip(idx) {
@@ -2963,8 +3004,8 @@ function parseNotes() {
         const detailsEl = document.querySelector(`[data-inv-edit-details="${idx}"]`);
         if (nameEl) updated.name = nameEl.value.trim() || updated.name;
         if (detailsEl) updated.details = detailsEl.value;
-        updated.buffs = readBuffsFromSelector(`invEditBuffs_${idx}`);
       }
+      updated.buffs = readManualBuffsFromSelector(`invEditBuffs_${idx}`);
       const notesEl = document.querySelector(`[data-inv-notes="${idx}"]`);
       if (notesEl) updated.notes = notesEl.value;
       items[idx] = updated;
@@ -3059,8 +3100,7 @@ function parseNotes() {
       document.getElementById('partyTierInput').value = s.party_tier || 1;
       document.getElementById('xenicDecayInput').value = s.xenic_decay_level || 0;
       document.getElementById('timesCleansedInput').value = s.times_cleansed || 0;
-      document.getElementById('creditsInput').value = s.credits || 0;
-      document.getElementById('stressLevelInput').value = s.stress_level ?? 0;
+      renderCurrencyEntries();
 
       const textareaIds = ['appearanceInput','personalityInput','motivationInput','backstoryInput','classProgressionInput','inventoryInput','extraNotesInput'];
       const textareaValues = {
@@ -3092,6 +3132,7 @@ function parseNotes() {
       renderSkillList();
       renderDrugs();
       renderStressEffect();
+      renderCurrencyEntries();
       renderReputation();
       refreshCybermodSelect();
       renderInventoryItems();
@@ -3533,13 +3574,31 @@ function parseNotes() {
       scheduleAutosave();
     };
 
-    // Stress meter input
-    document.getElementById('stressLevelInput').addEventListener('change', () => {
-      const val = Math.max(0, Math.min(10, Number(document.getElementById('stressLevelInput').value) || 0));
+    // Stress meter buttons
+    document.getElementById('stressDecBtn').addEventListener('click', () => {
+      if (!canEdit) return;
+      const val = Math.max(0, (character.base_stats?.stress_level ?? 0) - 1);
       character.base_stats = { ...(character.base_stats || {}), stress_level: val };
       renderStressEffect();
       scheduleAutosave();
     });
+    document.getElementById('stressIncBtn').addEventListener('click', () => {
+      if (!canEdit) return;
+      const val = Math.min(10, (character.base_stats?.stress_level ?? 0) + 1);
+      character.base_stats = { ...(character.base_stats || {}), stress_level: val };
+      renderStressEffect();
+      scheduleAutosave();
+    });
+
+    // Currency add
+    document.getElementById('addCurrencyBtn').onclick = () => {
+      if (!canEdit) return;
+      const entries = [...(character.base_stats?.currency_entries ?? [])];
+      entries.push({ name: '', amount: 0 });
+      character.base_stats = { ...(character.base_stats || {}), currency_entries: entries };
+      renderCurrencyEntries();
+      scheduleAutosave();
+    };
 
     // Reputation add
     document.getElementById('repAddBtn').onclick = () => {
@@ -3558,8 +3617,12 @@ function parseNotes() {
       if (e.key === 'Enter') document.getElementById('repAddBtn').click();
     });
 
-    // Inventory: populate buff selector for custom item form
-    renderBuffSelector('invCustomBuffs', []);
+    // Inventory: wire "Add Buff" for custom item form
+    document.getElementById('invAddCustomBuffBtn').addEventListener('click', () => {
+      const current = readManualBuffsFromSelector('invCustomBuffs');
+      current.push('');
+      renderManualBuffSelector('invCustomBuffs', current);
+    });
 
     // Add custom item
     document.getElementById('invAddCustomBtn').onclick = () => {
@@ -3568,14 +3631,14 @@ function parseNotes() {
       if (!name) return;
       const details = document.getElementById('invCustomDetails')?.value || '';
       const notes = document.getElementById('invCustomNotes')?.value || '';
-      const buffs = readBuffsFromSelector('invCustomBuffs');
+      const buffs = readManualBuffsFromSelector('invCustomBuffs');
       const items = [...(character.base_stats?.inventory_items || [])];
       items.push({ id: crypto.randomUUID(), name, details, notes, is_cybermod: false, cybermod_key: null, tier: null, equipped: false, buffs });
       character.base_stats = { ...(character.base_stats || {}), inventory_items: items };
       document.getElementById('invCustomName').value = '';
       document.getElementById('invCustomDetails').value = '';
       document.getElementById('invCustomNotes').value = '';
-      renderBuffSelector('invCustomBuffs', []);
+      renderManualBuffSelector('invCustomBuffs', []);
       renderInventoryItems();
       scheduleAutosave();
     };
@@ -3598,7 +3661,7 @@ function parseNotes() {
         cybermod_key: preset.key,
         tier: preset.tier,
         equipped: false,
-        buffs: preset.buffs.map(b => ({ ...b })),
+        buffs: [],
       });
       character.base_stats = { ...(character.base_stats || {}), inventory_items: items };
       renderInventoryItems();
@@ -3904,7 +3967,7 @@ function parseNotes() {
         const autosaveTargets = [
           'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
           'staminaTotalInput','staminaUsedInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
-          'xenicDecayInput','timesCleansedInput','partyTierInput','creditsInput','stressLevelInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput'
+          'xenicDecayInput','timesCleansedInput','partyTierInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput'
         ];
         const autoResizeIds = ['appearanceInput','personalityInput','motivationInput','backstoryInput','classProgressionInput','inventoryInput','extraNotesInput'];
         autosaveTargets.forEach(id => {
