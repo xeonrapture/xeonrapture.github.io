@@ -6,7 +6,7 @@
   <title>XRRPG Character Sheet</title>
   <link rel="stylesheet" href="/shared/style.css">
 </head>
-<body class="wr-scope">
+<body class="wr-scope xr-scope">
   <div id="nav"></div>
   <main class="wrap sheet">
     <header>
@@ -207,6 +207,8 @@
     </section>
   </main>
 
+  <div id="statusPopup" class="status-popup" aria-live="polite"></div>
+
   <div id="loadingOverlay" class="xr-loading-overlay" aria-live="polite" aria-busy="true">
     <div class="xr-loading-spinner" aria-hidden="true"></div>
     <div id="loadingOverlayText" class="mono">Loading character sheet…</div>
@@ -226,8 +228,8 @@
       <p class="muted">Level-up reference: <a id="levelUpClassLink" href="#" target="_blank" rel="noopener noreferrer">Open class page</a></p>
       <div id="levelMsg" class="mono muted"></div>
       <div class="xr-modal-actions">
-        <button id="confirmLevelBtn" type="button">Apply</button>
         <button id="cancelLevelBtn" type="button">Cancel</button>
+        <button id="confirmLevelBtn" type="button">Apply</button>
       </div>
     </div>
   </div>
@@ -250,8 +252,8 @@
         </label>
       </div>
       <div class="xr-modal-actions">
-        <button id="confirmInjuryBtn" type="button">Apply Injury</button>
         <button id="cancelInjuryBtn" type="button">Cancel</button>
+        <button id="confirmInjuryBtn" type="button">Apply Injury</button>
       </div>
       <div id="injuryMsg" class="mono muted"></div>
     </div>
@@ -270,8 +272,8 @@
         </label>
       </div>
       <div class="xr-modal-actions">
-        <button id="saveSkillModalBtn" type="button">Save Skill</button>
         <button id="cancelSkillModalBtn" type="button">Cancel</button>
+        <button id="saveSkillModalBtn" type="button">Save Skill</button>
       </div>
       <div id="skillModalMsg" class="mono muted"></div>
     </div>
@@ -349,6 +351,28 @@
     let canEdit = false;
     let isMajorSave = false;
     const classAbilities = window.XRRPG_CLASS_ABILITIES || {};
+    const statusPopupEl = document.getElementById('statusPopup');
+
+    function pushStatus(message, { tone = 'info', actionLabel, onAction, duration = 4500 } = {}) {
+      if (!statusPopupEl) return;
+      const toast = document.createElement('div');
+      toast.className = `status-toast${tone !== 'info' ? ' ' + tone : ''}`;
+      const messageSpan = document.createElement('span');
+      messageSpan.className = 'status-message';
+      messageSpan.textContent = message;
+      toast.appendChild(messageSpan);
+      if (actionLabel && typeof onAction === 'function') {
+        const actionButton = document.createElement('button');
+        actionButton.type = 'button';
+        actionButton.textContent = actionLabel;
+        actionButton.addEventListener('click', (e) => { e.stopPropagation(); onAction(); toast.remove(); });
+        toast.appendChild(actionButton);
+      }
+      statusPopupEl.appendChild(toast);
+      toast.addEventListener('click', () => toast.remove());
+      if (duration !== null) setTimeout(() => toast.remove(), duration);
+    }
+
     const ADEPT_CLASSES = new Set(['Warrior', 'Mentalist', 'Tank', 'Druid']);
     const ADEPT_CHROMA_REQUIREMENTS = {
       Warrior: 'Red',
@@ -512,7 +536,7 @@
 
     async function requireUser() {
       const { data: { user } } = await sb.auth.getUser();
-      if (!user) throw new Error('No user');
+      if (!user) { window.location.href = '/login.html'; throw new Error('No user'); }
       return user;
     }
 
@@ -2538,13 +2562,13 @@
         .eq('id', characterId)
         .eq('user_id', currentUser.id);
       if (error) {
-        document.getElementById('status').textContent = error.message;
+        pushStatus(error.message, { tone: 'error' });
         return;
       }
       character.name = name;
       character.base_stats = base_stats;
       character.notes = notes;
-      document.getElementById('status').textContent = 'Saved automatically.';
+      pushStatus('Saved automatically.', { tone: 'success' });
     }
 
     function scheduleAutosave() {
@@ -2699,7 +2723,7 @@
       await addHistory('level_up', `${cls} advanced to class level ${tier}.`, { class: cls, class_level: tier, undo: undoPayload });
       levelModal.classList.add('hidden');
       await loadCharacter();
-      document.getElementById('status').textContent = `Level up applied: ${cls} class level ${tier}.`;
+      pushStatus(`Level up applied: ${cls} class level ${tier}.`, { tone: 'success' });
       });
       } finally {
         isMajorSave = false;
@@ -2718,12 +2742,12 @@
       base_stats.injuries = injuries;
       const { error } = await sb.from('xrrpg_characters').update({ base_stats, updated_at: new Date().toISOString() }).eq('id', characterId).eq('user_id', currentUser.id);
       if (error) {
-        document.getElementById('status').textContent = error.message;
+        pushStatus(error.message, { tone: 'error' });
         return;
       }
       await addHistory('resolve_debuff', `Resolved ${type} injury debuff.`, { type, undo: { type: 'resolve_debuff', injury_global_idx: target.injuryIndex, injury_type: type } });
       await loadCharacter();
-      document.getElementById('status').textContent = `${type} debuff resolved.`;
+      pushStatus(`${type} debuff resolved.`, { tone: 'success' });
       });
     }
 
@@ -2749,12 +2773,12 @@
         .eq('id', characterId)
         .eq('user_id', currentUser.id);
       if (error) {
-        document.getElementById('status').textContent = error.message;
+        pushStatus(error.message, { tone: 'error' });
         return;
       }
       await addHistory('heal_injury', `Healed ${type} injury: ${removed.label || 'unnamed'} (+${Number(removed.damage || 0)} HP).`, { type, label: removed.label || '', healed_hp: Number(removed.damage || 0), undo: { type: 'heal_injury', restore_injury: removed, restore_hp: hpBeforeHeal } });
       await loadCharacter();
-      document.getElementById('status').textContent = `Healed ${type} injury.`;
+      pushStatus(`Healed ${type} injury.`, { tone: 'success' });
       });
     }
 
@@ -2794,7 +2818,7 @@
       await addHistory('injury', `${type.toUpperCase()} injury: ${label || 'unnamed'} (${damage} dmg). ${injuryDebuff(type)}`, { type, label, damage, debuff: injuryDebuff(type), undo: { type: 'injury', injury_at: newInjury.at, injury_idx: injuryIdx, restore_hp: hpBeforeInjury } });
       injuryModal.classList.add('hidden');
       await loadCharacter();
-      document.getElementById('status').textContent = `Applied ${type} injury (${damage} dmg).`;
+      pushStatus(`Applied ${type} injury (${damage} dmg).`, { tone: 'warning' });
       });
     };
 
@@ -2807,7 +2831,7 @@
         .eq('id', characterId)
         .eq('user_id', currentUser.id);
       if (error) {
-        document.getElementById('status').textContent = error.message;
+        pushStatus(error.message, { tone: 'error' });
         return;
       }
       character.skills = nextSkills;
@@ -2815,7 +2839,7 @@
       if (trackHistory) {
         await addHistory('skills', historyLabel, { undo: { type: 'skills', restore_skills: skillsBefore } });
       }
-      document.getElementById('status').textContent = 'Saved automatically.';
+      pushStatus('Saved automatically.', { tone: 'success' });
     }
 
     const skillUpdateTimers = {};
@@ -2879,7 +2903,7 @@
       const { data: fresh, error: fetchErr } = await sb.from('xrrpg_characters')
         .select('id, name, base_stats, class_progression, skills, notes')
         .eq('id', characterId).single();
-      if (fetchErr || !fresh) { document.getElementById('status').textContent = fetchErr?.message || 'Could not fetch character.'; return; }
+      if (fetchErr || !fresh) { pushStatus(fetchErr?.message || 'Could not fetch character.', { tone: 'error' }); return; }
 
       let updateData = {};
 
@@ -2958,12 +2982,12 @@
       const { error } = await sb.from('xrrpg_characters').update(updateData)
         .eq('id', characterId).eq('user_id', currentUser.id);
       if (error) {
-        document.getElementById('status').textContent = error.message;
+        pushStatus(error.message, { tone: 'error' });
         return;
       }
       await addHistory('undo', `Undid: ${row.event_label}`, {});
       await loadCharacter();
-      document.getElementById('status').textContent = 'Undo applied.';
+      pushStatus('Undo applied.', { tone: 'success' });
       });
     }
 
@@ -3154,7 +3178,7 @@
           piMaxInput.addEventListener('input', () => { piMaxBadge.textContent = toRomanNumeral(Number(piMaxInput.value) || 0); });
         }
       } catch (error) {
-        document.getElementById('status').textContent = error.message;
+        pushStatus(error.message, { tone: 'error' });
       }
     })();
   </script>

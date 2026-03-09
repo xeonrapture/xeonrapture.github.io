@@ -366,7 +366,7 @@
 
     async function requireUser() {
       const { data: { user } } = await sb.auth.getUser();
-      if (!user) throw new Error('No user');
+      if (!user) { window.location.href = '/login.html'; throw new Error('No user'); }
       return user;
     }
 
