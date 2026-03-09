@@ -2771,7 +2771,7 @@ function parseNotes() {
       const sel = document.getElementById('invCybermodSelect');
       if (!sel || sel.dataset.populated) return;
       sel.dataset.populated = '1';
-      const maxTier = Number(character.base_stats?.powerful_item_max ?? 0);
+      const maxTier = Number(character?.base_stats?.powerful_item_max ?? 0);
       const groups = { null: [], 1: [], 2: [], 3: [], X: [] };
       CYBERMOD_PRESETS.forEach(p => {
         const tierKey = p.tier === null ? 'null' : String(p.tier);
@@ -3558,8 +3558,7 @@ function parseNotes() {
       if (e.key === 'Enter') document.getElementById('repAddBtn').click();
     });
 
-    // Inventory: populate add-cybermod select and buff selector
-    populateCybermodSelect();
+    // Inventory: populate buff selector for custom item form
     renderBuffSelector('invCustomBuffs', []);
 
     // Add custom item
