@@ -484,8 +484,8 @@
         <div id="levelError" class="mono muted"></div>
       </div>
       <div class="xr-modal-actions">
-        <button id="confirmLevelUp" type="button" aria-label="Apply level" title="Apply level"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></button>
         <button id="cancelLevelUp" type="button" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+        <button id="confirmLevelUp" type="button" aria-label="Apply level" title="Apply level"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></button>
       </div>
     </div>
   </div>
@@ -735,8 +735,8 @@
       </div>
       <p class="muted">Points remaining: <span id="respecPointsRemaining">0</span></p>
       <div class="xr-modal-actions">
-        <button id="respecApplyBtn" type="button" aria-label="Apply respec" title="Apply respec"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></button>
         <button id="respecCancelBtn" type="button" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+        <button id="respecApplyBtn" type="button" aria-label="Apply respec" title="Apply respec"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></button>
       </div>
       <div id="respecModalMsg" class="mono muted"></div>
     </div>
@@ -757,8 +757,8 @@
         </select>
       </label>
       <div class="xr-modal-actions">
-        <button id="energyApplyBtn" type="button" aria-label="Apply" title="Apply"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></button>
         <button id="energyCancelBtn" type="button" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+        <button id="energyApplyBtn" type="button" aria-label="Apply" title="Apply"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></button>
       </div>
     </div>
   </div>
@@ -778,8 +778,8 @@
         <select id="gearChangeValue"></select>
       </label>
       <div class="xr-modal-actions">
-        <button id="gearChangeApplyBtn" type="button" aria-label="Apply" title="Apply"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></button>
         <button id="gearChangeCancelBtn" type="button" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+        <button id="gearChangeApplyBtn" type="button" aria-label="Apply" title="Apply"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></button>
       </div>
       <div id="gearChangeModalMsg" class="mono muted"></div>
     </div>
@@ -5754,10 +5754,7 @@
 
     async function requireUser() {
       const { data: { user } } = await sb.auth.getUser();
-      if (!user) {
-        pushStatus("Not logged in.", { tone: "error" });
-        throw new Error("No user");
-      }
+      if (!user) { window.location.href = '/login.html'; throw new Error('No user'); }
       return user;
     }
 

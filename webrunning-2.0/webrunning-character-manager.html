@@ -116,8 +116,8 @@
       </div>
 
       <div class="xr-modal-actions">
-        <button id="charSaveBtn" aria-label="Save" title="Save"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5z"></path><path d="M8 4v6h8V4"></path><path d="M8 16h8"></path></svg></button>
         <button id="charCancelBtn" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+        <button id="charSaveBtn" aria-label="Save" title="Save"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5z"></path><path d="M8 4v6h8V4"></path><path d="M8 16h8"></path></svg></button>
       </div>
 
       <div id="charModalMsg" class="mono muted">&nbsp;</div>
@@ -133,8 +133,8 @@
       <p id="deletePrompt" class="muted"></p>
 
       <div class="xr-modal-actions">
-        <button id="confirmDeleteBtn" aria-label="Delete" title="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
         <button id="cancelDeleteBtn" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+        <button id="confirmDeleteBtn" aria-label="Delete" title="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
       </div>
 
       <div id="deleteModalMsg" class="mono muted">&nbsp;</div>
@@ -157,10 +157,7 @@
 
     async function requireUser() {
       const { data: { user } } = await sb.auth.getUser();
-      if (!user) {
-        table.innerHTML = "<tr><td colspan='12'>Not logged in.</td></tr>";
-        throw new Error("No user");
-      }
+      if (!user) { window.location.href = '/login.html'; throw new Error('No user'); }
       return user;
     }
 
