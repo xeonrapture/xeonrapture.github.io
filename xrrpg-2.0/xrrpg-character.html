@@ -80,6 +80,7 @@
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
       </div>
       <div class="collapsible-body">
+        <p class="xrrpg-rules-note"><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Resources/Critical+Injuries" target="_blank" rel="noopener">Critical Injuries rules ↗</a></p>
         <div class="stat-inputs">
         <label title="Maximum HP from your build and progression.">Max HP <input id="hpInput" type="number" /></label>
         <label title="Current HP after damage/healing.">Current HP <input id="currentHpInput" type="number" /></label>
@@ -107,6 +108,7 @@
         </div>
         <div class="xrrpg-resource-card">
           <h3>Xenic Decay</h3>
+          <p class="xrrpg-rules-note"><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Resources/Spirit+Decay" target="_blank" rel="noopener">Spirit Decay rules ↗</a></p>
           <div class="xrrpg-resource-fields">
             <label title="Current xenic decay level.">Xenic Decay Level <input id="xenicDecayInput" type="number" min="0" /></label>
             <label title="Total number of decay cleanses.">Times Cleansed <input id="timesCleansedInput" type="number" min="0" /></label>
@@ -124,8 +126,26 @@
             <label title="Currency available for purchases and upkeep.">Credits <input id="creditsInput" type="number" min="0" /></label>
           </div>
         </div>
+        <div class="xrrpg-resource-card">
+          <h3>Stress Meter</h3>
+          <p class="xrrpg-rules-note"><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Modules/The+Stress+Meter" target="_blank" rel="noopener">Stress Meter rules ↗</a></p>
+          <div class="xrrpg-resource-fields">
+            <label title="Stress level (0–10). Higher levels impose increasing penalties.">Stress Level <input id="stressLevelInput" type="number" min="0" max="10" /></label>
+          </div>
+          <div id="stressEffectDisplay" style="font-size:0.82rem; margin-top:0.5rem; line-height:1.4;"></div>
+        </div>
+        <div class="xrrpg-resource-card xrrpg-rep-card">
+          <h3>Reputation &amp; Relationships</h3>
+          <p class="xrrpg-rules-note"><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Modules/Reputation+and+Relationship+Rules" target="_blank" rel="noopener">Reputation &amp; Relationship rules ↗</a></p>
+          <div id="repList"></div>
+          <div class="xrrpg-rep-add-row">
+            <input id="repNameInput" type="text" placeholder="Person or org name" maxlength="64" />
+            <button id="repAddBtn" type="button">Add</button>
+          </div>
+        </div>
         <div class="xrrpg-resource-card xrrpg-drug-card">
           <h3>Drugs</h3>
+          <p class="xrrpg-rules-note"><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Modules/Drug+Rules" target="_blank" rel="noopener">Drug Rules ↗</a></p>
           <div id="drugList"></div>
           <div class="xrrpg-row" style="margin-top:0.5rem; gap:0.5rem; flex-wrap:wrap;">
             <select id="drugAddSelect" style="flex:1; min-width:0;"></select>
@@ -173,8 +193,32 @@
         <h2>Inventory</h2>
         <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
       </div>
-      <div class="collapsible-body xrrpg-notes-stack">
-        <label>Inventory Text<textarea id="inventoryInput" placeholder="Paste your full inventory here."></textarea></label>
+      <div class="collapsible-body">
+        <p class="xrrpg-rules-note"><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Resources/Cybermods" target="_blank" rel="noopener">Cybermod Rules ↗</a> — Tiered cybermods count against your Powerful Item Limit and must not exceed your Max Tier.</p>
+        <div id="activeBufsSummary" class="xrrpg-active-buffs" style="display:none;"></div>
+        <div id="inventoryItemsList"></div>
+        <div class="xrrpg-inv-add-controls">
+          <details class="xrrpg-inv-add-panel">
+            <summary>+ Add Custom Item</summary>
+            <div class="xrrpg-inv-add-form">
+              <label>Name<input id="invCustomName" type="text" placeholder="Item name" maxlength="64" /></label>
+              <label>Description<textarea id="invCustomDetails" placeholder="What does this item do?"></textarea></label>
+              <label>Notes<textarea id="invCustomNotes" placeholder="Personal notes..."></textarea></label>
+              <div style="font-size:0.85rem; font-weight:600; margin-top:0.3rem;">Buffs (when equipped)</div>
+              <div id="invCustomBuffs" class="xrrpg-buff-selector"></div>
+              <button type="button" id="invAddCustomBtn">Add Item</button>
+            </div>
+          </details>
+          <details class="xrrpg-inv-add-panel">
+            <summary>+ Add Cybermod</summary>
+            <div class="xrrpg-inv-add-form">
+              <select id="invCybermodSelect"></select>
+              <div id="invCybermodPreview" class="xrrpg-inv-cybermod-preview"></div>
+              <button type="button" id="invAddCybermodBtn">Add Cybermod</button>
+            </div>
+          </details>
+        </div>
+        <label style="display:flex; flex-direction:column; gap:0.2rem; margin-top:1rem; font-size:0.88rem;">Inventory Notes<textarea id="inventoryInput" placeholder="Additional notes, items, and inventory text..."></textarea></label>
       </div>
     </section>
 
@@ -485,7 +529,9 @@
         'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
         'staminaTotalInput','staminaUsedInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
         'partyTierInput','xenicDecayInput','timesCleansedInput','creditsInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput',
-        'levelUpBtn','takeInjuryBtn','addSkillBtn','confirmLevelBtn','confirmInjuryBtn','saveSkillModalBtn','drugAddBtn','drugAddSelect'
+        'levelUpBtn','takeInjuryBtn','addSkillBtn','confirmLevelBtn','confirmInjuryBtn','saveSkillModalBtn','drugAddBtn','drugAddSelect',
+        'stressLevelInput','repAddBtn','repNameInput','invAddCustomBtn','invCustomName','invCustomDetails','invCustomNotes',
+        'invAddCybermodBtn','invCybermodSelect'
       ];
       editableIds.forEach(id => {
         const el = document.getElementById(id);
@@ -610,7 +656,8 @@ function parseNotes() {
         party_tier: Number(document.getElementById('partyTierInput').value) || 1,
         xenic_decay_level: Number(document.getElementById('xenicDecayInput').value) || 0,
         times_cleansed: Number(document.getElementById('timesCleansedInput').value) || 0,
-        credits: Number(document.getElementById('creditsInput').value) || 0
+        credits: Number(document.getElementById('creditsInput').value) || 0,
+        stress_level: Math.max(0, Math.min(10, Number(document.getElementById('stressLevelInput')?.value ?? 0)))
       };
     }
 
@@ -2351,20 +2398,27 @@ function parseNotes() {
 
 
     const DRUG_PRESETS = [
-      { name: 'Nicotine', type: 'soft', dep_threshold: 10 },
-      { name: 'Amphetamine', type: 'soft', dep_threshold: 10 },
-      { name: 'Alcohol', type: 'soft', dep_threshold: 10 },
-      { name: 'Drolaphor', type: 'soft', dep_threshold: 10 },
-      { name: 'Stimmy', type: 'hard', dep_threshold: 10 },
-      { name: 'Trance', type: 'hard', dep_threshold: 5 },
-      { name: 'Nerve', type: 'hard', dep_threshold: 3 },
-      { name: 'Stoneface', type: 'hard', dep_threshold: 7 },
-      { name: 'Phase', type: 'hard', dep_threshold: 4 },
-      { name: 'Bloody Tears', type: 'hard', dep_threshold: 6 },
-      { name: 'Bpgorrg (Hell Yeah)', type: 'hard', dep_threshold: 2 },
-      { name: 'Mercury', type: 'hard', dep_threshold: null },
-      { name: 'Standard Psychedelics', type: 'hard', dep_threshold: null },
-      { name: 'EPG-10', type: 'hard', dep_threshold: null },
+      // Standard soft drugs
+      { name: 'Nicotine', type: 'soft', dep_threshold: 10, description: '+1 Wit for 1h; -1 Wit for 1h after. (Cigs, Cigars, Hookah)' },
+      { name: 'Amphetamine', type: 'soft', dep_threshold: 10, description: '+1 Int for 1h; -1 Int for 1h after.' },
+      { name: 'Alcohol', type: 'soft', dep_threshold: 10, description: '+1 Vigor for 1h; -1 Vigor for 1h after. (Beer, Wine)' },
+      { name: 'Drolaphor', type: 'soft', dep_threshold: 10, description: '+1 End for 1h; -1 End for 1h after. (Drola Min, Lyon drug)' },
+      // Strong soft drugs (+2 buff/debuff, 6h, counts as 2 doses)
+      { name: 'Nicotine (Strong)', type: 'soft', strong: true, dep_threshold: 10, description: '+2 Wit for 6h; -2 Wit for 6h after. Counts as 2 doses. (Pipe, Nuul — Strobe product)' },
+      { name: 'Amphetamine (Strong)', type: 'soft', strong: true, dep_threshold: 10, description: '+2 Int for 6h; -2 Int for 6h after. Counts as 2 doses. (Ivarin — Strobe; Lyon Tears — Lyon drug)' },
+      { name: 'Alcohol (Strong)', type: 'soft', strong: true, dep_threshold: 10, description: '+2 Vigor for 6h; -2 Vigor for 6h after. Counts as 2 doses. (Liquor)' },
+      { name: 'Drolaphor (Strong)', type: 'soft', strong: true, dep_threshold: 10, description: '+2 End for 6h; -2 End for 6h after. Counts as 2 doses. (Drola Max, Lyon drug)' },
+      // Hard drugs
+      { name: 'Stimmy', type: 'hard', dep_threshold: 10, description: '+5 Vig & End for 30s (3 turns); -5 Wit & Int for 1h after (longer with repeated doses). (Inject) Was used as a strength enhancer by Krangor brutes.' },
+      { name: 'Trance', type: 'hard', dep_threshold: 5, description: '+3 Wit for 1h; -3 all other checks during the high. 3rd hit/day gives disadvantage after. (Tab, Strobe drug)' },
+      { name: 'Nerve', type: 'hard', dep_threshold: 3, description: '+2 Int checks for 6h; no listed debuff. Makes you feel amazing — like a nebula moving through your veins. Extremely addictive. (Smoke/Powder, Lyon drug)' },
+      { name: 'Stoneface', type: 'hard', dep_threshold: 7, description: "Can't take damage for 10 min; all deferred damage and healing hits at once after. (Inject, Lyon drug)" },
+      { name: 'Phase', type: 'hard', dep_threshold: 4, description: 'Partially immaterial for 10 min — float 5ft, pass through most substances except thick metal. Painfully material for 1h after. (Pill, Strobe drug)' },
+      { name: 'Bloody Tears', type: 'hard', dep_threshold: 6, description: '+5 on checks to resist effects for 10 min; take DMG equal to your level each time you resist an effect. You feel every sensation as pleasure. (Eyedrops, Lyon drug)' },
+      { name: 'Bpgorrg (Hell Yeah)', type: 'hard', dep_threshold: 2, description: 'You feel really really good. Then really really bad. (Powder, Strobe drug)' },
+      { name: 'Mercury', type: 'hard', dep_threshold: null, description: 'Visions of future/past/present if gray chroma; Brutal Poison Critical Injury if not gray. An old gray potion turned street drug. (Drink)' },
+      { name: 'Standard Psychedelics', type: 'hard', dep_threshold: null, description: 'A trip — could be good or bad. Roll d20: 10 or below = bad trip, 11+ = good trip. (Smoke/Eat)' },
+      { name: 'EPG-10', type: 'hard', dep_threshold: null, description: 'Wild trip lasting 1d4h. Roll d10 at end: 10=permanent stat upgrade (once only), 9–2=Withering+Spirit Decay, 1=instant death. (Tab, created by E.G. Bio corp)' },
     ];
 
     function getDrugPreset(name) {
@@ -2382,15 +2436,24 @@ function parseNotes() {
         addSelect.dataset.populated = '1';
         const softGroup = document.createElement('optgroup');
         softGroup.label = 'Soft Drugs';
+        const strongSoftGroup = document.createElement('optgroup');
+        strongSoftGroup.label = 'Strong Soft Drugs';
         const hardGroup = document.createElement('optgroup');
         hardGroup.label = 'Hard Drugs';
         DRUG_PRESETS.forEach(p => {
           const opt = document.createElement('option');
           opt.value = p.name;
           opt.textContent = p.name;
-          (p.type === 'soft' ? softGroup : hardGroup).appendChild(opt);
+          if (p.type === 'soft' && p.strong) {
+            strongSoftGroup.appendChild(opt);
+          } else if (p.type === 'soft') {
+            softGroup.appendChild(opt);
+          } else {
+            hardGroup.appendChild(opt);
+          }
         });
         addSelect.appendChild(softGroup);
+        addSelect.appendChild(strongSoftGroup);
         addSelect.appendChild(hardGroup);
       }
 
@@ -2398,14 +2461,17 @@ function parseNotes() {
         const preset = getDrugPreset(drug.name);
         const thresholdHint = preset.dep_threshold != null ? `(dep: ${preset.dep_threshold})` : '(no dep. threshold)';
         const weeksStyle = drug.dependent ? '' : 'display:none;';
+        const descHtml = preset.description ? `<div class="drug-description muted">${preset.description}</div>` : '';
+        const typeLabel = preset.strong ? 'soft (strong)' : drug.type;
         return `
           <div class="xrrpg-drug-row" data-drug-idx="${idx}">
             <div class="xrrpg-drug-row-header">
               <span class="drug-name">${drug.name}</span>
-              <span class="drug-type-badge drug-type-${drug.type}">${drug.type}</span>
+              <span class="drug-type-badge drug-type-${drug.type}">${typeLabel}</span>
               <button type="button" class="drug-active-btn${drug.active ? ' active' : ''}" data-drug-action="toggle-active" data-idx="${idx}" title="${drug.active ? 'Currently active — click to deactivate' : 'Click to mark as active'}">${drug.active ? 'Active' : 'Inactive'}</button>
               <button type="button" class="drug-remove-btn" data-drug-action="remove" data-idx="${idx}" title="Stop tracking this drug">×</button>
             </div>
+            ${descHtml}
             <div class="xrrpg-drug-row-fields">
               <div class="drug-tracker-row">
                 <span class="drug-tracker-label">Addiction</span>
@@ -2485,6 +2551,440 @@ function parseNotes() {
       scheduleAutosave();
     }
 
+    // =====================================================================
+    // CYBERMOD PRESETS
+    // =====================================================================
+    const CYBERMOD_PRESETS = [
+      { key: 'aesthetic_augment', name: 'Aesthetic Augment', tier: null, description: 'Tell the DM your idea and you got it; they cost money but you can get them whenever.', buffs: [] },
+      { key: 'starter_mod', name: 'Starter Mod', tier: null, description: 'Lets you control cybermods; cyberport can be included with no extra price.', buffs: [] },
+      { key: 'senses_suite', name: 'Senses Suite', tier: 1, description: 'Increase seeing distance, see the whole electromagnetic spectrum, hear and smell better. (+2 perception Actions)', buffs: [{ type: 'perception_bonus', value: 2 }] },
+      { key: 'mech_arm_t1', name: 'Mech Arm(s)', tier: 1, description: 'Increase any Actions with that arm by +1, +1 dmg when using that arm.', buffs: [{ type: 'arm_action_bonus', value: 1 }, { type: 'arm_damage_bonus', value: 1 }] },
+      { key: 'mech_leg_t1', name: 'Mech Leg(s)', tier: 1, description: 'Increase movement speed, add +1 dmg to kicks and any Actions using legs.', buffs: [{ type: 'leg_action_bonus', value: 1 }, { type: 'leg_damage_bonus', value: 1 }] },
+      { key: 'neural_augment_t1', name: 'Neural Augment', tier: 1, description: 'Enable communication with certain devices and quicken the mind (+1 Wit Actions, non-combat). Can access the gray web and establish communication links.', buffs: [{ type: 'wit_action_bonus', value: 1 }] },
+      { key: 'lakomo_suite', name: 'Lakomo Suite', tier: 1, description: 'Hands and feet that can increase and decrease friction. Friction Down: slide around. Friction Up: better at grapples and climbing.', buffs: [] },
+      { key: 'medic_implant', name: 'Medic Implant', tier: 1, description: 'Implant in arm. +5 to stabilize someone and can do surgery with more time. Can give 3 HP of healing (no Critical), 3×/day, 1 target.', buffs: [{ type: 'stabilize_bonus', value: 5 }, { type: 'healing_charges', value: 3 }] },
+      { key: 'weapon_implant_t1', name: 'Weapon Implant', tier: 1, description: 'Weapon or gun implant cybermod. Does 2 dmg.', buffs: [{ type: 'weapon_damage', value: 2 }] },
+      { key: 'armor_skin_t1', name: 'Armor Skin', tier: 1, description: '+2 HP.', buffs: [{ type: 'hp_bonus', value: 2 }] },
+      { key: 'mech_arm_t2', name: 'Mech Arm(s) (Tier II)', tier: 2, description: 'Same as Tier I Arms but now +2 to dmg and Actions.', buffs: [{ type: 'arm_action_bonus', value: 2 }, { type: 'arm_damage_bonus', value: 2 }] },
+      { key: 'mech_leg_t2', name: 'Mech Leg(s) (Tier II)', tier: 2, description: 'Same as Tier I Legs but now +2 to dmg and Actions.', buffs: [{ type: 'leg_action_bonus', value: 2 }, { type: 'leg_damage_bonus', value: 2 }] },
+      { key: 'weapon_implant_t2', name: 'Weapon Implant (Tier II)', tier: 2, description: 'Upgraded weapon or gun implant. Does 3 dmg.', buffs: [{ type: 'weapon_damage', value: 3 }] },
+      { key: 'neural_augment_t2', name: 'Neural Augment (Tier II)', tier: 2, description: 'Further increases mind quickening, grants photographic memory (+2 Wit Actions). Enables hacking of other cybermods.', buffs: [{ type: 'wit_action_bonus', value: 2 }] },
+      { key: 'forcefield_implant', name: 'Forcefield Implant (Blue)', tier: 2, description: 'Body implant. Ignore xenic Minor Injuries but breaks on a Severe. Costs 1 Stamina to generate.', buffs: [] },
+      { key: 'onyx_shield_implant', name: 'Onyx Shield Implant (Gray)', tier: 2, description: 'Body implant. Ignore physical and obsidian Minor Injuries but breaks on a Severe. Costs 1 Stamina to generate.', buffs: [] },
+      { key: 'cyberskeleton_t2', name: 'Cyberskeleton', tier: 2, description: 'Mechanical skeleton with inertial dampening: gain 3 HP immediately and can stop your motion at any moment (costs 1 Stamina).', buffs: [{ type: 'hp_bonus', value: 3 }] },
+      { key: 'atmosphere_node', name: 'Atmosphere Node', tier: 2, description: 'Can create a 30ft bubble of atmosphere wherever you go.', buffs: [] },
+      { key: 'shroud_skin', name: 'Shroud Skin', tier: 2, description: 'Skin that emanates a field that can turn the wearer semi-invisible (+5 to stealth Actions, costs 1 Stamina).', buffs: [{ type: 'stealth_bonus', value: 5 }] },
+      { key: 'armor_skin_t2', name: 'Armor Skin (Tier II)', tier: 2, description: '+4 HP.', buffs: [{ type: 'hp_bonus', value: 4 }] },
+      { key: 'xeon_sensor', name: 'Xeon Sensor', tier: 2, description: 'You can now sense sources of xeon and determine their color (no stamina cost).', buffs: [] },
+      { key: 'xeon_binding', name: 'Xeon Binding', tier: 2, description: 'Install a xeon tether and create a white, glowing tether beam. Holds up to 1000 lbs or body weight (whichever is higher). Max 30 ft length.', buffs: [] },
+      { key: 'mech_arm_t3', name: 'Mech Arm(s) (Tier III)', tier: 3, description: 'Same as Tier II Arms but now +3 to dmg and Actions.', buffs: [{ type: 'arm_action_bonus', value: 3 }, { type: 'arm_damage_bonus', value: 3 }] },
+      { key: 'mech_leg_t3', name: 'Mech Leg(s) (Tier III)', tier: 3, description: 'Same as Tier II Legs but now +3 to dmg and Actions.', buffs: [{ type: 'leg_action_bonus', value: 3 }, { type: 'leg_damage_bonus', value: 3 }] },
+      { key: 'weapon_implant_t3', name: 'Weapon Implant (Tier III)', tier: 3, description: 'Upgraded weapon or gun implant. Does 4 dmg.', buffs: [{ type: 'weapon_damage', value: 4 }] },
+      { key: 'cyberskeleton_t3', name: 'Cyberskeleton (Tier III)', tier: 3, description: 'Gain 5 HP immediately. Can stop motion and/or make yourself up to 2x heavier at will.', buffs: [{ type: 'hp_bonus', value: 5 }] },
+      { key: 'neural_augment_t3', name: 'Neural Augment (Tier III)', tier: 3, description: 'Even greater intelligence (+3 Wit Actions).', buffs: [{ type: 'wit_action_bonus', value: 3 }] },
+      { key: 'mech_animal_form', name: 'Mech Animal Form', tier: 3, description: 'Replace your whole body (except brain) with a cyberbody. Can transform into an animal — deals d10 + stat dmg per stamina, can fly if chosen. Inherits all stats and cybermods.', buffs: [] },
+      { key: 'uranium_gun_implant', name: 'Uranium Gun Implant', tier: 3, description: 'Gun implanted on body. Does 8 dmg on Success, but you take half that dmg every time you use it.', buffs: [{ type: 'weapon_damage', value: 8 }] },
+      { key: 'gravity_core', name: 'Gravity Core', tier: 3, description: 'Activate to change or nullify your gravity at will for 10 minutes at a time. Can use 3 times a day.', buffs: [] },
+      { key: 'portal_generator', name: 'Portal Generator', tier: 'X', description: 'Create a portal centered on your body that portals everyone within 10 ft of you. Roll on Spirit Decay table every time you use it.', buffs: [] },
+    ];
+
+    // =====================================================================
+    // BUFF TYPES
+    // =====================================================================
+    const BUFF_TYPES = [
+      { key: 'hp_bonus', label: 'Max HP Bonus' },
+      { key: 'perception_bonus', label: 'Perception Actions Bonus' },
+      { key: 'wit_action_bonus', label: 'Wit Actions Bonus (non-combat)' },
+      { key: 'stealth_bonus', label: 'Stealth Actions Bonus' },
+      { key: 'arm_action_bonus', label: 'Arm Actions Bonus' },
+      { key: 'arm_damage_bonus', label: 'Arm Damage Bonus' },
+      { key: 'leg_action_bonus', label: 'Leg Actions Bonus' },
+      { key: 'leg_damage_bonus', label: 'Leg / Kick Damage Bonus' },
+      { key: 'stabilize_bonus', label: 'Stabilize Check Bonus' },
+      { key: 'weapon_damage', label: 'Implanted Weapon Damage' },
+      { key: 'healing_charges', label: 'Medic Healing Charges / Day' },
+    ];
+
+    // =====================================================================
+    // STRESS METER
+    // =====================================================================
+    const STRESS_EFFECTS = [
+      'No stress — no effect on capabilities or mind.',
+      'Level 1 — just started to feel the stress. -1 on Int and Wit.',
+      'Level 2 — more pressure. -1 on all checks.',
+      'Level 3 — pretty stressed now. -2 on all checks.',
+      'Level 4 — starting to feel panicky. -2 to all checks.',
+      'Level 5 — quite anxious, shaking lightly. -3 to all checks.',
+      'Level 6 — panic starting to overtake you. -3 to all checks.',
+      'Level 7 — blinding headache, vision partially impaired, loud ringing. Disadvantage.',
+      'Level 8 — dizzy, hard time breathing. Fight, flight, or freeze. Disadvantage.',
+      'Level 9 — full-blown panic attack, thinking irrationally. Double disadvantage.',
+      'Level 10 — blind with panic. Immediately do anything to escape — even something rash that leads to harm. Triple disadvantage.',
+    ];
+
+    function renderStressEffect() {
+      const display = document.getElementById('stressEffectDisplay');
+      if (!display) return;
+      const level = Math.max(0, Math.min(10, Number(character.base_stats?.stress_level ?? 0)));
+      display.textContent = STRESS_EFFECTS[level] || '';
+      display.className = level === 0 ? 'muted' : (level >= 7 ? 'text-danger' : level >= 4 ? 'text-warn' : 'muted');
+    }
+
+    // =====================================================================
+    // REPUTATION & RELATIONSHIPS
+    // =====================================================================
+    const REP_LABELS = {
+      '-5': 'Hates you — actively working to ruin/kill you.',
+      '-4': "Dislikes intensely — will harm/sabotage if given the chance.",
+      '-3': 'Solidified dislike — won\'t work with you, talks badly.',
+      '-2': "Soured opinion — doesn't like you, doesn't trust you much.",
+      '-1': 'Mild dislike — opinion fairly open to being swayed.',
+       '0': 'Neutral — no positive or negative feelings.',
+       '1': 'Kinda likes you — open either way.',
+       '2': 'Likes you quite a bit — starting to trust you.',
+       '3': 'Likes you a lot! — wants to work with you.',
+       '4': 'Really into you — deep trust, quite supportive.',
+       '5': 'Loves you — implicit trust, willing to sacrifice a lot.',
+    };
+
+    function repLevelLabel(level) {
+      return REP_LABELS[String(Math.max(-5, Math.min(5, level)))] || '';
+    }
+
+    function renderReputation() {
+      const wrap = document.getElementById('repList');
+      if (!wrap) return;
+      const entries = character.base_stats?.reputation_entries || [];
+      if (!entries.length) {
+        wrap.innerHTML = '<div class="muted" style="font-size:0.84rem; margin-bottom:0.35rem;">No entries yet.</div>';
+        return;
+      }
+      wrap.innerHTML = entries.map((entry, idx) => {
+        const level = Number(entry.level ?? 0);
+        const label = repLevelLabel(level);
+        return `
+          <div class="xrrpg-rep-entry">
+            <span class="rep-name">${entry.name.replace(/</g, '&lt;')}</span>
+            <button type="button" data-rep-action="dec" data-rep-idx="${idx}" ${!canEdit ? 'disabled' : ''}>−</button>
+            <span class="xrrpg-rep-level">${level >= 0 ? '+' : ''}${level}</span>
+            <button type="button" data-rep-action="inc" data-rep-idx="${idx}" ${!canEdit ? 'disabled' : ''}>+</button>
+            <span class="xrrpg-rep-label">${label}</span>
+            <button type="button" data-rep-action="remove" data-rep-idx="${idx}" style="opacity:0.55; font-size:0.8rem;" ${!canEdit ? 'disabled' : ''}>×</button>
+          </div>
+        `;
+      }).join('');
+      wrap.querySelectorAll('[data-rep-action]').forEach(el => {
+        el.addEventListener('click', handleRepAction);
+      });
+    }
+
+    function handleRepAction(e) {
+      if (!canEdit) return;
+      const el = e.currentTarget;
+      const action = el.dataset.repAction;
+      const idx = Number(el.dataset.repIdx);
+      const entries = [...(character.base_stats?.reputation_entries || [])];
+      if (action === 'remove') {
+        entries.splice(idx, 1);
+      } else if (action === 'inc') {
+        entries[idx] = { ...entries[idx], level: Math.min(5, (entries[idx].level ?? 0) + 1) };
+      } else if (action === 'dec') {
+        entries[idx] = { ...entries[idx], level: Math.max(-5, (entries[idx].level ?? 0) - 1) };
+      }
+      character.base_stats = { ...(character.base_stats || {}), reputation_entries: entries };
+      renderReputation();
+      scheduleAutosave();
+    }
+
+    // =====================================================================
+    // INVENTORY SYSTEM
+    // =====================================================================
+    const invEditingIds = new Set();
+
+    function buffSummaryText(buffs) {
+      if (!buffs || !buffs.length) return '';
+      return buffs.map(b => {
+        const bt = BUFF_TYPES.find(t => t.key === b.type);
+        const label = bt ? bt.label : b.type;
+        return `+${b.value} ${label}`;
+      }).join(', ');
+    }
+
+    function renderActiveBufsSummary() {
+      const wrap = document.getElementById('activeBufsSummary');
+      if (!wrap) return;
+      const items = character.base_stats?.inventory_items || [];
+      const equipped = items.filter(i => i.equipped);
+      const totals = {};
+      equipped.forEach(item => {
+        (item.buffs || []).forEach(b => {
+          totals[b.type] = (totals[b.type] || 0) + Number(b.value);
+        });
+      });
+      const keys = Object.keys(totals);
+      if (!keys.length) { wrap.style.display = 'none'; return; }
+      wrap.style.display = '';
+      const parts = keys.map(k => {
+        const bt = BUFF_TYPES.find(t => t.key === k);
+        return `<span><strong>+${totals[k]}</strong> ${bt ? bt.label : k}</span>`;
+      }).join('');
+      wrap.innerHTML = `<div class="xrrpg-active-buffs-title">Active Equipment Buffs</div><div class="xrrpg-active-buffs-items">${parts}</div>`;
+    }
+
+    function renderBuffSelector(containerId, existingBuffs) {
+      const wrap = document.getElementById(containerId);
+      if (!wrap) return;
+      wrap.innerHTML = BUFF_TYPES.map(bt => {
+        const existing = (existingBuffs || []).find(b => b.type === bt.key);
+        const checked = !!existing;
+        const val = existing ? existing.value : 1;
+        return `
+          <div class="xrrpg-buff-row">
+            <input type="checkbox" id="buff_${containerId}_${bt.key}" data-buff-key="${bt.key}" ${checked ? 'checked' : ''} />
+            <label for="buff_${containerId}_${bt.key}" style="flex:1; cursor:pointer;">${bt.label}</label>
+            <input type="number" id="buffval_${containerId}_${bt.key}" min="0" max="99" value="${val}" style="width:50px;" />
+          </div>
+        `;
+      }).join('');
+    }
+
+    function readBuffsFromSelector(containerId) {
+      const wrap = document.getElementById(containerId);
+      if (!wrap) return [];
+      const buffs = [];
+      wrap.querySelectorAll('input[type="checkbox"][data-buff-key]').forEach(cb => {
+        if (cb.checked) {
+          const key = cb.dataset.buffKey;
+          const valEl = document.getElementById(`buffval_${containerId}_${key}`);
+          buffs.push({ type: key, value: Number(valEl?.value ?? 1) });
+        }
+      });
+      return buffs;
+    }
+
+    function equippedTieredCybermodCount() {
+      const items = character.base_stats?.inventory_items || [];
+      return items.filter(i => i.equipped && i.is_cybermod && i.tier !== null && i.tier !== 'X').length;
+    }
+
+    function populateCybermodSelect() {
+      const sel = document.getElementById('invCybermodSelect');
+      if (!sel || sel.dataset.populated) return;
+      sel.dataset.populated = '1';
+      const maxTier = Number(character.base_stats?.powerful_item_max ?? 0);
+      const groups = { null: [], 1: [], 2: [], 3: [], X: [] };
+      CYBERMOD_PRESETS.forEach(p => {
+        const tierKey = p.tier === null ? 'null' : String(p.tier);
+        if (p.tier === null || p.tier === 'X' || (typeof p.tier === 'number' && p.tier <= maxTier)) {
+          groups[tierKey] = groups[tierKey] || [];
+          groups[tierKey].push(p);
+        }
+      });
+      const groupLabels = { null: 'No Tier', 1: 'Tier I', 2: 'Tier II', 3: 'Tier III', X: 'Tier X (Special)' };
+      ['null', '1', '2', '3', 'X'].forEach(tierKey => {
+        const list = groups[tierKey];
+        if (!list || !list.length) return;
+        const grp = document.createElement('optgroup');
+        grp.label = groupLabels[tierKey];
+        list.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.key;
+          opt.textContent = p.name;
+          grp.appendChild(opt);
+        });
+        sel.appendChild(grp);
+      });
+      sel.addEventListener('change', () => {
+        const key = sel.value;
+        const preset = CYBERMOD_PRESETS.find(p => p.key === key);
+        const preview = document.getElementById('invCybermodPreview');
+        if (preview && preset) preview.textContent = preset.description || '';
+      });
+      sel.dispatchEvent(new Event('change'));
+    }
+
+    function refreshCybermodSelect() {
+      const sel = document.getElementById('invCybermodSelect');
+      if (sel) {
+        delete sel.dataset.populated;
+        sel.innerHTML = '';
+        populateCybermodSelect();
+      }
+    }
+
+    function renderInventoryItems() {
+      const wrap = document.getElementById('inventoryItemsList');
+      if (!wrap) return;
+      const items = character.base_stats?.inventory_items || [];
+      if (!items.length) {
+        wrap.innerHTML = '<div class="muted" style="font-size:0.84rem; margin-bottom:0.5rem;">No items tracked yet.</div>';
+        renderActiveBufsSummary();
+        return;
+      }
+      wrap.innerHTML = items.map((item, idx) => {
+        const isEditing = invEditingIds.has(item.id);
+        const bufSummary = buffSummaryText(item.buffs);
+        const tierBadge = item.is_cybermod && item.tier !== null
+          ? `<span class="cybermod-tier-badge">Tier ${item.tier}</span>` : '';
+        const equippedBadge = item.equipped ? `<span class="inv-equipped-badge">Equipped</span>` : '';
+        const notesPreview = item.notes ? `<div class="xrrpg-inv-item-notes-preview">${item.notes.slice(0, 80).replace(/</g, '&lt;')}${item.notes.length > 80 ? '…' : ''}</div>` : '';
+
+        let editPane = '';
+        if (isEditing) {
+          if (item.is_cybermod) {
+            const preset = CYBERMOD_PRESETS.find(p => p.key === item.cybermod_key);
+            const presDesc = preset ? preset.description : (item.details || '');
+            const presBufRows = (preset?.buffs || []).map(b => {
+              const bt = BUFF_TYPES.find(t => t.key === b.type);
+              return `<div class="xrrpg-buff-row"><strong>+${b.value}</strong>&nbsp;${bt ? bt.label : b.type}</div>`;
+            }).join('');
+            const passiveText = (!preset?.buffs?.length || !presBufRows) ? '<div class="muted" style="font-size:0.8rem;">Passive / special ability — see effect description.</div>' : '';
+            editPane = `
+              <div class="xrrpg-inv-edit-pane">
+                <div>
+                  <div style="font-size:0.8rem; font-weight:600; opacity:0.7; margin-bottom:0.2rem;">Effect</div>
+                  <div class="xrrpg-effect-text">${presDesc.replace(/</g, '&lt;')}</div>
+                </div>
+                ${presBufRows ? `<div><div style="font-size:0.8rem; font-weight:600; opacity:0.7; margin-bottom:0.2rem;">Buffs</div><div class="xrrpg-buff-selector">${presBufRows}</div></div>` : passiveText}
+                <label>Notes<textarea data-inv-notes="${idx}" placeholder="Personal notes...">${(item.notes || '').replace(/</g, '&lt;')}</textarea></label>
+                <div class="xrrpg-row" style="gap:0.4rem;">
+                  <button type="button" data-inv-save-edit="${idx}">Save</button>
+                  <button type="button" data-inv-cancel-edit="${idx}">Cancel</button>
+                </div>
+              </div>
+            `;
+          } else {
+            editPane = `
+              <div class="xrrpg-inv-edit-pane">
+                <label>Name<input type="text" data-inv-edit-name="${idx}" value="${(item.name || '').replace(/"/g, '&quot;').replace(/</g, '&lt;')}" maxlength="64" /></label>
+                <label>Description<textarea data-inv-edit-details="${idx}" placeholder="What does this item do?">${(item.details || '').replace(/</g, '&lt;')}</textarea></label>
+                <label>Notes<textarea data-inv-notes="${idx}" placeholder="Personal notes...">${(item.notes || '').replace(/</g, '&lt;')}</textarea></label>
+                <div style="font-size:0.85rem; font-weight:600; margin-top:0.2rem;">Buffs (when equipped)</div>
+                <div id="invEditBuffs_${idx}" class="xrrpg-buff-selector"></div>
+                <div class="xrrpg-row" style="gap:0.4rem;">
+                  <button type="button" data-inv-save-edit="${idx}">Save</button>
+                  <button type="button" data-inv-cancel-edit="${idx}">Cancel</button>
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        return `
+          <div class="xrrpg-inv-item-card${item.equipped ? ' equipped' : ''}" data-inv-idx="${idx}">
+            <div class="xrrpg-inv-item-header">
+              <span class="xrrpg-inv-item-name">${(item.name || 'Unnamed').replace(/</g, '&lt;')}</span>
+              ${tierBadge}
+              ${equippedBadge}
+            </div>
+            ${bufSummary ? `<div class="xrrpg-inv-item-buffs">${bufSummary}</div>` : (item.is_cybermod ? '<div class="xrrpg-inv-item-buffs muted">Passive / special ability</div>' : '')}
+            ${notesPreview}
+            <div class="xrrpg-inv-item-btns">
+              <button type="button" data-inv-equip="${idx}" ${!canEdit ? 'disabled' : ''}>${item.equipped ? 'Unequip' : 'Equip'}</button>
+              <button type="button" data-inv-edit="${idx}" ${!canEdit ? 'disabled' : ''}>Edit</button>
+              <button type="button" data-inv-delete="${idx}" style="opacity:0.6;" ${!canEdit ? 'disabled' : ''}>Delete</button>
+            </div>
+            ${editPane}
+          </div>
+        `;
+      }).join('');
+
+      // Wire edit pane buff selectors
+      items.forEach((item, idx) => {
+        if (invEditingIds.has(item.id) && !item.is_cybermod) {
+          renderBuffSelector(`invEditBuffs_${idx}`, item.buffs || []);
+        }
+      });
+
+      // Wire buttons
+      wrap.querySelectorAll('[data-inv-equip]').forEach(btn => {
+        btn.addEventListener('click', () => handleInvEquip(Number(btn.dataset.invEquip)));
+      });
+      wrap.querySelectorAll('[data-inv-edit]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.invEdit);
+          const id = (character.base_stats?.inventory_items || [])[idx]?.id;
+          if (!id) return;
+          if (invEditingIds.has(id)) invEditingIds.delete(id);
+          else invEditingIds.add(id);
+          renderInventoryItems();
+        });
+      });
+      wrap.querySelectorAll('[data-inv-cancel-edit]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.invCancelEdit);
+          const id = (character.base_stats?.inventory_items || [])[idx]?.id;
+          if (id) invEditingIds.delete(id);
+          renderInventoryItems();
+        });
+      });
+      wrap.querySelectorAll('[data-inv-save-edit]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.invSaveEdit);
+          handleInvSaveEdit(idx);
+        });
+      });
+      wrap.querySelectorAll('[data-inv-delete]').forEach(btn => {
+        btn.addEventListener('click', () => handleInvDelete(Number(btn.dataset.invDelete)));
+      });
+
+      renderActiveBufsSummary();
+    }
+
+    function handleInvEquip(idx) {
+      if (!canEdit) return;
+      const items = [...(character.base_stats?.inventory_items || [])];
+      const item = items[idx];
+      if (!item) return;
+      if (!item.equipped && item.is_cybermod && item.tier !== null && item.tier !== 'X') {
+        const limit = Number(character.base_stats?.powerful_item_limit ?? 0);
+        if (equippedTieredCybermodCount() >= limit && limit > 0) {
+          const t = document.createElement('div');
+          t.className = 'toast toast-error';
+          t.textContent = 'Powerful Item Limit reached — unequip another tiered cybermod first.';
+          document.body.appendChild(t);
+          setTimeout(() => t.remove(), 3500);
+          return;
+        }
+      }
+      items[idx] = { ...item, equipped: !item.equipped };
+      character.base_stats = { ...(character.base_stats || {}), inventory_items: items };
+      renderInventoryItems();
+      scheduleAutosave();
+    }
+
+    function handleInvSaveEdit(idx) {
+      const items = [...(character.base_stats?.inventory_items || [])];
+      const item = items[idx];
+      if (!item) return;
+      const updated = { ...item };
+      if (!item.is_cybermod) {
+        const nameEl = document.querySelector(`[data-inv-edit-name="${idx}"]`);
+        const detailsEl = document.querySelector(`[data-inv-edit-details="${idx}"]`);
+        if (nameEl) updated.name = nameEl.value.trim() || updated.name;
+        if (detailsEl) updated.details = detailsEl.value;
+        updated.buffs = readBuffsFromSelector(`invEditBuffs_${idx}`);
+      }
+      const notesEl = document.querySelector(`[data-inv-notes="${idx}"]`);
+      if (notesEl) updated.notes = notesEl.value;
+      items[idx] = updated;
+      invEditingIds.delete(item.id);
+      character.base_stats = { ...(character.base_stats || {}), inventory_items: items };
+      renderInventoryItems();
+      scheduleAutosave();
+    }
+
+    function handleInvDelete(idx) {
+      if (!canEdit) return;
+      const items = [...(character.base_stats?.inventory_items || [])];
+      const item = items[idx];
+      if (item) invEditingIds.delete(item.id);
+      items.splice(idx, 1);
+      character.base_stats = { ...(character.base_stats || {}), inventory_items: items };
+      renderInventoryItems();
+      scheduleAutosave();
+    }
+
     function renderSkillList() {
       const skills = character.skills || [];
       const wrap = document.getElementById('skillList');
@@ -2560,6 +3060,7 @@ function parseNotes() {
       document.getElementById('xenicDecayInput').value = s.xenic_decay_level || 0;
       document.getElementById('timesCleansedInput').value = s.times_cleansed || 0;
       document.getElementById('creditsInput').value = s.credits || 0;
+      document.getElementById('stressLevelInput').value = s.stress_level ?? 0;
 
       const textareaIds = ['appearanceInput','personalityInput','motivationInput','backstoryInput','classProgressionInput','inventoryInput','extraNotesInput'];
       const textareaValues = {
@@ -2590,6 +3091,10 @@ function parseNotes() {
 
       renderSkillList();
       renderDrugs();
+      renderStressEffect();
+      renderReputation();
+      refreshCybermodSelect();
+      renderInventoryItems();
       renderClassAbilitiesSection();
       applyOwnershipPermissions();
       isRendering = false;
@@ -3028,6 +3533,79 @@ function parseNotes() {
       scheduleAutosave();
     };
 
+    // Stress meter input
+    document.getElementById('stressLevelInput').addEventListener('change', () => {
+      const val = Math.max(0, Math.min(10, Number(document.getElementById('stressLevelInput').value) || 0));
+      character.base_stats = { ...(character.base_stats || {}), stress_level: val };
+      renderStressEffect();
+      scheduleAutosave();
+    });
+
+    // Reputation add
+    document.getElementById('repAddBtn').onclick = () => {
+      if (!canEdit) return;
+      const nameInput = document.getElementById('repNameInput');
+      const name = nameInput?.value?.trim();
+      if (!name) return;
+      const entries = [...(character.base_stats?.reputation_entries || [])];
+      entries.push({ name, level: 0 });
+      character.base_stats = { ...(character.base_stats || {}), reputation_entries: entries };
+      nameInput.value = '';
+      renderReputation();
+      scheduleAutosave();
+    };
+    document.getElementById('repNameInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('repAddBtn').click();
+    });
+
+    // Inventory: populate add-cybermod select and buff selector
+    populateCybermodSelect();
+    renderBuffSelector('invCustomBuffs', []);
+
+    // Add custom item
+    document.getElementById('invAddCustomBtn').onclick = () => {
+      if (!canEdit) return;
+      const name = document.getElementById('invCustomName')?.value?.trim();
+      if (!name) return;
+      const details = document.getElementById('invCustomDetails')?.value || '';
+      const notes = document.getElementById('invCustomNotes')?.value || '';
+      const buffs = readBuffsFromSelector('invCustomBuffs');
+      const items = [...(character.base_stats?.inventory_items || [])];
+      items.push({ id: crypto.randomUUID(), name, details, notes, is_cybermod: false, cybermod_key: null, tier: null, equipped: false, buffs });
+      character.base_stats = { ...(character.base_stats || {}), inventory_items: items };
+      document.getElementById('invCustomName').value = '';
+      document.getElementById('invCustomDetails').value = '';
+      document.getElementById('invCustomNotes').value = '';
+      renderBuffSelector('invCustomBuffs', []);
+      renderInventoryItems();
+      scheduleAutosave();
+    };
+
+    // Add cybermod
+    document.getElementById('invAddCybermodBtn').onclick = () => {
+      if (!canEdit) return;
+      const sel = document.getElementById('invCybermodSelect');
+      const key = sel?.value;
+      if (!key) return;
+      const preset = CYBERMOD_PRESETS.find(p => p.key === key);
+      if (!preset) return;
+      const items = [...(character.base_stats?.inventory_items || [])];
+      items.push({
+        id: crypto.randomUUID(),
+        name: preset.name,
+        details: preset.description,
+        notes: '',
+        is_cybermod: true,
+        cybermod_key: preset.key,
+        tier: preset.tier,
+        equipped: false,
+        buffs: preset.buffs.map(b => ({ ...b })),
+      });
+      character.base_stats = { ...(character.base_stats || {}), inventory_items: items };
+      renderInventoryItems();
+      scheduleAutosave();
+    };
+
     const skillModal = document.getElementById('skillModal');
     document.getElementById('addSkillBtn').onclick = () => {
       if (!canEdit) return;
@@ -3319,10 +3897,15 @@ function parseNotes() {
           await loadCharacter();
           await loadHistory();
         });
+        // Refresh cybermod dropdown when max tier changes
+        document.getElementById('powerfulItemMaxInput').addEventListener('change', () => {
+          refreshCybermodSelect();
+        });
+
         const autosaveTargets = [
           'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
           'staminaTotalInput','staminaUsedInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
-          'xenicDecayInput','timesCleansedInput','partyTierInput','creditsInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput'
+          'xenicDecayInput','timesCleansedInput','partyTierInput','creditsInput','stressLevelInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput'
         ];
         const autoResizeIds = ['appearanceInput','personalityInput','motivationInput','backstoryInput','classProgressionInput','inventoryInput','extraNotesInput'];
         autosaveTargets.forEach(id => {

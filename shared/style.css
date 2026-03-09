@@ -1072,6 +1072,12 @@ label textarea {
 .wr-scope .muted {
   color: var(--muted, #b6b6b6);
 }
+.wr-scope .text-danger {
+  color: #f08080;
+}
+.wr-scope .text-warn {
+  color: #e0b060;
+}
 
 .wr-scope .divider {
   border: none;
@@ -2708,6 +2714,228 @@ select,
 .drug-dep-threshold {
   font-size: 0.75rem;
   opacity: 0.55;
+}
+.drug-description {
+  font-size: 0.78rem;
+  margin: 0.2rem 0 0.35rem;
+  line-height: 1.4;
+}
+
+/* Drug card 2-column span in resource grid */
+.wr-scope .xrrpg-drug-card {
+  grid-column: span 2;
+}
+@media (max-width: 700px) {
+  .wr-scope .xrrpg-drug-card { grid-column: span 1; }
+}
+
+/* Reputation card 2-column span */
+.wr-scope .xrrpg-rep-card {
+  grid-column: span 2;
+}
+@media (max-width: 700px) {
+  .wr-scope .xrrpg-rep-card { grid-column: span 1; }
+}
+
+/* Rules reference note (small link below card titles) */
+.wr-scope .xrrpg-rules-note {
+  font-size: 0.78rem;
+  margin: 0 0 0.5rem;
+  opacity: 0.65;
+}
+.wr-scope .xrrpg-rules-note a {
+  color: var(--accent, #7aa2ff);
+  text-decoration: none;
+}
+.wr-scope .xrrpg-rules-note a:hover { text-decoration: underline; }
+
+/* Reputation entries */
+.wr-scope .xrrpg-rep-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+}
+.wr-scope .xrrpg-rep-entry .rep-name {
+  flex: 1;
+  min-width: 100px;
+  font-weight: 600;
+}
+.wr-scope .xrrpg-rep-level {
+  font-size: 0.82rem;
+  min-width: 3.5rem;
+  text-align: center;
+}
+.wr-scope .xrrpg-rep-label {
+  font-size: 0.75rem;
+  opacity: 0.65;
+  min-width: 4.5rem;
+}
+.wr-scope .xrrpg-rep-add-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+.wr-scope .xrrpg-rep-add-row input { flex: 1; min-width: 120px; }
+
+/* Inventory system */
+.wr-scope .xrrpg-active-buffs {
+  background: var(--bubble-bg, rgba(255,255,255,0.04));
+  border: 1px solid var(--border, #333);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.84rem;
+  margin-bottom: 0.75rem;
+}
+.wr-scope .xrrpg-active-buffs-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  font-size: 0.8rem;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.wr-scope .xrrpg-active-buffs-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.75rem;
+}
+.wr-scope .xrrpg-inv-item-card {
+  border: 1px solid var(--border, #333);
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+  margin-bottom: 0.5rem;
+}
+.wr-scope .xrrpg-inv-item-card.equipped {
+  border-color: var(--accent, #7aa2ff);
+}
+.wr-scope .xrrpg-inv-item-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.3rem;
+}
+.wr-scope .xrrpg-inv-item-name {
+  font-weight: 600;
+  flex: 1;
+  min-width: 80px;
+}
+.wr-scope .xrrpg-inv-item-buffs {
+  font-size: 0.78rem;
+  opacity: 0.7;
+  margin: 0.15rem 0;
+}
+.wr-scope .xrrpg-inv-item-notes-preview {
+  font-size: 0.78rem;
+  opacity: 0.55;
+  margin: 0.1rem 0 0.3rem;
+  font-style: italic;
+}
+.wr-scope .xrrpg-inv-item-btns {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+}
+.wr-scope .xrrpg-inv-item-btns button {
+  font-size: 0.8rem;
+  padding: 0.15rem 0.55rem;
+}
+.wr-scope .xrrpg-inv-edit-pane {
+  background: var(--bubble-bg, rgba(255,255,255,0.04));
+  border-top: 1px solid var(--border, #333);
+  margin-top: 0.5rem;
+  padding-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.wr-scope .xrrpg-inv-edit-pane label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+}
+.wr-scope .xrrpg-inv-edit-pane textarea {
+  min-height: 60px;
+}
+.wr-scope .xrrpg-inv-edit-pane .xrrpg-effect-text {
+  font-size: 0.82rem;
+  opacity: 0.75;
+  line-height: 1.45;
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  padding: 0.4rem 0.55rem;
+  background: var(--bg, #1e1e1e);
+}
+.wr-scope .xrrpg-buff-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.3rem 0.75rem;
+  font-size: 0.84rem;
+}
+.wr-scope .xrrpg-buff-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.wr-scope .xrrpg-buff-row input[type="number"] {
+  width: 58px;
+}
+.wr-scope .xrrpg-inv-add-controls {
+  margin-top: 0.65rem;
+}
+.wr-scope .xrrpg-inv-add-panel {
+  border: 1px solid var(--border, #333);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.45rem;
+  cursor: pointer;
+}
+.wr-scope .xrrpg-inv-add-panel summary {
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+.wr-scope .xrrpg-inv-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+.wr-scope .xrrpg-inv-add-form input,
+.wr-scope .xrrpg-inv-add-form textarea,
+.wr-scope .xrrpg-inv-add-form select {
+  width: 100%;
+  box-sizing: border-box;
+}
+.wr-scope .cybermod-tier-badge {
+  font-size: 0.68rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  background: var(--accent-muted, #2a3a5a);
+  color: var(--accent, #7aa2ff);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.wr-scope .inv-equipped-badge {
+  font-size: 0.68rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent, #7aa2ff) 20%, transparent);
+  color: var(--accent, #7aa2ff);
+  font-weight: 600;
+}
+.wr-scope .xrrpg-inv-cybermod-preview {
+  font-size: 0.82rem;
+  opacity: 0.7;
+  padding: 0.35rem 0;
+  line-height: 1.45;
 }
 
 .xrrpg-choice-block {
