@@ -62,8 +62,8 @@
     --input-bg: rgba(255, 255, 255, 0.95);
     --overlay-bg: rgba(180, 185, 200, 0.78);
     --spinner-track: rgba(0, 0, 0, 0.15);
-    --bubble-border: rgba(0, 0, 0, 0.10);
-    --bubble-bg: rgba(255, 255, 255, 0.774);
+    --bubble-border: rgba(0, 0, 0, 0.18);
+    --bubble-bg: #ffffff;
 
     --background-primary: #fcf5e5;
     --h1-color: #2a9600;
@@ -150,8 +150,8 @@ html[data-theme="light"] {
   --input-bg: rgba(255, 255, 255, 0.95);
   --overlay-bg: rgba(180, 185, 200, 0.78);
   --spinner-track: rgba(0, 0, 0, 0.15);
-  --bubble-border: rgba(0, 0, 0, 0.10);
-  --bubble-bg: rgba(255, 255, 255, 0.774);
+  --bubble-border: rgba(0, 0, 0, 0.18);
+  --bubble-bg: #ffffff;
 
   --background-primary: #fcf5e5;
   --h1-color: #2a9600;
@@ -1340,11 +1340,11 @@ label textarea {
 }
 
 .wr-scope .gear-stat--base {
-  color: #f1f5ff;
+  color: var(--text, #f1f5ff);
 }
 
 .wr-scope .gear-stat--bonus {
-  color: #9aa3b2;
+  color: var(--muted, #9aa3b2);
 }
 
 .wr-scope .gear-generator-actions {
@@ -2753,24 +2753,39 @@ select,
 .wr-scope .xrrpg-rep-entry {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
   margin-bottom: 0.4rem;
-  flex-wrap: wrap;
+}
+.wr-scope .xrrpg-rep-name-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
 }
 .wr-scope .xrrpg-rep-entry .rep-name {
-  flex: 1;
-  min-width: 100px;
   font-weight: 600;
 }
+.wr-scope .xrrpg-rep-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
 .wr-scope .xrrpg-rep-level {
-  font-size: 0.82rem;
-  min-width: 3.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 2.5rem;
   text-align: center;
 }
 .wr-scope .xrrpg-rep-label {
   font-size: 0.75rem;
   opacity: 0.65;
-  min-width: 4.5rem;
+}
+.wr-scope .xrrpg-rep-remove {
+  opacity: 0.55;
+  font-size: 0.8rem;
 }
 .wr-scope .xrrpg-rep-add-row {
   display: flex;
@@ -2779,6 +2794,71 @@ select,
   flex-wrap: wrap;
 }
 .wr-scope .xrrpg-rep-add-row input { flex: 1; min-width: 120px; }
+
+/* Stress meter */
+.wr-scope .xrrpg-stress-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 0.5rem 0;
+}
+.wr-scope .xrrpg-stress-value {
+  font-size: 1.75rem;
+  font-weight: bold;
+  min-width: 2.5rem;
+  text-align: center;
+}
+.wr-scope .xrrpg-stress-label {
+  font-size: 0.82rem;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* Currency tracker */
+.wr-scope .xrrpg-currency-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+.wr-scope .xrrpg-currency-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.wr-scope .xrrpg-currency-name {
+  flex: 1;
+  min-width: 100px;
+}
+.wr-scope .xrrpg-currency-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+.wr-scope .xrrpg-currency-amount {
+  width: 70px;
+  text-align: center;
+}
+
+/* Manual buffs */
+.wr-scope .xrrpg-manual-buffs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+.wr-scope .xrrpg-manual-buff-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.wr-scope .xrrpg-manual-buff-text {
+  flex: 1;
+}
 
 /* Inventory system */
 .wr-scope .xrrpg-active-buffs {
