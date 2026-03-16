@@ -1833,8 +1833,8 @@ label textarea {
   padding: 0.45rem 0.75rem;
   border-radius: 10px;
   border: 1px solid var(--border, #333);
-  background: #ff858554;
-  color: var(--text, #eee);
+  background: var(--input-bg);
+  color: var(--text);
   cursor: pointer;
 }
 
@@ -1915,7 +1915,7 @@ select,
 }
 
 .tools-scope .out {
-  background: #ff93934d;
+  background: var(--panel);
   border: 1px solid var(--border, #333);
   border-radius: 10px;
   padding: 1rem;
