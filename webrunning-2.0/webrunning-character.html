@@ -37,49 +37,54 @@
       </div>
     </section>
 
-    <section id="coreInfoSection" class="card">
-      <h2>Core Info</h2>
-      <div class="stats-grid core-info">
-        <dl>
-          <dt>Name:</dt>
-          <dd id="displayName"></dd>
-          <dt title="Your progression rank Level affects luck caps and core growth">Level:</dt>
-          <dd id="displayLevel">1</dd>
-          <dt title="Gain XP from clearing nodes Reaching thresholds levels you up">XP:</dt>
-          <dd>
-            <input id="inputXp" type="number" min="0" value="0" />
-          </dd>
-          <dt title="Luck improves generated gear quality and reroll outcomes It is level-capped unless boosted by effects">Luck:</dt>
-          <dd id="displayLuck">1</dd>
-        </dl>
-        <dl>
-          <dt title="HP is your life total At 0 HP you become a cyberghost It scales with level and some gear">Max HP:</dt>
-          <dd id="displayHp">10</dd>
-          <dt>Current HP:</dt>
-          <dd>
-            <input id="inputCurrentHp" type="number" min="0" value="10" />
-          </dd>
-          <dt title="How much total Energy you can hold at once At cap, choose which colors to keep">Energy Cap:</dt>
-          <dd id="displayEnergyCap">5</dd>
-          <dt>Essence:</dt>
-          <dd>
-            <input id="inputEssence" type="number" min="0" value="0" />
-          </dd>
-        </dl>
+    <section id="coreInfoSection" class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Core Info</h2>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
       </div>
-      <div class="stat-inputs" style="margin-top: 0.75rem;">
-        <label title="Red Energy powers Red gear actives Red gear boosts offense (Attack Plus / Damage Plus) and is usually volatile, with burn, push, and pull effects">Energy (Red)
-          <input id="inputEnergyRed" type="number" min="0" value="0" />
-        </label>
-        <label title="Blue Energy powers Blue gear actives Blue gear boosts durability (HP / Defense DC / Armor) and can freeze, protect allies, or draw aggro">Energy (Blue)
-          <input id="inputEnergyBlue" type="number" min="0" value="0" />
-        </label>
-        <label title="Green Energy powers Green gear actives Green gear boosts mobility (Initiative / Movement / Range) and supports healing, poison, and ranged pressure">Energy (Green)
-          <input id="inputEnergyGreen" type="number" min="0" value="0" />
-        </label>
-        <label title="Gray Energy powers Gray gear actives Gray gear boosts utility (Perception / Hacking) and excels at AoE, darkness, and ally-active enabling">Energy (Gray)
-          <input id="inputEnergyGray" type="number" min="0" value="0" />
-        </label>
+      <div class="collapsible-body">
+        <div class="stats-grid core-info">
+          <dl>
+            <dt>Name:</dt>
+            <dd id="displayName"></dd>
+            <dt title="Your progression rank Level affects luck caps and core growth">Level:</dt>
+            <dd id="displayLevel">1</dd>
+            <dt title="Gain XP from clearing nodes Reaching thresholds levels you up">XP:</dt>
+            <dd>
+              <input id="inputXp" type="number" min="0" value="0" />
+            </dd>
+            <dt title="Luck improves generated gear quality and reroll outcomes It is level-capped unless boosted by effects">Luck:</dt>
+            <dd id="displayLuck">1</dd>
+          </dl>
+          <dl>
+            <dt title="HP is your life total At 0 HP you become a cyberghost It scales with level and some gear">Max HP:</dt>
+            <dd id="displayHp">10</dd>
+            <dt>Current HP:</dt>
+            <dd>
+              <input id="inputCurrentHp" type="number" min="0" value="10" />
+            </dd>
+            <dt title="How much total Energy you can hold at once At cap, choose which colors to keep">Energy Cap:</dt>
+            <dd id="displayEnergyCap">5</dd>
+            <dt>Essence:</dt>
+            <dd>
+              <input id="inputEssence" type="number" min="0" value="0" />
+            </dd>
+          </dl>
+        </div>
+        <div class="stat-inputs" style="margin-top: 0.75rem;">
+          <label title="Red Energy powers Red gear actives Red gear boosts offense (Attack Plus / Damage Plus) and is usually volatile, with burn, push, and pull effects">Energy (Red)
+            <input id="inputEnergyRed" type="number" min="0" value="0" />
+          </label>
+          <label title="Blue Energy powers Blue gear actives Blue gear boosts durability (HP / Defense DC / Armor) and can freeze, protect allies, or draw aggro">Energy (Blue)
+            <input id="inputEnergyBlue" type="number" min="0" value="0" />
+          </label>
+          <label title="Green Energy powers Green gear actives Green gear boosts mobility (Initiative / Movement / Range) and supports healing, poison, and ranged pressure">Energy (Green)
+            <input id="inputEnergyGreen" type="number" min="0" value="0" />
+          </label>
+          <label title="Gray Energy powers Gray gear actives Gray gear boosts utility (Perception / Hacking) and excels at AoE, darkness, and ally-active enabling">Energy (Gray)
+            <input id="inputEnergyGray" type="number" min="0" value="0" />
+          </label>
+        </div>
       </div>
     </section>
 
