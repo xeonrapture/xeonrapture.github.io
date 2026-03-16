@@ -108,7 +108,7 @@
 
     try {
       await signUp(credentials.email, credentials.password, { contactable: contactableCheckbox.checked });
-      showMessage("Check your email to confirm.");
+      showMessage("Check your email to confirm (and make sure to check your Spam folder).");
     } catch (e) {
       const status = e?.status;
       const code = e?.code;

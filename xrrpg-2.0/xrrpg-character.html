@@ -244,7 +244,7 @@
         <label>Appearance<textarea id="appearanceInput"></textarea></label>
         <label>Personality<textarea id="personalityInput"></textarea></label>
         <label>Motivation<textarea id="motivationInput"></textarea></label>
-        <label>BACKSTORY<textarea id="backstoryInput"></textarea></label>
+        <label>Backstory<textarea id="backstoryInput"></textarea></label>
         <label>Extra Notes<textarea id="extraNotesInput"></textarea></label>
         </div>
       </div>
@@ -2421,16 +2421,16 @@ function parseNotes() {
       { name: 'Alcohol (Strong)', type: 'soft', strong: true, dep_threshold: 10, description: '+2 Vigor for 6h; -2 Vigor for 6h after. Counts as 2 doses. (Liquor)' },
       { name: 'Drolaphor (Strong)', type: 'soft', strong: true, dep_threshold: 10, description: '+2 End for 6h; -2 End for 6h after. Counts as 2 doses. (Drola Max, Lyon drug)' },
       // Hard drugs
-      { name: 'Stimmy', type: 'hard', dep_threshold: 10, description: '+5 Vig & End for 30s (3 turns); -5 Wit & Int for 1h after (longer with repeated doses). (Inject) Was used as a strength enhancer by Krangor brutes.' },
-      { name: 'Trance', type: 'hard', dep_threshold: 5, description: '+3 Wit for 1h; -3 all other checks during the high. 3rd hit/day gives disadvantage after. (Tab, Strobe drug)' },
-      { name: 'Nerve', type: 'hard', dep_threshold: 3, description: '+2 Int checks for 6h; no listed debuff. Makes you feel amazing — like a nebula moving through your veins. Extremely addictive. (Smoke/Powder, Lyon drug)' },
-      { name: 'Stoneface', type: 'hard', dep_threshold: 7, description: "Can't take damage for 10 min; all deferred damage and healing hits at once after. (Inject, Lyon drug)" },
-      { name: 'Phase', type: 'hard', dep_threshold: 4, description: 'Partially immaterial for 10 min — float 5ft, pass through most substances except thick metal. Painfully material for 1h after. (Pill, Strobe drug)' },
-      { name: 'Bloody Tears', type: 'hard', dep_threshold: 6, description: '+5 on checks to resist effects for 10 min; take DMG equal to your level each time you resist an effect. You feel every sensation as pleasure. (Eyedrops, Lyon drug)' },
-      { name: 'Bpgorrg (Hell Yeah)', type: 'hard', dep_threshold: 2, description: 'You feel really really good. Then really really bad. (Powder, Strobe drug)' },
-      { name: 'Mercury', type: 'hard', dep_threshold: null, description: 'Visions of future/past/present if gray chroma; Brutal Poison Critical Injury if not gray. An old gray potion turned street drug. (Drink)' },
-      { name: 'Standard Psychedelics', type: 'hard', dep_threshold: null, description: 'A trip — could be good or bad. Roll d20: 10 or below = bad trip, 11+ = good trip. (Smoke/Eat)' },
-      { name: 'EPG-10', type: 'hard', dep_threshold: null, description: 'Wild trip lasting 1d4h. Roll d10 at end: 10=permanent stat upgrade (once only), 9–2=Withering+Spirit Decay, 1=instant death. (Tab, created by E.G. Bio corp)' },
+      { name: 'Stimmy', type: 'hard', dep_threshold: 10, description: '+5 Vig & End for 30s (3 turns); -5 Wit & Int for 1h after. (Inject) Very quick high. 1 hit in a day makes the debuff last an hour, 2 hits makes it last 5 hours, 3 hits makes it last 24 hours, 4 hits and you take 30 dmg, 5 hits and you take 100 dmg, 6 hits and you take 500 dmg. If you go down during the debuff time then you are inflicted with the Necrosis Critical Injury. Was used as a strength enhancer by Krangor brutes until they got something better.' },
+      { name: 'Trance', type: 'hard', dep_threshold: 5, description: '+3 Wit for 1h; -3 all other checks during the high. You enter a trance, gaining an insane level of focus and mental speed. On your third hit in one day  you get disadvantage on all checks when the drug wears off (unless you\'re Dependent), and taking trance a fourth time in a day doesn\'t grant the buff at all (resets when a new day has begun). (Tab, Strobe drug)' },
+      { name: 'Nerve', type: 'hard', dep_threshold: 3, description: '+2 Int checks for 6h; no listed debuff. Nerve makes you feel amazing, like you\'re floating, flying through sunbeams, like a nebula is moving through your veins. Too bad it\'s also extremely addictive. (Smoke/Powder, Lyon drug)' },
+      { name: 'Stoneface', type: 'hard', dep_threshold: 7, description: "Can't take damage for 10 min; all deferred damage and healing hits at once after. So your body is taking damage, but you don't feel it: stoneface makes it so you can't feel anything at all. There are tales of people taking stoneface before a big sport fighting match, doing the match, and dying instantly afterwards. (Inject, Lyon drug)" },
+      { name: 'Phase', type: 'hard', dep_threshold: 4, description: 'Partially immaterial for 10 min. Painfully material for 1h after. Can move through most substances except thick metal. You float off the ground like 5 ft. Fun tingly feeling when you come down, though, just moving hurts (Pill, Strobe drug)' },
+      { name: 'Bloody Tears', type: 'hard', dep_threshold: 6, description: '+5 on checks to resist effects for 10 min; take DMG equal to your level each time you resist an effect. You feel every sensation as pleasure, including pain and discomfort. (Eyedrops, Lyon drug)' },
+      { name: 'Bpgorrg (Hell Yeah)', type: 'hard', dep_threshold: 2, description: 'You feel really really good. Then you feel really really bad. Both high and withdrawal last anywhere from an hour to a day. (Powder, Strobe drug)' },
+      { name: 'Mercury', type: 'hard', dep_threshold: null, description: 'Rumor is that if you\'re a strong gray this drug makes you experience visions of the future, the past, and present possibilities. Rumor has it if you\'re not a gray you just straight-up get the Brutal Poison Critical Injury. It\'s actually an old potion made into a street drug for grays (Drink)' },
+      { name: 'Standard Psychedelics', type: 'hard', dep_threshold: null, description: 'Just go on a trip, could be fun or bad. If it\'s a riskier drug roll a d20, 10 and below it\'s a bad trip and 11 and above it\'s great. (Smoke/Eat)' },
+      { name: 'EPG-10', type: 'hard', dep_threshold: null, description: 'CRAZY trip that lasts 1d4 hours. At the end of the trip, roll a d10. On a 10 you go through something life-changing and get a permanent stat upgrade (can only happen once). On 9-2 you start Withering and take a level of Spirit Decay. On a 1 the trip was so bad you instantly combust and die. (Tab, created by E.G. Bio corp)' },
     ];
 
     function getDrugPreset(name) {
