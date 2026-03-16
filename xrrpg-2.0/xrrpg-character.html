@@ -125,15 +125,25 @@
           <div id="currencyList" class="xrrpg-currency-list"></div>
           <button id="addCurrencyBtn" type="button">+ Add Currency</button>
         </div>
-        <div class="xrrpg-resource-card">
-          <h3>Stress Meter</h3>
-          <p class="xrrpg-rules-note"><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Modules/The+Stress+Meter" target="_blank" rel="noopener">Stress Meter rules ↗</a></p>
-          <div class="xrrpg-stress-controls">
-            <button id="stressDecBtn" type="button" aria-label="Decrease stress">−</button>
-            <span id="stressValueDisplay" class="xrrpg-stress-value">0</span>
-            <button id="stressIncBtn" type="button" aria-label="Increase stress">+</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="ruleModulesSection" class="card collapsible" data-collapsible>
+      <div class="collapsible-header">
+        <h2>Rule Modules</h2>
+        <button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"></path><path d="M4 6l16 12"></path></svg></button>
+      </div>
+      <div class="collapsible-body">
+        <div class="xrrpg-resource-grid">
+        <div class="xrrpg-resource-card xrrpg-drug-card">
+          <h3>Drugs</h3>
+          <p class="xrrpg-rules-note"><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Modules/Drug+Rules" target="_blank" rel="noopener">Drug Rules ↗</a></p>
+          <div id="drugList"></div>
+          <div class="xrrpg-row" style="margin-top:0.5rem; gap:0.5rem; flex-wrap:wrap;">
+            <select id="drugAddSelect" style="flex:1; min-width:0;"></select>
+            <button id="drugAddBtn" type="button">Track Drug</button>
           </div>
-          <div id="stressEffectDisplay" class="xrrpg-stress-label"></div>
         </div>
         <div class="xrrpg-resource-card xrrpg-rep-card">
           <h3>Reputation &amp; Relationships</h3>
@@ -144,14 +154,15 @@
             <button id="repAddBtn" type="button">Add</button>
           </div>
         </div>
-        <div class="xrrpg-resource-card xrrpg-drug-card">
-          <h3>Drugs</h3>
-          <p class="xrrpg-rules-note"><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Modules/Drug+Rules" target="_blank" rel="noopener">Drug Rules ↗</a></p>
-          <div id="drugList"></div>
-          <div class="xrrpg-row" style="margin-top:0.5rem; gap:0.5rem; flex-wrap:wrap;">
-            <select id="drugAddSelect" style="flex:1; min-width:0;"></select>
-            <button id="drugAddBtn" type="button">Track Drug</button>
+        <div class="xrrpg-resource-card">
+          <h3>Stress Meter</h3>
+          <p class="xrrpg-rules-note"><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Modules/The+Stress+Meter" target="_blank" rel="noopener">Stress Meter rules ↗</a></p>
+          <div class="xrrpg-stress-controls">
+            <button id="stressDecBtn" type="button" aria-label="Decrease stress">−</button>
+            <span id="stressValueDisplay" class="xrrpg-stress-value">0</span>
+            <button id="stressIncBtn" type="button" aria-label="Increase stress">+</button>
           </div>
+          <div id="stressEffectDisplay" class="xrrpg-stress-label"></div>
         </div>
         </div>
       </div>
