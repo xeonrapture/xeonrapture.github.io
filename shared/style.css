@@ -63,7 +63,7 @@
     --overlay-bg: rgba(180, 185, 200, 0.78);
     --spinner-track: rgba(0, 0, 0, 0.15);
     --bubble-border: rgba(0, 0, 0, 0.18);
-    --bubble-bg: #ffffff;
+    --bubble-bg: rgba(0, 0, 0, 0.04);
 
     --background-primary: #fcf5e5;
     --h1-color: #2a9600;
@@ -151,7 +151,7 @@ html[data-theme="light"] {
   --overlay-bg: rgba(180, 185, 200, 0.78);
   --spinner-track: rgba(0, 0, 0, 0.15);
   --bubble-border: rgba(0, 0, 0, 0.18);
-  --bubble-bg: #ffffff;
+  --bubble-bg: rgba(0, 0, 0, 0.04);
 
   --background-primary: #fcf5e5;
   --h1-color: #2a9600;
@@ -1398,7 +1398,7 @@ label textarea {
   padding: 0.5rem 0.75rem;
   border-radius: 10px;
   border: 1px solid var(--border, #333);
-  background: rgba(21, 26, 34, 0.7);
+  background: var(--panel);
 }
 
 .wr-scope .gear-modal-actions {
@@ -1458,7 +1458,7 @@ label textarea {
   padding: 0.9rem;
   border-radius: 14px;
   border: 1px solid var(--border, #333);
-  background: rgba(21, 26, 34, 0.7);
+  background: var(--panel);
 }
 
 .wr-scope .manual-gear-section summary {
@@ -1561,7 +1561,7 @@ label textarea {
   border: 1px solid var(--border, #333);
   border-radius: 10px;
   padding: 0.85rem;
-  background: rgba(21, 26, 34, 0.75);
+  background: var(--panel);
 }
 
 .wr-scope .level-preview ul {
@@ -2209,10 +2209,10 @@ select,
 
 .assigned-character-card,
 .wr-scope .assigned-character-card {
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.8rem 0.9rem;
-  background: rgba(12, 19, 36, 0.75);
+  background: var(--panel);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
 }
 
