@@ -165,12 +165,13 @@ async function signUp(email, password) {
   if (error) throw error;
 }*/
 
-async function signUp(email, password) {
+async function signUp(email, password, metadata = {}) {
   const { data, error } = await window.supabaseClient.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: "https://app.xeonrapture.com/dashboard.html"
+      emailRedirectTo: "https://app.xeonrapture.com/dashboard.html",
+      data: metadata
     }
   });
 

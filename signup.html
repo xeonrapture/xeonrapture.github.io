@@ -37,6 +37,13 @@
   </div>
 
   <div class="wr-mt-1">
+    <label>
+      <input id="contactable" type="checkbox" />
+      I'd like to receive updates and promotional emails about the Xeon Rapture Universe.
+    </label>
+  </div>
+
+  <div class="wr-mt-1">
     <a href="/login.html">Already have an account? Log in</a>
   </div>
 
@@ -52,6 +59,7 @@
   const msg = document.getElementById("msg");
   const signupBtn = document.getElementById("signup");
   const acceptLegal = document.getElementById("acceptLegal");
+  const contactableCheckbox = document.getElementById("contactable");
 
   function showMessage(text, isError = false) {
     msg.textContent = text;
@@ -99,7 +107,7 @@
     showMessage("Signing up...");
 
     try {
-      await signUp(credentials.email, credentials.password);
+      await signUp(credentials.email, credentials.password, { contactable: contactableCheckbox.checked });
       showMessage("Check your email to confirm.");
     } catch (e) {
       const status = e?.status;
