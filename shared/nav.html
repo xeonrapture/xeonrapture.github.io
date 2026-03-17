@@ -30,18 +30,22 @@
       </div>
     </div>
 
-    <div class="xr-nav-group" data-group="User">
+    <div class="xr-nav-group" data-group="Gameplay" data-auth="in">
+      <button class="xr-nav-title xr-nav-group-toggle" type="button" aria-expanded="false">Gameplay</button>
+      <div class="xr-nav-group-links hidden">
+        <a class="xr-nav-a" href="/webrunning-2.0/webrunning-character-manager.html">Webrunning Characters</a>
+        <a class="xr-nav-a" href="/xrrpg-2.0/xrrpg-character-manager.html">XRRPG Characters</a>
+        <a class="xr-nav-a" href="/xrrpg-2.0/xrrpg-campaigns.html">Campaigns</a>
+      </div>
+    </div>
+
+    <div class="xr-nav-group" data-group="User" data-auth="in">
       <button class="xr-nav-title xr-nav-group-toggle" id="nav-username" type="button" aria-expanded="false">User</button>
       <div class="xr-nav-group-links hidden">
-        <a class="xr-nav-a" href="/dashboard.html" data-auth="in">Profile</a>
-        <a class="xr-nav-a" href="/friends.html" data-auth="in">Friends</a>
-        <a class="xr-nav-a" href="/notifications.html" data-auth="in">Notifications</a>
-        <a class="xr-nav-a" href="/webrunning-2.0/webrunning-character-manager.html">Webr. Char. Manager</a>
-        <a class="xr-nav-a" href="/xrrpg-2.0/xrrpg-character-manager.html">XRRPG Char. Manager</a>
-        <a class="xr-nav-a" href="/xrrpg-2.0/xrrpg-campaigns.html">Campaign Manager</a>
-        <a class="xr-nav-a" href="/login.html" data-auth="out">Login</a>
-        <a class="xr-nav-a" href="/signup.html" data-auth="out">Sign up</a>
-        <button class="xr-nav-a" id="logoutBtn" data-auth="in" type="button">Log out</button>
+        <a class="xr-nav-a" href="/dashboard.html">Profile</a>
+        <a class="xr-nav-a" href="/friends.html">Friends</a>
+        <a class="xr-nav-a" href="/notifications.html">Notifications</a>
+        <button class="xr-nav-a" id="logoutBtn" type="button">Log out</button>
       </div>
     </div>
 
@@ -52,6 +56,9 @@
         <a class="xr-nav-a" href="/privacy.html">Privacy</a>
       </div>
     </div>
+
+    <a class="xr-nav-a" href="/login.html" data-auth="out">Login</a>
+    <a class="xr-nav-a" href="/signup.html" data-auth="out">Sign up</a>
 
     <button type="button" id="themeToggleBtn" class="xr-theme-toggle" aria-label="Toggle light/dark mode">
       <span class="xr-theme-toggle-icon">☀</span>
