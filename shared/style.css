@@ -1860,6 +1860,27 @@ label textarea {
   border-color: var(--accent, #7aa2ff);
 }
 
+.tools-scope .xr-nav-group-toggle {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+.tools-scope .xr-nav-group-toggle:hover,
+.tools-scope .xr-nav-group-toggle:active {
+  border: 0;
+  box-shadow: none;
+  transform: none;
+}
+
+.tools-scope button.xr-nav-a {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
 .tools-scope .mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
