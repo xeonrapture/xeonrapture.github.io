@@ -94,6 +94,7 @@
           <option value="90">Greater Godlike (90)</option>
           <option value="100">Impossible (100)</option>
         </select>
+        <input id="diffValue" type="number" step="1" min="0" style="width:5rem" aria-label="Difficulty value">
       </div>
 
       <div class="actions">
@@ -249,7 +250,8 @@
       el("total").textContent = String(res.total);
       el("rollList").textContent = res.rolls.join(", ");
 
-      const diff = Number(el("actionDiff").value);
+      const diffRaw = el("diffValue").value;
+      const diff = diffRaw !== "" ? Number(diffRaw) : 0;
       if (diff) {
         const outcome = getOutcome(res.total, diff);
         el("outcome").textContent = outcome;
@@ -314,6 +316,11 @@
     });
 
     el("clearBtn").addEventListener("click", clearAll);
+
+    el("actionDiff").addEventListener("change", () => {
+      const v = el("actionDiff").value;
+      el("diffValue").value = v !== "" ? v : "";
+    });
 
     // Enter key rolls
     ["count1", "count2", "modValue"].forEach(id => {
