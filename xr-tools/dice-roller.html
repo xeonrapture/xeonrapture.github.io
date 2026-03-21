@@ -75,25 +75,28 @@
 
       <div class="row">
         <label for="actionDiff">Action Difficulty</label>
-        <select id="actionDiff">
-          <option value="">— none —</option>
-          <option value="10">Easy (10)</option>
-          <option value="15">Kinda Easy (15)</option>
-          <option value="20">Hard (20)</option>
-          <option value="25">Very Hard (25)</option>
-          <option value="30">Tricky (30)</option>
-          <option value="35">Very Tricky (35)</option>
-          <option value="40">Extreme (40)</option>
-          <option value="45">Xtra Extreme (45)</option>
-          <option value="50">Elite (50)</option>
-          <option value="55">Super Elite (55)</option>
-          <option value="60">Immortal (60)</option>
-          <option value="65">Intense Immortal (65)</option>
-          <option value="70">Dragon (70)</option>
-          <option value="80">Godlike (80)</option>
-          <option value="90">Greater Godlike (90)</option>
-          <option value="100">Impossible (100)</option>
-        </select>
+        <div class="inline">
+          <select id="actionDiff">
+            <option value="">— none —</option>
+            <option value="10">Easy (10)</option>
+            <option value="15">Kinda Easy (15)</option>
+            <option value="20">Hard (20)</option>
+            <option value="25">Very Hard (25)</option>
+            <option value="30">Tricky (30)</option>
+            <option value="35">Very Tricky (35)</option>
+            <option value="40">Extreme (40)</option>
+            <option value="45">Xtra Extreme (45)</option>
+            <option value="50">Elite (50)</option>
+            <option value="55">Super Elite (55)</option>
+            <option value="60">Immortal (60)</option>
+            <option value="65">Intense Immortal (65)</option>
+            <option value="70">Dragon (70)</option>
+            <option value="80">Godlike (80)</option>
+            <option value="90">Greater Godlike (90)</option>
+            <option value="100">Impossible (100)</option>
+          </select>
+          <input id="diffValue" type="number" step="1" placeholder="—" style="width:5rem">
+        </div>
       </div>
 
       <div class="actions">
@@ -249,7 +252,7 @@
       el("total").textContent = String(res.total);
       el("rollList").textContent = res.rolls.join(", ");
 
-      const diff = Number(el("actionDiff").value);
+      const diff = Number(el("diffValue").value);
       if (diff) {
         const outcome = getOutcome(res.total, diff);
         el("outcome").textContent = outcome;
@@ -314,6 +317,11 @@
     });
 
     el("clearBtn").addEventListener("click", clearAll);
+
+    el("actionDiff").addEventListener("change", () => {
+      const v = el("actionDiff").value;
+      el("diffValue").value = v !== "" ? v : "";
+    });
 
     // Enter key rolls
     ["count1", "count2", "modValue"].forEach(id => {
