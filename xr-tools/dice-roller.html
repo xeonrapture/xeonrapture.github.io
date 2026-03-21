@@ -152,28 +152,32 @@
     function renderHistory() {
       const host = el("history");
       host.innerHTML = "";
-    
+
       if (history.length === 0) {
         host.innerHTML = `<div class="muted">No rolls yet.</div>`;
         return;
       }
-    
+
       history.forEach((h, idx) => {
         const div = document.createElement("div");
         div.className = "inline";
         div.style.marginBottom = "0.25rem";
-    
+
+        const diffPart = h.difficulty
+          ? ` vs ${h.difficulty} — <b>${h.outcome}</b>`
+          : "";
+
         div.innerHTML = `
           <span>
             ${h.count1}d${h.sides1}
             ${h.count2 > 0 ? ` + ${h.count2}d${h.sides2}` : ""}
             ${h.mod > 0 ? "+" : ""}${h.mod != 0 ? h.mod : ""}
-            → <b>${h.total}</b>
+            → <b>${h.total}</b>${diffPart}
           </span>
 
           <button data-i="${idx}" aria-label="Reroll" title="Reroll"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-6a5 5 0 0 0-5 5"></path><path d="M4 17h6a5 5 0 0 0 5-5"></path><path d="M17 4l3 3-3 3"></path><path d="M7 14l-3 3 3 3"></path></svg><span>Reroll</span></button>
         `;
-    
+
         div.querySelector("button").addEventListener("click", () => {
           const r = rollOnce(
             h.count1,
@@ -182,11 +186,11 @@
             h.sides2,
             h.mod
           );
-
+          attachDifficulty(r);
           renderSingle(r);
           addToHistory(r);
         });
-    
+
         host.appendChild(div);
       });
     }
@@ -240,6 +244,17 @@
         mod,
         total: sum + mod
       };
+    }
+
+    function attachDifficulty(res) {
+      const diffRaw = el("diffValue").value;
+      const diff = diffRaw !== "" ? Number(diffRaw) : 0;
+      if (diff) {
+        const delta = res.total - diff;
+        const sign = delta >= 0 ? "+" : "";
+        res.difficulty = diff;
+        res.outcome = `${getOutcome(res.total, diff)} (${sign}${delta})`;
+      }
     }
 
     function getOutcome(total, difficulty) {
@@ -299,6 +314,7 @@
       try {
         const { count1, sides1, count2, sides2, mod } = parseInputs();
         const res = rollOnce(count1, sides1, count2, sides2, mod);
+        attachDifficulty(res);
         renderSingle(res);
         addToHistory(res);
 
