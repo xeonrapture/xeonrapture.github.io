@@ -75,26 +75,28 @@
 
       <div class="row">
         <label for="actionDiff">Action Difficulty</label>
-        <select id="actionDiff">
-          <option value="">— none —</option>
-          <option value="10">Easy (10)</option>
-          <option value="15">Kinda Easy (15)</option>
-          <option value="20">Hard (20)</option>
-          <option value="25">Very Hard (25)</option>
-          <option value="30">Tricky (30)</option>
-          <option value="35">Very Tricky (35)</option>
-          <option value="40">Extreme (40)</option>
-          <option value="45">Xtra Extreme (45)</option>
-          <option value="50">Elite (50)</option>
-          <option value="55">Super Elite (55)</option>
-          <option value="60">Immortal (60)</option>
-          <option value="65">Intense Immortal (65)</option>
-          <option value="70">Dragon (70)</option>
-          <option value="80">Godlike (80)</option>
-          <option value="90">Greater Godlike (90)</option>
-          <option value="100">Impossible (100)</option>
-        </select>
-        <input id="diffValue" type="number" step="1" min="0" style="width:5rem" aria-label="Difficulty value">
+        <div style="display:flex;gap:0.5rem;align-items:center;">
+          <select id="actionDiff" style="flex:1;">
+            <option value="">— none —</option>
+            <option value="10">Easy (10)</option>
+            <option value="15">Kinda Easy (15)</option>
+            <option value="20">Hard (20)</option>
+            <option value="25">Very Hard (25)</option>
+            <option value="30">Tricky (30)</option>
+            <option value="35">Very Tricky (35)</option>
+            <option value="40">Extreme (40)</option>
+            <option value="45">Xtra Extreme (45)</option>
+            <option value="50">Elite (50)</option>
+            <option value="55">Super Elite (55)</option>
+            <option value="60">Immortal (60)</option>
+            <option value="65">Intense Immortal (65)</option>
+            <option value="70">Dragon (70)</option>
+            <option value="80">Godlike (80)</option>
+            <option value="90">Greater Godlike (90)</option>
+            <option value="100">Impossible (100)</option>
+          </select>
+          <input id="diffValue" type="number" step="1" min="0" style="width:5rem;flex-shrink:0;" aria-label="Custom difficulty value">
+        </div>
       </div>
 
       <div class="actions">
@@ -112,6 +114,9 @@
 
         <div class="muted">Total</div>
         <p id="total" class="mono">—</p>
+
+        <div class="muted" id="diffLabel" style="display:none">Difficulty</div>
+        <p id="diffDisplay" class="mono" style="display:none">—</p>
 
         <div class="muted" id="outcomeLabel" style="display:none">Outcome</div>
         <p id="outcome" class="mono" style="display:none">—</p>
@@ -253,11 +258,18 @@
       const diffRaw = el("diffValue").value;
       const diff = diffRaw !== "" ? Number(diffRaw) : 0;
       if (diff) {
+        const delta = res.total - diff;
+        const sign = delta >= 0 ? "+" : "";
         const outcome = getOutcome(res.total, diff);
-        el("outcome").textContent = outcome;
+        el("diffDisplay").textContent = String(diff);
+        el("diffLabel").style.display = "";
+        el("diffDisplay").style.display = "";
+        el("outcome").textContent = `${outcome} (${sign}${delta})`;
         el("outcome").style.display = "";
         el("outcomeLabel").style.display = "";
       } else {
+        el("diffLabel").style.display = "none";
+        el("diffDisplay").style.display = "none";
         el("outcome").style.display = "none";
         el("outcomeLabel").style.display = "none";
       }
@@ -277,6 +289,8 @@
       el("modApplied").textContent = "—";
       el("total").textContent = "—";
       el("rollList").textContent = "—";
+      el("diffLabel").style.display = "none";
+      el("diffDisplay").style.display = "none";
       el("outcome").style.display = "none";
       el("outcomeLabel").style.display = "none";
     }
