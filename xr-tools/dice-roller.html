@@ -73,29 +73,6 @@
         </div>
       </div>
 
-      <div class="row">
-        <label for="actionDiff">Action Difficulty</label>
-        <select id="actionDiff">
-          <option value="">— none —</option>
-          <option value="10">Easy (10)</option>
-          <option value="15">Kinda Easy (15)</option>
-          <option value="20">Hard (20)</option>
-          <option value="25">Very Hard (25)</option>
-          <option value="30">Tricky (30)</option>
-          <option value="35">Very Tricky (35)</option>
-          <option value="40">Extreme (40)</option>
-          <option value="45">Xtra Extreme (45)</option>
-          <option value="50">Elite (50)</option>
-          <option value="55">Super Elite (55)</option>
-          <option value="60">Immortal (60)</option>
-          <option value="65">Intense Immortal (65)</option>
-          <option value="70">Dragon (70)</option>
-          <option value="80">Godlike (80)</option>
-          <option value="90">Greater Godlike (90)</option>
-          <option value="100">Impossible (100)</option>
-        </select>
-      </div>
-
       <div class="actions">
         <button id="rollBtn" aria-label="Roll" title="Roll"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"></rect><circle cx="9" cy="9" r="1"></circle><circle cx="15" cy="15" r="1"></circle><circle cx="12" cy="12" r="1"></circle></svg><span>Roll</span></button>
         <button id="roll10Btn" aria-label="Roll ten times" title="Roll ten times"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="9" height="9" rx="1.5"></rect><rect x="12" y="9" width="9" height="9" rx="1.5"></rect></svg><span>Roll x10</span></button>
@@ -103,17 +80,14 @@
       </div>
 
       <div class="resultGrid">
-        <div class="muted">Sum of rolls</div>
-        <p id="sumDice" class="mono">—</p>
+        <div class="muted">Total</div>
+        <input id="total" class="mono" type="text" readonly value="—">
+
+        <div class="muted">Sum of dice</div>
+        <input id="sumDice" class="mono" type="text" readonly value="—">
 
         <div class="muted">Modifier applied</div>
-        <p id="modApplied" class="mono">—</p>
-
-        <div class="muted">Total</div>
-        <p id="total" class="mono">—</p>
-
-        <div class="muted" id="outcomeLabel" style="display:none">Outcome</div>
-        <p id="outcome" class="mono" style="display:none">—</p>
+        <input id="modApplied" class="mono" type="text" readonly value="—">
       </div>
 
       <details class="details-block">
@@ -236,47 +210,25 @@
       };
     }
 
-    function getOutcome(total, difficulty) {
-      if (total >= difficulty + 5) return "Strong Success";
-      if (total >= difficulty)     return "Success";
-      if (total >= difficulty - 5) return "Mixed Success";
-      return "Failure";
-    }
-
     function renderSingle(res) {
-      el("sumDice").textContent = String(res.sum);
-      el("modApplied").textContent = (res.mod >= 0 ? `+${res.mod}` : `${res.mod}`);
-      el("total").textContent = String(res.total);
+      el("sumDice").value = String(res.sum);
+      el("modApplied").value = (res.mod >= 0 ? `+${res.mod}` : `${res.mod}`);
+      el("total").value = String(res.total);
       el("rollList").textContent = res.rolls.join(", ");
-
-      const diff = Number(el("actionDiff").value);
-      if (diff) {
-        const outcome = getOutcome(res.total, diff);
-        el("outcome").textContent = outcome;
-        el("outcome").style.display = "";
-        el("outcomeLabel").style.display = "";
-      } else {
-        el("outcome").style.display = "none";
-        el("outcomeLabel").style.display = "none";
-      }
     }
 
     function renderAvg(count1, sides1, count2, sides2, mod, trials, avgSum, avgTotal) {
-      el("sumDice").textContent = avgSum.toFixed(2);
-      el("modApplied").textContent = (mod >= 0 ? `+${mod}` : `${mod}`);
-      el("total").textContent = avgTotal.toFixed(2);
+      el("sumDice").value = avgSum.toFixed(2);
+      el("modApplied").value = (mod >= 0 ? `+${mod}` : `${mod}`);
+      el("total").value = avgTotal.toFixed(2);
       el("rollList").textContent = `Averaged over ${trials} trials (no single roll list).`;
-      el("outcome").style.display = "none";
-      el("outcomeLabel").style.display = "none";
     }
 
     function clearAll() {
-      el("sumDice").textContent = "—";
-      el("modApplied").textContent = "—";
-      el("total").textContent = "—";
+      el("sumDice").value = "—";
+      el("modApplied").value = "—";
+      el("total").value = "—";
       el("rollList").textContent = "—";
-      el("outcome").style.display = "none";
-      el("outcomeLabel").style.display = "none";
     }
 
     el("rollBtn").addEventListener("click", () => {
@@ -287,7 +239,7 @@
         addToHistory(res);
 
       } catch (e) {
-        el("total").textContent = "ERR";
+        el("total").value = "ERR";
         el("rollList").textContent = `Error: ${e.message || String(e)}`;
       }
     });
@@ -308,7 +260,7 @@
 
         renderAvg(count1, sides1, count2, sides2, mod, trials, sumS / trials, sumT / trials);
       } catch (e) {
-        el("total").textContent = "ERR";
+        el("total").value = "ERR";
         el("rollList").textContent = `Error: ${e.message || String(e)}`;
       }
     });
