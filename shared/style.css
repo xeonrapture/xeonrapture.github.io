@@ -253,12 +253,33 @@ p {
   box-shadow: var(--shadow);
 }
 
-.xr-brand, .xr-brand:visited { 
-  font-weight: 700; 
+.xr-brand, .xr-brand:visited {
+  font-weight: 700;
   font-size: 1.15rem;
   text-decoration: none;
   color: #76de91
 }
+
+.xr-logo {
+  height: 2rem;
+  width: auto;
+  display: block;
+}
+/* Default (dark): show white logo, hide black logo */
+.xr-logo-light { display: none; }
+.xr-logo-dark  { display: block; }
+
+/* Light mode via OS preference */
+@media (prefers-color-scheme: light) {
+  .xr-logo-dark  { display: none; }
+  .xr-logo-light { display: block; }
+}
+/* Light mode via explicit theme attribute */
+html[data-theme="light"] .xr-logo-dark  { display: none; }
+html[data-theme="light"] .xr-logo-light { display: block; }
+/* Dark mode via explicit theme attribute (override any media query) */
+html[data-theme="dark"] .xr-logo-dark  { display: block; }
+html[data-theme="dark"] .xr-logo-light { display: none; }
 
   .xr-nav-toggle {
   margin-left: 0;
