@@ -70,16 +70,26 @@
     themeBtn.querySelector('.xr-theme-toggle-label').textContent = isDark ? 'Light mode' : 'Dark mode';
     themeBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
   }
+  function updateFavicon(theme) {
+    document.querySelectorAll('link[rel="icon"][data-xr-favicon]').forEach(el => el.remove());
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.dataset.xrFavicon = '1';
+    link.href = theme === 'dark' ? '/xra%20white%20simple.ico' : '/xra%20black%20simple.ico';
+    document.head.appendChild(link);
+  }
   function currentTheme() {
     return document.documentElement.getAttribute('data-theme') || 'dark';
   }
   updateThemeBtn(currentTheme());
+  updateFavicon(currentTheme());
   if (themeBtn) {
     themeBtn.addEventListener('click', () => {
       const next = currentTheme() === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('xr-theme', next);
       updateThemeBtn(next);
+      updateFavicon(next);
     });
   }
 
