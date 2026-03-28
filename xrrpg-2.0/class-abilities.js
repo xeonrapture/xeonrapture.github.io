@@ -15,7 +15,7 @@ window.XRRPG_CLASS_DEFS = {
       tiers: [
         "Naturally very strong and fast.",
         "As strong and fast as the strongest of the species. Can withstand own strength. Deal base 3 dmg on Success.",
-        "Far stronger and faster than the strongest and fastest of the species.",
+        "Far stronger and faster than the strongest and fastest of the species. Deal base 3 dmg on Success.",
         "Can move many times own weight, devastating blows. Barely visible movement. Deal base 4 dmg on Success."
       ]
     },
