@@ -386,6 +386,19 @@
     </div>
   </div>
 
+  <div id="classEditModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card xrrpg-class-edit-modal-card">
+      <h2 id="classEditModalTitle">Edit Class Choices</h2>
+      <div id="classEditModalBody" class="xrrpg-notes-stack xrrpg-class-edit-body"></div>
+      <div id="classEditMsg" class="mono muted"></div>
+      <div class="xr-modal-actions">
+        <button id="cancelClassEditBtn" type="button">Cancel</button>
+        <button id="saveClassEditBtn" type="button">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/shared/auth.js"></script>
   <script src="/shared/nav.js"></script>
@@ -569,6 +582,8 @@
       document.querySelectorAll('[data-bomb-inv-inc], [data-bomb-inv-dec], [data-install-effect], [data-uninstall-all]').forEach(btn => { btn.disabled = readOnly; });
       // Disable the Reset Daily button
       document.querySelectorAll('[data-reset-daily]').forEach(btn => { btn.disabled = readOnly; });
+      // Disable class edit buttons
+      document.querySelectorAll('[data-class-edit]').forEach(btn => { btn.disabled = readOnly; });
     }
 
     const CLASS_ARCHETYPES = {
@@ -1335,6 +1350,10 @@ function parseNotes() {
         btn.onclick = () => updateBombInventory(btn.dataset.cls, btn.dataset.bombInvDec, -1);
       });
 
+      body.querySelectorAll('[data-class-edit]').forEach(btn => {
+        btn.onclick = () => openClassEditModal(btn.dataset.classEdit);
+      });
+
       initCollapsibles();
       applyOwnershipPermissions();
     }
@@ -1355,6 +1374,7 @@ function parseNotes() {
       let html = `<div class="xrrpg-class-ability-subsection collapsible" data-class="${cls}" data-collapsible>`;
       html += `<div class="collapsible-header">`;
       html += `<h3>${cls} <span class="muted">(Class Level ${classLevel})</span></h3>`;
+      html += `<button class="xrrpg-class-edit-btn" type="button" data-class-edit="${cls}" title="Edit ${cls} choices" aria-label="Edit ${cls} choices">&#9998;</button>`;
       html += `<button class="collapse-toggle" type="button" aria-label="Hide section" title="Hide section"></button>`;
       html += `</div>`;
       html += `<div class="collapsible-body">`;
@@ -2408,8 +2428,202 @@ function parseNotes() {
       setClassChoices(cls, choices);
     }
 
+    // ── CLASS EDIT MODAL ──────────────────────────────────────────────────────
 
+    let classEditCurrentCls = null;
 
+    function openClassEditModal(cls) {
+      if (!canEdit) return;
+      classEditCurrentCls = cls;
+      const modal = document.getElementById('classEditModal');
+      if (!modal) return;
+      document.getElementById('classEditModalTitle').textContent = `Edit ${cls} Choices`;
+      document.getElementById('classEditMsg').textContent = '';
+      buildClassEditChoiceUI(cls);
+      modal.classList.remove('hidden');
+    }
+
+    function buildClassEditChoiceUI(cls) {
+      const container = document.getElementById('classEditModalBody');
+      if (!container) return;
+
+      const def = getClassDef(cls);
+      const classLevel = getClassLevel(cls);
+      const choices = getClassChoices(cls);
+
+      if (!def) {
+        container.innerHTML = '<p class="muted">No class data available.</p>';
+        return;
+      }
+
+      // Aggregate choice types and their allowed counts across all class levels reached
+      let spellCount = 0, spellConfig = null;
+      let apCount = 0;
+      let spCount = 0, spConfig = null;
+      const pickOneChoices = {};
+      const textChoices = {};
+
+      for (let lvl = 1; lvl <= classLevel; lvl++) {
+        const levelDef = def.levels?.[lvl] !== undefined ? def.levels[lvl] : def.levels?.['default'];
+        if (!levelDef) continue;
+        for (const choice of (levelDef.choices || [])) {
+          if (choice.type === 'pick_spells') {
+            spellCount += (choice.count || 1);
+            if (!spellConfig) spellConfig = choice;
+          } else if (choice.type === 'pick_advanced_power') {
+            apCount += (choice.count || 1);
+          } else if (choice.type === 'pick_specialized_powers') {
+            spCount += (choice.count || 1);
+            if (!spConfig) spConfig = choice;
+          } else if (choice.type === 'pick_one') {
+            pickOneChoices[choice.id] = choice;
+          } else if (choice.type === 'text') {
+            textChoices[choice.id] = choice;
+          }
+        }
+      }
+
+      let html = '';
+
+      // ── Spells ─────────────────────────────────────────────────────────────
+      if (spellCount > 0 && def.spellPool?.length) {
+        const known = choices.spells_known || [];
+        const pool = def.spellPool.filter(s => !spellConfig?.maxTier || s.tier <= spellConfig.maxTier);
+        const checks = pool.map(s => {
+          const isKnown = known.includes(s.name);
+          const tags = [s.color ? `[${s.color}]` : null, s.concentration ? '[Conc]' : null, s.aoe ? '[AOE]' : null].filter(Boolean).join(' ');
+          return `<label class="xrrpg-spell-option"><input type="checkbox" data-cedit-spell value="${s.name.replace(/"/g, '&quot;')}" ${isKnown ? 'checked' : ''}> <strong>${s.name.replace(/</g, '&lt;')}</strong>${tags ? ` <span class="muted">${tags}</span>` : ''}<br><span class="xrrpg-ability-desc">${s.description.replace(/</g, '&lt;')}</span></label>`;
+        }).join('');
+        html += `<fieldset class="xrrpg-pick-fieldset" data-cedit-type="spells" data-cedit-limit="${spellCount}">
+          <legend>Spells Known — pick up to ${spellCount} <span class="xrrpg-cedit-count">(${known.length} selected)</span></legend>
+          ${checks}
+        </fieldset>`;
+      }
+
+      // ── Advanced Powers ─────────────────────────────────────────────────────
+      // Use the actual stored array length as the number of slots (includes auto-advances)
+      const currentAP = choices.advanced_powers || [];
+      const totalAPSlots = Math.max(apCount, currentAP.length);
+      if (totalAPSlots > 0 && def.advancedPowers?.length) {
+        const pool = def.advancedPowers;
+        let slotsHtml = '';
+        for (let i = 0; i < totalAPSlots; i++) {
+          const val = currentAP[i] || '';
+          const opts = pool.map(p => `<option value="${p.name.replace(/"/g, '&quot;')}" ${val === p.name ? 'selected' : ''}>${p.name.replace(/</g, '&lt;')}</option>`).join('');
+          slotsHtml += `<div class="xrrpg-cedit-ap-row">
+            <label>Pick ${i + 1}: <select data-cedit-ap-slot="${i}"><option value="">— None —</option>${opts}</select></label>
+          </div>`;
+        }
+        html += `<div class="xrrpg-choice-block">
+          <div style="font-weight:600; margin-bottom:0.5rem;">Advanced Powers (${totalAPSlots} picks)</div>
+          <p class="muted" style="font-size:0.8rem; margin-bottom:0.5rem;">Repeat the same power in consecutive slots to increase its tier.</p>
+          ${slotsHtml}
+        </div>`;
+      }
+
+      // ── Specialized Powers ──────────────────────────────────────────────────
+      if (spCount > 0 && def.specializedPowers?.length) {
+        const already = choices.specialized_powers || [];
+        const checks = def.specializedPowers.map(p => {
+          const isPicked = already.includes(p.name);
+          return `<label class="xrrpg-spell-option"><input type="checkbox" data-cedit-sp value="${p.name.replace(/"/g, '&quot;')}" ${isPicked ? 'checked' : ''}> <strong>${p.name.replace(/</g, '&lt;')}</strong><br><span class="xrrpg-ability-desc">${(p.descriptions?.[0] || '').replace(/</g, '&lt;')}</span></label>`;
+        }).join('');
+        html += `<fieldset class="xrrpg-pick-fieldset" data-cedit-type="sp" data-cedit-limit="${spCount}">
+          <legend>Specialized Powers — pick up to ${spCount} <span class="xrrpg-cedit-count">(${already.length} selected)</span></legend>
+          ${checks}
+        </fieldset>`;
+      }
+
+      // ── pick_one choices ────────────────────────────────────────────────────
+      for (const [id, choice] of Object.entries(pickOneChoices)) {
+        const currentVal = choices[id] || '';
+        if (id === 'devil_emotion') {
+          const opts = (def.devilEmotions || []).map(e => `<option value="${e.label.replace(/"/g, '&quot;')}" ${currentVal === e.label ? 'selected' : ''}>${e.label.replace(/</g, '&lt;')}</option>`).join('');
+          html += `<div class="xrrpg-choice-block"><label><strong>${(choice.label || id).replace(/</g, '&lt;')}:</strong><br>
+            <select data-cedit-one="${id}"><option value="">— Select —</option>${opts}</select>
+          </label></div>`;
+        } else {
+          const opts = (choice.options || []).map(o => `<option value="${String(o).replace(/"/g, '&quot;')}" ${currentVal === String(o) ? 'selected' : ''}>${String(o).replace(/</g, '&lt;')}</option>`).join('');
+          html += `<div class="xrrpg-choice-block"><label><strong>${(choice.label || id).replace(/</g, '&lt;')}:</strong><br>
+            <select data-cedit-one="${id}"><option value="">— Select —</option>${opts}</select>
+          </label></div>`;
+        }
+      }
+
+      // ── text choices ────────────────────────────────────────────────────────
+      for (const [id, choice] of Object.entries(textChoices)) {
+        const currentVal = (choices[id] || '').replace(/"/g, '&quot;');
+        html += `<div class="xrrpg-choice-block"><label><strong>${(choice.label || id).replace(/</g, '&lt;')}:</strong><br>
+          <input type="text" data-cedit-text="${id}" value="${currentVal}" style="width:100%;">
+        </label></div>`;
+      }
+
+      if (!html) {
+        html = '<p class="muted">No editable choices for this class at the current level.</p>';
+      }
+
+      container.innerHTML = html;
+
+      // Enforce checkbox limits
+      container.querySelectorAll('[data-cedit-type]').forEach(fieldset => {
+        const limit = Number(fieldset.dataset.ceditLimit);
+        const type = fieldset.dataset.ceditType;
+        const sel = type === 'spells' ? '[data-cedit-spell]' : '[data-cedit-sp]';
+        const countEl = fieldset.querySelector('.xrrpg-cedit-count');
+
+        const enforce = () => {
+          const checked = fieldset.querySelectorAll(`${sel}:checked`).length;
+          if (countEl) countEl.textContent = `(${checked} selected)`;
+          fieldset.querySelectorAll(`${sel}:not(:checked)`).forEach(cb => {
+            cb.disabled = checked >= limit;
+          });
+        };
+
+        fieldset.querySelectorAll(sel).forEach(cb => cb.addEventListener('change', enforce));
+        enforce();
+      });
+    }
+
+    function handleClassEditSave() {
+      const cls = classEditCurrentCls;
+      if (!cls || !canEdit) return;
+
+      const container = document.getElementById('classEditModalBody');
+      const choices = { ...getClassChoices(cls) };
+
+      // Spells
+      const spellChecks = container.querySelectorAll('[data-cedit-spell]');
+      if (spellChecks.length > 0) {
+        choices.spells_known = [...container.querySelectorAll('[data-cedit-spell]:checked')].map(cb => cb.value);
+      }
+
+      // Advanced powers
+      const apSlots = container.querySelectorAll('[data-cedit-ap-slot]');
+      if (apSlots.length > 0) {
+        choices.advanced_powers = [...apSlots].map(sel => sel.value).filter(v => v);
+      }
+
+      // Specialized powers
+      const spChecks = container.querySelectorAll('[data-cedit-sp]');
+      if (spChecks.length > 0) {
+        choices.specialized_powers = [...container.querySelectorAll('[data-cedit-sp]:checked')].map(cb => cb.value);
+      }
+
+      // pick_one
+      container.querySelectorAll('[data-cedit-one]').forEach(sel => {
+        if (sel.value) choices[sel.dataset.ceditOne] = sel.value;
+      });
+
+      // text
+      container.querySelectorAll('[data-cedit-text]').forEach(input => {
+        choices[input.dataset.ceditText] = input.value;
+      });
+
+      setClassChoices(cls, choices);
+      renderClassAbilitiesSection();
+      document.getElementById('classEditModal').classList.add('hidden');
+      pushStatus(`${cls} choices updated.`, { tone: 'success' });
+    }
 
     const DRUG_PRESETS = [
       // Standard soft drugs
@@ -2871,6 +3085,10 @@ function parseNotes() {
           ? `<span class="cybermod-tier-badge">Tier ${item.tier}</span>` : '';
         const equippedBadge = item.equipped ? `<span class="inv-equipped-badge">Equipped</span>` : '';
         const notesPreview = item.notes ? `<div class="xrrpg-inv-item-notes-preview">${item.notes.slice(0, 80).replace(/</g, '&lt;')}${item.notes.length > 80 ? '…' : ''}</div>` : '';
+        const rawDetails = item.is_cybermod
+          ? (CYBERMOD_PRESETS.find(p => p.key === item.cybermod_key)?.description || item.details || '')
+          : (item.details || '');
+        const detailsPreview = rawDetails ? `<div class="xrrpg-inv-item-details-preview">${rawDetails.slice(0, 180).replace(/</g, '&lt;')}${rawDetails.length > 180 ? '…' : ''}</div>` : '';
 
         let editPane = '';
         if (isEditing) {
@@ -2920,6 +3138,7 @@ function parseNotes() {
               ${tierBadge}
               ${equippedBadge}
             </div>
+            ${detailsPreview}
             ${bufSummary ? `<div class="xrrpg-inv-item-buffs">${bufSummary}</div>` : ''}
             ${notesPreview}
             <div class="xrrpg-inv-item-btns">
@@ -3288,6 +3507,11 @@ function parseNotes() {
     levelModal.querySelector('.xr-modal-backdrop').onclick = () => levelModal.classList.add('hidden');
     document.getElementById('cancelLevelBtn').onclick = () => levelModal.classList.add('hidden');
     document.getElementById('levelClassSelect').onchange = () => renderLevelAbilityOptions();
+
+    const classEditModal = document.getElementById('classEditModal');
+    classEditModal.querySelector('.xr-modal-backdrop').onclick = () => classEditModal.classList.add('hidden');
+    document.getElementById('cancelClassEditBtn').onclick = () => classEditModal.classList.add('hidden');
+    document.getElementById('saveClassEditBtn').onclick = () => handleClassEditSave();
 
     document.getElementById('confirmLevelBtn').onclick = async () => {
       if (!canEdit) return;
