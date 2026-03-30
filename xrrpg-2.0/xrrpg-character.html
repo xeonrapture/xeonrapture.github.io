@@ -2501,24 +2501,134 @@ function parseNotes() {
       }
 
       // ── Advanced Powers ─────────────────────────────────────────────────────
-      // Use the actual stored array length as the number of slots (includes auto-advances)
+      // Parse stored array into distinct (name, tier) pairs — tier = count of occurrences
       const currentAP = choices.advanced_powers || [];
-      const totalAPSlots = Math.max(apCount, currentAP.length);
-      if (totalAPSlots > 0 && def.advancedPowers?.length) {
+      const apTierCount = {};
+      const apPowerOrder = [];
+      for (const name of currentAP) {
+        if (!apTierCount[name]) { apTierCount[name] = 0; apPowerOrder.push(name); }
+        apTierCount[name]++;
+      }
+      const totalAPPowers = Math.max(apCount, apPowerOrder.length);
+      if (totalAPPowers > 0 && def.advancedPowers?.length) {
         const pool = def.advancedPowers;
         let slotsHtml = '';
-        for (let i = 0; i < totalAPSlots; i++) {
-          const val = currentAP[i] || '';
-          const opts = pool.map(p => `<option value="${p.name.replace(/"/g, '&quot;')}" ${val === p.name ? 'selected' : ''}>${p.name.replace(/</g, '&lt;')}</option>`).join('');
-          slotsHtml += `<div class="xrrpg-cedit-ap-row">
-            <label>Pick ${i + 1}: <select data-cedit-ap-slot="${i}"><option value="">— None —</option>${opts}</select></label>
+        for (let i = 0; i < totalAPPowers; i++) {
+          const currentName = apPowerOrder[i] || '';
+          const tier = apTierCount[currentName] || 1;
+          const currentPower = pool.find(p => p.name === currentName);
+          const desc = currentPower?.tiers?.[tier - 1] || '';
+          const opts = pool.map(p => `<option value="${p.name.replace(/"/g, '&quot;')}" ${currentName === p.name ? 'selected' : ''}>${p.name.replace(/</g, '&lt;')}</option>`).join('');
+          slotsHtml += `<div class="xrrpg-cedit-ap-row" style="margin-bottom:0.75rem;">
+            <label><strong>Power ${i + 1} (Tier ${tier}):</strong><br>
+              <select data-cedit-ap-slot="${i}" data-cedit-ap-tier="${tier}" style="width:100%;">
+                <option value="">— None —</option>${opts}
+              </select>
+            </label>
+            ${desc ? `<p class="xrrpg-ability-desc" style="margin-top:0.25rem;">${desc.replace(/</g, '&lt;')}</p>` : ''}
           </div>`;
         }
         html += `<div class="xrrpg-choice-block">
-          <div style="font-weight:600; margin-bottom:0.5rem;">Advanced Powers (${totalAPSlots} picks)</div>
-          <p class="muted" style="font-size:0.8rem; margin-bottom:0.5rem;">Repeat the same power in consecutive slots to increase its tier.</p>
+          <div style="font-weight:600; margin-bottom:0.5rem;">Advanced Powers (${totalAPPowers} powers)</div>
+          <p class="muted" style="font-size:0.8rem; margin-bottom:0.5rem;">Select a different power to swap it — the tier level is preserved.</p>
           ${slotsHtml}
         </div>`;
+      }
+
+      // ── Elements (Demititan) ────────────────────────────────────────────────
+      let t1Count = 0, t2Count = 0;
+      for (let lvl = 1; lvl <= classLevel; lvl++) {
+        const ld = def.levels?.[lvl] !== undefined ? def.levels[lvl] : def.levels?.['default'];
+        if (!ld) continue;
+        for (const c of (ld.choices || [])) {
+          if (c.type === 'pick_elements') {
+            if (c.tier === 'I') t1Count += c.count || 1;
+            else if (c.tier === 'II') t2Count += c.count || 1;
+          }
+        }
+      }
+      if ((t1Count > 0 || t2Count > 0) && def.elementPool?.length) {
+        const currentElements = choices.elements || [];
+        const currentT1Names = currentElements.filter(e => e.tier === 'I').map(e => e.name);
+        const currentT2Names = currentElements.filter(e => e.tier === 'II').map(e => e.name);
+        const t1Pool = def.elementPool.filter(e => e.tier === 'I');
+        const t2Pool = def.elementPool.filter(e => e.tier === 'II');
+
+        if (t1Count > 0 && t1Pool.length) {
+          const checks = t1Pool.map(e => {
+            const isSelected = currentT1Names.includes(e.name);
+            const preview = (e.levelAbilities?.[1] || '').replace(/</g, '&lt;').replace(/\n/g, '<br>');
+            return `<label class="xrrpg-spell-option"><input type="checkbox" data-cedit-element data-cedit-element-tier="I" value="${e.name.replace(/"/g, '&quot;')}" ${isSelected ? 'checked' : ''}> <strong>${e.name.replace(/</g, '&lt;')}</strong>${e.focus ? ` <span class="muted">(${e.focus.replace(/</g, '&lt;')})</span>` : ''}<br><span class="xrrpg-ability-desc">${preview}</span></label>`;
+          }).join('');
+          html += `<fieldset class="xrrpg-pick-fieldset" data-cedit-type="elements-t1" data-cedit-limit="${t1Count}">
+            <legend>Tier I Elements — pick up to ${t1Count} <span class="xrrpg-cedit-count">(${currentT1Names.length} selected)</span></legend>
+            ${checks}
+          </fieldset>`;
+        }
+
+        if (t2Count > 0 && t2Pool.length) {
+          const checks = t2Pool.map(e => {
+            const isSelected = currentT2Names.includes(e.name);
+            const preview = (e.levelAbilities?.[2] || '').replace(/</g, '&lt;').replace(/\n/g, '<br>');
+            return `<label class="xrrpg-spell-option"><input type="checkbox" data-cedit-element data-cedit-element-tier="II" value="${e.name.replace(/"/g, '&quot;')}" ${isSelected ? 'checked' : ''}> <strong>${e.name.replace(/</g, '&lt;')}</strong>${e.focus ? ` <span class="muted">(${e.focus.replace(/</g, '&lt;')})</span>` : ''}<br><span class="xrrpg-ability-desc">${preview}</span></label>`;
+          }).join('');
+          html += `<fieldset class="xrrpg-pick-fieldset" data-cedit-type="elements-t2" data-cedit-limit="${t2Count}">
+            <legend>Tier II Elements — pick up to ${t2Count} <span class="xrrpg-cedit-count">(${currentT2Names.length} selected)</span></legend>
+            ${checks}
+          </fieldset>`;
+        }
+      }
+
+      // ── Spirits (Mystic / Summoner) ─────────────────────────────────────────
+      let maxSpirits = 0, upgradePoints = 0;
+      for (let lvl = 1; lvl <= classLevel; lvl++) {
+        const ld = def.levels?.[lvl] !== undefined ? def.levels[lvl] : def.levels?.['default'];
+        if (!ld) continue;
+        for (const c of (ld.choices || [])) {
+          if (c.type === 'pick_spirits') {
+            maxSpirits += c.count || 1;
+            if (c.startTier === 2) upgradePoints += c.count || 1;
+          } else if (c.type === 'upgrade_spirits') {
+            upgradePoints += c.count || 1;
+          }
+        }
+      }
+      if (maxSpirits > 0 && def.spiritTypes?.length) {
+        const currentSpirits = choices.spirits || [];
+        const spiritPool = def.spiritTypes;
+
+        if (upgradePoints > 0) {
+          // Mystic: type dropdown + tier selector per spirit row
+          const usedUpgrades = currentSpirits.reduce((sum, s) => sum + Math.max(0, (s.tier || 1) - 1), 0);
+          let spiritRowsHtml = '';
+          for (let i = 0; i < maxSpirits; i++) {
+            const cur = currentSpirits[i] || {};
+            const curType = cur.type || '';
+            const curTier = cur.tier || 1;
+            const typeOpts = spiritPool.map(s => `<option value="${s.name.replace(/"/g, '&quot;')}" ${curType === s.name ? 'selected' : ''}>${s.name.replace(/</g, '&lt;')}${s.focus ? ` (${s.focus.replace(/</g, '&lt;')})` : ''}</option>`).join('');
+            const tierOpts = [1, 2, 3].map(t => `<option value="${t}" ${curTier === t ? 'selected' : ''}>Tier ${t}</option>`).join('');
+            spiritRowsHtml += `<div data-cedit-spirit-row style="margin-bottom:0.6rem; display:flex; gap:0.5rem; align-items:center;">
+              <select data-cedit-spirit-type style="flex:1;"><option value="">— None —</option>${typeOpts}</select>
+              <select data-cedit-spirit-tier style="width:6rem;">${tierOpts}</select>
+            </div>`;
+          }
+          html += `<div class="xrrpg-choice-block">
+            <div style="font-weight:600; margin-bottom:0.3rem;">Spirits (${maxSpirits} total)</div>
+            <p class="muted" style="font-size:0.8rem; margin-bottom:0.5rem;">Upgrade points used: <span id="ceditSpiritBudget">${usedUpgrades}</span> / ${upgradePoints}</p>
+            ${spiritRowsHtml}
+          </div>`;
+        } else {
+          // Summoner: checkboxes for spirit type, no tier editing
+          const ownedTypes = currentSpirits.map(s => s.type);
+          const checks = spiritPool.map(s => {
+            const isOwned = ownedTypes.includes(s.name);
+            return `<label class="xrrpg-spell-option"><input type="checkbox" data-cedit-spirit-checkbox value="${s.name.replace(/"/g, '&quot;')}" ${isOwned ? 'checked' : ''}> <strong>${s.name.replace(/</g, '&lt;')}</strong><br><span class="xrrpg-ability-desc">${(s.description || '').replace(/</g, '&lt;')}</span></label>`;
+          }).join('');
+          html += `<fieldset class="xrrpg-pick-fieldset" data-cedit-type="spirits" data-cedit-limit="${maxSpirits}">
+            <legend>Spirits — pick up to ${maxSpirits} <span class="xrrpg-cedit-count">(${ownedTypes.length} selected)</span></legend>
+            ${checks}
+          </fieldset>`;
+        }
       }
 
       // ── Specialized Powers ──────────────────────────────────────────────────
@@ -2568,7 +2678,13 @@ function parseNotes() {
       container.querySelectorAll('[data-cedit-type]').forEach(fieldset => {
         const limit = Number(fieldset.dataset.ceditLimit);
         const type = fieldset.dataset.ceditType;
-        const sel = type === 'spells' ? '[data-cedit-spell]' : '[data-cedit-sp]';
+        let sel;
+        if (type === 'spells') sel = '[data-cedit-spell]';
+        else if (type === 'sp') sel = '[data-cedit-sp]';
+        else if (type === 'elements-t1') sel = '[data-cedit-element][data-cedit-element-tier="I"]';
+        else if (type === 'elements-t2') sel = '[data-cedit-element][data-cedit-element-tier="II"]';
+        else if (type === 'spirits') sel = '[data-cedit-spirit-checkbox]';
+        else return;
         const countEl = fieldset.querySelector('.xrrpg-cedit-count');
 
         const enforce = () => {
@@ -2582,6 +2698,19 @@ function parseNotes() {
         fieldset.querySelectorAll(sel).forEach(cb => cb.addEventListener('change', enforce));
         enforce();
       });
+
+      // Mystic spirit budget live counter
+      const spiritBudgetEl = container.querySelector('#ceditSpiritBudget');
+      if (spiritBudgetEl) {
+        const updateBudget = () => {
+          let used = 0;
+          container.querySelectorAll('[data-cedit-spirit-tier]').forEach(sel => {
+            used += Math.max(0, parseInt(sel.value || '1') - 1);
+          });
+          spiritBudgetEl.textContent = used;
+        };
+        container.querySelectorAll('[data-cedit-spirit-tier]').forEach(sel => sel.addEventListener('change', updateBudget));
+      }
     }
 
     function handleClassEditSave() {
@@ -2597,10 +2726,17 @@ function parseNotes() {
         choices.spells_known = [...container.querySelectorAll('[data-cedit-spell]:checked')].map(cb => cb.value);
       }
 
-      // Advanced powers
+      // Advanced powers — reconstruct raw array by repeating each power name `tier` times
       const apSlots = container.querySelectorAll('[data-cedit-ap-slot]');
       if (apSlots.length > 0) {
-        choices.advanced_powers = [...apSlots].map(sel => sel.value).filter(v => v);
+        const newAP = [];
+        apSlots.forEach(sel => {
+          if (sel.value) {
+            const tier = parseInt(sel.dataset.ceditApTier) || 1;
+            for (let i = 0; i < tier; i++) newAP.push(sel.value);
+          }
+        });
+        choices.advanced_powers = newAP;
       }
 
       // Specialized powers
@@ -2618,6 +2754,47 @@ function parseNotes() {
       container.querySelectorAll('[data-cedit-text]').forEach(input => {
         choices[input.dataset.ceditText] = input.value;
       });
+
+      // Elements (Demititan)
+      const elChecks = container.querySelectorAll('[data-cedit-element]');
+      if (elChecks.length > 0) {
+        choices.elements = [...container.querySelectorAll('[data-cedit-element]:checked')]
+          .map(cb => ({ name: cb.value, tier: cb.dataset.ceditElementTier }));
+      }
+
+      // Spirits — Mystic (tier-based rows)
+      const spiritRows = container.querySelectorAll('[data-cedit-spirit-row]');
+      if (spiritRows.length > 0) {
+        const def2 = getClassDef(cls);
+        const clvl2 = getClassLevel(cls);
+        let upPts = 0;
+        for (let lvl = 1; lvl <= clvl2; lvl++) {
+          const ld = def2?.levels?.[lvl] !== undefined ? def2.levels[lvl] : def2?.levels?.['default'];
+          for (const c of (ld?.choices || [])) {
+            if (c.type === 'pick_spirits' && c.startTier === 2) upPts += c.count || 1;
+            else if (c.type === 'upgrade_spirits') upPts += c.count || 1;
+          }
+        }
+        const newSpirits = [];
+        let upgradeUsed = 0;
+        spiritRows.forEach(row => {
+          const type = row.querySelector('[data-cedit-spirit-type]')?.value;
+          const tier = parseInt(row.querySelector('[data-cedit-spirit-tier]')?.value) || 1;
+          if (type) { newSpirits.push({ type, tier }); upgradeUsed += Math.max(0, tier - 1); }
+        });
+        if (upgradeUsed > upPts) {
+          document.getElementById('classEditMsg').textContent = `Too many tier upgrades used (${upgradeUsed} / ${upPts} available). Lower some spirit tiers.`;
+          return;
+        }
+        choices.spirits = newSpirits;
+      }
+
+      // Spirits — Summoner (checkboxes, all tier 1)
+      const spiritBoxes = container.querySelectorAll('[data-cedit-spirit-checkbox]');
+      if (spiritBoxes.length > 0) {
+        choices.spirits = [...container.querySelectorAll('[data-cedit-spirit-checkbox]:checked')]
+          .map(cb => ({ type: cb.value, tier: 1 }));
+      }
 
       setClassChoices(cls, choices);
       renderClassAbilitiesSection();
