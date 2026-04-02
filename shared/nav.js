@@ -75,7 +75,7 @@
     const link = document.createElement('link');
     link.rel = 'icon';
     link.dataset.xrFavicon = '1';
-    link.href = theme === 'dark' ? '/xra%20white%20simple.ico' : '/xra%20black%20simple.ico';
+    link.href = '/Just%20A%20purp.ico';
     document.head.appendChild(link);
   }
   function currentTheme() {
