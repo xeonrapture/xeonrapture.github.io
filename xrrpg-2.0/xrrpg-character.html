@@ -3507,7 +3507,6 @@ function parseNotes() {
       document.getElementById('powerfulItemMaxInput').value = s.powerful_item_max || 0;
       document.getElementById('partyTierInput').value = s.party_tier || 1;
       document.getElementById('xenicDecayInput').value = s.xenic_decay_level || 0;
-      document.getElementById('spiritDecayEffects').value = s.spirit_decay_effects || '';
       renderCurrencyEntries();
 
       const textareaIds = ['appearanceInput','personalityInput','motivationInput','backstoryInput','classProgressionInput','inventoryInput','extraNotesInput','spiritDecayEffects'];
@@ -3518,7 +3517,8 @@ function parseNotes() {
         backstoryInput: notes.backstory || '',
         classProgressionInput: notes.class_progression_notes || '',
         inventoryInput: notes.inventory || '',
-        extraNotesInput: notes.extra || ''
+        extraNotesInput: notes.extra || '',
+        spiritDecayEffects: s.spirit_decay_effects || ''
       };
       textareaIds.forEach(id => {
         const el = document.getElementById(id);
