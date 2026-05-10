@@ -108,11 +108,11 @@
           </div>
         </div>
         <div class="xrrpg-resource-card">
-          <h3>Xenic Decay</h3>
+          <h3>Spirit Decay</h3>
           <p class="xrrpg-rules-note"><a href="https://publish.obsidian.md/xeonrapture/xr/XRRPG+2.0/Rule+Resources/Spirit+Decay" target="_blank" rel="noopener">Spirit Decay rules ↗</a></p>
           <div class="xrrpg-resource-fields">
-            <label title="Current xenic decay level.">Xenic Decay Level <input id="xenicDecayInput" type="number" min="0" /></label>
-            <label title="Total number of decay cleanses.">Times Cleansed <input id="timesCleansedInput" type="number" min="0" /></label>
+            <label title="Current xenic decay level.">Spirit Decay Level<input id="xenicDecayInput" type="number" min="0" /></label>
+            <label title="Total number of decay cleanses.">Uncleansed Spirit Decay Effects<textarea id="spiritDecayEffects"></textarea></label>
           </div>
         </div>
         <div class="xrrpg-resource-card">
@@ -554,7 +554,7 @@
       const editableIds = [
         'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
         'staminaTotalInput','staminaUsedInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
-        'partyTierInput','xenicDecayInput','timesCleansedInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput',
+        'partyTierInput','xenicDecayInput','spiritDecayEffects','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput',
         'levelUpBtn','takeInjuryBtn','addSkillBtn','confirmLevelBtn','confirmInjuryBtn','saveSkillModalBtn','drugAddBtn','drugAddSelect',
         'stressDecBtn','stressIncBtn','addCurrencyBtn','repAddBtn','repNameInput','invAddCustomBtn','invAddCustomBuffBtn','invCustomName','invCustomDetails','invCustomNotes',
         'invAddCybermodBtn','invCybermodSelect'
@@ -683,7 +683,7 @@ function parseNotes() {
         powerful_item_max: Number(document.getElementById('powerfulItemMaxInput').value) || 0,
         party_tier: Number(document.getElementById('partyTierInput').value) || 1,
         xenic_decay_level: Number(document.getElementById('xenicDecayInput').value) || 0,
-        times_cleansed: Number(document.getElementById('timesCleansedInput').value) || 0,
+        times_cleansed: document.getElementById('spiritDecayEffects').value.trim(),
         currency_entries: character.base_stats?.currency_entries ?? [],
         stress_level: character.base_stats?.stress_level ?? 0
       };
@@ -3507,10 +3507,9 @@ function parseNotes() {
       document.getElementById('powerfulItemMaxInput').value = s.powerful_item_max || 0;
       document.getElementById('partyTierInput').value = s.party_tier || 1;
       document.getElementById('xenicDecayInput').value = s.xenic_decay_level || 0;
-      document.getElementById('timesCleansedInput').value = s.times_cleansed || 0;
       renderCurrencyEntries();
 
-      const textareaIds = ['appearanceInput','personalityInput','motivationInput','backstoryInput','classProgressionInput','inventoryInput','extraNotesInput'];
+      const textareaIds = ['appearanceInput','personalityInput','motivationInput','backstoryInput','classProgressionInput','inventoryInput','extraNotesInput','spiritDecayEffects'];
       const textareaValues = {
         appearanceInput: notes.appearance || '',
         personalityInput: notes.personality || '',
@@ -4380,9 +4379,9 @@ function parseNotes() {
         const autosaveTargets = [
           'nameInput','speciesInput','chromaInput','levelInput','masteryDieInput','vigorInput','enduranceInput','intuitionInput','witInput',
           'staminaTotalInput','staminaUsedInput','hpInput','currentHpInput','powerfulItemLimitInput','powerfulItemMaxInput',
-          'xenicDecayInput','timesCleansedInput','partyTierInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput'
+          'xenicDecayInput','spiritDecayEffects','partyTierInput','classProgressionInput','inventoryInput','appearanceInput','personalityInput','motivationInput','backstoryInput','extraNotesInput'
         ];
-        const autoResizeIds = ['appearanceInput','personalityInput','motivationInput','backstoryInput','classProgressionInput','inventoryInput','extraNotesInput'];
+        const autoResizeIds = ['appearanceInput','personalityInput','motivationInput','backstoryInput','classProgressionInput','inventoryInput','extraNotesInput','spiritDecayEffects'];
         autosaveTargets.forEach(id => {
           const el = document.getElementById(id);
           if (!el) return;
