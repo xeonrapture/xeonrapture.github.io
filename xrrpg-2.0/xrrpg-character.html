@@ -648,7 +648,7 @@ function parseNotes() {
         class_progression_notes: document.getElementById('classProgressionInput').value.trim(),
         inventory: document.getElementById('inventoryInput').value.trim(),
         extra: document.getElementById('extraNotesInput').value.trim(),
-        spirit_decay_effects: document.getElementById('spiritDecayEffects').value.trim()
+        times_cleansed: document.getElementById('spiritDecayEffects').value.trim()
       });
     }
 
@@ -3517,7 +3517,8 @@ function parseNotes() {
         backstoryInput: notes.backstory || '',
         classProgressionInput: notes.class_progression_notes || '',
         inventoryInput: notes.inventory || '',
-        extraNotesInput: notes.extra || ''
+        extraNotesInput: notes.extra || '' ,
+        spiritDecayEffects: stats.times_cleansed || ''
       };
       textareaIds.forEach(id => {
         const el = document.getElementById(id);
