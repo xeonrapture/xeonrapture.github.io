@@ -647,7 +647,8 @@ function parseNotes() {
         backstory: document.getElementById('backstoryInput').value.trim(),
         class_progression_notes: document.getElementById('classProgressionInput').value.trim(),
         inventory: document.getElementById('inventoryInput').value.trim(),
-        extra: document.getElementById('extraNotesInput').value.trim()
+        extra: document.getElementById('extraNotesInput').value.trim(),
+        spirit_decay_effects: document.getElementById('spiritDecayEffects').value.trim()
       });
     }
 
@@ -683,7 +684,6 @@ function parseNotes() {
         powerful_item_max: Number(document.getElementById('powerfulItemMaxInput').value) || 0,
         party_tier: Number(document.getElementById('partyTierInput').value) || 1,
         xenic_decay_level: Number(document.getElementById('xenicDecayInput').value) || 0,
-        times_cleansed: document.getElementById('spiritDecayEffects').value.trim(),
         currency_entries: character.base_stats?.currency_entries ?? [],
         stress_level: character.base_stats?.stress_level ?? 0
       };
