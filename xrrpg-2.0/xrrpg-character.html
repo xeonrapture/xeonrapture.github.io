@@ -303,7 +303,7 @@
     <div class="xr-modal-backdrop"></div>
     <div class="xr-modal-card">
       <h2>Take Injury</h2>
-      <p class="muted">Minor: 1 DMG + next Action -2. Severe: 2 DMG + lose 1 Stamina. Critical: 3 DMG + -1 all Actions until healed.</p>
+      <p class="muted">Minor: 1 DMG + next Action -2. Severe: 2 DMG + lose 1 Stamina. Critical: 3 DMG + chance of death when downed.</p>
       <div class="stat-inputs">
         <label>Injury type
           <select id="injuryTypeInput">
@@ -700,7 +700,7 @@ function parseNotes() {
     function injuryDebuff(type) {
       if (type === 'minor') return 'Debuff: next Action is -2.';
       if (type === 'severe') return 'Debuff: lose 1 Stamina.';
-      return 'Debuff: -1 to all Actions until healed.';
+      return 'Debuff: chance of death when downed.';
     }
 
 
