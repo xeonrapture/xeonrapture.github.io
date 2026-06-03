@@ -45,7 +45,7 @@
           <th></th>
         </tr>
       </thead>
-      <tbody id="charTable"><tr><td colspan="9">Loading…</td></tr></tbody>
+      <tbody id="charTable"><tr><td colspan="9">Loading…if this takes too long just refresh</td></tr></tbody>
     </table>
   </main>
 
@@ -166,7 +166,7 @@
     let sortState = { key: 'name', direction: 'asc' };
 
     let _loadingSafetyTimer = null;
-    function setLoading(message = 'Loading…') {
+    function setLoading(message = 'Loading…if this takes too long just refresh') {
       const overlay = document.getElementById('loadingOverlay');
       const text = document.getElementById('loadingOverlayText');
       if (text) text.textContent = message;

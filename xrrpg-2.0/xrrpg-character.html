@@ -266,7 +266,7 @@
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody id="historyTable"><tr><td colspan="4">Loading…</td></tr></tbody>
+        <tbody id="historyTable"><tr><td colspan="4">Loading…if this takes too long just refresh</td></tr></tbody>
         </table>
       </div>
     </section>
@@ -521,7 +521,7 @@
     };
 
     let _loadingSafetyTimer = null;
-    function setLoading(message = 'Loading…') {
+    function setLoading(message = 'Loading…if this takes too long just refresh') {
       const overlay = document.getElementById('loadingOverlay');
       const text = document.getElementById('loadingOverlayText');
       if (text) text.textContent = message;

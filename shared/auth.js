@@ -35,14 +35,14 @@ window.supabaseClient = window.supabase.createClient(
     overlay.className = 'xr-loading-overlay hidden';
     overlay.setAttribute('aria-live', 'polite');
     overlay.setAttribute('aria-busy', 'true');
-    overlay.innerHTML = '<div class="xr-loading-spinner" aria-hidden="true"></div><div id="globalLoadingOverlayText" class="mono">Loading…</div>';
+    overlay.innerHTML = '<div class="xr-loading-spinner" aria-hidden="true"></div><div id="globalLoadingOverlayText" class="mono">Loading…if this takes too long just refresh</div>';
     document.body.appendChild(overlay);
     return overlay;
   }
 
   function setText(message) {
     const text = document.getElementById('globalLoadingOverlayText');
-    if (text) text.textContent = message || 'Loading…';
+    if (text) text.textContent = message || 'Loading…if this takes too long just refresh';
   }
 
   function showNow(message) {
@@ -69,7 +69,7 @@ window.supabaseClient = window.supabase.createClient(
     }
   }
 
-  function begin(message = 'Loading…') {
+  function begin(message = 'Loading…if this takes too long just refresh') {
     if (window.__useLocalLoadingOverlay) return;
     pendingCount += 1;
     if (pendingCount > 1) return;
@@ -107,7 +107,7 @@ window.supabaseClient = window.supabase.createClient(
     }
   }
 
-  window.showGlobalLoading = function showGlobalLoading(message = 'Loading…') {
+  window.showGlobalLoading = function showGlobalLoading(message = 'Loading…if this takes too long just refresh') {
     begin(message);
   };
 
@@ -125,7 +125,7 @@ window.supabaseClient = window.supabase.createClient(
   });
 
   window.withGlobalLoading = async function withGlobalLoading(message, task) {
-    begin(message || 'Loading…');
+    begin(message || 'Loading…if this takes too long just refresh');
     try {
       return await task();
     } finally {
@@ -136,7 +136,7 @@ window.supabaseClient = window.supabase.createClient(
   const nativeFetch = window.fetch.bind(window);
   window.fetch = async function xrLoadingFetch(input, init = undefined) {
     const skipLoading = window.__useLocalLoadingOverlay || !!(init && init.xrSkipGlobalLoading);
-    if (!skipLoading) begin('Loading…');
+    if (!skipLoading) begin('Loading…if this takes too long just refresh');
     try {
       return await nativeFetch(input, init);
     } finally {
