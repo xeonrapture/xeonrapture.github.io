@@ -1,5 +1,6 @@
 const SUPABASE_URL = "https://tustchcydbvipwcxeqfq.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ce_C2Te3RZZKszXfn91OSA_kpUalPnB";
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_ce_C2Te3RZZKszXfn91OSA_kpUalPnB";
 
 window.supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
@@ -7,12 +8,11 @@ window.supabaseClient = window.supabase.createClient(
   {
     global: {
       headers: {
-        apikey: SUPABASE_PUBLISHABLE_KEY
-      }
-    }
-  }
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+      },
+    },
+  },
 );
-
 
 (function initGlobalLoadingOverlay() {
   if (window.__xrGlobalLoadingInitialized) return;
@@ -27,29 +27,30 @@ window.supabaseClient = window.supabase.createClient(
   let safetyTimer = null;
 
   function ensureOverlay() {
-    let overlay = document.getElementById('globalLoadingOverlay');
+    let overlay = document.getElementById("globalLoadingOverlay");
     if (overlay) return overlay;
 
-    overlay = document.createElement('div');
-    overlay.id = 'globalLoadingOverlay';
-    overlay.className = 'xr-loading-overlay hidden';
-    overlay.setAttribute('aria-live', 'polite');
-    overlay.setAttribute('aria-busy', 'true');
-    overlay.innerHTML = '<div class="xr-loading-spinner" aria-hidden="true"></div><div id="globalLoadingOverlayText" class="mono">Loading…if this takes too long just refresh</div>';
+    overlay = document.createElement("div");
+    overlay.id = "globalLoadingOverlay";
+    overlay.className = "xr-loading-overlay hidden";
+    overlay.setAttribute("aria-live", "polite");
+    overlay.setAttribute("aria-busy", "true");
+    overlay.innerHTML =
+      '<div class="xr-loading-spinner" aria-hidden="true"></div><div id="globalLoadingOverlayText" class="mono">Loading...</div>';
     document.body.appendChild(overlay);
     return overlay;
   }
 
   function setText(message) {
-    const text = document.getElementById('globalLoadingOverlayText');
-    if (text) text.textContent = message || 'Loading…if this takes too long just refresh';
+    const text = document.getElementById("globalLoadingOverlayText");
+    if (text) text.textContent = message || "Loading";
   }
 
   function showNow(message) {
     if (window.__useLocalLoadingOverlay) return;
     const overlay = ensureOverlay();
     setText(message);
-    overlay.classList.remove('hidden');
+    overlay.classList.remove("hidden");
     visibleSince = Date.now();
     if (safetyTimer) window.clearTimeout(safetyTimer);
     safetyTimer = window.setTimeout(() => {
@@ -59,9 +60,9 @@ window.supabaseClient = window.supabase.createClient(
   }
 
   function hideNow() {
-    const overlay = document.getElementById('globalLoadingOverlay');
+    const overlay = document.getElementById("globalLoadingOverlay");
     if (!overlay) return;
-    overlay.classList.add('hidden');
+    overlay.classList.add("hidden");
     visibleSince = 0;
     if (safetyTimer) {
       window.clearTimeout(safetyTimer);
@@ -69,7 +70,7 @@ window.supabaseClient = window.supabase.createClient(
     }
   }
 
-  function begin(message = 'Loading…if this takes too long just refresh') {
+  function begin(message = "Loading") {
     if (window.__useLocalLoadingOverlay) return;
     pendingCount += 1;
     if (pendingCount > 1) return;
@@ -107,7 +108,7 @@ window.supabaseClient = window.supabase.createClient(
     }
   }
 
-  window.showGlobalLoading = function showGlobalLoading(message = 'Loading…if this takes too long just refresh') {
+  window.showGlobalLoading = function showGlobalLoading(message = "Loading") {
     begin(message);
   };
 
@@ -115,7 +116,7 @@ window.supabaseClient = window.supabase.createClient(
     end();
   };
 
-  window.addEventListener('pagehide', () => {
+  window.addEventListener("pagehide", () => {
     pendingCount = 0;
     if (showTimer) {
       window.clearTimeout(showTimer);
@@ -125,7 +126,7 @@ window.supabaseClient = window.supabase.createClient(
   });
 
   window.withGlobalLoading = async function withGlobalLoading(message, task) {
-    begin(message || 'Loading…if this takes too long just refresh');
+    begin(message || "Loading");
     try {
       return await task();
     } finally {
@@ -135,8 +136,9 @@ window.supabaseClient = window.supabase.createClient(
 
   const nativeFetch = window.fetch.bind(window);
   window.fetch = async function xrLoadingFetch(input, init = undefined) {
-    const skipLoading = window.__useLocalLoadingOverlay || !!(init && init.xrSkipGlobalLoading);
-    if (!skipLoading) begin('Loading…if this takes too long just refresh');
+    const skipLoading =
+      window.__useLocalLoadingOverlay || !!(init && init.xrSkipGlobalLoading);
+    if (!skipLoading) begin("Loading");
     try {
       return await nativeFetch(input, init);
     } finally {
@@ -148,7 +150,7 @@ window.supabaseClient = window.supabase.createClient(
 async function signIn(email, password) {
   const { error } = await window.supabaseClient.auth.signInWithPassword({
     email,
-    password
+    password,
   });
   if (error) throw error;
 }
@@ -171,8 +173,8 @@ async function signUp(email, password, metadata = {}) {
     password,
     options: {
       emailRedirectTo: "https://app.xeonrapture.com/dashboard.html",
-      data: metadata
-    }
+      data: metadata,
+    },
   });
 
   console.log("Signup response:", data, error);
@@ -180,19 +182,21 @@ async function signUp(email, password, metadata = {}) {
   if (error) throw error;
 }
 
-
 async function signOut() {
   await window.supabaseClient.auth.signOut();
 }
 
 async function getUser() {
-  const { data: { session } } =
-    await window.supabaseClient.auth.getSession();
+  const {
+    data: { session },
+  } = await window.supabaseClient.auth.getSession();
 
   if (!session) return null;
 
-  const { data: { user }, error } =
-    await window.supabaseClient.auth.getUser();
+  const {
+    data: { user },
+    error,
+  } = await window.supabaseClient.auth.getUser();
 
   if (error) throw error;
   return user;

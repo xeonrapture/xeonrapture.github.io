@@ -1,460 +1,740 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>XRRPG Characters | XR App</title>
-  <link rel="icon" href="/Just%20A%20purp.ico">
-  <link rel="stylesheet" href="/shared/style.css">
-</head>
-<body class="wr-scope">
-  <div id="nav"></div>
-  <main class="wrap">
-    <h1>XRRPG Character Manager</h1>
-    <div class="character-actions">
-      <button id="newCharacterBtn" aria-label="New character" title="New character"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
-      <button id="importCharacterBtn" aria-label="Import character" title="Import character JSON"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="M8 11l4 4 4-4"></path><path d="M4 20h16"></path></svg></button>
-      <input id="importCharacterInput" type="file" accept="application/json,.json" class="hidden" />
-    </div>
-
-    <div class="char-sort-bar" id="charSortBar">
-      <span class="char-sort-label">Sort:</span>
-      <button type="button" class="table-sort" data-sort="name">Name</button>
-      <button type="button" class="table-sort" data-sort="level">Lvl</button>
-      <button type="button" class="table-sort" data-sort="class">Class</button>
-      <button type="button" class="table-sort" data-sort="credits">Credits</button>
-      <button type="button" class="table-sort" data-sort="vigor">Vig</button>
-      <button type="button" class="table-sort" data-sort="endurance">End</button>
-      <button type="button" class="table-sort" data-sort="intuition">Intu</button>
-      <button type="button" class="table-sort" data-sort="wit">Wit</button>
-    </div>
-
-    <div id="charCards" class="char-card-grid"></div>
-
-    <table class="table-full char-manager-table">
-      <thead>
-        <tr>
-          <th><button type="button" class="table-sort" data-sort="name">Name</button></th>
-          <th><button type="button" class="table-sort" data-sort="level">Lvl</button></th>
-          <th><button type="button" class="table-sort" data-sort="class">Class Path</button></th>
-          <th><button type="button" class="table-sort" data-sort="credits">Credits</button></th>
-          <th><button type="button" class="table-sort" data-sort="vigor">Vig</button></th>
-          <th><button type="button" class="table-sort" data-sort="endurance">End</button></th>
-          <th><button type="button" class="table-sort" data-sort="intuition">Intu</button></th>
-          <th><button type="button" class="table-sort" data-sort="wit">Wit</button></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="charTable"><tr><td colspan="9">Loading…if this takes too long just refresh</td></tr></tbody>
-    </table>
-  </main>
-
-  <div id="charModal" class="xr-modal hidden">
-    <div class="xr-modal-backdrop"></div>
-    <div class="xr-modal-card">
-      <h2>Create XRRPG Character</h2>
-      <p id="wizardStepLabel" class="muted">Step 1 / 2</p>
-
-      <div data-step="1" class="wizard-step xrrpg-form-grid">
-        <label>Name <input id="nameInput" maxlength="48" /></label>
-        <label>Species <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Species" target="_blank" rel="noopener noreferrer">rules</a>
-          <select id="speciesInput"></select>
-        </label>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>XRRPG Characters | XR App</title>
+    <link rel="icon" href="/Just%20A%20purp.ico" />
+    <link rel="stylesheet" href="/shared/style.css" />
+  </head>
+  <body class="wr-scope">
+    <div id="nav"></div>
+    <main class="wrap">
+      <h1>XRRPG Character Manager</h1>
+      <div class="character-actions">
+        <button
+          id="newCharacterBtn"
+          aria-label="New character"
+          title="New character"
+        >
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14"></path>
+            <path d="M5 12h14"></path>
+          </svg>
+        </button>
+        <button
+          id="importCharacterBtn"
+          aria-label="Import character"
+          title="Import character JSON"
+        >
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3v12"></path>
+            <path d="M8 11l4 4 4-4"></path>
+            <path d="M4 20h16"></path>
+          </svg>
+        </button>
+        <input
+          id="importCharacterInput"
+          type="file"
+          accept="application/json,.json"
+          class="hidden"
+        />
       </div>
 
-      <div data-step="2" class="wizard-step hidden">
-        <div class="xrrpg-row">
-          <strong>Stat Setup</strong>
-          <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Stats" target="_blank" rel="noopener noreferrer">rules</a>
-        </div>
-        <p class="muted xrrpg-subtitle">Pick chroma first.<br> For non-Clear chroma, your main bonus stat is automatic: <br>Red → Vigor, Blue → Endurance, Green → Intuition, Grey → Wit.</p>
-        <div class="xrrpg-inline-fields">
-          <label>Chroma <a class="xrrpg-help-link" href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Chroma" target="_blank" rel="noopener noreferrer">rules</a>
-            <select id="chromaInput">
-              <option>Red</option><option>Blue</option><option>Green</option><option>Grey</option><option>Clear</option><option>Mixed</option>
-            </select>
+      <div class="char-sort-bar" id="charSortBar">
+        <span class="char-sort-label">Sort:</span>
+        <button type="button" class="table-sort" data-sort="name">Name</button>
+        <button type="button" class="table-sort" data-sort="level">Lvl</button>
+        <button type="button" class="table-sort" data-sort="class">
+          Class
+        </button>
+        <button type="button" class="table-sort" data-sort="credits">
+          Credits
+        </button>
+        <button type="button" class="table-sort" data-sort="vigor">Vig</button>
+        <button type="button" class="table-sort" data-sort="endurance">
+          End
+        </button>
+        <button type="button" class="table-sort" data-sort="intuition">
+          Intu
+        </button>
+        <button type="button" class="table-sort" data-sort="wit">Wit</button>
+      </div>
+
+      <div id="charCards" class="char-card-grid"></div>
+
+      <table class="table-full char-manager-table">
+        <thead>
+          <tr>
+            <th>
+              <button type="button" class="table-sort" data-sort="name">
+                Name
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="level">
+                Lvl
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="class">
+                Class Path
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="credits">
+                Credits
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="vigor">
+                Vig
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="endurance">
+                End
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="intuition">
+                Intu
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="wit">
+                Wit
+              </button>
+            </th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="charTable">
+          <tr>
+            <td colspan="9">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+
+    <div id="charModal" class="xr-modal hidden">
+      <div class="xr-modal-backdrop"></div>
+      <div class="xr-modal-card">
+        <h2>Create XRRPG Character</h2>
+        <p id="wizardStepLabel" class="muted">Step 1 / 2</p>
+
+        <div data-step="1" class="wizard-step xrrpg-form-grid">
+          <label>Name <input id="nameInput" maxlength="48" /></label>
+          <label
+            >Species
+            <a
+              class="xrrpg-help-link"
+              href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Species"
+              target="_blank"
+              rel="noopener noreferrer"
+              >rules</a
+            >
+            <select id="speciesInput"></select>
           </label>
-          <label id="mixedChromaWrap" class="hidden">Mixed Chroma Colors <select id="mixedChromaInput"></select> <select id="mixedChromaInputTwo"></select></label>
-
-          <label id="chromaModeWrap" class="hidden">Bonus mode
-            <select id="chromaMode">
-              <option value="standard">+2 main / +1 other (Standard)</option>
-              <option value="enhanced">+3 main / +1 other / −1 penalty (Enhanced)</option>
-            </select>
-          </label>
-          <label id="bonusStatWrap">+1 bonus stat <select id="bonusStat"></select></label>
-          <label id="secondBonusStatWrap">Second +1 stat <select id="secondBonusStat"></select></label>
-          <label id="thirdBonusStatWrap" class="hidden">Third +1 stat <select id="thirdBonusStat"></select></label>
-          <label id="penaltyStatWrap">Penalty stat (−1) <select id="penaltyStat"></select></label>
         </div>
-        <p class="muted" style="margin-top:0.75rem;">Your first class will be chosen when you level up to Level 1.</p>
-      </div>
 
-      <!-- class and class-choices steps removed; class is picked at first level-up -->
+        <div data-step="2" class="wizard-step hidden">
+          <div class="xrrpg-row">
+            <strong>Stat Setup</strong>
+            <a
+              class="xrrpg-help-link"
+              href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Stats"
+              target="_blank"
+              rel="noopener noreferrer"
+              >rules</a
+            >
+          </div>
+          <p class="muted xrrpg-subtitle">
+            Pick chroma first.<br />
+            For non-Clear chroma, your main bonus stat is automatic: <br />Red →
+            Vigor, Blue → Endurance, Green → Intuition, Grey → Wit.
+          </p>
+          <div class="xrrpg-inline-fields">
+            <label
+              >Chroma
+              <a
+                class="xrrpg-help-link"
+                href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Chroma"
+                target="_blank"
+                rel="noopener noreferrer"
+                >rules</a
+              >
+              <select id="chromaInput">
+                <option>Red</option>
+                <option>Blue</option>
+                <option>Green</option>
+                <option>Grey</option>
+                <option>Clear</option>
+                <option>Mixed</option>
+              </select>
+            </label>
+            <label id="mixedChromaWrap" class="hidden"
+              >Mixed Chroma Colors
+              <select id="mixedChromaInput"></select>
+              <select id="mixedChromaInputTwo"></select
+            ></label>
 
-      <div class="xr-modal-actions">
-        <button id="prevStepBtn" type="button">Back</button>
-        <button id="nextStepBtn" type="button">Next</button>
-        <button id="saveBtn" type="button" class="hidden">Create</button>
+            <label id="chromaModeWrap" class="hidden"
+              >Bonus mode
+              <select id="chromaMode">
+                <option value="standard">+2 main / +1 other (Standard)</option>
+                <option value="enhanced">
+                  +3 main / +1 other / −1 penalty (Enhanced)
+                </option>
+              </select>
+            </label>
+            <label id="bonusStatWrap"
+              >+1 bonus stat
+              <select id="bonusStat"></select
+            ></label>
+            <label id="secondBonusStatWrap"
+              >Second +1 stat
+              <select id="secondBonusStat"></select
+            ></label>
+            <label id="thirdBonusStatWrap" class="hidden"
+              >Third +1 stat
+              <select id="thirdBonusStat"></select
+            ></label>
+            <label id="penaltyStatWrap"
+              >Penalty stat (−1)
+              <select id="penaltyStat"></select
+            ></label>
+          </div>
+          <p class="muted" style="margin-top: 0.75rem">
+            Your first class will be chosen when you level up to Level 1.
+          </p>
+        </div>
+
+        <!-- class and class-choices steps removed; class is picked at first level-up -->
+
+        <div class="xr-modal-actions">
+          <button id="prevStepBtn" type="button">Back</button>
+          <button id="nextStepBtn" type="button">Next</button>
+          <button id="saveBtn" type="button" class="hidden">Create</button>
+        </div>
+        <div id="modalMsg" class="mono muted"></div>
       </div>
-      <div id="modalMsg" class="mono muted"></div>
     </div>
-  </div>
 
-  <div id="deleteConfirmModal" class="xr-modal hidden">
-    <div class="xr-modal-backdrop"></div>
-    <div class="xr-modal-card">
-      <h2>Delete Character</h2>
-      <p id="deleteConfirmMsg"></p>
-      <div class="xr-modal-actions">
-        <button id="cancelDeleteBtn" type="button">Cancel</button>
-        <button id="confirmDeleteBtn" type="button" style="background:var(--color-danger,#c0392b); color:#fff; border:none; padding:0.4rem 1rem; border-radius:4px; cursor:pointer;">Delete</button>
+    <div id="deleteConfirmModal" class="xr-modal hidden">
+      <div class="xr-modal-backdrop"></div>
+      <div class="xr-modal-card">
+        <h2>Delete Character</h2>
+        <p id="deleteConfirmMsg"></p>
+        <div class="xr-modal-actions">
+          <button id="cancelDeleteBtn" type="button">Cancel</button>
+          <button
+            id="confirmDeleteBtn"
+            type="button"
+            style="
+              background: var(--color-danger, #c0392b);
+              color: #fff;
+              border: none;
+              padding: 0.4rem 1rem;
+              border-radius: 4px;
+              cursor: pointer;
+            "
+          >
+            Delete
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div id="loadingOverlay" class="xr-loading-overlay" aria-live="polite" aria-busy="true">
-    <div class="xr-loading-spinner" aria-hidden="true"></div>
-    <div id="loadingOverlayText" class="mono">Loading characters…</div>
-  </div>
+    <div
+      id="loadingOverlay"
+      class="xr-loading-overlay"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <div class="xr-loading-spinner" aria-hidden="true"></div>
+      <div id="loadingOverlayText" class="mono">Loading characters…</div>
+    </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/shared/auth.js"></script>
-  <script src="/shared/nav.js"></script>
-  <script src="/xrrpg-2.0/class-abilities.js"></script>
-  <script>
-    window.__useLocalLoadingOverlay = true;
-    const sb = window.supabaseClient;
-    const table = document.getElementById('charTable');
-    const classNames = [
-      'Warrior','Mentalist','Tank','Druid','Elementalist','Summoner','Mystic','Alchemist','Physic','Possessor','Bard','Enchanter','Sorcerer','Warlock','Cleric','Demititan','Emitter Specialist','Dronemaster','Brawler','Explosives Expert','Gunslinger','Swordmaster'
-    ];
-    const classAbilities = window.XRRPG_CLASS_ABILITIES || {};
-    const ADEPT_CHROMA_REQUIREMENTS = {
-      Warrior: 'Red',
-      Tank: 'Blue',
-      Druid: 'Green',
-      Mentalist: 'Grey'
-    };
-    const CLASS_SUMMARIES = {
-      'Warrior': 'Adept frontline striker with tiered basic/advanced powers.',
-      'Mentalist': 'Adept mind specialist with scaling control powers.',
-      'Tank': 'Adept defender with strong mitigation at higher tiers.',
-      'Druid': 'Adept nature/healing specialist with escalating support.',
-      'Elementalist': 'Spiritualist element manipulator with tier and range scaling.',
-      'Summoner': 'Spiritualist summoner who grows spirit options each level.',
-      'Mystic': 'Spiritualist with spirit roster upgrades and more spirit spells.',
-      'Alchemist': 'Magician potion specialist scaling brews and mixes.',
-      'Physic': 'Magician spellcaster with increasing spell tier and concentration.',
-      'Possessor': 'Magician spirit-servant caster with increasing spell access.',
-      'Bard': 'Magician support caster with scaling spells and concentration.',
-      'Enchanter': 'Magician substance mage with chaos/concentration scaling.',
-      'Sorcerer': 'Mage specialization path that unlocks more powers by class level.',
-      'Warlock': 'Mage pact caster with dark, risky tiered powers.',
-      'Cleric': 'Mage pact support/healer with tiered utility powers.',
-      'Demititan': 'Mage element shifter with explicit multi-level element upgrades.',
-      'Emitter Specialist': 'Technologist area-control specialist with higher emitter limits.',
-      'Dronemaster': 'Technologist drone commander with stronger drone scaling.',
-      'Brawler': 'Technologist suit brawler with more installed effects per level.',
-      'Explosives Expert': 'Technologist bomber with larger blasts and output/day.',
-      'Gunslinger': 'Technologist gun crafter with more effects per gun per level.',
-      'Swordmaster': 'Technologist sword/beam fighter with stronger attack scaling.'
-    };
-    const speciesOptions = ['Ydilikian Human','Valdan Human','Drokk','Exoziniks','Kaldi','Pbosh','Rtolka','Cyclops','Walua','Osadona','Oro'];
-    let currentUser = null;
-    let characters = [];
-    let sortState = { key: 'name', direction: 'asc' };
-
-    let _loadingSafetyTimer = null;
-    function setLoading(message = 'Loading…if this takes too long just refresh') {
-      const overlay = document.getElementById('loadingOverlay');
-      const text = document.getElementById('loadingOverlayText');
-      if (text) text.textContent = message;
-      if (overlay) overlay.classList.remove('hidden');
-      if (_loadingSafetyTimer) clearTimeout(_loadingSafetyTimer);
-      _loadingSafetyTimer = setTimeout(() => clearLoading(), 15000);
-    }
-
-    function clearLoading() {
-      if (_loadingSafetyTimer) { clearTimeout(_loadingSafetyTimer); _loadingSafetyTimer = null; }
-      const overlay = document.getElementById('loadingOverlay');
-      if (overlay) overlay.classList.add('hidden');
-    }
-
-    async function withLoading(message, task) {
-      setLoading(message);
-      try {
-        return await task();
-      } finally {
-        clearLoading();
-      }
-    }
-
-    window.addEventListener('error', () => clearLoading());
-    window.addEventListener('unhandledrejection', () => clearLoading());
-
-    const stats = ['vigor','endurance','intuition','wit'];
-    const bonusStat = document.getElementById('bonusStat');
-    const penaltyStat = document.getElementById('penaltyStat');
-    const secondBonusStat = document.getElementById('secondBonusStat');
-    const thirdBonusStat = document.getElementById('thirdBonusStat');
-    const mixedChromaInput = document.getElementById('mixedChromaInput');
-    const mixedChromaInputTwo = document.getElementById('mixedChromaInputTwo');
-    [bonusStat, penaltyStat, secondBonusStat, thirdBonusStat].forEach(select => {
-      stats.forEach(stat => {
-        const opt = document.createElement('option');
-        opt.value = stat;
-        opt.textContent = stat[0].toUpperCase() + stat.slice(1);
-        select.appendChild(opt);
-      });
-    });
-
-    const speciesInput = document.getElementById('speciesInput');
-    const chromaInput = document.getElementById('chromaInput');
-    speciesOptions.forEach(name => {
-      const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      speciesInput.appendChild(opt);
-    });
-
-    ['Red','Blue','Green','Grey'].forEach(name => {
-      const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      mixedChromaInput.appendChild(opt.cloneNode(true));
-      mixedChromaInputTwo.appendChild(opt);
-    });
-
-        function updateStatSetupVisibility() {
-      const chroma = chromaInput.value;
-      const isClear = chroma === 'Clear';
-      const isMixed = chroma === 'Mixed';
-      const isSingle = !isClear && !isMixed;
-      const isEnhanced = isSingle && document.getElementById('chromaMode').value === 'enhanced';
-      document.getElementById('mixedChromaWrap').classList.toggle('hidden', !isMixed);
-      document.getElementById('chromaModeWrap').classList.toggle('hidden', !isSingle);
-      document.getElementById('bonusStatWrap').classList.toggle('hidden', isMixed);
-      document.getElementById('secondBonusStatWrap').classList.toggle('hidden', !isClear);
-      document.getElementById('thirdBonusStatWrap').classList.toggle('hidden', !isClear);
-      document.getElementById('penaltyStatWrap').classList.toggle('hidden', !isMixed && !isEnhanced);
-    }
-    chromaInput.addEventListener('change', updateStatSetupVisibility);
-    document.getElementById('chromaMode').addEventListener('change', updateStatSetupVisibility);
-    mixedChromaInput.addEventListener('change', updateStatSetupVisibility);
-    mixedChromaInputTwo.addEventListener('change', updateStatSetupVisibility);
-    updateStatSetupVisibility();
-
-    function validateStatSelections() {
-      const chroma = chromaInput.value;
-      const chromaMap = { Red: 'vigor', Blue: 'endurance', Green: 'intuition', Grey: 'wit' };
-      const usedStats = [];
-      const take = (value) => { if (value) usedStats.push(value); };
-
-      if (chroma === 'Mixed') {
-        if (!mixedChromaInput.value || !mixedChromaInputTwo.value) {
-          return { valid: false, message: 'Pick both chroma colors for mixed chroma characters.' };
-        }
-        const main = chromaMap[mixedChromaInput.value];
-        const secondMain = chromaMap[mixedChromaInputTwo.value];
-        take(main);
-        take(secondMain);
-        take(penaltyStat.value);
-      } else if (chroma === 'Clear') {
-        take(bonusStat.value);
-        take(secondBonusStat.value);
-        take(thirdBonusStat.value);
-      } else {
-        const isEnhanced = document.getElementById('chromaMode').value === 'enhanced';
-        take(chromaMap[chroma]);
-        take(bonusStat.value);
-        if (isEnhanced) take(penaltyStat.value);
-      }
-
-      const seen = new Set();
-      for (const stat of usedStats) {
-        if (seen.has(stat)) {
-          return { valid: false, message: 'Each stat choice must be unique. Remove duplicate stat selections before continuing.' };
-        }
-        seen.add(stat);
-      }
-      return { valid: true, message: '' };
-    }
-
-    const CLASS_ARCHETYPES = {
-      'Warrior': 'Adepts', 'Mentalist': 'Adepts', 'Tank': 'Adepts', 'Druid': 'Adepts',
-      'Elementalist': 'Spiritualists', 'Summoner': 'Spiritualists', 'Mystic': 'Spiritualists',
-      'Alchemist': 'Magicians', 'Physic': 'Magicians', 'Possessor': 'Magicians', 'Bard': 'Magicians', 'Enchanter': 'Magicians',
-      'Sorcerer': 'Mages', 'Warlock': 'Mages', 'Cleric': 'Mages', 'Demititan': 'Mages',
-      'Emitter Specialist': 'Technologists', 'Dronemaster': 'Technologists', 'Brawler': 'Technologists',
-      'Explosives Expert': 'Technologists', 'Gunslinger': 'Technologists', 'Swordmaster': 'Technologists'
-    };
-    const ARCHETYPE_ORDER = ['Adepts', 'Magicians', 'Mages', 'Spiritualists', 'Technologists'];
-    const classInput = document.getElementById('classInput');
-
-    function classChromaRequirement(cls) {
-      return ADEPT_CHROMA_REQUIREMENTS[String(cls || '').trim()] || null;
-    }
-
-    function validateClassChromaRequirement(cls, chroma) {
-      const required = classChromaRequirement(cls);
-      if (!required || chroma === required) return { valid: true, message: '' };
-      return {
-        valid: false,
-        message: `${cls} can only be selected by ${required} chroma characters.`
-      };
-    }
-
-    function syncClassOptionsByChroma() {
-      if (!classInput) return;
-      const chroma = chromaInput.value;
-      const allowedChromas = chroma === 'Mixed' ? [mixedChromaInput.value, mixedChromaInputTwo.value].filter(v => v && v !== 'Mixed') : [chroma];
-      Array.from(classInput.options).forEach(option => {
-        const required = classChromaRequirement(option.value);
-        option.disabled = !!required && !allowedChromas.includes(required);
-      });
-      if (classInput.selectedOptions[0]?.disabled) {
-        const fallback = Array.from(classInput.options).find(option => !option.disabled);
-        if (fallback) classInput.value = fallback.value;
-      }
-      renderStartingClassDetails();
-    }
-
-
-    function tierText(tiers = {}, tier) {
-      const tierNum = Number(tier);
-      const candidates = [
-        String(tierNum),
-        `tier_${tierNum}`,
-        `tier${tierNum}`,
-        `tier ${tierNum}`,
-        `Tier ${tierNum}`,
-        `Tier ${['I', 'II', 'III'][tierNum - 1] || tierNum}`,
-        ['I', 'II', 'III'][tierNum - 1] || String(tierNum)
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/shared/auth.js"></script>
+    <script src="/shared/nav.js"></script>
+    <script src="/xrrpg-2.0/class-abilities.js"></script>
+    <script>
+      window.__useLocalLoadingOverlay = true;
+      const sb = window.supabaseClient;
+      const table = document.getElementById("charTable");
+      const classNames = [
+        "Warrior",
+        "Mentalist",
+        "Tank",
+        "Druid",
+        "Elementalist",
+        "Summoner",
+        "Mystic",
+        "Alchemist",
+        "Physic",
+        "Possessor",
+        "Bard",
+        "Enchanter",
+        "Sorcerer",
+        "Warlock",
+        "Cleric",
+        "Demititan",
+        "Emitter Specialist",
+        "Dronemaster",
+        "Brawler",
+        "Explosives Expert",
+        "Gunslinger",
+        "Swordmaster",
       ];
-      const keys = Object.keys(tiers || {});
-      const match = keys.find(key => candidates.some(candidate => key.toLowerCase() === String(candidate).toLowerCase()));
-      return String(match ? tiers[match] : '').trim();
-    }
+      const classAbilities = window.XRRPG_CLASS_ABILITIES || {};
+      const ADEPT_CHROMA_REQUIREMENTS = {
+        Warrior: "Red",
+        Tank: "Blue",
+        Druid: "Green",
+        Mentalist: "Grey",
+      };
+      const CLASS_SUMMARIES = {
+        Warrior: "Adept frontline striker with tiered basic/advanced powers.",
+        Mentalist: "Adept mind specialist with scaling control powers.",
+        Tank: "Adept defender with strong mitigation at higher tiers.",
+        Druid: "Adept nature/healing specialist with escalating support.",
+        Elementalist:
+          "Spiritualist element manipulator with tier and range scaling.",
+        Summoner: "Spiritualist summoner who grows spirit options each level.",
+        Mystic:
+          "Spiritualist with spirit roster upgrades and more spirit spells.",
+        Alchemist: "Magician potion specialist scaling brews and mixes.",
+        Physic:
+          "Magician spellcaster with increasing spell tier and concentration.",
+        Possessor:
+          "Magician spirit-servant caster with increasing spell access.",
+        Bard: "Magician support caster with scaling spells and concentration.",
+        Enchanter: "Magician substance mage with chaos/concentration scaling.",
+        Sorcerer:
+          "Mage specialization path that unlocks more powers by class level.",
+        Warlock: "Mage pact caster with dark, risky tiered powers.",
+        Cleric: "Mage pact support/healer with tiered utility powers.",
+        Demititan:
+          "Mage element shifter with explicit multi-level element upgrades.",
+        "Emitter Specialist":
+          "Technologist area-control specialist with higher emitter limits.",
+        Dronemaster:
+          "Technologist drone commander with stronger drone scaling.",
+        Brawler:
+          "Technologist suit brawler with more installed effects per level.",
+        "Explosives Expert":
+          "Technologist bomber with larger blasts and output/day.",
+        Gunslinger:
+          "Technologist gun crafter with more effects per gun per level.",
+        Swordmaster:
+          "Technologist sword/beam fighter with stronger attack scaling.",
+      };
+      const speciesOptions = [
+        "Ydilikian Human",
+        "Valdan Human",
+        "Drokk",
+        "Exoziniks",
+        "Kaldi",
+        "Pbosh",
+        "Rtolka",
+        "Cyclops",
+        "Walua",
+        "Osadona",
+        "Oro",
+      ];
+      let currentUser = null;
+      let characters = [];
+      let sortState = { key: "name", direction: "asc" };
 
-    function parsedTierAbilities(cls, tier) {
-      return (classAbilities[cls] || []).filter(item => {
-        const name = String(item?.name || '').trim();
-        if (!name || /^\d+$/.test(name)) return false;
-        return !!tierText(item?.tiers || {}, tier) || Object.keys(item?.tiers || {}).some(key => String(key).replace(/\D/g, '') === String(tier));
-      });
-    }
-
-    function adeptBasicAbilityName(cls) {
-      const basic = (classAbilities[cls] || []).find(item => {
-        const tiers = item?.tiers || {};
-        return Object.prototype.hasOwnProperty.call(tiers, '0') && !!tierText(tiers, 1);
-      });
-      return String(basic?.name || '').trim();
-    }
-
-    function classNeedsStep4(cls) {
-      const def = window.XRRPG_CLASS_DEFS?.[cls];
-      return (def?.levels?.[1]?.choices?.length || 0) > 0;
-    }
-
-    function renderStartingClassDetails() {
-      if (!classInput) return;
-      const cls = classInput.value;
-      const classIntroEl = document.getElementById('classIntro');
-      if (classIntroEl) classIntroEl.textContent = CLASS_SUMMARIES[cls] || 'Class summary unavailable.';
-    }
-
-    async function requireUser() {
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) { window.location.href = '/login.html'; throw new Error('No user'); }
-      return user;
-    }
-
-    function normalizeBaseStats(baseStats) {
-      if (!baseStats || typeof baseStats !== 'object') return {};
-      const normalized = { ...baseStats };
-      if (normalized.stamina === undefined && normalized.stamina_used !== undefined) {
-        normalized.stamina = normalized.stamina_used;
+      let _loadingSafetyTimer = null;
+      function setLoading(message = "Loading") {
+        const overlay = document.getElementById("loadingOverlay");
+        const text = document.getElementById("loadingOverlayText");
+        if (text) text.textContent = message;
+        if (overlay) overlay.classList.remove("hidden");
+        if (_loadingSafetyTimer) clearTimeout(_loadingSafetyTimer);
+        _loadingSafetyTimer = setTimeout(() => clearLoading(), 15000);
       }
-      if (Object.prototype.hasOwnProperty.call(normalized, 'stamina_used')) {
-        delete normalized.stamina_used;
-      }
-      return normalized;
-    }
 
-    function valueForSort(character, key) {
-      const s = character.base_stats || {};
-      if (key === 'name') return (character.name || '').toLowerCase();
-      if (key === 'level') return Number(s.level ?? 0);
-      if (key === 'class') return (character.class_progression?.map(c => c.class).join(' / ') || '').toLowerCase();
-      if (key === 'credits') return Number(s.credits || 0);
-      return Number(s[key] || 0);
-    }
-
-    function sortedCharacters() {
-      const dir = sortState.direction === 'asc' ? 1 : -1;
-      return [...characters].sort((a, b) => {
-        const av = valueForSort(a, sortState.key);
-        const bv = valueForSort(b, sortState.key);
-        if (av < bv) return -1 * dir;
-        if (av > bv) return 1 * dir;
-        return 0;
-      });
-    }
-
-    function classPathText(c) {
-      const highest = {};
-      (c.class_progression || []).forEach(p => {
-        if (!highest[p.class] || p.tier > highest[p.class]) highest[p.class] = p.tier;
-      });
-      const entries = Object.entries(highest);
-      return entries.length ? entries.map(([cls, tier]) => `${cls} T${tier}`).join(', ') : '—';
-    }
-
-    function updateSortButtons() {
-      document.querySelectorAll('.table-sort').forEach(btn => {
-        const key = btn.dataset.sort;
-        let icon = btn.querySelector('.sort-icon');
-        if (!icon) {
-          icon = document.createElement('span');
-          icon.className = 'sort-icon';
-          icon.setAttribute('aria-hidden', 'true');
-          btn.appendChild(icon);
+      function clearLoading() {
+        if (_loadingSafetyTimer) {
+          clearTimeout(_loadingSafetyTimer);
+          _loadingSafetyTimer = null;
         }
-        if (key === sortState.key) {
-          btn.setAttribute('data-dir', sortState.direction);
-          icon.textContent = sortState.direction === 'asc' ? '▲' : '▼';
+        const overlay = document.getElementById("loadingOverlay");
+        if (overlay) overlay.classList.add("hidden");
+      }
+
+      async function withLoading(message, task) {
+        setLoading(message);
+        try {
+          return await task();
+        } finally {
+          clearLoading();
+        }
+      }
+
+      window.addEventListener("error", () => clearLoading());
+      window.addEventListener("unhandledrejection", () => clearLoading());
+
+      const stats = ["vigor", "endurance", "intuition", "wit"];
+      const bonusStat = document.getElementById("bonusStat");
+      const penaltyStat = document.getElementById("penaltyStat");
+      const secondBonusStat = document.getElementById("secondBonusStat");
+      const thirdBonusStat = document.getElementById("thirdBonusStat");
+      const mixedChromaInput = document.getElementById("mixedChromaInput");
+      const mixedChromaInputTwo = document.getElementById(
+        "mixedChromaInputTwo",
+      );
+      [bonusStat, penaltyStat, secondBonusStat, thirdBonusStat].forEach(
+        (select) => {
+          stats.forEach((stat) => {
+            const opt = document.createElement("option");
+            opt.value = stat;
+            opt.textContent = stat[0].toUpperCase() + stat.slice(1);
+            select.appendChild(opt);
+          });
+        },
+      );
+
+      const speciesInput = document.getElementById("speciesInput");
+      const chromaInput = document.getElementById("chromaInput");
+      speciesOptions.forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        speciesInput.appendChild(opt);
+      });
+
+      ["Red", "Blue", "Green", "Grey"].forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        mixedChromaInput.appendChild(opt.cloneNode(true));
+        mixedChromaInputTwo.appendChild(opt);
+      });
+
+      function updateStatSetupVisibility() {
+        const chroma = chromaInput.value;
+        const isClear = chroma === "Clear";
+        const isMixed = chroma === "Mixed";
+        const isSingle = !isClear && !isMixed;
+        const isEnhanced =
+          isSingle &&
+          document.getElementById("chromaMode").value === "enhanced";
+        document
+          .getElementById("mixedChromaWrap")
+          .classList.toggle("hidden", !isMixed);
+        document
+          .getElementById("chromaModeWrap")
+          .classList.toggle("hidden", !isSingle);
+        document
+          .getElementById("bonusStatWrap")
+          .classList.toggle("hidden", isMixed);
+        document
+          .getElementById("secondBonusStatWrap")
+          .classList.toggle("hidden", !isClear);
+        document
+          .getElementById("thirdBonusStatWrap")
+          .classList.toggle("hidden", !isClear);
+        document
+          .getElementById("penaltyStatWrap")
+          .classList.toggle("hidden", !isMixed && !isEnhanced);
+      }
+      chromaInput.addEventListener("change", updateStatSetupVisibility);
+      document
+        .getElementById("chromaMode")
+        .addEventListener("change", updateStatSetupVisibility);
+      mixedChromaInput.addEventListener("change", updateStatSetupVisibility);
+      mixedChromaInputTwo.addEventListener("change", updateStatSetupVisibility);
+      updateStatSetupVisibility();
+
+      function validateStatSelections() {
+        const chroma = chromaInput.value;
+        const chromaMap = {
+          Red: "vigor",
+          Blue: "endurance",
+          Green: "intuition",
+          Grey: "wit",
+        };
+        const usedStats = [];
+        const take = (value) => {
+          if (value) usedStats.push(value);
+        };
+
+        if (chroma === "Mixed") {
+          if (!mixedChromaInput.value || !mixedChromaInputTwo.value) {
+            return {
+              valid: false,
+              message: "Pick both chroma colors for mixed chroma characters.",
+            };
+          }
+          const main = chromaMap[mixedChromaInput.value];
+          const secondMain = chromaMap[mixedChromaInputTwo.value];
+          take(main);
+          take(secondMain);
+          take(penaltyStat.value);
+        } else if (chroma === "Clear") {
+          take(bonusStat.value);
+          take(secondBonusStat.value);
+          take(thirdBonusStat.value);
         } else {
-          btn.removeAttribute('data-dir');
-          icon.textContent = '';
+          const isEnhanced =
+            document.getElementById("chromaMode").value === "enhanced";
+          take(chromaMap[chroma]);
+          take(bonusStat.value);
+          if (isEnhanced) take(penaltyStat.value);
         }
-      });
-    }
 
-    const actionsSVG = (id) => `
+        const seen = new Set();
+        for (const stat of usedStats) {
+          if (seen.has(stat)) {
+            return {
+              valid: false,
+              message:
+                "Each stat choice must be unique. Remove duplicate stat selections before continuing.",
+            };
+          }
+          seen.add(stat);
+        }
+        return { valid: true, message: "" };
+      }
+
+      const CLASS_ARCHETYPES = {
+        Warrior: "Adepts",
+        Mentalist: "Adepts",
+        Tank: "Adepts",
+        Druid: "Adepts",
+        Elementalist: "Spiritualists",
+        Summoner: "Spiritualists",
+        Mystic: "Spiritualists",
+        Alchemist: "Magicians",
+        Physic: "Magicians",
+        Possessor: "Magicians",
+        Bard: "Magicians",
+        Enchanter: "Magicians",
+        Sorcerer: "Mages",
+        Warlock: "Mages",
+        Cleric: "Mages",
+        Demititan: "Mages",
+        "Emitter Specialist": "Technologists",
+        Dronemaster: "Technologists",
+        Brawler: "Technologists",
+        "Explosives Expert": "Technologists",
+        Gunslinger: "Technologists",
+        Swordmaster: "Technologists",
+      };
+      const ARCHETYPE_ORDER = [
+        "Adepts",
+        "Magicians",
+        "Mages",
+        "Spiritualists",
+        "Technologists",
+      ];
+      const classInput = document.getElementById("classInput");
+
+      function classChromaRequirement(cls) {
+        return ADEPT_CHROMA_REQUIREMENTS[String(cls || "").trim()] || null;
+      }
+
+      function validateClassChromaRequirement(cls, chroma) {
+        const required = classChromaRequirement(cls);
+        if (!required || chroma === required)
+          return { valid: true, message: "" };
+        return {
+          valid: false,
+          message: `${cls} can only be selected by ${required} chroma characters.`,
+        };
+      }
+
+      function syncClassOptionsByChroma() {
+        if (!classInput) return;
+        const chroma = chromaInput.value;
+        const allowedChromas =
+          chroma === "Mixed"
+            ? [mixedChromaInput.value, mixedChromaInputTwo.value].filter(
+                (v) => v && v !== "Mixed",
+              )
+            : [chroma];
+        Array.from(classInput.options).forEach((option) => {
+          const required = classChromaRequirement(option.value);
+          option.disabled = !!required && !allowedChromas.includes(required);
+        });
+        if (classInput.selectedOptions[0]?.disabled) {
+          const fallback = Array.from(classInput.options).find(
+            (option) => !option.disabled,
+          );
+          if (fallback) classInput.value = fallback.value;
+        }
+        renderStartingClassDetails();
+      }
+
+      function tierText(tiers = {}, tier) {
+        const tierNum = Number(tier);
+        const candidates = [
+          String(tierNum),
+          `tier_${tierNum}`,
+          `tier${tierNum}`,
+          `tier ${tierNum}`,
+          `Tier ${tierNum}`,
+          `Tier ${["I", "II", "III"][tierNum - 1] || tierNum}`,
+          ["I", "II", "III"][tierNum - 1] || String(tierNum),
+        ];
+        const keys = Object.keys(tiers || {});
+        const match = keys.find((key) =>
+          candidates.some(
+            (candidate) =>
+              key.toLowerCase() === String(candidate).toLowerCase(),
+          ),
+        );
+        return String(match ? tiers[match] : "").trim();
+      }
+
+      function parsedTierAbilities(cls, tier) {
+        return (classAbilities[cls] || []).filter((item) => {
+          const name = String(item?.name || "").trim();
+          if (!name || /^\d+$/.test(name)) return false;
+          return (
+            !!tierText(item?.tiers || {}, tier) ||
+            Object.keys(item?.tiers || {}).some(
+              (key) => String(key).replace(/\D/g, "") === String(tier),
+            )
+          );
+        });
+      }
+
+      function adeptBasicAbilityName(cls) {
+        const basic = (classAbilities[cls] || []).find((item) => {
+          const tiers = item?.tiers || {};
+          return (
+            Object.prototype.hasOwnProperty.call(tiers, "0") &&
+            !!tierText(tiers, 1)
+          );
+        });
+        return String(basic?.name || "").trim();
+      }
+
+      function classNeedsStep4(cls) {
+        const def = window.XRRPG_CLASS_DEFS?.[cls];
+        return (def?.levels?.[1]?.choices?.length || 0) > 0;
+      }
+
+      function renderStartingClassDetails() {
+        if (!classInput) return;
+        const cls = classInput.value;
+        const classIntroEl = document.getElementById("classIntro");
+        if (classIntroEl)
+          classIntroEl.textContent =
+            CLASS_SUMMARIES[cls] || "Class summary unavailable.";
+      }
+
+      async function requireUser() {
+        const {
+          data: { user },
+        } = await sb.auth.getUser();
+        if (!user) {
+          window.location.href = "/login.html";
+          throw new Error("No user");
+        }
+        return user;
+      }
+
+      function normalizeBaseStats(baseStats) {
+        if (!baseStats || typeof baseStats !== "object") return {};
+        const normalized = { ...baseStats };
+        if (
+          normalized.stamina === undefined &&
+          normalized.stamina_used !== undefined
+        ) {
+          normalized.stamina = normalized.stamina_used;
+        }
+        if (Object.prototype.hasOwnProperty.call(normalized, "stamina_used")) {
+          delete normalized.stamina_used;
+        }
+        return normalized;
+      }
+
+      function valueForSort(character, key) {
+        const s = character.base_stats || {};
+        if (key === "name") return (character.name || "").toLowerCase();
+        if (key === "level") return Number(s.level ?? 0);
+        if (key === "class")
+          return (
+            character.class_progression?.map((c) => c.class).join(" / ") || ""
+          ).toLowerCase();
+        if (key === "credits") return Number(s.credits || 0);
+        return Number(s[key] || 0);
+      }
+
+      function sortedCharacters() {
+        const dir = sortState.direction === "asc" ? 1 : -1;
+        return [...characters].sort((a, b) => {
+          const av = valueForSort(a, sortState.key);
+          const bv = valueForSort(b, sortState.key);
+          if (av < bv) return -1 * dir;
+          if (av > bv) return 1 * dir;
+          return 0;
+        });
+      }
+
+      function classPathText(c) {
+        const highest = {};
+        (c.class_progression || []).forEach((p) => {
+          if (!highest[p.class] || p.tier > highest[p.class])
+            highest[p.class] = p.tier;
+        });
+        const entries = Object.entries(highest);
+        return entries.length
+          ? entries.map(([cls, tier]) => `${cls} T${tier}`).join(", ")
+          : "—";
+      }
+
+      function updateSortButtons() {
+        document.querySelectorAll(".table-sort").forEach((btn) => {
+          const key = btn.dataset.sort;
+          let icon = btn.querySelector(".sort-icon");
+          if (!icon) {
+            icon = document.createElement("span");
+            icon.className = "sort-icon";
+            icon.setAttribute("aria-hidden", "true");
+            btn.appendChild(icon);
+          }
+          if (key === sortState.key) {
+            btn.setAttribute("data-dir", sortState.direction);
+            icon.textContent = sortState.direction === "asc" ? "▲" : "▼";
+          } else {
+            btn.removeAttribute("data-dir");
+            icon.textContent = "";
+          }
+        });
+      }
+
+      const actionsSVG = (id) => `
       <a class="action-btn" href="/xrrpg-2.0/xrrpg-character.html?id=${id}" title="Edit" aria-label="Edit"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 9-9-3-3-9 9-1 4z"></path><path d="M13 7l3 3"></path></svg></a>
       <button class="action-btn" onclick="exportCharacter('${id}')" title="Export" aria-label="Export"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14V3"></path><path d="M8 7l4-4 4 4"></path><path d="M4 14v6h16v-6"></path></svg></button>
       <button class="action-btn" onclick="deleteCharacter('${id}')" title="Delete" aria-label="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
     `;
 
-    function render() {
-      const cards = document.getElementById('charCards');
-      if (!characters.length) {
-        table.innerHTML = "<tr><td colspan='9'>No XRRPG characters yet.</td></tr>";
-        cards.innerHTML = '<p class="muted">No XRRPG characters yet.</p>';
-        updateSortButtons();
-        return;
-      }
-      table.innerHTML = '';
-      cards.innerHTML = '';
-      sortedCharacters().forEach(c => {
-        const s = c.base_stats || {};
-        const classSummary = classPathText(c);
+      function render() {
+        const cards = document.getElementById("charCards");
+        if (!characters.length) {
+          table.innerHTML =
+            "<tr><td colspan='9'>No XRRPG characters yet.</td></tr>";
+          cards.innerHTML = '<p class="muted">No XRRPG characters yet.</p>';
+          updateSortButtons();
+          return;
+        }
+        table.innerHTML = "";
+        cards.innerHTML = "";
+        sortedCharacters().forEach((c) => {
+          const s = c.base_stats || {};
+          const classSummary = classPathText(c);
 
-        // Table row
-        const row = document.createElement('tr');
-        row.innerHTML = `
+          // Table row
+          const row = document.createElement("tr");
+          row.innerHTML = `
           <td>${c.name}</td>
           <td>${s.level ?? 0}</td>
           <td>${classSummary}</td>
@@ -467,12 +747,12 @@
             <div class="actions">${actionsSVG(c.id)}</div>
           </td>
         `;
-        table.appendChild(row);
+          table.appendChild(row);
 
-        // Card (mobile)
-        const card = document.createElement('div');
-        card.className = 'char-card';
-        card.innerHTML = `
+          // Card (mobile)
+          const card = document.createElement("div");
+          card.className = "char-card";
+          card.innerHTML = `
           <div class="char-card-row">
             <div class="char-card-info">
               <div class="char-card-name">${c.name}</div>
@@ -489,401 +769,534 @@
             <div class="char-card-actions">${actionsSVG(c.id)}</div>
           </div>
         `;
-        cards.appendChild(card);
-      });
-      updateSortButtons();
-    }
+          cards.appendChild(card);
+        });
+        updateSortButtons();
+      }
 
-    async function loadCharacters() {
-      try {
-        currentUser = await requireUser();
-        const { data, error } = await sb.from('xrrpg_characters')
-          .select('id, name, base_stats, class_progression, created_at')
-          .eq('user_id', currentUser.id)
-          .order('created_at', { ascending: true });
+      async function loadCharacters() {
+        try {
+          currentUser = await requireUser();
+          const { data, error } = await sb
+            .from("xrrpg_characters")
+            .select("id, name, base_stats, class_progression, created_at")
+            .eq("user_id", currentUser.id)
+            .order("created_at", { ascending: true });
+          if (error) throw error;
+          characters = (data || []).map((character) => ({
+            ...character,
+            base_stats: normalizeBaseStats(character.base_stats),
+          }));
+          render();
+        } catch (error) {
+          table.innerHTML = `<tr><td colspan='9'>Failed to load: ${error.message}</td></tr>`;
+        }
+      }
+
+      function cleanFileName(name) {
+        return (
+          String(name || "xrrpg-character")
+            .toLowerCase()
+            .replace(/[^a-z0-9_-]+/g, "-")
+            .replace(/^-+|-+$/g, "") || "xrrpg-character"
+        );
+      }
+
+      function triggerJsonDownload(filename, dataObj) {
+        const blob = new Blob([JSON.stringify(dataObj, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      async function exportCharacter(characterId) {
+        const char = characters.find((item) => item.id === characterId);
+        if (!char) return;
+        triggerJsonDownload(`${cleanFileName(char.name)}.json`, {
+          export_version: 1,
+          exported_at: new Date().toISOString(),
+          character: {
+            ...char,
+            base_stats: normalizeBaseStats(char.base_stats),
+          },
+        });
+      }
+
+      async function importCharacterFromPayload(payload) {
+        const importedCharacter = payload?.character;
+        if (!importedCharacter || typeof importedCharacter !== "object")
+          throw new Error("Invalid character payload.");
+        const name = String(importedCharacter.name || "").trim();
+        if (!name) throw new Error("Imported character needs a name.");
+        const base_stats = normalizeBaseStats(
+          importedCharacter.base_stats &&
+            typeof importedCharacter.base_stats === "object"
+            ? importedCharacter.base_stats
+            : {},
+        );
+        const class_progression = Array.isArray(
+          importedCharacter.class_progression,
+        )
+          ? importedCharacter.class_progression
+          : [];
+        const skills = Array.isArray(importedCharacter.skills)
+          ? importedCharacter.skills
+          : [];
+        const notes =
+          typeof importedCharacter.notes === "string"
+            ? importedCharacter.notes
+            : "";
+        const { error } = await sb.from("xrrpg_characters").insert({
+          user_id: currentUser.id,
+          name,
+          base_stats,
+          class_progression,
+          skills,
+          notes,
+        });
         if (error) throw error;
-        characters = (data || []).map(character => ({
-          ...character,
-          base_stats: normalizeBaseStats(character.base_stats)
-        }));
-        render();
-      } catch (error) {
-        table.innerHTML = `<tr><td colspan='9'>Failed to load: ${error.message}</td></tr>`;
+        await withLoading("Refreshing character list…", loadCharacters);
       }
-    }
 
-    function cleanFileName(name) {
-      return String(name || 'xrrpg-character').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'xrrpg-character';
-    }
-
-    function triggerJsonDownload(filename, dataObj) {
-      const blob = new Blob([JSON.stringify(dataObj, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
-    async function exportCharacter(characterId) {
-      const char = characters.find(item => item.id === characterId);
-      if (!char) return;
-      triggerJsonDownload(`${cleanFileName(char.name)}.json`, {
-        export_version: 1,
-        exported_at: new Date().toISOString(),
-        character: {
-          ...char,
-          base_stats: normalizeBaseStats(char.base_stats)
-        }
-      });
-    }
-
-    async function importCharacterFromPayload(payload) {
-      const importedCharacter = payload?.character;
-      if (!importedCharacter || typeof importedCharacter !== 'object') throw new Error('Invalid character payload.');
-      const name = String(importedCharacter.name || '').trim();
-      if (!name) throw new Error('Imported character needs a name.');
-      const base_stats = normalizeBaseStats(importedCharacter.base_stats && typeof importedCharacter.base_stats === 'object' ? importedCharacter.base_stats : {});
-      const class_progression = Array.isArray(importedCharacter.class_progression) ? importedCharacter.class_progression : [];
-      const skills = Array.isArray(importedCharacter.skills) ? importedCharacter.skills : [];
-      const notes = typeof importedCharacter.notes === 'string' ? importedCharacter.notes : '';
-      const { error } = await sb.from('xrrpg_characters').insert({ user_id: currentUser.id, name, base_stats, class_progression, skills, notes });
-      if (error) throw error;
-      await withLoading('Refreshing character list…', loadCharacters);
-    }
-
-    let pendingDeleteId = null;
-    const deleteModal = document.getElementById('deleteConfirmModal');
-    document.getElementById('cancelDeleteBtn').onclick = () => {
-      pendingDeleteId = null;
-      deleteModal.classList.add('hidden');
-    };
-    deleteModal.querySelector('.xr-modal-backdrop').onclick = () => {
-      pendingDeleteId = null;
-      deleteModal.classList.add('hidden');
-    };
-    document.getElementById('confirmDeleteBtn').onclick = async () => {
-      if (!pendingDeleteId) return;
-      const id = pendingDeleteId;
-      pendingDeleteId = null;
-      deleteModal.classList.add('hidden');
-      const { error } = await sb.from('xrrpg_characters').delete().eq('id', id).eq('user_id', currentUser.id);
-      if (error) { alert(error.message); return; }
-      await withLoading('Refreshing character list…', loadCharacters);
-    };
-
-    function deleteCharacter(characterId) {
-      const char = characters.find(item => item.id === characterId);
-      if (!char) return;
-      document.getElementById('deleteConfirmMsg').textContent = `Delete "${char.name || 'this character'}"? This cannot be undone.`;
-      pendingDeleteId = characterId;
-      deleteModal.classList.remove('hidden');
-    }
-
-    window.exportCharacter = exportCharacter;
-    window.deleteCharacter = deleteCharacter;
-
-    function buildStatsFromWizard() {
-      const chroma = document.getElementById('chromaInput').value;
-      const chromaMap = { Red: 'vigor', Blue: 'endurance', Green: 'intuition', Grey: 'wit' };
-      const result = { vigor: 0, endurance: 0, intuition: 0, wit: 0 };
-
-      if (chroma === 'Mixed') {
-        result[chromaMap[mixedChromaInput.value]] += 2;
-        result[chromaMap[mixedChromaInputTwo.value]] += 2;
-        result[penaltyStat.value] -= 1;
-      } else if (chroma === 'Clear') {
-        result[bonusStat.value] += 1;
-        result[secondBonusStat.value] += 1;
-        result[thirdBonusStat.value] += 1;
-      } else {
-        const main = chromaMap[chroma] || 'vigor';
-        const isEnhanced = document.getElementById('chromaMode').value === 'enhanced';
-        if (isEnhanced) {
-          result[main] += 3;
-          result[bonusStat.value] += 1;
-          result[penaltyStat.value] -= 1;
-        } else {
-          result[main] += 2;
-          result[bonusStat.value] += 1;
-        }
-      }
-      // Cap stats at 5
-      for (const s of ['vigor', 'endurance', 'intuition', 'wit']) {
-        result[s] = Math.min(5, Math.max(-5, result[s]));
-      }
-      const max_hp = 10 + result.vigor + (2 * result.endurance);
-      // Characters start at level 0; level 0 stamina base is 10
-      const stamina_total = 10 + result.intuition + result.wit;
-      return {
-        ...result,
-        level: 0,
-        hp: max_hp,
-        current_hp: max_hp,
-        mastery_die: 'd4',
-        injuries: [],
-        stamina: 0,
-        stamina_max: stamina_total,
-        stamina_total,
-        powerful_item_limit: 2,
-        powerful_item_max: 1,
-        party_tier: 1,
-        xenic_decay_level: 0,
-        times_cleansed: 0,
-        credits: 0
+      let pendingDeleteId = null;
+      const deleteModal = document.getElementById("deleteConfirmModal");
+      document.getElementById("cancelDeleteBtn").onclick = () => {
+        pendingDeleteId = null;
+        deleteModal.classList.add("hidden");
       };
-    }
+      deleteModal.querySelector(".xr-modal-backdrop").onclick = () => {
+        pendingDeleteId = null;
+        deleteModal.classList.add("hidden");
+      };
+      document.getElementById("confirmDeleteBtn").onclick = async () => {
+        if (!pendingDeleteId) return;
+        const id = pendingDeleteId;
+        pendingDeleteId = null;
+        deleteModal.classList.add("hidden");
+        const { error } = await sb
+          .from("xrrpg_characters")
+          .delete()
+          .eq("id", id)
+          .eq("user_id", currentUser.id);
+        if (error) {
+          alert(error.message);
+          return;
+        }
+        await withLoading("Refreshing character list…", loadCharacters);
+      };
 
-    function renderWizardLevelChoices(cls) {
-      const container = document.getElementById('wizardLevelChoices');
-      if (!container) return;
-      container.innerHTML = '';
-      const def = window.XRRPG_CLASS_DEFS?.[cls];
-      if (!def) return;
-      const levelDef = def.levels?.[1];
-      if (!levelDef?.choices?.length) {
-        container.innerHTML = '<p class="muted">No additional choices needed for this class at level 1.</p>';
-        return;
+      function deleteCharacter(characterId) {
+        const char = characters.find((item) => item.id === characterId);
+        if (!char) return;
+        document.getElementById("deleteConfirmMsg").textContent =
+          `Delete "${char.name || "this character"}"? This cannot be undone.`;
+        pendingDeleteId = characterId;
+        deleteModal.classList.remove("hidden");
       }
-      let html = '';
-      for (const choice of levelDef.choices) {
-        if (choice.type === 'pick_advanced_power') {
-          const pool = def.advancedPowers || [];
-          const opts = pool.map(p => `<option value="${p.name}" data-desc="${(p.tiers[0] || '').replace(/"/g, '&quot;')}">${p.name}</option>`).join('');
-          html += `<div class="xrrpg-choice-block"><label><strong>${choice.label || 'Choose Advanced Power'}:</strong><br>
+
+      window.exportCharacter = exportCharacter;
+      window.deleteCharacter = deleteCharacter;
+
+      function buildStatsFromWizard() {
+        const chroma = document.getElementById("chromaInput").value;
+        const chromaMap = {
+          Red: "vigor",
+          Blue: "endurance",
+          Green: "intuition",
+          Grey: "wit",
+        };
+        const result = { vigor: 0, endurance: 0, intuition: 0, wit: 0 };
+
+        if (chroma === "Mixed") {
+          result[chromaMap[mixedChromaInput.value]] += 2;
+          result[chromaMap[mixedChromaInputTwo.value]] += 2;
+          result[penaltyStat.value] -= 1;
+        } else if (chroma === "Clear") {
+          result[bonusStat.value] += 1;
+          result[secondBonusStat.value] += 1;
+          result[thirdBonusStat.value] += 1;
+        } else {
+          const main = chromaMap[chroma] || "vigor";
+          const isEnhanced =
+            document.getElementById("chromaMode").value === "enhanced";
+          if (isEnhanced) {
+            result[main] += 3;
+            result[bonusStat.value] += 1;
+            result[penaltyStat.value] -= 1;
+          } else {
+            result[main] += 2;
+            result[bonusStat.value] += 1;
+          }
+        }
+        // Cap stats at 5
+        for (const s of ["vigor", "endurance", "intuition", "wit"]) {
+          result[s] = Math.min(5, Math.max(-5, result[s]));
+        }
+        const max_hp = 10 + result.vigor + 2 * result.endurance;
+        // Characters start at level 0; level 0 stamina base is 10
+        const stamina_total = 10 + result.intuition + result.wit;
+        return {
+          ...result,
+          level: 0,
+          hp: max_hp,
+          current_hp: max_hp,
+          mastery_die: "d4",
+          injuries: [],
+          stamina: 0,
+          stamina_max: stamina_total,
+          stamina_total,
+          powerful_item_limit: 2,
+          powerful_item_max: 1,
+          party_tier: 1,
+          xenic_decay_level: 0,
+          times_cleansed: 0,
+          credits: 0,
+        };
+      }
+
+      function renderWizardLevelChoices(cls) {
+        const container = document.getElementById("wizardLevelChoices");
+        if (!container) return;
+        container.innerHTML = "";
+        const def = window.XRRPG_CLASS_DEFS?.[cls];
+        if (!def) return;
+        const levelDef = def.levels?.[1];
+        if (!levelDef?.choices?.length) {
+          container.innerHTML =
+            '<p class="muted">No additional choices needed for this class at level 1.</p>';
+          return;
+        }
+        let html = "";
+        for (const choice of levelDef.choices) {
+          if (choice.type === "pick_advanced_power") {
+            const pool = def.advancedPowers || [];
+            const opts = pool
+              .map(
+                (p) =>
+                  `<option value="${p.name}" data-desc="${(p.tiers[0] || "").replace(/"/g, "&quot;")}">${p.name}</option>`,
+              )
+              .join("");
+            html += `<div class="xrrpg-choice-block"><label><strong>${choice.label || "Choose Advanced Power"}:</strong><br>
             <select data-choice-id="advanced_power"><option value="">-- Select --</option>${opts}</select>
             <p class="xrrpg-ability-desc xrrpg-choice-desc" style="margin-top:0.3rem;"></p>
           </label></div>`;
-        } else if (choice.type === 'pick_specialized_powers') {
-          const pool = def.specializedPowers || [];
-          const checks = pool.map(p => `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="specialized_power" value="${p.name}"> <strong>${p.name}</strong><br><span class="xrrpg-ability-desc">${p.descriptions?.[0] || ''}</span></label>`).join('');
-          html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} Specialized Powers`}:</legend>${checks}</fieldset>`;
-        } else if (choice.type === 'pick_one') {
-          if (choice.id === 'devil_emotion') {
-            const opts = (def.devilEmotions || []).map(e => `<option value="${e.label}">${e.label}</option>`).join('');
-            html += `<div class="xrrpg-choice-block"><label><strong>${choice.label}:</strong><br>
+          } else if (choice.type === "pick_specialized_powers") {
+            const pool = def.specializedPowers || [];
+            const checks = pool
+              .map(
+                (p) =>
+                  `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="specialized_power" value="${p.name}"> <strong>${p.name}</strong><br><span class="xrrpg-ability-desc">${p.descriptions?.[0] || ""}</span></label>`,
+              )
+              .join("");
+            html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} Specialized Powers`}:</legend>${checks}</fieldset>`;
+          } else if (choice.type === "pick_one") {
+            if (choice.id === "devil_emotion") {
+              const opts = (def.devilEmotions || [])
+                .map((e) => `<option value="${e.label}">${e.label}</option>`)
+                .join("");
+              html += `<div class="xrrpg-choice-block"><label><strong>${choice.label}:</strong><br>
               <select data-choice-id="${choice.id}"><option value="">-- Select --</option>${opts}</select>
             </label></div>`;
-          } else {
-            const opts = choice.options.map(o => `<option value="${o}">${o}</option>`).join('');
-            html += `<div class="xrrpg-choice-block"><label><strong>${choice.label}:</strong><br>
+            } else {
+              const opts = choice.options
+                .map((o) => `<option value="${o}">${o}</option>`)
+                .join("");
+              html += `<div class="xrrpg-choice-block"><label><strong>${choice.label}:</strong><br>
               <select data-choice-id="${choice.id}"><option value="">-- Select --</option>${opts}</select>
             </label></div>`;
-          }
-        } else if (choice.type === 'text') {
-          html += `<div class="xrrpg-choice-block"><label><strong>${choice.label}:</strong><br>
+            }
+          } else if (choice.type === "text") {
+            html += `<div class="xrrpg-choice-block"><label><strong>${choice.label}:</strong><br>
             <input type="text" data-choice-id="${choice.id}" style="width:100%;">
           </label></div>`;
-        } else if (choice.type === 'pick_spells') {
-          const pool = def.spellPool || [];
-          const filtered = pool.filter(s => !choice.maxTier || s.tier <= choice.maxTier);
-          const checks = filtered.map(s => {
-            const tags = [s.color ? `[${s.color}]` : null, s.concentration ? '[Conc]' : null, s.aoe ? '[AOE]' : null].filter(Boolean).join(' ');
-            return `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="spell" value="${s.name}"> <strong>${s.name}</strong>${tags ? ` <span class="muted">${tags}</span>` : ''}<br><span class="xrrpg-ability-desc">${s.description}</span></label>`;
-          }).join('');
-          html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} spells`}:</legend>${checks}</fieldset>`;
-        } else if (choice.type === 'pick_spirits') {
-          const pool = def.spiritTypes || [];
-          if (!pool.length) {
-            html += `<div class="xrrpg-choice-block"><p class="muted">No spirit types defined.</p></div>`;
-          } else {
-            const checks = pool.map(s => `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="spirit" value="${s.name}"> <strong>${s.name}</strong> <span class="muted">(${s.focus})</span><br><span class="xrrpg-ability-desc">${s.description}</span></label>`).join('');
-            html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} spirits`}:</legend>${checks}</fieldset>`;
+          } else if (choice.type === "pick_spells") {
+            const pool = def.spellPool || [];
+            const filtered = pool.filter(
+              (s) => !choice.maxTier || s.tier <= choice.maxTier,
+            );
+            const checks = filtered
+              .map((s) => {
+                const tags = [
+                  s.color ? `[${s.color}]` : null,
+                  s.concentration ? "[Conc]" : null,
+                  s.aoe ? "[AOE]" : null,
+                ]
+                  .filter(Boolean)
+                  .join(" ");
+                return `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="spell" value="${s.name}"> <strong>${s.name}</strong>${tags ? ` <span class="muted">${tags}</span>` : ""}<br><span class="xrrpg-ability-desc">${s.description}</span></label>`;
+              })
+              .join("");
+            html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} spells`}:</legend>${checks}</fieldset>`;
+          } else if (choice.type === "pick_spirits") {
+            const pool = def.spiritTypes || [];
+            if (!pool.length) {
+              html += `<div class="xrrpg-choice-block"><p class="muted">No spirit types defined.</p></div>`;
+            } else {
+              const checks = pool
+                .map(
+                  (s) =>
+                    `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="spirit" value="${s.name}"> <strong>${s.name}</strong> <span class="muted">(${s.focus})</span><br><span class="xrrpg-ability-desc">${s.description}</span></label>`,
+                )
+                .join("");
+              html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} spirits`}:</legend>${checks}</fieldset>`;
+            }
+          } else if (choice.type === "pick_elements") {
+            const pool = (def.elementPool || []).filter(
+              (e) => e.tier === choice.tier,
+            );
+            const checks = pool
+              .map((e) => {
+                const previewText =
+                  e.levelAbilities?.[1]?.replace(/\n/g, "<br>") ||
+                  e.description ||
+                  "";
+                return `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="element" value="${e.name}"> <strong>${e.name}</strong>${e.focus ? ` <span class="muted">(${e.focus})</span>` : ""}<br><span class="xrrpg-ability-desc">${previewText}</span></label>`;
+              })
+              .join("");
+            html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} elements`}:</legend>${checks}</fieldset>`;
+          } else if (choice.type === "pick_effects") {
+            const pool = def.effectPool || [];
+            const checks = pool
+              .map(
+                (e) =>
+                  `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="effect" value="${e.name}"> <strong>${e.name}</strong><br><span class="xrrpg-ability-desc">${e.description}</span></label>`,
+              )
+              .join("");
+            html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} effects`}:</legend>${checks}</fieldset>`;
           }
-        } else if (choice.type === 'pick_elements') {
-          const pool = (def.elementPool || []).filter(e => e.tier === choice.tier);
-          const checks = pool.map(e => {
-            const previewText = e.levelAbilities?.[1]?.replace(/\n/g, '<br>') || e.description || '';
-            return `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="element" value="${e.name}"> <strong>${e.name}</strong>${e.focus ? ` <span class="muted">(${e.focus})</span>` : ''}<br><span class="xrrpg-ability-desc">${previewText}</span></label>`;
-          }).join('');
-          html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} elements`}:</legend>${checks}</fieldset>`;
-        } else if (choice.type === 'pick_effects') {
-          const pool = def.effectPool || [];
-          const checks = pool.map(e => `<label class="xrrpg-spell-option"><input type="checkbox" data-choice-id="effect" value="${e.name}"> <strong>${e.name}</strong><br><span class="xrrpg-ability-desc">${e.description}</span></label>`).join('');
-          html += `<fieldset class="xrrpg-pick-fieldset" data-limit="${choice.count}"><legend>${choice.label || `Pick ${choice.count} effects`}:</legend>${checks}</fieldset>`;
         }
+        container.innerHTML = html;
+        container.querySelectorAll(".xrrpg-pick-fieldset").forEach((fs) => {
+          const limit = parseInt(fs.dataset.limit || "0");
+          if (!limit) return;
+          const boxes = Array.from(
+            fs.querySelectorAll("input[type=checkbox]:not([disabled])"),
+          );
+          const enforce = () => {
+            const checked = boxes.filter((b) => b.checked).length;
+            boxes.forEach((b) => {
+              if (!b.checked) b.disabled = checked >= limit;
+            });
+          };
+          boxes.forEach((b) => b.addEventListener("change", enforce));
+          enforce();
+        });
+        container.querySelectorAll("select[data-choice-id]").forEach((sel) => {
+          const descEl = sel.parentElement.querySelector(".xrrpg-choice-desc");
+          if (!descEl) return;
+          const update = () => {
+            descEl.textContent =
+              sel.options[sel.selectedIndex]?.dataset.desc || "";
+          };
+          sel.addEventListener("change", update);
+          update();
+        });
       }
-      container.innerHTML = html;
-      container.querySelectorAll('.xrrpg-pick-fieldset').forEach(fs => {
-        const limit = parseInt(fs.dataset.limit || '0');
-        if (!limit) return;
-        const boxes = Array.from(fs.querySelectorAll('input[type=checkbox]:not([disabled])'));
-        const enforce = () => {
-          const checked = boxes.filter(b => b.checked).length;
-          boxes.forEach(b => { if (!b.checked) b.disabled = checked >= limit; });
-        };
-        boxes.forEach(b => b.addEventListener('change', enforce));
-        enforce();
-      });
-      container.querySelectorAll('select[data-choice-id]').forEach(sel => {
-        const descEl = sel.parentElement.querySelector('.xrrpg-choice-desc');
-        if (!descEl) return;
-        const update = () => { descEl.textContent = sel.options[sel.selectedIndex]?.dataset.desc || ''; };
-        sel.addEventListener('change', update);
-        update();
-      });
-    }
 
-    function readWizardLevelChoices() {
-      const container = document.getElementById('wizardLevelChoices');
-      if (!container) return {};
-      const result = {};
-      container.querySelectorAll('[data-choice-id]').forEach(el => {
-        const id = el.dataset.choiceId;
-        if (el.tagName === 'SELECT' || (el.tagName === 'INPUT' && el.type === 'text')) {
-          result[id] = el.value;
-        } else if (el.type === 'checkbox' && el.checked) {
-          if (!result[id]) result[id] = [];
-          result[id].push(el.value);
+      function readWizardLevelChoices() {
+        const container = document.getElementById("wizardLevelChoices");
+        if (!container) return {};
+        const result = {};
+        container.querySelectorAll("[data-choice-id]").forEach((el) => {
+          const id = el.dataset.choiceId;
+          if (
+            el.tagName === "SELECT" ||
+            (el.tagName === "INPUT" && el.type === "text")
+          ) {
+            result[id] = el.value;
+          } else if (el.type === "checkbox" && el.checked) {
+            if (!result[id]) result[id] = [];
+            result[id].push(el.value);
+          }
+        });
+        return result;
+      }
+
+      function wizardChoicesToClassChoices(cls, raw) {
+        const result = {};
+        if (raw.advanced_power) result.advanced_powers = [raw.advanced_power];
+        if (raw.devil_name) result.devil_name = raw.devil_name;
+        if (raw.devil_description)
+          result.devil_description = raw.devil_description;
+        if (raw.devil_emotion) result.devil_emotion = raw.devil_emotion;
+        if (raw.spell?.length) result.spells_known = raw.spell;
+        if (raw.spirit?.length)
+          result.spirits = raw.spirit.map((type) => ({ type, tier: 1 }));
+        if (raw.specialized_power?.length)
+          result.specialized_powers = raw.specialized_power;
+        if (raw.effect?.length) result.effects_known = raw.effect;
+        if (raw.element?.length) {
+          const def = window.XRRPG_CLASS_DEFS?.[cls];
+          const tier =
+            def?.levels?.[1]?.choices?.find((c) => c.type === "pick_elements")
+              ?.tier || "I";
+          result.elements = raw.element.map((name) => ({ name, tier }));
         }
-      });
-      return result;
-    }
-
-    function wizardChoicesToClassChoices(cls, raw) {
-      const result = {};
-      if (raw.advanced_power) result.advanced_powers = [raw.advanced_power];
-      if (raw.devil_name) result.devil_name = raw.devil_name;
-      if (raw.devil_description) result.devil_description = raw.devil_description;
-      if (raw.devil_emotion) result.devil_emotion = raw.devil_emotion;
-      if (raw.spell?.length) result.spells_known = raw.spell;
-      if (raw.spirit?.length) result.spirits = raw.spirit.map(type => ({ type, tier: 1 }));
-      if (raw.specialized_power?.length) result.specialized_powers = raw.specialized_power;
-      if (raw.effect?.length) result.effects_known = raw.effect;
-      if (raw.element?.length) {
+        // Generic pick_one choices
         const def = window.XRRPG_CLASS_DEFS?.[cls];
-        const tier = def?.levels?.[1]?.choices?.find(c => c.type === 'pick_elements')?.tier || 'I';
-        result.elements = raw.element.map(name => ({ name, tier }));
+        for (const choice of def?.levels?.[1]?.choices || []) {
+          if (choice.type === "pick_one" && raw[choice.id])
+            result[choice.id] = raw[choice.id];
+        }
+        return result;
       }
-      // Generic pick_one choices
-      const def = window.XRRPG_CLASS_DEFS?.[cls];
-      for (const choice of (def?.levels?.[1]?.choices || [])) {
-        if (choice.type === 'pick_one' && raw[choice.id]) result[choice.id] = raw[choice.id];
-      }
-      return result;
-    }
 
-    let wizardStep = 1;
-    const WIZARD_MAX_STEPS = 2;
-    const modal = document.getElementById('charModal');
-    const wizardStepLabel = document.getElementById('wizardStepLabel');
-    function setStep(step) {
-      wizardStep = Math.max(1, Math.min(WIZARD_MAX_STEPS, step));
-      wizardStepLabel.textContent = `Step ${wizardStep} / ${WIZARD_MAX_STEPS}`;
-      document.querySelectorAll('.wizard-step').forEach(el => {
-        el.classList.toggle('hidden', Number(el.dataset.step) !== wizardStep);
-      });
-      document.getElementById('prevStepBtn').classList.toggle('hidden', wizardStep === 1);
-      document.getElementById('nextStepBtn').classList.toggle('hidden', wizardStep === WIZARD_MAX_STEPS);
-      document.getElementById('saveBtn').classList.toggle('hidden', wizardStep !== WIZARD_MAX_STEPS);
-    }
-
-    document.getElementById('newCharacterBtn').onclick = () => { modal.classList.remove('hidden'); setStep(1); };
-    if (classInput) classInput.onchange = () => renderStartingClassDetails();
-    chromaInput.addEventListener('change', syncClassOptionsByChroma);
-    modal.querySelector('.xr-modal-backdrop').onclick = () => modal.classList.add('hidden');
-    document.getElementById('prevStepBtn').onclick = () => setStep(wizardStep - 1);
-    document.getElementById('nextStepBtn').onclick = () => {
-      const msg = document.getElementById('modalMsg');
-      if (wizardStep === 1 && !document.getElementById('nameInput').value.trim()) {
-        msg.textContent = 'Name required before continuing.';
-        return;
+      let wizardStep = 1;
+      const WIZARD_MAX_STEPS = 2;
+      const modal = document.getElementById("charModal");
+      const wizardStepLabel = document.getElementById("wizardStepLabel");
+      function setStep(step) {
+        wizardStep = Math.max(1, Math.min(WIZARD_MAX_STEPS, step));
+        wizardStepLabel.textContent = `Step ${wizardStep} / ${WIZARD_MAX_STEPS}`;
+        document.querySelectorAll(".wizard-step").forEach((el) => {
+          el.classList.toggle("hidden", Number(el.dataset.step) !== wizardStep);
+        });
+        document
+          .getElementById("prevStepBtn")
+          .classList.toggle("hidden", wizardStep === 1);
+        document
+          .getElementById("nextStepBtn")
+          .classList.toggle("hidden", wizardStep === WIZARD_MAX_STEPS);
+        document
+          .getElementById("saveBtn")
+          .classList.toggle("hidden", wizardStep !== WIZARD_MAX_STEPS);
       }
-      if (wizardStep === 2) {
-        const validation = validateStatSelections();
-        if (!validation.valid) {
-          msg.textContent = validation.message;
+
+      document.getElementById("newCharacterBtn").onclick = () => {
+        modal.classList.remove("hidden");
+        setStep(1);
+      };
+      if (classInput) classInput.onchange = () => renderStartingClassDetails();
+      chromaInput.addEventListener("change", syncClassOptionsByChroma);
+      modal.querySelector(".xr-modal-backdrop").onclick = () =>
+        modal.classList.add("hidden");
+      document.getElementById("prevStepBtn").onclick = () =>
+        setStep(wizardStep - 1);
+      document.getElementById("nextStepBtn").onclick = () => {
+        const msg = document.getElementById("modalMsg");
+        if (
+          wizardStep === 1 &&
+          !document.getElementById("nameInput").value.trim()
+        ) {
+          msg.textContent = "Name required before continuing.";
           return;
         }
-      }
-      msg.textContent = '';
-      setStep(wizardStep + 1);
-    };
-
-    document.querySelectorAll('.table-sort').forEach(button => {
-      button.onclick = () => {
-        const key = button.dataset.sort;
-        if (sortState.key === key) {
-          sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
-        } else {
-          sortState = { key, direction: 'asc' };
+        if (wizardStep === 2) {
+          const validation = validateStatSelections();
+          if (!validation.valid) {
+            msg.textContent = validation.message;
+            return;
+          }
         }
-        render();
+        msg.textContent = "";
+        setStep(wizardStep + 1);
       };
-    });
-    updateSortButtons();
 
-    function buildChromaValue() {
-      const chroma = chromaInput.value;
-      if (chroma === 'Mixed' && mixedChromaInput.value && mixedChromaInputTwo.value) {
-        return `Mixed (${mixedChromaInput.value}/${mixedChromaInputTwo.value})`;
+      document.querySelectorAll(".table-sort").forEach((button) => {
+        button.onclick = () => {
+          const key = button.dataset.sort;
+          if (sortState.key === key) {
+            sortState.direction =
+              sortState.direction === "asc" ? "desc" : "asc";
+          } else {
+            sortState = { key, direction: "asc" };
+          }
+          render();
+        };
+      });
+      updateSortButtons();
+
+      function buildChromaValue() {
+        const chroma = chromaInput.value;
+        if (
+          chroma === "Mixed" &&
+          mixedChromaInput.value &&
+          mixedChromaInputTwo.value
+        ) {
+          return `Mixed (${mixedChromaInput.value}/${mixedChromaInputTwo.value})`;
+        }
+        return chroma;
       }
-      return chroma;
-    }
 
-    document.getElementById('saveBtn').onclick = async () => {
-      const name = document.getElementById('nameInput').value.trim();
-      const species = document.getElementById('speciesInput').value.trim();
-      const msg = document.getElementById('modalMsg');
-      msg.textContent = '';
-      if (!name) { msg.textContent = 'Name required.'; return; }
-      try {
-        const validation = validateStatSelections();
-        if (!validation.valid) { msg.textContent = validation.message; return; }
-        currentUser = currentUser || await requireUser();
-        const base_stats = buildStatsFromWizard();
+      document.getElementById("saveBtn").onclick = async () => {
+        const name = document.getElementById("nameInput").value.trim();
+        const species = document.getElementById("speciesInput").value.trim();
+        const msg = document.getElementById("modalMsg");
+        msg.textContent = "";
+        if (!name) {
+          msg.textContent = "Name required.";
+          return;
+        }
+        try {
+          const validation = validateStatSelections();
+          if (!validation.valid) {
+            msg.textContent = validation.message;
+            return;
+          }
+          currentUser = currentUser || (await requireUser());
+          const base_stats = buildStatsFromWizard();
 
-        const { data, error } = await sb.from('xrrpg_characters').insert({
-          user_id: currentUser.id,
-          name,
-          base_stats: {
-            ...base_stats,
-            species,
-            chroma: buildChromaValue(),
-            class_ability_choices: {}
-          },
-          class_progression: [],
-          skills: []
-        }).select('id').single();
-        if (error) throw error;
+          const { data, error } = await sb
+            .from("xrrpg_characters")
+            .insert({
+              user_id: currentUser.id,
+              name,
+              base_stats: {
+                ...base_stats,
+                species,
+                chroma: buildChromaValue(),
+                class_ability_choices: {},
+              },
+              class_progression: [],
+              skills: [],
+            })
+            .select("id")
+            .single();
+          if (error) throw error;
 
-        modal.classList.add('hidden');
-        await withLoading('Refreshing character list…', loadCharacters);
-        window.location.href = `/xrrpg-2.0/xrrpg-character.html?id=${data.id}`;
-      } catch (error) {
-        msg.textContent = error.message;
-      }
-    };
+          modal.classList.add("hidden");
+          await withLoading("Refreshing character list…", loadCharacters);
+          window.location.href = `/xrrpg-2.0/xrrpg-character.html?id=${data.id}`;
+        } catch (error) {
+          msg.textContent = error.message;
+        }
+      };
 
-    const importCharacterBtn = document.getElementById('importCharacterBtn');
-    const importCharacterInput = document.getElementById('importCharacterInput');
+      const importCharacterBtn = document.getElementById("importCharacterBtn");
+      const importCharacterInput = document.getElementById(
+        "importCharacterInput",
+      );
 
-    importCharacterBtn.onclick = async () => {
-      try {
-        currentUser = currentUser || await requireUser();
-      } catch (_error) {
-        return;
-      }
-      importCharacterInput.value = "";
-      importCharacterInput.click();
-    };
+      importCharacterBtn.onclick = async () => {
+        try {
+          currentUser = currentUser || (await requireUser());
+        } catch (_error) {
+          return;
+        }
+        importCharacterInput.value = "";
+        importCharacterInput.click();
+      };
 
-    importCharacterInput.onchange = async (event) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      try {
-        currentUser = currentUser || await requireUser();
-        const payload = JSON.parse(await file.text());
-        await importCharacterFromPayload(payload);
-      } catch (error) {
-        alert(error.message || 'Failed to import character.');
-      }
-    };
+      importCharacterInput.onchange = async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        try {
+          currentUser = currentUser || (await requireUser());
+          const payload = JSON.parse(await file.text());
+          await importCharacterFromPayload(payload);
+        } catch (error) {
+          alert(error.message || "Failed to import character.");
+        }
+      };
 
-    withLoading('Loading characters…', loadCharacters);
-  </script>
-</body>
+      withLoading("Loading characters…", loadCharacters);
+    </script>
+  </body>
 </html>

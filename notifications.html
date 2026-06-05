@@ -1,247 +1,292 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>XR Notifications</title>
-  <link rel="icon" href="/Just%20A%20purp.ico">
-  <link rel="stylesheet" href="/shared/style.css">
-</head>
-<body class="wr-scope">
-  <div id="nav"></div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>XR Notifications</title>
+    <link rel="icon" href="/Just%20A%20purp.ico" />
+    <link rel="stylesheet" href="/shared/style.css" />
+  </head>
+  <body class="wr-scope">
+    <div id="nav"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/shared/auth.js"></script>
-  <script src="/shared/nav.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/shared/auth.js"></script>
+    <script src="/shared/nav.js"></script>
 
-  <main class="wrap">
-    <h1>Notifications</h1>
-    <p class="muted">Friend requests and campaign invites appear here.</p>
-    <section class="card wr-mt-1">
-      <div id="notificationsList" class="mono muted">Loading notifications...if this takes too long just refresh</div>
-    </section>
-  </main>
+    <main class="wrap">
+      <h1>Notifications</h1>
+      <p class="muted">Friend requests and campaign invites appear here.</p>
+      <section class="card wr-mt-1">
+        <div id="notificationsList" class="mono muted">
+          Loading notifications
+        </div>
+      </section>
+    </main>
 
-  <script>
-    const sb = window.supabaseClient;
-    const notificationsList = document.getElementById("notificationsList");
-    let currentUser;
-    let notificationChannel;
+    <script>
+      const sb = window.supabaseClient;
+      const notificationsList = document.getElementById("notificationsList");
+      let currentUser;
+      let notificationChannel;
 
-    async function requireUser() {
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) {
-        window.location.href = "/login.html";
-        throw new Error("No user");
+      async function requireUser() {
+        const {
+          data: { user },
+        } = await sb.auth.getUser();
+        if (!user) {
+          window.location.href = "/login.html";
+          throw new Error("No user");
+        }
+        return user;
       }
-      return user;
-    }
 
-    async function acceptFriend(notification) {
-      const requesterId = notification.payload?.requester_user_id;
-      if (!requesterId) throw new Error("Missing requester");
+      async function acceptFriend(notification) {
+        const requesterId = notification.payload?.requester_user_id;
+        if (!requesterId) throw new Error("Missing requester");
 
-      const [a, b] = [currentUser.id, requesterId].sort();
-      const { error: friendshipError } = await sb.from("friendships").upsert({
-        user_a: a,
-        user_b: b
-      }, { onConflict: "user_a,user_b" });
-      if (friendshipError) throw friendshipError;
+        const [a, b] = [currentUser.id, requesterId].sort();
+        const { error: friendshipError } = await sb.from("friendships").upsert(
+          {
+            user_a: a,
+            user_b: b,
+          },
+          { onConflict: "user_a,user_b" },
+        );
+        if (friendshipError) throw friendshipError;
 
-      const { error } = await sb.from("friend_requests")
-        .update({ status: "accepted" })
-        .eq("id", notification.id)
-        .eq("target_user_id", currentUser.id)
-        .eq("status", "pending");
-      if (error) throw error;
-    }
-
-    async function rejectFriend(notification) {
-      const { error } = await sb.from("friend_requests")
-        .update({ status: "declined" })
-        .eq("id", notification.id)
-        .eq("target_user_id", currentUser.id)
-        .eq("status", "pending");
-      if (error) throw error;
-    }
-
-    async function acceptGameInvite(notification) {
-      const campaignId = notification.payload?.campaign_id;
-      if (!campaignId) throw new Error("Missing campaign id");
-
-      const { error: memberError } = await sb.from("campaign_members").upsert({
-        campaign_id: campaignId,
-        user_id: currentUser.id,
-        role: "player"
-      }, { onConflict: "campaign_id,user_id" });
-      if (memberError) throw memberError;
-
-      await sb.from("campaign_invites")
-        .update({ status: "accepted" })
-        .eq("id", notification.id)
-        .eq("status", "pending");
-    }
-
-    async function rejectGameInvite(notification) {
-      await sb.from("campaign_invites")
-        .update({ status: "declined" })
-        .eq("id", notification.id)
-        .eq("status", "pending");
-    }
-
-    async function loadUsernamesById(userIds) {
-      const uniqueIds = [...new Set((userIds || []).filter(Boolean))];
-      if (!uniqueIds.length) return {};
-
-      const { data, error } = await sb
-        .from("profile_directory")
-        .select("id, username")
-        .in("id", uniqueIds);
-
-      if (error) throw error;
-
-      return Object.fromEntries((data || []).map(profile => [profile.id, profile.username || profile.id]));
-    }
-
-    async function loadNotifications() {
-      const [friendResult, campaignResult] = await Promise.all([
-        sb.from("friend_requests")
-          .select("id, requester_user_id, created_at")
+        const { error } = await sb
+          .from("friend_requests")
+          .update({ status: "accepted" })
+          .eq("id", notification.id)
           .eq("target_user_id", currentUser.id)
-          .eq("status", "pending"),
-        sb.from("campaign_invites")
-          .select("id, campaign_id, inviter_user_id, required_character_system, created_at")
-          .eq("invitee_user_id", currentUser.id)
-          .eq("status", "pending")
-      ]);
-
-      if (friendResult.error || campaignResult.error) {
-        const message = friendResult.error?.message || campaignResult.error?.message;
-        notificationsList.textContent = `Failed to load notifications: ${message}`;
-        return;
+          .eq("status", "pending");
+        if (error) throw error;
       }
 
-      const data = [
-        ...(friendResult.data || []).map(row => ({
-          id: row.id,
-          type: "friend_request",
-          payload: { requester_user_id: row.requester_user_id },
-          created_at: row.created_at
-        })),
-        ...(campaignResult.data || []).map(row => ({
-          id: row.id,
-          type: "campaign_invite",
-          payload: { campaign_id: row.campaign_id, inviter_user_id: row.inviter_user_id, required_character_system: row.required_character_system || "webrunning" },
-          created_at: row.created_at
-        }))
-      ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-      let usernamesById = {};
-      try {
-        usernamesById = await loadUsernamesById(data.map(notification => {
-          if (notification.type === "friend_request") return notification.payload?.requester_user_id;
-          return notification.payload?.inviter_user_id;
-        }));
-      } catch (error) {
-        console.warn("Failed to resolve inviter usernames", error);
+      async function rejectFriend(notification) {
+        const { error } = await sb
+          .from("friend_requests")
+          .update({ status: "declined" })
+          .eq("id", notification.id)
+          .eq("target_user_id", currentUser.id)
+          .eq("status", "pending");
+        if (error) throw error;
       }
 
-      if (!data.length) {
-        notificationsList.textContent = "No pending notifications.";
-        return;
+      async function acceptGameInvite(notification) {
+        const campaignId = notification.payload?.campaign_id;
+        if (!campaignId) throw new Error("Missing campaign id");
+
+        const { error: memberError } = await sb.from("campaign_members").upsert(
+          {
+            campaign_id: campaignId,
+            user_id: currentUser.id,
+            role: "player",
+          },
+          { onConflict: "campaign_id,user_id" },
+        );
+        if (memberError) throw memberError;
+
+        await sb
+          .from("campaign_invites")
+          .update({ status: "accepted" })
+          .eq("id", notification.id)
+          .eq("status", "pending");
       }
 
-      notificationsList.innerHTML = "";
-      data.forEach(notification => {
-        const row = document.createElement("div");
-        row.className = "card wr-mt-0-5";
-        row.style.padding = "0.8rem";
+      async function rejectGameInvite(notification) {
+        await sb
+          .from("campaign_invites")
+          .update({ status: "declined" })
+          .eq("id", notification.id)
+          .eq("status", "pending");
+      }
 
-        const title = document.createElement("div");
-        title.textContent = notification.type === "friend_request" ? "Friend request" : "Campaign invite";
-        title.style.fontWeight = "700";
+      async function loadUsernamesById(userIds) {
+        const uniqueIds = [...new Set((userIds || []).filter(Boolean))];
+        if (!uniqueIds.length) return {};
 
-        const details = document.createElement("div");
-        details.className = "muted";
-        const inviterId = notification.type === "friend_request"
-          ? notification.payload?.requester_user_id
-          : notification.payload?.inviter_user_id;
-        const inviterName = usernamesById[inviterId] || "Someone";
-        details.textContent = notification.type === "friend_request"
-          ? `${inviterName} invited you to be friends.`
-          : `${inviterName} invited you to join a ${String(notification.payload?.required_character_system || 'webrunning').toUpperCase()} party.`;
+        const { data, error } = await sb
+          .from("profile_directory")
+          .select("id, username")
+          .in("id", uniqueIds);
 
-        const actions = document.createElement("div");
-        actions.className = "wr-inline-flex wr-mt-0-5";
-        const acceptBtn = document.createElement("button");
-        acceptBtn.textContent = "Accept";
-        const rejectBtn = document.createElement("button");
-        rejectBtn.textContent = "Reject";
+        if (error) throw error;
 
-        acceptBtn.onclick = async () => {
-          try {
-            if (notification.type === "friend_request") {
-              await acceptFriend(notification);
-            } else if (notification.type === "campaign_invite") {
-              await acceptGameInvite(notification);
+        return Object.fromEntries(
+          (data || []).map((profile) => [
+            profile.id,
+            profile.username || profile.id,
+          ]),
+        );
+      }
+
+      async function loadNotifications() {
+        const [friendResult, campaignResult] = await Promise.all([
+          sb
+            .from("friend_requests")
+            .select("id, requester_user_id, created_at")
+            .eq("target_user_id", currentUser.id)
+            .eq("status", "pending"),
+          sb
+            .from("campaign_invites")
+            .select(
+              "id, campaign_id, inviter_user_id, required_character_system, created_at",
+            )
+            .eq("invitee_user_id", currentUser.id)
+            .eq("status", "pending"),
+        ]);
+
+        if (friendResult.error || campaignResult.error) {
+          const message =
+            friendResult.error?.message || campaignResult.error?.message;
+          notificationsList.textContent = `Failed to load notifications: ${message}`;
+          return;
+        }
+
+        const data = [
+          ...(friendResult.data || []).map((row) => ({
+            id: row.id,
+            type: "friend_request",
+            payload: { requester_user_id: row.requester_user_id },
+            created_at: row.created_at,
+          })),
+          ...(campaignResult.data || []).map((row) => ({
+            id: row.id,
+            type: "campaign_invite",
+            payload: {
+              campaign_id: row.campaign_id,
+              inviter_user_id: row.inviter_user_id,
+              required_character_system:
+                row.required_character_system || "webrunning",
+            },
+            created_at: row.created_at,
+          })),
+        ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        let usernamesById = {};
+        try {
+          usernamesById = await loadUsernamesById(
+            data.map((notification) => {
+              if (notification.type === "friend_request")
+                return notification.payload?.requester_user_id;
+              return notification.payload?.inviter_user_id;
+            }),
+          );
+        } catch (error) {
+          console.warn("Failed to resolve inviter usernames", error);
+        }
+
+        if (!data.length) {
+          notificationsList.textContent = "No pending notifications.";
+          return;
+        }
+
+        notificationsList.innerHTML = "";
+        data.forEach((notification) => {
+          const row = document.createElement("div");
+          row.className = "card wr-mt-0-5";
+          row.style.padding = "0.8rem";
+
+          const title = document.createElement("div");
+          title.textContent =
+            notification.type === "friend_request"
+              ? "Friend request"
+              : "Campaign invite";
+          title.style.fontWeight = "700";
+
+          const details = document.createElement("div");
+          details.className = "muted";
+          const inviterId =
+            notification.type === "friend_request"
+              ? notification.payload?.requester_user_id
+              : notification.payload?.inviter_user_id;
+          const inviterName = usernamesById[inviterId] || "Someone";
+          details.textContent =
+            notification.type === "friend_request"
+              ? `${inviterName} invited you to be friends.`
+              : `${inviterName} invited you to join a ${String(notification.payload?.required_character_system || "webrunning").toUpperCase()} party.`;
+
+          const actions = document.createElement("div");
+          actions.className = "wr-inline-flex wr-mt-0-5";
+          const acceptBtn = document.createElement("button");
+          acceptBtn.textContent = "Accept";
+          const rejectBtn = document.createElement("button");
+          rejectBtn.textContent = "Reject";
+
+          acceptBtn.onclick = async () => {
+            try {
+              if (notification.type === "friend_request") {
+                await acceptFriend(notification);
+              } else if (notification.type === "campaign_invite") {
+                await acceptGameInvite(notification);
+              }
+              await loadNotifications();
+            } catch (error) {
+              details.textContent = `Failed: ${error.message}`;
             }
-            await loadNotifications();
-          } catch (error) {
-            details.textContent = `Failed: ${error.message}`;
-          }
-        };
+          };
 
-        rejectBtn.onclick = async () => {
-          try {
-            if (notification.type === "friend_request") {
-              await rejectFriend(notification);
-            } else if (notification.type === "campaign_invite") {
-              await rejectGameInvite(notification);
+          rejectBtn.onclick = async () => {
+            try {
+              if (notification.type === "friend_request") {
+                await rejectFriend(notification);
+              } else if (notification.type === "campaign_invite") {
+                await rejectGameInvite(notification);
+              }
+              await loadNotifications();
+            } catch (error) {
+              details.textContent = `Failed: ${error.message}`;
             }
-            await loadNotifications();
-          } catch (error) {
-            details.textContent = `Failed: ${error.message}`;
-          }
-        };
+          };
 
-        actions.append(acceptBtn, rejectBtn);
-        row.append(title, details, actions);
-        notificationsList.appendChild(row);
+          actions.append(acceptBtn, rejectBtn);
+          row.append(title, details, actions);
+          notificationsList.appendChild(row);
+        });
+      }
+
+      function subscribeNotificationUpdates() {
+        if (!currentUser?.id) return;
+        if (notificationChannel) {
+          sb.removeChannel(notificationChannel);
+        }
+
+        notificationChannel = sb
+          .channel(`notifications-live-${currentUser.id}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "friend_requests",
+            },
+            () => loadNotifications(),
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "campaign_invites",
+            },
+            () => loadNotifications(),
+          )
+          .subscribe();
+      }
+
+      (async () => {
+        currentUser = await requireUser();
+        await loadNotifications();
+        subscribeNotificationUpdates();
+      })();
+
+      window.addEventListener("beforeunload", () => {
+        if (notificationChannel) {
+          sb.removeChannel(notificationChannel);
+        }
       });
-    }
-
-    function subscribeNotificationUpdates() {
-      if (!currentUser?.id) return;
-      if (notificationChannel) {
-        sb.removeChannel(notificationChannel);
-      }
-
-      notificationChannel = sb
-        .channel(`notifications-live-${currentUser.id}`)
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "friend_requests"
-        }, () => loadNotifications())
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "campaign_invites"
-        }, () => loadNotifications())
-        .subscribe();
-    }
-
-    (async () => {
-      currentUser = await requireUser();
-      await loadNotifications();
-      subscribeNotificationUpdates();
-    })();
-
-    window.addEventListener("beforeunload", () => {
-      if (notificationChannel) {
-        sb.removeChannel(notificationChannel);
-      }
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>

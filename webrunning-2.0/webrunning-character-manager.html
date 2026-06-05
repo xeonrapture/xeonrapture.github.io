@@ -1,658 +1,827 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Webrunning Characters</title>
-  <link rel="icon" href="/Just%20A%20purp.ico">
-  <link rel="stylesheet" href="/shared/style.css">
-</head>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Webrunning Characters</title>
+    <link rel="icon" href="/Just%20A%20purp.ico" />
+    <link rel="stylesheet" href="/shared/style.css" />
+  </head>
 
-<body class="wr-scope">
-  <div id="nav"></div>
+  <body class="wr-scope">
+    <div id="nav"></div>
 
-  <main class="wrap">
-    <h1>Webrunning Characters</h1>
+    <main class="wrap">
+      <h1>Webrunning Characters</h1>
 
-    <div class="character-actions">
-      <button id="newCharacterBtn" aria-label="New character" title="New character"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
-      <button id="importCharacterBtn" aria-label="Import character" title="Import character JSON"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="M8 11l4 4 4-4"></path><path d="M4 20h16"></path></svg></button>
-      <input id="importCharacterInput" type="file" accept="application/json,.json" class="hidden" />
-    </div>
+      <div class="character-actions">
+        <button
+          id="newCharacterBtn"
+          aria-label="New character"
+          title="New character"
+        >
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14"></path>
+            <path d="M5 12h14"></path>
+          </svg>
+        </button>
+        <button
+          id="importCharacterBtn"
+          aria-label="Import character"
+          title="Import character JSON"
+        >
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3v12"></path>
+            <path d="M8 11l4 4 4-4"></path>
+            <path d="M4 20h16"></path>
+          </svg>
+        </button>
+        <input
+          id="importCharacterInput"
+          type="file"
+          accept="application/json,.json"
+          class="hidden"
+        />
+      </div>
 
-    <div class="char-sort-bar" id="charSortBar">
-      <span class="char-sort-label">Sort:</span>
-      <button type="button" class="table-sort" data-sort="name">Name</button>
-      <button type="button" class="table-sort" data-sort="level">Lvl</button>
-      <button type="button" class="table-sort" data-sort="hp">HP</button>
-      <button type="button" class="table-sort" data-sort="xp">XP</button>
-      <button type="button" class="table-sort" data-sort="luck">Luck</button>
-      <button type="button" class="table-sort" data-sort="essence">Ess</button>
-      <button type="button" class="table-sort" data-sort="power">P</button>
-      <button type="button" class="table-sort" data-sort="defense">D</button>
-      <button type="button" class="table-sort" data-sort="speed">S</button>
-      <button type="button" class="table-sort" data-sort="intelligence">I</button>
-      <button type="button" class="table-sort" data-sort="inventory_slots">Slots</button>
-    </div>
+      <div class="char-sort-bar" id="charSortBar">
+        <span class="char-sort-label">Sort:</span>
+        <button type="button" class="table-sort" data-sort="name">Name</button>
+        <button type="button" class="table-sort" data-sort="level">Lvl</button>
+        <button type="button" class="table-sort" data-sort="hp">HP</button>
+        <button type="button" class="table-sort" data-sort="xp">XP</button>
+        <button type="button" class="table-sort" data-sort="luck">Luck</button>
+        <button type="button" class="table-sort" data-sort="essence">
+          Ess
+        </button>
+        <button type="button" class="table-sort" data-sort="power">P</button>
+        <button type="button" class="table-sort" data-sort="defense">D</button>
+        <button type="button" class="table-sort" data-sort="speed">S</button>
+        <button type="button" class="table-sort" data-sort="intelligence">
+          I
+        </button>
+        <button type="button" class="table-sort" data-sort="inventory_slots">
+          Slots
+        </button>
+      </div>
 
-    <div id="charCards" class="char-card-grid"></div>
+      <div id="charCards" class="char-card-grid"></div>
 
-    <table class="table-full char-manager-table">
-      <thead>
-        <tr>
-          <th><button type="button" class="table-sort" data-sort="name">Name</button></th>
-          <th><button type="button" class="table-sort" data-sort="level">Lvl</button></th>
-          <th><button type="button" class="table-sort" data-sort="hp">HP</button></th>
-          <th><button type="button" class="table-sort" data-sort="xp">XP</button></th>
-          <th><button type="button" class="table-sort" data-sort="luck">Luck</button></th>
-          <th><button type="button" class="table-sort" data-sort="essence">Ess</button></th>
-          <th><button type="button" class="table-sort" data-sort="power">P</button></th>
-          <th><button type="button" class="table-sort" data-sort="defense">D</button></th>
-          <th><button type="button" class="table-sort" data-sort="speed">S</button></th>
-          <th><button type="button" class="table-sort" data-sort="intelligence">I</button></th>
-          <th><button type="button" class="table-sort" data-sort="inventory_slots">Slots</button></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="charTable">
-        <tr><td colspan="12">Loading…if this takes too long just refresh</td></tr>
-      </tbody>
-    </table>
-  </main>
+      <table class="table-full char-manager-table">
+        <thead>
+          <tr>
+            <th>
+              <button type="button" class="table-sort" data-sort="name">
+                Name
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="level">
+                Lvl
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="hp">
+                HP
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="xp">
+                XP
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="luck">
+                Luck
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="essence">
+                Ess
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="power">
+                P
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="defense">
+                D
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="speed">
+                S
+              </button>
+            </th>
+            <th>
+              <button type="button" class="table-sort" data-sort="intelligence">
+                I
+              </button>
+            </th>
+            <th>
+              <button
+                type="button"
+                class="table-sort"
+                data-sort="inventory_slots"
+              >
+                Slots
+              </button>
+            </th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="charTable">
+          <tr>
+            <td colspan="12">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
 
-  <!-- Create / Rename modal -->
-  <div id="charModal" class="xr-modal hidden">
-    <div class="xr-modal-backdrop"></div>
+    <!-- Create / Rename modal -->
+    <div id="charModal" class="xr-modal hidden">
+      <div class="xr-modal-backdrop"></div>
 
-    <div class="xr-modal-card">
-      <h2 id="charModalTitle">Character</h2>
+      <div class="xr-modal-card">
+        <h2 id="charModalTitle">Character</h2>
 
-      <input
-        id="charNameInput"
-        type="text"
-        maxlength="32"
-        placeholder="Character name"
-        autocomplete="off"
-      />
+        <input
+          id="charNameInput"
+          type="text"
+          maxlength="32"
+          placeholder="Character name"
+          autocomplete="off"
+        />
 
-      <div class="modal-section">
-        <strong>Allocate 3 Basic Stat Points</strong>
-        <div class="stat-inputs">
-          <label>Power
-            <input id="startPower" type="number" min="0" value="0" />
-          </label>
-          <label>Defense
-            <input id="startDefense" type="number" min="0" value="0" />
-          </label>
-          <label>Speed
-            <input id="startSpeed" type="number" min="0" value="0" />
-          </label>
-          <label>Intelligence
-            <input id="startIntelligence" type="number" min="0" value="0" />
-          </label>
+        <div class="modal-section">
+          <strong>Allocate 3 Basic Stat Points</strong>
+          <div class="stat-inputs">
+            <label
+              >Power
+              <input id="startPower" type="number" min="0" value="0" />
+            </label>
+            <label
+              >Defense
+              <input id="startDefense" type="number" min="0" value="0" />
+            </label>
+            <label
+              >Speed
+              <input id="startSpeed" type="number" min="0" value="0" />
+            </label>
+            <label
+              >Intelligence
+              <input id="startIntelligence" type="number" min="0" value="0" />
+            </label>
+          </div>
+          <p class="muted">
+            Points remaining: <span id="startPointsRemaining">3</span>
+          </p>
         </div>
-        <p class="muted">Points remaining: <span id="startPointsRemaining">3</span></p>
-      </div>
 
-      <div class="modal-section">
-        <strong>Starting Gear Appearance</strong>
-        <div class="starting-gear-grid">
-          <label>Head Item
-            <select id="startHeadItem"></select>
-          </label>
-          <label>Torso Item
-            <select id="startTorsoItem"></select>
-          </label>
-          <label>Rings Item
-            <select id="startRingItem"></select>
-          </label>
-          <label>Legs Item
-            <select id="startLegsItem"></select>
-          </label>
-          <label>One-Handed Weapon
-            <select id="startWeaponItem"></select>
-          </label>
+        <div class="modal-section">
+          <strong>Starting Gear Appearance</strong>
+          <div class="starting-gear-grid">
+            <label
+              >Head Item
+              <select id="startHeadItem"></select>
+            </label>
+            <label
+              >Torso Item
+              <select id="startTorsoItem"></select>
+            </label>
+            <label
+              >Rings Item
+              <select id="startRingItem"></select>
+            </label>
+            <label
+              >Legs Item
+              <select id="startLegsItem"></select>
+            </label>
+            <label
+              >One-Handed Weapon
+              <select id="startWeaponItem"></select>
+            </label>
+          </div>
+          <p class="muted">These basics start equipped at level 1.</p>
         </div>
-        <p class="muted">These basics start equipped at level 1.</p>
-      </div>
 
-      <div class="xr-modal-actions">
-        <button id="charCancelBtn" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
-        <button id="charSaveBtn" aria-label="Save" title="Save"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5z"></path><path d="M8 4v6h8V4"></path><path d="M8 16h8"></path></svg></button>
-      </div>
+        <div class="xr-modal-actions">
+          <button id="charCancelBtn" aria-label="Cancel" title="Cancel">
+            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6l12 12"></path>
+              <path d="M18 6L6 18"></path>
+            </svg>
+          </button>
+          <button id="charSaveBtn" aria-label="Save" title="Save">
+            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 4h12l2 2v14H5z"></path>
+              <path d="M8 4v6h8V4"></path>
+              <path d="M8 16h8"></path>
+            </svg>
+          </button>
+        </div>
 
-      <div id="charModalMsg" class="mono muted">&nbsp;</div>
+        <div id="charModalMsg" class="mono muted">&nbsp;</div>
+      </div>
     </div>
-  </div>
 
-  <!-- Delete modal -->
-  <div id="deleteModal" class="xr-modal hidden">
-    <div class="xr-modal-backdrop"></div>
+    <!-- Delete modal -->
+    <div id="deleteModal" class="xr-modal hidden">
+      <div class="xr-modal-backdrop"></div>
 
-    <div class="xr-modal-card">
-      <h2>Delete Character</h2>
-      <p id="deletePrompt" class="muted"></p>
+      <div class="xr-modal-card">
+        <h2>Delete Character</h2>
+        <p id="deletePrompt" class="muted"></p>
 
-      <div class="xr-modal-actions">
-        <button id="cancelDeleteBtn" aria-label="Cancel" title="Cancel"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
-        <button id="confirmDeleteBtn" aria-label="Delete" title="Delete"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
+        <div class="xr-modal-actions">
+          <button id="cancelDeleteBtn" aria-label="Cancel" title="Cancel">
+            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6l12 12"></path>
+              <path d="M18 6L6 18"></path>
+            </svg>
+          </button>
+          <button id="confirmDeleteBtn" aria-label="Delete" title="Delete">
+            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16"></path>
+              <path d="M9 7V4h6v3"></path>
+              <path d="M7 7l1 13h8l1-13"></path>
+              <path d="M10 11v6M14 11v6"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div id="deleteModalMsg" class="mono muted">&nbsp;</div>
       </div>
-
-      <div id="deleteModalMsg" class="mono muted">&nbsp;</div>
     </div>
-  </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/shared/auth.js"></script>
+    <script src="/shared/nav.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/shared/auth.js"></script>
-  <script src="/shared/nav.js"></script>
+    <script>
+      const sb = window.supabaseClient;
+      const table = document.getElementById("charTable");
 
-  <script>
-    const sb = window.supabaseClient;
-    const table = document.getElementById("charTable");
+      let characters = [];
+      let activeCharId = null;
+      let currentUser = null;
+      let sortState = { key: "name", direction: "asc" };
 
-    let characters = [];
-    let activeCharId = null;
-    let currentUser = null;
-    let sortState = { key: "name", direction: "asc" };
-
-    async function requireUser() {
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) { window.location.href = '/login.html'; throw new Error('No user'); }
-      return user;
-    }
-
-    async function loadCharacters() {
-      try {
-        currentUser = await requireUser();
-
-        const { data, error } = await sb
-          .from("webrunning_characters")
-          .select("id, name, base_stats")
-          .eq("user_id", currentUser.id)
-          .order("created_at", { ascending: true });
-
-        if (error) throw error;
-
-        characters = data;
-        render();
-      } catch (e) {
-        console.error("Load failed:", e);
-        table.innerHTML = "<tr><td colspan='12'>Failed to load.</td></tr>";
+      async function requireUser() {
+        const {
+          data: { user },
+        } = await sb.auth.getUser();
+        if (!user) {
+          window.location.href = "/login.html";
+          throw new Error("No user");
+        }
+        return user;
       }
-    }
 
-    function s(c, key) {
-      return c.base_stats?.[key] ?? 0;
-    }
+      async function loadCharacters() {
+        try {
+          currentUser = await requireUser();
 
-    function updateSortButtons() {
-      document.querySelectorAll(".table-sort").forEach(btn => {
-        const key = btn.dataset.sort;
-        let icon = btn.querySelector(".sort-icon");
-        if (!icon) {
-          icon = document.createElement("span");
-          icon.className = "sort-icon";
-          icon.setAttribute("aria-hidden", "true");
-          btn.appendChild(icon);
+          const { data, error } = await sb
+            .from("webrunning_characters")
+            .select("id, name, base_stats")
+            .eq("user_id", currentUser.id)
+            .order("created_at", { ascending: true });
+
+          if (error) throw error;
+
+          characters = data;
+          render();
+        } catch (e) {
+          console.error("Load failed:", e);
+          table.innerHTML = "<tr><td colspan='12'>Failed to load.</td></tr>";
         }
-        if (key === sortState.key) {
-          btn.setAttribute("data-dir", sortState.direction);
-          icon.textContent = sortState.direction === "asc" ? "▲" : "▼";
-        } else {
-          btn.removeAttribute("data-dir");
-          icon.textContent = "";
-        }
-      });
-    }
+      }
 
-    const wrActionsSVG = (id) => `
+      function s(c, key) {
+        return c.base_stats?.[key] ?? 0;
+      }
+
+      function updateSortButtons() {
+        document.querySelectorAll(".table-sort").forEach((btn) => {
+          const key = btn.dataset.sort;
+          let icon = btn.querySelector(".sort-icon");
+          if (!icon) {
+            icon = document.createElement("span");
+            icon.className = "sort-icon";
+            icon.setAttribute("aria-hidden", "true");
+            btn.appendChild(icon);
+          }
+          if (key === sortState.key) {
+            btn.setAttribute("data-dir", sortState.direction);
+            icon.textContent = sortState.direction === "asc" ? "▲" : "▼";
+          } else {
+            btn.removeAttribute("data-dir");
+            icon.textContent = "";
+          }
+        });
+      }
+
+      const wrActionsSVG = (id) => `
       <a class="action-btn" href="/webrunning-2.0/webrunning-character.html?id=${id}" title="Edit" aria-label="Edit"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 9-9-3-3-9 9-1 4z"></path><path d="M13 7l3 3"></path></svg></a>
       <button class="action-btn" onclick="exportCharacter('${id}')" title="Export" aria-label="Export"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14V3"></path><path d="M8 7l4-4 4 4"></path><path d="M4 14v6h16v-6"></path></svg></button>
       <button class="action-btn" onclick="openDeleteModal('${id}')"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v6M14 11v6"></path></svg></button>
     `;
 
-    function render() {
-      const cards = document.getElementById("charCards");
-      if (!characters.length) {
-        table.innerHTML = "<tr><td colspan='12'>No characters yet.</td></tr>";
-        cards.innerHTML = '<p class="muted">No characters yet.</p>';
-        updateSortButtons();
-        return;
-      }
+      function render() {
+        const cards = document.getElementById("charCards");
+        if (!characters.length) {
+          table.innerHTML = "<tr><td colspan='12'>No characters yet.</td></tr>";
+          cards.innerHTML = '<p class="muted">No characters yet.</p>';
+          updateSortButtons();
+          return;
+        }
 
-      const sorted = [...characters].sort((a, b) => {
-        const dir = sortState.direction === "asc" ? 1 : -1;
-        const key = sortState.key;
-        const av = key === "name" ? (a.name || "").toLowerCase() : Number(s(a, key) || 0);
-        const bv = key === "name" ? (b.name || "").toLowerCase() : Number(s(b, key) || 0);
-        if (av < bv) return -1 * dir;
-        if (av > bv) return 1 * dir;
-        return 0;
-      });
-      table.innerHTML = "";
-      cards.innerHTML = "";
-      for (const c of sorted) {
-        // Table row
-        const row = document.createElement("tr");
-        row.innerHTML = `
+        const sorted = [...characters].sort((a, b) => {
+          const dir = sortState.direction === "asc" ? 1 : -1;
+          const key = sortState.key;
+          const av =
+            key === "name"
+              ? (a.name || "").toLowerCase()
+              : Number(s(a, key) || 0);
+          const bv =
+            key === "name"
+              ? (b.name || "").toLowerCase()
+              : Number(s(b, key) || 0);
+          if (av < bv) return -1 * dir;
+          if (av > bv) return 1 * dir;
+          return 0;
+        });
+        table.innerHTML = "";
+        cards.innerHTML = "";
+        for (const c of sorted) {
+          // Table row
+          const row = document.createElement("tr");
+          row.innerHTML = `
           <td>${c.name}</td>
-          <td>${s(c,"level")}</td>
-          <td>${s(c,"hp")}</td>
-          <td>${s(c,"xp")}</td>
-          <td>${s(c,"luck")}</td>
-          <td>${s(c,"essence")}</td>
-          <td>${s(c,"power")}</td>
-          <td>${s(c,"defense")}</td>
-          <td>${s(c,"speed")}</td>
-          <td>${s(c,"intelligence")}</td>
-          <td>${s(c,"inventory_slots")}</td>
+          <td>${s(c, "level")}</td>
+          <td>${s(c, "hp")}</td>
+          <td>${s(c, "xp")}</td>
+          <td>${s(c, "luck")}</td>
+          <td>${s(c, "essence")}</td>
+          <td>${s(c, "power")}</td>
+          <td>${s(c, "defense")}</td>
+          <td>${s(c, "speed")}</td>
+          <td>${s(c, "intelligence")}</td>
+          <td>${s(c, "inventory_slots")}</td>
           <td class="actions">${wrActionsSVG(c.id)}</td>
         `;
-        table.appendChild(row);
+          table.appendChild(row);
 
-        // Card (mobile)
-        const card = document.createElement("div");
-        card.className = "char-card";
-        card.innerHTML = `
+          // Card (mobile)
+          const card = document.createElement("div");
+          card.className = "char-card";
+          card.innerHTML = `
           <div class="char-card-row">
             <div class="char-card-info">
               <div class="char-card-name">${c.name}</div>
               <div class="char-card-stats">
-                <span class="char-card-stat">Lvl ${s(c,"level")}</span>
-                <span class="char-card-stat">HP ${s(c,"hp")}</span>
-                <span class="char-card-stat">XP ${s(c,"xp")}</span>
-                <span class="char-card-stat">Luck ${s(c,"luck")}</span>
-                <span class="char-card-stat">P ${s(c,"power")}</span>
-                <span class="char-card-stat">D ${s(c,"defense")}</span>
-                <span class="char-card-stat">S ${s(c,"speed")}</span>
-                <span class="char-card-stat">I ${s(c,"intelligence")}</span>
-                <span class="char-card-stat">Slots ${s(c,"inventory_slots")}</span>
+                <span class="char-card-stat">Lvl ${s(c, "level")}</span>
+                <span class="char-card-stat">HP ${s(c, "hp")}</span>
+                <span class="char-card-stat">XP ${s(c, "xp")}</span>
+                <span class="char-card-stat">Luck ${s(c, "luck")}</span>
+                <span class="char-card-stat">P ${s(c, "power")}</span>
+                <span class="char-card-stat">D ${s(c, "defense")}</span>
+                <span class="char-card-stat">S ${s(c, "speed")}</span>
+                <span class="char-card-stat">I ${s(c, "intelligence")}</span>
+                <span class="char-card-stat">Slots ${s(c, "inventory_slots")}</span>
               </div>
             </div>
             <div class="char-card-actions">${wrActionsSVG(c.id)}</div>
           </div>
         `;
-        cards.appendChild(card);
-      }
-      updateSortButtons();
-    }
-
-    function cleanFileName(name) {
-      return String(name || "character")
-        .toLowerCase()
-        .replace(/[^a-z0-9_-]+/g, "-")
-        .replace(/^-+|-+$/g, "") || "character";
-    }
-
-    function triggerJsonDownload(filename, dataObj) {
-      const blob = new Blob([JSON.stringify(dataObj, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
-    async function exportCharacter(characterId) {
-      try {
-        if (!currentUser) currentUser = await requireUser();
-        const character = characters.find(c => c.id === characterId);
-        if (!character) throw new Error("Character not found.");
-
-        const { data: gearLinks, error: gearError } = await sb
-          .from("webrunning_character_gear")
-          .select("equipped, gear_slot, gear:webrunning_gear(*)")
-          .eq("character_id", characterId);
-        if (gearError) throw gearError;
-
-        const payload = {
-          export_version: 1,
-          exported_at: new Date().toISOString(),
-          character: {
-            name: character.name,
-            base_stats: character.base_stats || {},
-            gear: (gearLinks || []).map(link => ({
-              equipped: !!link.equipped,
-              gear_slot: link.gear_slot || null,
-              data: link.gear || {}
-            }))
-          }
-        };
-
-        triggerJsonDownload(`${cleanFileName(character.name)}.json`, payload);
-      } catch (e) {
-        console.error("Export failed:", e);
-        alert(`Export failed: ${e.message}`);
-      }
-    }
-
-    async function importCharacterFromPayload(payload) {
-      const importedCharacter = payload?.character;
-      if (!importedCharacter || typeof importedCharacter !== "object") {
-        throw new Error("Invalid character JSON. Expected a character object.");
-      }
-
-      const importedName = String(importedCharacter.name || "").trim();
-      if (!importedName) {
-        throw new Error("Imported character must include a name.");
-      }
-
-      const baseStats = importedCharacter.base_stats && typeof importedCharacter.base_stats === "object"
-        ? importedCharacter.base_stats
-        : {};
-
-      const { data: insertedCharacter, error: characterError } = await sb
-        .from("webrunning_characters")
-        .insert({ user_id: currentUser.id, name: importedName, base_stats: baseStats })
-        .select("id")
-        .single();
-      if (characterError) throw characterError;
-
-      const importedGear = Array.isArray(importedCharacter.gear) ? importedCharacter.gear : [];
-      if (!importedGear.length) return;
-
-      const gearRows = importedGear
-        .map(entry => entry?.data)
-        .filter(entry => entry && typeof entry === "object")
-        .map(entry => {
-          const clone = { ...entry };
-          delete clone.id;
-          delete clone.created_at;
-          return clone;
-        });
-      if (!gearRows.length) return;
-
-      const { data: insertedGearRows, error: insertedGearError } = await sb
-        .from("webrunning_gear")
-        .insert(gearRows)
-        .select("id");
-      if (insertedGearError) throw insertedGearError;
-
-      const linkRows = insertedGearRows.map((row, index) => ({
-        character_id: insertedCharacter.id,
-        gear_id: row.id,
-        equipped: !!importedGear[index]?.equipped,
-        gear_slot: importedGear[index]?.gear_slot || null
-      }));
-
-      const { error: linkError } = await sb
-        .from("webrunning_character_gear")
-        .insert(linkRows);
-      if (linkError) throw linkError;
-    }
-
-    // ===== Unified Create / Rename modal =====
-    const modal = document.getElementById("charModal");
-    const modalTitle = document.getElementById("charModalTitle");
-    const nameInput = document.getElementById("charNameInput");
-    const modalMsg = document.getElementById("charModalMsg");
-    const saveBtn = document.getElementById("charSaveBtn");
-    const cancelBtn = document.getElementById("charCancelBtn");
-    const startPower = document.getElementById("startPower");
-    const startDefense = document.getElementById("startDefense");
-    const startSpeed = document.getElementById("startSpeed");
-    const startIntelligence = document.getElementById("startIntelligence");
-    const startPointsRemaining = document.getElementById("startPointsRemaining");
-    const startHeadItem = document.getElementById("startHeadItem");
-    const startTorsoItem = document.getElementById("startTorsoItem");
-    const startRingItem = document.getElementById("startRingItem");
-    const startLegsItem = document.getElementById("startLegsItem");
-    const startWeaponItem = document.getElementById("startWeaponItem");
-
-    let modalMode = null; // "create" | "rename"
-
-    const clothingGearTable = {
-      Head: ["Hat", "Helmet", "Headband", "Diadem", "Facemask", "Goggles", "Earrings or Other Piercings", "Glasses or Shades"],
-      Torso: ["Cloak + Tunic", "T-Shirt", "Longsleeve Shirt", "Hoodie", "Armor", "Shirt + Cape", "Dress", "Jumpsuit"],
-      Legs: ["Pants", "Shorts", "Greaves", "Baggy", "Skirt", "Kilt"],
-      Ring: ["Large Gem", "Small Band", "Thick Band", "Small Gem"]
-    };
-
-    const oneHandedWeaponOptions = [
-      "Dagger",
-      "Morningstar",
-      "Shortsword",
-      "Katar",
-      "Rapier",
-      "Scimitar",
-      "Katana",
-      "Machete",
-      "Handaxe",
-      "Flail",
-      "Pickaxe",
-      "Whip",
-      "Buckler Shield",
-      "Mace",
-      "Hammer",
-      "Club",
-      "Shillelagh",
-      "Gauntlet",
-      "Pistol",
-      "Crossbow",
-      "Boomerang",
-      "Snowball",
-      "Shuriken",
-      "Throwing Knife",
-      "Javelin",
-      "Rock",
-      "Uzi Gun",
-      "Coin",
-      "Sling",
-      "Atlatl",
-      "Wand",
-      "Orb",
-      "Totem",
-      "Crystal",
-      "Rod",
-      "Lantern",
-      "Ice Cube",
-      "Pineapple",
-      "Bomb",
-      "Lightning Javelin",
-      "Mirror",
-      "Bell"
-    ];
-
-    function populateSelectOptions(select, options) {
-      if (!select) return;
-      select.innerHTML = "";
-      options.forEach(option => {
-        const el = document.createElement("option");
-        el.value = option;
-        el.textContent = option;
-        select.appendChild(el);
-      });
-    }
-
-    function updateStartPointsRemaining() {
-      const allocated = (Number(startPower.value) || 0)
-        + (Number(startDefense.value) || 0)
-        + (Number(startSpeed.value) || 0)
-        + (Number(startIntelligence.value) || 0);
-      const remaining = Math.max(3 - allocated, 0);
-      if (startPointsRemaining) {
-        startPointsRemaining.textContent = String(remaining);
-      }
-    }
-
-    function populateStartingGearOptions() {
-      populateSelectOptions(startHeadItem, clothingGearTable.Head);
-      populateSelectOptions(startTorsoItem, clothingGearTable.Torso);
-      populateSelectOptions(startRingItem, clothingGearTable.Ring);
-      populateSelectOptions(startLegsItem, clothingGearTable.Legs);
-      populateSelectOptions(startWeaponItem, oneHandedWeaponOptions);
-    }
-
-    function toggleCreateOnlyFields(show) {
-      document.querySelectorAll(".modal-section").forEach(section => {
-        section.style.display = show ? "grid" : "none";
-      });
-    }
-
-    function openCreateModal() {
-      modalMode = "create";
-      modalTitle.textContent = "New Character";
-      nameInput.value = "";
-      modalMsg.textContent = "";
-      toggleCreateOnlyFields(true);
-      startPower.value = 0;
-      startDefense.value = 0;
-      startSpeed.value = 0;
-      startIntelligence.value = 0;
-      updateStartPointsRemaining();
-      populateStartingGearOptions();
-      modal.classList.remove("hidden");
-      nameInput.focus();
-    }
-
-    function openRenameModal(id) {
-      modalMode = "rename";
-      activeCharId = id;
-      const c = characters.find(x => x.id === id);
-      modalTitle.textContent = "Rename Character";
-      nameInput.value = c.name;
-      modalMsg.textContent = "";
-      toggleCreateOnlyFields(false);
-      modal.classList.remove("hidden");
-    }
-
-    function closeModal() {
-      modal.classList.add("hidden");
-    }
-
-    document.querySelector(".xr-modal-backdrop").onclick = closeModal;
-    cancelBtn.onclick = closeModal;
-    [startPower, startDefense, startSpeed, startIntelligence].forEach(input => {
-      input.addEventListener("input", updateStartPointsRemaining);
-    });
-
-    function formatSignedValue(value) {
-      return `${value >= 0 ? "+" : ""}${value}`;
-    }
-
-    function buildStat(name, value) {
-      return {
-        name,
-        label: name,
-        formula: formatSignedValue(value),
-        value
-      };
-    }
-
-    function formatStartingGearName({ rarity, color, color2, item_type, gear_type }) {
-      const colors = [color, color2].filter(Boolean).join("/");
-      const colorLabel = colors ? `${colors} ` : "";
-      return `${rarity} ${colorLabel}${item_type || gear_type}`.trim();
-    }
-
-    function buildStartingGearPayloads() {
-      const aesthetic = "Basic (just simple and plain)";
-      const basePayload = {
-        rarity: "Basic",
-        color2: null,
-        essence_value: 500,
-        credit_value: 50,
-        abilities: [],
-        stat_modifiers: [],
-        aesthetic
-      };
-      const payloads = [
-        {
-          ...basePayload,
-          gear_type: "Head",
-          color: "Gray",
-          item_type: startHeadItem.value,
-          stats: [buildStat("Perception", 1), buildStat("Hacking", 1)]
-        },
-        {
-          ...basePayload,
-          gear_type: "Torso",
-          color: "Blue",
-          item_type: startTorsoItem.value,
-          stats: [buildStat("Armor", 1), buildStat("Defense DC", 1)]
-        },
-        {
-          ...basePayload,
-          gear_type: "Ring",
-          color: "Neutral",
-          item_type: startRingItem.value,
-          stats: [buildStat("HP", 2), buildStat("Inventory Slots", 2)]
-        },
-        {
-          ...basePayload,
-          gear_type: "Legs",
-          color: "Green",
-          item_type: startLegsItem.value,
-          stats: [buildStat("Initiative", 1), buildStat("Movement Speed", 2)]
-        },
-        {
-          ...basePayload,
-          gear_type: "One-Handed Weapon",
-          color: "Neutral",
-          item_type: startWeaponItem.value,
-          stats: [buildStat("Attack Plus", 1), buildStat("Damage Plus", 1)]
+          cards.appendChild(card);
         }
+        updateSortButtons();
+      }
+
+      function cleanFileName(name) {
+        return (
+          String(name || "character")
+            .toLowerCase()
+            .replace(/[^a-z0-9_-]+/g, "-")
+            .replace(/^-+|-+$/g, "") || "character"
+        );
+      }
+
+      function triggerJsonDownload(filename, dataObj) {
+        const blob = new Blob([JSON.stringify(dataObj, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      async function exportCharacter(characterId) {
+        try {
+          if (!currentUser) currentUser = await requireUser();
+          const character = characters.find((c) => c.id === characterId);
+          if (!character) throw new Error("Character not found.");
+
+          const { data: gearLinks, error: gearError } = await sb
+            .from("webrunning_character_gear")
+            .select("equipped, gear_slot, gear:webrunning_gear(*)")
+            .eq("character_id", characterId);
+          if (gearError) throw gearError;
+
+          const payload = {
+            export_version: 1,
+            exported_at: new Date().toISOString(),
+            character: {
+              name: character.name,
+              base_stats: character.base_stats || {},
+              gear: (gearLinks || []).map((link) => ({
+                equipped: !!link.equipped,
+                gear_slot: link.gear_slot || null,
+                data: link.gear || {},
+              })),
+            },
+          };
+
+          triggerJsonDownload(`${cleanFileName(character.name)}.json`, payload);
+        } catch (e) {
+          console.error("Export failed:", e);
+          alert(`Export failed: ${e.message}`);
+        }
+      }
+
+      async function importCharacterFromPayload(payload) {
+        const importedCharacter = payload?.character;
+        if (!importedCharacter || typeof importedCharacter !== "object") {
+          throw new Error(
+            "Invalid character JSON. Expected a character object.",
+          );
+        }
+
+        const importedName = String(importedCharacter.name || "").trim();
+        if (!importedName) {
+          throw new Error("Imported character must include a name.");
+        }
+
+        const baseStats =
+          importedCharacter.base_stats &&
+          typeof importedCharacter.base_stats === "object"
+            ? importedCharacter.base_stats
+            : {};
+
+        const { data: insertedCharacter, error: characterError } = await sb
+          .from("webrunning_characters")
+          .insert({
+            user_id: currentUser.id,
+            name: importedName,
+            base_stats: baseStats,
+          })
+          .select("id")
+          .single();
+        if (characterError) throw characterError;
+
+        const importedGear = Array.isArray(importedCharacter.gear)
+          ? importedCharacter.gear
+          : [];
+        if (!importedGear.length) return;
+
+        const gearRows = importedGear
+          .map((entry) => entry?.data)
+          .filter((entry) => entry && typeof entry === "object")
+          .map((entry) => {
+            const clone = { ...entry };
+            delete clone.id;
+            delete clone.created_at;
+            return clone;
+          });
+        if (!gearRows.length) return;
+
+        const { data: insertedGearRows, error: insertedGearError } = await sb
+          .from("webrunning_gear")
+          .insert(gearRows)
+          .select("id");
+        if (insertedGearError) throw insertedGearError;
+
+        const linkRows = insertedGearRows.map((row, index) => ({
+          character_id: insertedCharacter.id,
+          gear_id: row.id,
+          equipped: !!importedGear[index]?.equipped,
+          gear_slot: importedGear[index]?.gear_slot || null,
+        }));
+
+        const { error: linkError } = await sb
+          .from("webrunning_character_gear")
+          .insert(linkRows);
+        if (linkError) throw linkError;
+      }
+
+      // ===== Unified Create / Rename modal =====
+      const modal = document.getElementById("charModal");
+      const modalTitle = document.getElementById("charModalTitle");
+      const nameInput = document.getElementById("charNameInput");
+      const modalMsg = document.getElementById("charModalMsg");
+      const saveBtn = document.getElementById("charSaveBtn");
+      const cancelBtn = document.getElementById("charCancelBtn");
+      const startPower = document.getElementById("startPower");
+      const startDefense = document.getElementById("startDefense");
+      const startSpeed = document.getElementById("startSpeed");
+      const startIntelligence = document.getElementById("startIntelligence");
+      const startPointsRemaining = document.getElementById(
+        "startPointsRemaining",
+      );
+      const startHeadItem = document.getElementById("startHeadItem");
+      const startTorsoItem = document.getElementById("startTorsoItem");
+      const startRingItem = document.getElementById("startRingItem");
+      const startLegsItem = document.getElementById("startLegsItem");
+      const startWeaponItem = document.getElementById("startWeaponItem");
+
+      let modalMode = null; // "create" | "rename"
+
+      const clothingGearTable = {
+        Head: [
+          "Hat",
+          "Helmet",
+          "Headband",
+          "Diadem",
+          "Facemask",
+          "Goggles",
+          "Earrings or Other Piercings",
+          "Glasses or Shades",
+        ],
+        Torso: [
+          "Cloak + Tunic",
+          "T-Shirt",
+          "Longsleeve Shirt",
+          "Hoodie",
+          "Armor",
+          "Shirt + Cape",
+          "Dress",
+          "Jumpsuit",
+        ],
+        Legs: ["Pants", "Shorts", "Greaves", "Baggy", "Skirt", "Kilt"],
+        Ring: ["Large Gem", "Small Band", "Thick Band", "Small Gem"],
+      };
+
+      const oneHandedWeaponOptions = [
+        "Dagger",
+        "Morningstar",
+        "Shortsword",
+        "Katar",
+        "Rapier",
+        "Scimitar",
+        "Katana",
+        "Machete",
+        "Handaxe",
+        "Flail",
+        "Pickaxe",
+        "Whip",
+        "Buckler Shield",
+        "Mace",
+        "Hammer",
+        "Club",
+        "Shillelagh",
+        "Gauntlet",
+        "Pistol",
+        "Crossbow",
+        "Boomerang",
+        "Snowball",
+        "Shuriken",
+        "Throwing Knife",
+        "Javelin",
+        "Rock",
+        "Uzi Gun",
+        "Coin",
+        "Sling",
+        "Atlatl",
+        "Wand",
+        "Orb",
+        "Totem",
+        "Crystal",
+        "Rod",
+        "Lantern",
+        "Ice Cube",
+        "Pineapple",
+        "Bomb",
+        "Lightning Javelin",
+        "Mirror",
+        "Bell",
       ];
-      payloads.forEach(payload => {
-        payload.name = formatStartingGearName(payload);
-      });
-      return payloads;
-    }
 
-    async function createStartingGear(characterId) {
-      const payloads = buildStartingGearPayloads();
-      const { data: gearRows, error: gearError } = await sb
-        .from("webrunning_gear")
-        .insert(payloads)
-        .select("id");
-      if (gearError) throw gearError;
-      if (!gearRows || !gearRows.length) return;
-      const slots = ["head", "torso", "ring_1", "legs", "weapon_1"];
-      const linkPayload = gearRows.map((row, index) => ({
-        character_id: characterId,
-        gear_id: row.id,
-        equipped: true,
-        gear_slot: slots[index]
-      }));
-      const { error: linkError } = await sb
-        .from("webrunning_character_gear")
-        .insert(linkPayload);
-      if (linkError) throw linkError;
-    }
-
-    // Save handler
-    saveBtn.onclick = async () => {
-      const name = nameInput.value.trim();
-
-      if (!name) {
-        modalMsg.textContent = "Name cannot be empty.";
-        return;
+      function populateSelectOptions(select, options) {
+        if (!select) return;
+        select.innerHTML = "";
+        options.forEach((option) => {
+          const el = document.createElement("option");
+          el.value = option;
+          el.textContent = option;
+          select.appendChild(el);
+        });
       }
 
-      if (!/^[a-zA-Z0-9 _-]+$/.test(name)) {
-        modalMsg.textContent = "Invalid characters.";
-        return;
+      function updateStartPointsRemaining() {
+        const allocated =
+          (Number(startPower.value) || 0) +
+          (Number(startDefense.value) || 0) +
+          (Number(startSpeed.value) || 0) +
+          (Number(startIntelligence.value) || 0);
+        const remaining = Math.max(3 - allocated, 0);
+        if (startPointsRemaining) {
+          startPointsRemaining.textContent = String(remaining);
+        }
       }
 
-      try {
-        if (modalMode === "create") {
-          const allocatedPoints = (Number(startPower.value) || 0)
-            + (Number(startDefense.value) || 0)
-            + (Number(startSpeed.value) || 0)
-            + (Number(startIntelligence.value) || 0);
-          if (allocatedPoints !== 3) {
-            modalMsg.textContent = "Allocate exactly 3 stat points before saving.";
-            return;
-          }
-          const { data, error } = await sb
-            .from("webrunning_characters")
-            .insert({
-              user_id: currentUser.id,
-              name,
+      function populateStartingGearOptions() {
+        populateSelectOptions(startHeadItem, clothingGearTable.Head);
+        populateSelectOptions(startTorsoItem, clothingGearTable.Torso);
+        populateSelectOptions(startRingItem, clothingGearTable.Ring);
+        populateSelectOptions(startLegsItem, clothingGearTable.Legs);
+        populateSelectOptions(startWeaponItem, oneHandedWeaponOptions);
+      }
+
+      function toggleCreateOnlyFields(show) {
+        document.querySelectorAll(".modal-section").forEach((section) => {
+          section.style.display = show ? "grid" : "none";
+        });
+      }
+
+      function openCreateModal() {
+        modalMode = "create";
+        modalTitle.textContent = "New Character";
+        nameInput.value = "";
+        modalMsg.textContent = "";
+        toggleCreateOnlyFields(true);
+        startPower.value = 0;
+        startDefense.value = 0;
+        startSpeed.value = 0;
+        startIntelligence.value = 0;
+        updateStartPointsRemaining();
+        populateStartingGearOptions();
+        modal.classList.remove("hidden");
+        nameInput.focus();
+      }
+
+      function openRenameModal(id) {
+        modalMode = "rename";
+        activeCharId = id;
+        const c = characters.find((x) => x.id === id);
+        modalTitle.textContent = "Rename Character";
+        nameInput.value = c.name;
+        modalMsg.textContent = "";
+        toggleCreateOnlyFields(false);
+        modal.classList.remove("hidden");
+      }
+
+      function closeModal() {
+        modal.classList.add("hidden");
+      }
+
+      document.querySelector(".xr-modal-backdrop").onclick = closeModal;
+      cancelBtn.onclick = closeModal;
+      [startPower, startDefense, startSpeed, startIntelligence].forEach(
+        (input) => {
+          input.addEventListener("input", updateStartPointsRemaining);
+        },
+      );
+
+      function formatSignedValue(value) {
+        return `${value >= 0 ? "+" : ""}${value}`;
+      }
+
+      function buildStat(name, value) {
+        return {
+          name,
+          label: name,
+          formula: formatSignedValue(value),
+          value,
+        };
+      }
+
+      function formatStartingGearName({
+        rarity,
+        color,
+        color2,
+        item_type,
+        gear_type,
+      }) {
+        const colors = [color, color2].filter(Boolean).join("/");
+        const colorLabel = colors ? `${colors} ` : "";
+        return `${rarity} ${colorLabel}${item_type || gear_type}`.trim();
+      }
+
+      function buildStartingGearPayloads() {
+        const aesthetic = "Basic (just simple and plain)";
+        const basePayload = {
+          rarity: "Basic",
+          color2: null,
+          essence_value: 500,
+          credit_value: 50,
+          abilities: [],
+          stat_modifiers: [],
+          aesthetic,
+        };
+        const payloads = [
+          {
+            ...basePayload,
+            gear_type: "Head",
+            color: "Gray",
+            item_type: startHeadItem.value,
+            stats: [buildStat("Perception", 1), buildStat("Hacking", 1)],
+          },
+          {
+            ...basePayload,
+            gear_type: "Torso",
+            color: "Blue",
+            item_type: startTorsoItem.value,
+            stats: [buildStat("Armor", 1), buildStat("Defense DC", 1)],
+          },
+          {
+            ...basePayload,
+            gear_type: "Ring",
+            color: "Neutral",
+            item_type: startRingItem.value,
+            stats: [buildStat("HP", 2), buildStat("Inventory Slots", 2)],
+          },
+          {
+            ...basePayload,
+            gear_type: "Legs",
+            color: "Green",
+            item_type: startLegsItem.value,
+            stats: [buildStat("Initiative", 1), buildStat("Movement Speed", 2)],
+          },
+          {
+            ...basePayload,
+            gear_type: "One-Handed Weapon",
+            color: "Neutral",
+            item_type: startWeaponItem.value,
+            stats: [buildStat("Attack Plus", 1), buildStat("Damage Plus", 1)],
+          },
+        ];
+        payloads.forEach((payload) => {
+          payload.name = formatStartingGearName(payload);
+        });
+        return payloads;
+      }
+
+      async function createStartingGear(characterId) {
+        const payloads = buildStartingGearPayloads();
+        const { data: gearRows, error: gearError } = await sb
+          .from("webrunning_gear")
+          .insert(payloads)
+          .select("id");
+        if (gearError) throw gearError;
+        if (!gearRows || !gearRows.length) return;
+        const slots = ["head", "torso", "ring_1", "legs", "weapon_1"];
+        const linkPayload = gearRows.map((row, index) => ({
+          character_id: characterId,
+          gear_id: row.id,
+          equipped: true,
+          gear_slot: slots[index],
+        }));
+        const { error: linkError } = await sb
+          .from("webrunning_character_gear")
+          .insert(linkPayload);
+        if (linkError) throw linkError;
+      }
+
+      // Save handler
+      saveBtn.onclick = async () => {
+        const name = nameInput.value.trim();
+
+        if (!name) {
+          modalMsg.textContent = "Name cannot be empty.";
+          return;
+        }
+
+        if (!/^[a-zA-Z0-9 _-]+$/.test(name)) {
+          modalMsg.textContent = "Invalid characters.";
+          return;
+        }
+
+        try {
+          if (modalMode === "create") {
+            const allocatedPoints =
+              (Number(startPower.value) || 0) +
+              (Number(startDefense.value) || 0) +
+              (Number(startSpeed.value) || 0) +
+              (Number(startIntelligence.value) || 0);
+            if (allocatedPoints !== 3) {
+              modalMsg.textContent =
+                "Allocate exactly 3 stat points before saving.";
+              return;
+            }
+            const { data, error } = await sb
+              .from("webrunning_characters")
+              .insert({
+                user_id: currentUser.id,
+                name,
                 base_stats: {
                   hp: 5,
                   current_hp: 5,
@@ -670,136 +839,136 @@
                   energy_red: 0,
                   energy_blue: 0,
                   energy_gray: 0,
-                  energy_green: 0
-                }
-            })
-            .select("id")
-            .maybeSingle();
+                  energy_green: 0,
+                },
+              })
+              .select("id")
+              .maybeSingle();
 
-          if (error) throw error;
-          if (data?.id) {
-            await createStartingGear(data.id);
+            if (error) throw error;
+            if (data?.id) {
+              await createStartingGear(data.id);
+            }
           }
-        }
 
-        if (modalMode === "rename") {
+          if (modalMode === "rename") {
+            const { error } = await sb
+              .from("webrunning_characters")
+              .update({ name })
+              .eq("id", activeCharId)
+              .eq("user_id", currentUser.id);
+
+            if (error) throw error;
+          }
+
+          closeModal();
+          loadCharacters();
+        } catch (e) {
+          console.error(e);
+          modalMsg.textContent = e.message;
+        }
+      };
+
+      const deleteModal = document.getElementById("deleteModal");
+      const deletePrompt = document.getElementById("deletePrompt");
+      const deleteModalMsg = document.getElementById("deleteModalMsg");
+      const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+      const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+      let deleteTargetId = null;
+
+      function openDeleteModal(id) {
+        deleteTargetId = id;
+        const c = characters.find((x) => x.id === id);
+        deletePrompt.textContent = `Delete ${c?.name ?? "this character"}? This cannot be undone.`;
+        deleteModalMsg.textContent = "";
+        deleteModal.classList.remove("hidden");
+      }
+
+      function closeDeleteModal() {
+        deleteModal.classList.add("hidden");
+        deleteTargetId = null;
+      }
+
+      deleteModal.querySelector(".xr-modal-backdrop").onclick =
+        closeDeleteModal;
+      cancelDeleteBtn.onclick = closeDeleteModal;
+
+      confirmDeleteBtn.onclick = async () => {
+        if (!deleteTargetId) return;
+
+        try {
+          if (!currentUser) {
+            currentUser = await requireUser();
+          }
+
           const { error } = await sb
             .from("webrunning_characters")
-            .update({ name })
-            .eq("id", activeCharId)
+            .delete()
+            .eq("id", deleteTargetId)
             .eq("user_id", currentUser.id);
 
           if (error) throw error;
+
+          characters = characters.filter((c) => c.id !== deleteTargetId);
+          render();
+          closeDeleteModal();
+        } catch (e) {
+          console.error(e);
+          deleteModalMsg.textContent = `Failed to delete: ${e.message}`;
         }
+      };
 
-        closeModal();
-        loadCharacters();
-      } catch (e) {
-        console.error(e);
-        modalMsg.textContent = e.message;
-      }
-    };
+      document.getElementById("newCharacterBtn").onclick = openCreateModal;
+      const importCharacterBtn = document.getElementById("importCharacterBtn");
+      const importCharacterInput = document.getElementById(
+        "importCharacterInput",
+      );
 
-    const deleteModal = document.getElementById("deleteModal");
-    const deletePrompt = document.getElementById("deletePrompt");
-    const deleteModalMsg = document.getElementById("deleteModalMsg");
-    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
-    const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
-    let deleteTargetId = null;
-
-    function openDeleteModal(id) {
-      deleteTargetId = id;
-      const c = characters.find(x => x.id === id);
-      deletePrompt.textContent = `Delete ${c?.name ?? "this character"}? This cannot be undone.`;
-      deleteModalMsg.textContent = "";
-      deleteModal.classList.remove("hidden");
-    }
-
-    function closeDeleteModal() {
-      deleteModal.classList.add("hidden");
-      deleteTargetId = null;
-    }
-
-    deleteModal.querySelector(".xr-modal-backdrop").onclick = closeDeleteModal;
-    cancelDeleteBtn.onclick = closeDeleteModal;
-
-    confirmDeleteBtn.onclick = async () => {
-      if (!deleteTargetId) return;
-
-      try {
+      importCharacterBtn.onclick = async () => {
         if (!currentUser) {
-          currentUser = await requireUser();
+          try {
+            currentUser = await requireUser();
+          } catch (_) {
+            return;
+          }
         }
+        importCharacterInput.value = "";
+        importCharacterInput.click();
+      };
 
-        const { error } = await sb
-          .from("webrunning_characters")
-          .delete()
-          .eq("id", deleteTargetId)
-          .eq("user_id", currentUser.id);
+      importCharacterInput.onchange = async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
 
-        if (error) throw error;
-
-        characters = characters.filter(c => c.id !== deleteTargetId);
-        render();
-        closeDeleteModal();
-      } catch (e) {
-        console.error(e);
-        deleteModalMsg.textContent = `Failed to delete: ${e.message}`;
-      }
-    };
-
-
-    document.getElementById("newCharacterBtn").onclick = openCreateModal;
-    const importCharacterBtn = document.getElementById("importCharacterBtn");
-    const importCharacterInput = document.getElementById("importCharacterInput");
-
-    importCharacterBtn.onclick = async () => {
-      if (!currentUser) {
         try {
-          currentUser = await requireUser();
-        } catch (_) {
-          return;
+          if (!currentUser) currentUser = await requireUser();
+          const text = await file.text();
+          const payload = JSON.parse(text);
+          await importCharacterFromPayload(payload);
+          await loadCharacters();
+        } catch (e) {
+          console.error("Import failed:", e);
+          alert(`Import failed: ${e.message}`);
         }
-      }
-      importCharacterInput.value = "";
-      importCharacterInput.click();
-    };
+      };
 
-    importCharacterInput.onchange = async (event) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      try {
-        if (!currentUser) currentUser = await requireUser();
-        const text = await file.text();
-        const payload = JSON.parse(text);
-        await importCharacterFromPayload(payload);
-        await loadCharacters();
-      } catch (e) {
-        console.error("Import failed:", e);
-        alert(`Import failed: ${e.message}`);
-      }
-    };
-
-
-    document.querySelectorAll(".table-sort").forEach(button => {
-      button.addEventListener("click", () => {
-        const key = button.dataset.sort;
-        if (sortState.key === key) {
-          sortState.direction = sortState.direction === "asc" ? "desc" : "asc";
-        } else {
-          sortState = { key, direction: "asc" };
-        }
-        render();
+      document.querySelectorAll(".table-sort").forEach((button) => {
+        button.addEventListener("click", () => {
+          const key = button.dataset.sort;
+          if (sortState.key === key) {
+            sortState.direction =
+              sortState.direction === "asc" ? "desc" : "asc";
+          } else {
+            sortState = { key, direction: "asc" };
+          }
+          render();
+        });
       });
-    });
-    updateSortButtons();
+      updateSortButtons();
 
-    window.addEventListener("DOMContentLoaded", () => {
-      loadCharacters();
-    });
-
-  </script>
-
-</body>
+      window.addEventListener("DOMContentLoaded", () => {
+        loadCharacters();
+      });
+    </script>
+  </body>
 </html>
