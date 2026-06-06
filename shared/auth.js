@@ -43,7 +43,7 @@ window.supabaseClient = window.supabase.createClient(
 
   function setText(message) {
     const text = document.getElementById("globalLoadingOverlayText");
-    if (text) text.textContent = message || "Loading";
+    if (text) text.textContent = message || "Loading...";
   }
 
   function showNow(message) {
@@ -70,7 +70,7 @@ window.supabaseClient = window.supabase.createClient(
     }
   }
 
-  function begin(message = "Loading") {
+  function begin(message = "Loading...") {
     if (window.__useLocalLoadingOverlay) return;
     pendingCount += 1;
     if (pendingCount > 1) return;
@@ -108,7 +108,9 @@ window.supabaseClient = window.supabase.createClient(
     }
   }
 
-  window.showGlobalLoading = function showGlobalLoading(message = "Loading") {
+  window.showGlobalLoading = function showGlobalLoading(
+    message = "Loading...",
+  ) {
     begin(message);
   };
 
@@ -126,7 +128,7 @@ window.supabaseClient = window.supabase.createClient(
   });
 
   window.withGlobalLoading = async function withGlobalLoading(message, task) {
-    begin(message || "Loading");
+    begin(message || "Loading...");
     try {
       return await task();
     } finally {
@@ -138,7 +140,7 @@ window.supabaseClient = window.supabase.createClient(
   window.fetch = async function xrLoadingFetch(input, init = undefined) {
     const skipLoading =
       window.__useLocalLoadingOverlay || !!(init && init.xrSkipGlobalLoading);
-    if (!skipLoading) begin("Loading");
+    if (!skipLoading) begin("Loading...");
     try {
       return await nativeFetch(input, init);
     } finally {
