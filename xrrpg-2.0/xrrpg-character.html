@@ -88,11 +88,11 @@
               <div class="xrrpg-stat-line xrrpg-stat-line--compact">
                 <label title="Maximum stamina available for class abilities."
                   >Stamina Max<input
-                    id="staminaUsedInput"
+                    id="staminaMaxInput"
                     type="number"
                     min="0"
                 /></label>
-                <label title="Current stamina consumed."
+                <label title="Current stamina."
                   >Stamina <input id="staminaTotalInput" type="number" min="0"
                 /></label>
               </div>
@@ -1151,7 +1151,7 @@
           "intuitionInput",
           "witInput",
           "staminaTotalInput",
-          "staminaUsedInput",
+          "staminaMaxInput",
           "hpInput",
           "currentHpInput",
           "powerfulItemLimitInput",
@@ -1375,11 +1375,9 @@
           mastery_die:
             document.getElementById("masteryDieInput").value.trim() || "d4",
           stamina_max:
-            Number(document.getElementById("staminaTotalInput").value) || 0,
+            Number(document.getElementById("staminaMaxInput").value) || 0,
           stamina_total:
             Number(document.getElementById("staminaTotalInput").value) || 0,
-          stamina:
-            Number(document.getElementById("staminaUsedInput").value) || 0,
           powerful_item_limit:
             Number(document.getElementById("powerfulItemLimitInput").value) ||
             0,
@@ -5229,11 +5227,11 @@
         document.getElementById("masteryDieInput").value =
           s.mastery_die || "d4";
         document.getElementById("staminaTotalInput").value =
-          s.stamina_max ??
           s.stamina_total ??
           10 + (s.intuition || 0) + (s.wit || 0);
-        document.getElementById("staminaUsedInput").value =
-          s.stamina ?? s.stamina_used ?? 0;
+        document.getElementById("staminaMaxInput").value =
+          s.stamina_max ??
+          10 + (s.intuition || 0) + (s.wit || 0);
         document.getElementById("powerfulItemLimitInput").value =
           s.powerful_item_limit || 0;
         document.getElementById("powerfulItemMaxInput").value =
@@ -6420,7 +6418,7 @@
             "intuitionInput",
             "witInput",
             "staminaTotalInput",
-            "staminaUsedInput",
+            "staminaMaxInput",
             "hpInput",
             "currentHpInput",
             "powerfulItemLimitInput",
