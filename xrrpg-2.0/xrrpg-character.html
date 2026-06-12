@@ -51,6 +51,9 @@
             <label>Name <input id="nameInput" maxlength="48" /></label>
             <label>Species <input id="speciesInput" maxlength="48" /></label>
             <label>Chroma <input id="chromaInput" maxlength="24" /></label>
+            <div style="display: flex; justify-content: flex-end;">
+              <button id="levelUpBtn" type="button">Level Up (Class/Tier)</button>
+            </div>
           </div>
         </div>
       </section>
@@ -117,9 +120,6 @@
                 >Wit <input id="witInput" type="number" min="0" max="5"
               /></label>
             </div>
-          </div>
-          <div class="xrrpg-row" style="margin-top: 0.8rem">
-            <button id="levelUpBtn" type="button">Level Up (Class/Tier)</button>
           </div>
           <div id="status" class="mono muted"></div>
         </div>
@@ -861,6 +861,11 @@
       const params = new URLSearchParams(window.location.search);
       const characterId = params.get("id");
       const fromCampaignId = params.get("from_campaign");
+      document.addEventListener("wheel", function (event) {
+        if (document.activeElement.type === "number") {
+          document.activeElement.blur();
+        }
+      });
       if (fromCampaignId) {
         const backBtn = document.querySelector(
           'a[href="/xrrpg-2.0/xrrpg-character-manager.html"]',
@@ -1111,7 +1116,7 @@
         if (text) text.textContent = message;
         if (overlay) overlay.classList.remove("hidden");
         if (_loadingSafetyTimer) clearTimeout(_loadingSafetyTimer);
-        _loadingSafetyTimer = setTimeout(() => clearLoading(), 15000);
+        _loadingSafetyTimer = setTimeout(() => clearLoading(), 30);
       }
 
       function clearLoading() {

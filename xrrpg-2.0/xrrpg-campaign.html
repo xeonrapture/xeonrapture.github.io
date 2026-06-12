@@ -110,13 +110,13 @@
       return user;
     }
 
-    function classProgressionSummary(progression) {
+    function classProgressionSummary(progression, baseStats) {
       if (!progression?.length) return '—';
       const highest = {};
       progression.forEach(p => {
         if (!highest[p.class] || p.tier > highest[p.class]) highest[p.class] = p.tier;
       });
-      return Object.entries(highest).map(([cls, tier]) => `${cls} T${tier}`).join(', ');
+      return Object.entries(highest).map(([cls, tier]) => `${(baseStats.species + " ") ?? ""}${cls} T${tier}`).join(', ');
     }
 
     function masteryDieForLevel(level) {
@@ -133,6 +133,7 @@
       const staminaMax = baseStats.stamina_max ?? baseStats.stamina_total ?? (10 + Number(baseStats.wit || 0) + Number(baseStats.intuition || 0));
       const hpMax = Number(baseStats.hp || 0);
       const hpCurrent = Number(baseStats.current_hp ?? hpMax);
+      const species = baseStats.species ?? "";
       return `Lv ${level} (${md}) • HP ${hpCurrent}/${hpMax} • Stam ${staminaMax} • Vig ${baseStats.vigor || 0} End ${baseStats.endurance || 0} Intu ${baseStats.intuition || 0} Wit ${baseStats.wit || 0}`;
     }
 
@@ -225,7 +226,7 @@
         if (!char) return '';
         const isOwn = a.user_id === currentUser.id;
         const link = `/xrrpg-2.0/xrrpg-character.html?id=${char.id}&from_campaign=${campaignId}${!isOwn ? '&readonly=1' : ''}`;
-        const classSummary = classProgressionSummary(char.class_progression);
+        const classSummary = classProgressionSummary(char.class_progression, char.base_stats);
         const stats = statBlurb(char.base_stats || {});
         const playerName = userById[a.user_id] || 'Unknown player';
         return `<div class="char-card">

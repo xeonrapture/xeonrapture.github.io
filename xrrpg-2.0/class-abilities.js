@@ -1209,7 +1209,7 @@ window.XRRPG_CLASS_DEFS = {
     maxLevel: 3,
     chromaRequired: null,
     droneEffectPool: [
-      { id: "beam", name: "Beam", tier: 1, description: "Can fire an ice ray that inflicts the Frozen debuff (grants +1d Mastery Die on next Action against them). Fire beam deals +1 damage but it has to cool down next turn." },
+      { id: "beam", name: "Beam", tier: 1, description: "Can fire an ice ray that inflicts the Frozen debuff (does 2 dmg and grants +1d Mastery Die on next Action against them). Fire beam deals 3 damage but it has to cool down next turn." },
       { id: "shielding", name: "Shielding", tier: 1, description: "Can hover around a person and give them a bonus to defense against beam damage (target ignores Minor Injuries from xenic sources, but the shield breaks if it takes Severe or higher)." },
       { id: "hacking", name: "Hacking", tier: 1, description: "Can do a check for it to hack into things remotely; it can also look things up on the web. Hacking can't be used to disrupt weapons or other combat machinery." },
       { id: "recon", name: "Recon", tier: 1, description: "The Recon Drone has a drone connection range of 500 ft and you can see through its eyes and hear through its ears." },
