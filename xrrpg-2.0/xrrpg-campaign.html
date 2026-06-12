@@ -116,7 +116,7 @@
       progression.forEach(p => {
         if (!highest[p.class] || p.tier > highest[p.class]) highest[p.class] = p.tier;
       });
-      return Object.entries(highest).map(([cls, tier]) => `${(baseStats.species + " ") ?? ""}${cls} T${tier}`).join(', ');
+      return `${(baseStats.species + " ") ?? ""}` + Object.entries(highest).map(([cls, tier]) => `${cls} T${tier}`).join(', ');
     }
 
     function masteryDieForLevel(level) {
