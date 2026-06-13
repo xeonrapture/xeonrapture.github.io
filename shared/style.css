@@ -3174,6 +3174,7 @@ select,
   cursor: grab;
   opacity: 0.35;
   user-select: none;
+  touch-action: none;
   color: var(--text);
   font-size: 1.1em;
   line-height: 1;
