@@ -3186,6 +3186,7 @@ select,
 .card.collapsible.drag-over-bottom { border-bottom: 3px solid var(--accent); }
 
 /* ── Two-column sheet layout ────────────────────────────────────────────── */
-.sheet.two-col { grid-template-columns: 1fr 1fr; }
+.sheet.two-col { grid-template-columns: 1fr 1fr; align-items: start; }
 .sheet.two-col > header { grid-column: 1 / -1; }
 .sheet.two-col > section:not(.collapsible) { grid-column: 1 / -1; }
+.sheet.two-col > #characterSection { grid-column: 1 / -1; }

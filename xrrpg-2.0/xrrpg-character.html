@@ -11,15 +11,7 @@
     <div id="nav"></div>
     <main class="wrap sheet">
       <header>
-        <div
-          style="
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            justify-content: space-between;
-            flex-wrap: wrap;
-          "
-        >
+        <div style="display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:0.5rem;">
           <a
             class="action-btn"
             href="/xrrpg-2.0/xrrpg-character-manager.html"
@@ -28,23 +20,23 @@
             <span aria-hidden="true">←</span>
             <span>Back to XRRPG Character Manager</span>
           </a>
-          <button
-            id="openHotkeysHelp"
-            class="action-btn"
-            type="button"
-            aria-label="Show hotkeys"
-            title="Show hotkeys"
-          >
-            <span>Hotkeys</span>
-          </button>
-          <button
-            id="twoColToggle"
-            class="action-btn"
-            type="button"
-            title="Switch to two columns"
-          >⊞ 2-col</button>
+          <h1 style="margin:0; text-align:center;">XRRPG Character Sheet</h1>
+          <div style="display:flex; gap:0.5rem;">
+            <button
+              id="openHotkeysHelp"
+              class="action-btn"
+              type="button"
+              aria-label="Show hotkeys"
+              title="Show hotkeys"
+            ><span>Hotkeys</span></button>
+            <button
+              id="twoColToggle"
+              class="action-btn"
+              type="button"
+              title="Switch to two columns"
+            >⊞ 2-col</button>
+          </div>
         </div>
-        <h1>XRRPG Character Sheet</h1>
         <div id="ownershipNotice" class="mono muted hidden"></div>
       </header>
 
@@ -6494,7 +6486,7 @@
       function buildUiPreferences() {
         const sheet = document.querySelector("main.sheet");
         const sectionOrder = Array.from(
-          sheet.querySelectorAll(":scope > section[id]")
+          sheet.querySelectorAll(":scope > section[id]:not(#characterSection)")
         ).map(s => s.id);
         return { sectionOrder, twoColMode: sheet.classList.contains("two-col") };
       }
@@ -6508,14 +6500,19 @@
           btn.title = isTwo ? "Switch to single column" : "Switch to two columns";
           btn.textContent = isTwo ? "⊟ 1-col" : "⊞ 2-col";
         }
-        if (!Array.isArray(prefs?.sectionOrder)) return;
-        const seen = new Set();
-        prefs.sectionOrder.forEach(id => {
-          if (seen.has(id)) return;
-          seen.add(id);
-          const el = document.getElementById(id);
-          if (el && el.parentElement === sheet) sheet.appendChild(el);
-        });
+        if (Array.isArray(prefs?.sectionOrder)) {
+          const seen = new Set();
+          prefs.sectionOrder.forEach(id => {
+            if (seen.has(id)) return;
+            seen.add(id);
+            const el = document.getElementById(id);
+            if (el && el.parentElement === sheet) sheet.appendChild(el);
+          });
+        }
+        // Always keep characterSection pinned first
+        const charSec = document.getElementById("characterSection");
+        const firstSec = sheet.querySelector(":scope > section");
+        if (charSec && firstSec && charSec !== firstSec) sheet.insertBefore(charSec, firstSec);
       }
 
       async function saveUiPreferences() {
@@ -6532,9 +6529,11 @@
         const sheet = document.querySelector("main.sheet");
         if (!sheet) return;
         let dragSrc = null;
+        let wheelHandler = null;
 
         function applyHandles() {
           sheet.querySelectorAll(":scope > section.card.collapsible").forEach(s => {
+            if (s.id === "characterSection") return;
             const header = s.querySelector(":scope > .collapsible-header");
             if (!header || header.querySelector(".drag-handle")) return;
             const handle = document.createElement("span");
@@ -6554,11 +6553,24 @@
           if (!dragSrc) return;
           e.dataTransfer.effectAllowed = "move";
           e.dataTransfer.setData("text/plain", dragSrc.id || "");
+          wheelHandler = ev => window.scrollBy(0, ev.deltaY);
+          document.addEventListener("wheel", wheelHandler, { passive: true });
           setTimeout(() => { if (dragSrc) dragSrc.classList.add("dragging"); }, 0);
         });
 
         sheet.addEventListener("dragover", e => {
-          const tgt = e.target.closest("section.card.collapsible");
+          let tgt = e.target.closest("section.card.collapsible");
+          if (!tgt || tgt.parentElement !== sheet) {
+            let minD = Infinity;
+            sheet.querySelectorAll(":scope > section.card.collapsible").forEach(s => {
+              if (s === dragSrc) return;
+              const r = s.getBoundingClientRect();
+              const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right);
+              const dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
+              const d = dx * dx + dy * dy;
+              if (d < minD) { minD = d; tgt = s; }
+            });
+          }
           if (!tgt || tgt === dragSrc || tgt.parentElement !== sheet) return;
           e.preventDefault();
           e.dataTransfer.dropEffect = "move";
@@ -6578,8 +6590,11 @@
 
         sheet.addEventListener("drop", e => {
           e.preventDefault();
-          const tgt = e.target.closest("section.card.collapsible");
-          if (!tgt || tgt === dragSrc || !dragSrc || tgt.parentElement !== sheet) return;
+          let tgt = e.target.closest("section.card.collapsible");
+          if (!tgt || tgt.parentElement !== sheet) {
+            tgt = sheet.querySelector(".drag-over-top, .drag-over-bottom");
+          }
+          if (!tgt || tgt === dragSrc || !dragSrc) return;
           const before = tgt.classList.contains("drag-over-top");
           tgt.classList.remove("drag-over-top", "drag-over-bottom");
           sheet.insertBefore(dragSrc, before ? tgt : tgt.nextSibling);
@@ -6591,6 +6606,7 @@
           sheet.querySelectorAll(".drag-over-top, .drag-over-bottom").forEach(el => {
             el.classList.remove("drag-over-top", "drag-over-bottom");
           });
+          if (wheelHandler) { document.removeEventListener("wheel", wheelHandler); wheelHandler = null; }
           dragSrc = null;
         });
       }
