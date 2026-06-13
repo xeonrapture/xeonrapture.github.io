@@ -3163,3 +3163,29 @@ select,
   font-size: 0.85em;
   opacity: 0.75;
 }
+
+/* ── Drag-to-reorder sections ──────────────────────────────────────────── */
+.drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  flex-shrink: 0;
+  cursor: grab;
+  opacity: 0.35;
+  user-select: none;
+  color: var(--text);
+  font-size: 1.1em;
+  line-height: 1;
+}
+.drag-handle:hover { opacity: 0.75; }
+.drag-handle:active { cursor: grabbing; }
+.drag-handle::before { content: "⠿"; }
+.card.collapsible.dragging { opacity: 0.35; }
+.card.collapsible.drag-over-top { border-top: 3px solid var(--accent); }
+.card.collapsible.drag-over-bottom { border-bottom: 3px solid var(--accent); }
+
+/* ── Two-column sheet layout ────────────────────────────────────────────── */
+.sheet.two-col { grid-template-columns: 1fr 1fr; }
+.sheet.two-col > header { grid-column: 1 / -1; }
+.sheet.two-col > section:not(.collapsible) { grid-column: 1 / -1; }
