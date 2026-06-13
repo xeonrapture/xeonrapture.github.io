@@ -11,7 +11,7 @@
     <div id="nav"></div>
     <main class="wrap sheet">
       <header>
-        <div style="display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:0.5rem;">
+        <div style="display:flex; align-items:center; gap:0.5rem; justify-content:space-between; flex-wrap:wrap;">
           <a
             class="action-btn"
             href="/xrrpg-2.0/xrrpg-character-manager.html"
@@ -20,7 +20,6 @@
             <span aria-hidden="true">←</span>
             <span>Back to XRRPG Character Manager</span>
           </a>
-          <h1 style="margin:0; text-align:center;">XRRPG Character Sheet</h1>
           <div style="display:flex; gap:0.5rem;">
             <button
               id="openHotkeysHelp"
@@ -37,6 +36,7 @@
             >⊞ 2-col</button>
           </div>
         </div>
+        <h1>XRRPG Character Sheet</h1>
         <div id="ownershipNotice" class="mono muted hidden"></div>
       </header>
 
@@ -6528,8 +6528,7 @@
       function initSectionDrag() {
         const sheet = document.querySelector("main.sheet");
         if (!sheet) return;
-        let dragSrc = null;
-        let wheelHandler = null;
+        let dragSrc = null, lastTgt = null, startX = 0, startY = 0, dragActive = false;
 
         function applyHandles() {
           sheet.querySelectorAll(":scope > section.card.collapsible").forEach(s => {
@@ -6538,7 +6537,6 @@
             if (!header || header.querySelector(".drag-handle")) return;
             const handle = document.createElement("span");
             handle.className = "drag-handle";
-            handle.draggable = true;
             handle.setAttribute("aria-hidden", "true");
             handle.title = "Drag to reorder section";
             header.prepend(handle);
@@ -6547,23 +6545,29 @@
         applyHandles();
         new MutationObserver(applyHandles).observe(sheet, { childList: true });
 
-        sheet.addEventListener("dragstart", e => {
-          if (!e.target.closest(".drag-handle")) return;
-          dragSrc = e.target.closest("section.card.collapsible");
-          if (!dragSrc) return;
-          e.dataTransfer.effectAllowed = "move";
-          e.dataTransfer.setData("text/plain", dragSrc.id || "");
-          wheelHandler = ev => window.scrollBy(0, ev.deltaY);
-          document.addEventListener("wheel", wheelHandler, { passive: true });
-          setTimeout(() => { if (dragSrc) dragSrc.classList.add("dragging"); }, 0);
-        });
+        function clearIndicators() {
+          sheet.querySelectorAll(".drag-over-top, .drag-over-bottom").forEach(el => {
+            el.classList.remove("drag-over-top", "drag-over-bottom");
+          });
+          lastTgt = null;
+        }
 
-        sheet.addEventListener("dragover", e => {
-          let tgt = e.target.closest("section.card.collapsible");
-          if (!tgt || tgt.parentElement !== sheet) {
+        function onMove(e) {
+          if (!dragSrc) return;
+          if (!dragActive) {
+            if (Math.hypot(e.clientX - startX, e.clientY - startY) < 5) return;
+            dragActive = true;
+            dragSrc.classList.add("dragging");
+          }
+          dragSrc.style.pointerEvents = "none";
+          const el = document.elementFromPoint(e.clientX, e.clientY);
+          dragSrc.style.pointerEvents = "";
+          let tgt = el?.closest("section.card.collapsible");
+          if (tgt?.id === "characterSection") tgt = null;
+          if (!tgt || tgt === dragSrc || tgt.parentElement !== sheet) {
             let minD = Infinity;
             sheet.querySelectorAll(":scope > section.card.collapsible").forEach(s => {
-              if (s === dragSrc) return;
+              if (s === dragSrc || s.id === "characterSection") return;
               const r = s.getBoundingClientRect();
               const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right);
               const dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
@@ -6571,43 +6575,45 @@
               if (d < minD) { minD = d; tgt = s; }
             });
           }
-          if (!tgt || tgt === dragSrc || tgt.parentElement !== sheet) return;
-          e.preventDefault();
-          e.dataTransfer.dropEffect = "move";
-          sheet.querySelectorAll(".drag-over-top, .drag-over-bottom").forEach(el => {
-            el.classList.remove("drag-over-top", "drag-over-bottom");
-          });
-          const rect = tgt.getBoundingClientRect();
-          tgt.classList.add(e.clientY < rect.top + rect.height / 2 ? "drag-over-top" : "drag-over-bottom");
-        });
-
-        sheet.addEventListener("dragleave", e => {
-          const tgt = e.target.closest("section.card.collapsible");
-          if (tgt && !tgt.contains(e.relatedTarget)) {
-            tgt.classList.remove("drag-over-top", "drag-over-bottom");
-          }
-        });
-
-        sheet.addEventListener("drop", e => {
-          e.preventDefault();
-          let tgt = e.target.closest("section.card.collapsible");
-          if (!tgt || tgt.parentElement !== sheet) {
-            tgt = sheet.querySelector(".drag-over-top, .drag-over-bottom");
-          }
-          if (!tgt || tgt === dragSrc || !dragSrc) return;
-          const before = tgt.classList.contains("drag-over-top");
+          if (lastTgt && lastTgt !== tgt) clearIndicators();
+          if (!tgt || tgt === dragSrc) return;
+          const sections = Array.from(sheet.querySelectorAll(":scope > section.card.collapsible"));
+          const before = sections.indexOf(dragSrc) > sections.indexOf(tgt);
           tgt.classList.remove("drag-over-top", "drag-over-bottom");
-          sheet.insertBefore(dragSrc, before ? tgt : tgt.nextSibling);
-          saveUiPreferences();
-        });
+          tgt.classList.add(before ? "drag-over-top" : "drag-over-bottom");
+          lastTgt = tgt;
+        }
 
-        sheet.addEventListener("dragend", () => {
+        function onUp() {
+          if (dragActive) {
+            const tgt = sheet.querySelector(".drag-over-top, .drag-over-bottom");
+            if (tgt && tgt !== dragSrc && dragSrc) {
+              const before = tgt.classList.contains("drag-over-top");
+              sheet.insertBefore(dragSrc, before ? tgt : tgt.nextSibling);
+              saveUiPreferences();
+            }
+          }
+          cleanup();
+        }
+
+        function cleanup() {
           if (dragSrc) dragSrc.classList.remove("dragging");
-          sheet.querySelectorAll(".drag-over-top, .drag-over-bottom").forEach(el => {
-            el.classList.remove("drag-over-top", "drag-over-bottom");
-          });
-          if (wheelHandler) { document.removeEventListener("wheel", wheelHandler); wheelHandler = null; }
-          dragSrc = null;
+          clearIndicators();
+          dragSrc = null; dragActive = false;
+          document.removeEventListener("pointermove", onMove);
+          document.removeEventListener("pointerup", onUp);
+          document.removeEventListener("pointercancel", cleanup);
+        }
+
+        sheet.addEventListener("pointerdown", e => {
+          if (!e.target.closest(".drag-handle")) return;
+          dragSrc = e.target.closest("section.card.collapsible");
+          if (!dragSrc) return;
+          e.preventDefault();
+          startX = e.clientX; startY = e.clientY; dragActive = false;
+          document.addEventListener("pointermove", onMove);
+          document.addEventListener("pointerup", onUp);
+          document.addEventListener("pointercancel", cleanup);
         });
       }
 
