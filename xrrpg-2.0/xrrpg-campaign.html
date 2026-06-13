@@ -284,7 +284,9 @@
         const playerName = userById[a.user_id] || 'Unknown player';
         if (!char) {
           return `<div class="char-card">
-            <div class="char-card-name muted">Character assigned</div>
+            <div class="char-card-name">Unnamed Character</div>
+            <div class="char-class-line">—</div>
+            <div class="char-stat-line">—</div>
             <div class="char-stat-line" style="margin-top:0.2rem;">Player: ${playerName}</div>
           </div>`;
         }
