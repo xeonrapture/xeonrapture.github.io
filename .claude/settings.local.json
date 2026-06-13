@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:xeonrapture.com)",
-      "Bash(ls empty:*)"
+      "Bash(ls empty:*)",
+      "Bash(Get-ChildItem -Path \"D:\\\\Projects\\\\xeonrapture.github.io\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(dir \"D:\\\\Projects\\\\xeonrapture.github.io\" -Recurse -Directory)",
+      "Bash(grep -E \"\\\\.\\(html|js\\)$\")"
     ]
   }
 }

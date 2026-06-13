@@ -212,6 +212,38 @@
 
         <!-- class and class-choices steps removed; class is picked at first level-up -->
 
+        <div data-step="3" class="wizard-step hidden">
+          <div class="xrrpg-row">
+            <strong>Skills</strong>
+            <a
+              class="xrrpg-help-link"
+              href="https://xeonrapture.com/xr/XRRPG+2.0/XRRPG+2.0+Core+Rules#Skills"
+              target="_blank"
+              rel="noopener noreferrer"
+              >rules</a
+            >
+          </div>
+          <p class="muted xrrpg-subtitle">Pick two skills you're good at. General skills get +2, specific skills get +3.</p>
+          <div class="xrrpg-inline-fields">
+            <label>Skill 1 name <input id="skill1Name" maxlength="48" /></label>
+            <label>Skill 1 type
+              <select id="skill1Bonus">
+                <option value="2">+2 (General)</option>
+                <option value="3">+3 (Specific)</option>
+              </select>
+            </label>
+          </div>
+          <div class="xrrpg-inline-fields" style="margin-top:0.5rem;">
+            <label>Skill 2 name <input id="skill2Name" maxlength="48" /></label>
+            <label>Skill 2 type
+              <select id="skill2Bonus">
+                <option value="2">+2 (General)</option>
+                <option value="3">+3 (Specific)</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
         <div class="xr-modal-actions">
           <button id="prevStepBtn" type="button">Back</button>
           <button id="nextStepBtn" type="button">Next</button>
@@ -1149,7 +1181,7 @@
       }
 
       let wizardStep = 1;
-      const WIZARD_MAX_STEPS = 2;
+      const WIZARD_MAX_STEPS = 3;
       const modal = document.getElementById("charModal");
       const wizardStepLabel = document.getElementById("wizardStepLabel");
       function setStep(step) {
@@ -1228,10 +1260,16 @@
       document.getElementById("saveBtn").onclick = async () => {
         const name = document.getElementById("nameInput").value.trim();
         const species = document.getElementById("speciesInput").value.trim();
+        const skill1Name = document.getElementById("skill1Name").value.trim();
+        const skill2Name = document.getElementById("skill2Name").value.trim();
         const msg = document.getElementById("modalMsg");
         msg.textContent = "";
         if (!name) {
           msg.textContent = "Name required.";
+          return;
+        }
+        if (!skill1Name || !skill2Name) {
+          msg.textContent = "Both skills are required.";
           return;
         }
         try {
@@ -1242,6 +1280,10 @@
           }
           currentUser = currentUser || (await requireUser());
           const base_stats = buildStatsFromWizard();
+          const skills = [
+            { name: skill1Name, bonus: parseInt(document.getElementById("skill1Bonus").value) },
+            { name: skill2Name, bonus: parseInt(document.getElementById("skill2Bonus").value) },
+          ];
 
           const { data, error } = await sb
             .from("xrrpg_characters")
@@ -1255,7 +1297,7 @@
                 class_ability_choices: {},
               },
               class_progression: [],
-              skills: [],
+              skills,
             })
             .select("id")
             .single();

@@ -2281,6 +2281,18 @@
       </div>`;
       }
 
+      const CLASS_ABILITY_STATS = {
+        "Warrior": "Vig", "Tank": "End", "Druid": "Int", "Mentalist": "Wit",
+        "Cleric": "Any", "Warlock": "Any", "Sorcerer": "Any",
+        "Demititan": "Vig, End, or Int",
+        "Physic": "Wit", "Possessor": "Wit or End", "Bard": "Int or Vig",
+        "Enchanter": "Vig or Int", "Alchemist": "Wit or Int",
+        "Gunslinger": "Wit or Int", "Swordmaster": "Any", "Brawler": "Vig or End",
+        "Emitter Specialist": "Wit or Int", "Dronemaster": "Wit or Int",
+        "Explosives Expert": "Any",
+        "Mystic": "Any", "Summoner": "Any", "Elementalist": "Vig or End"
+      };
+
       function renderClassSubsection(cls, classLevel, choices) {
         const def = getClassDef(cls);
         if (!def)
@@ -2294,8 +2306,12 @@
         html += `</div>`;
         html += `<div class="collapsible-body">`;
 
-        // ── HEADER INFO BUBBLE (merged: deity, range, substance note) ─
+        // ── HEADER INFO BUBBLE (merged: stat, deity, range, substance note) ─
         const headerParts = [];
+        const abilityStat = CLASS_ABILITY_STATS[cls];
+        if (abilityStat) {
+          headerParts.push(`<div class="xrrpg-ability-row"><span class="muted">Ability stat: <strong>${abilityStat}</strong></span></div>`);
+        }
         if (choices.deity) {
           const deityAbility = def.deityAbilities?.[choices.deity];
           let part = `<div class="xrrpg-ability-row"><strong>Deity:</strong> ${choices.deity}</div>`;

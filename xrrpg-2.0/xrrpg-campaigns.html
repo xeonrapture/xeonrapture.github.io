@@ -48,6 +48,32 @@
     </div>
   </main>
 
+  <div id="renameModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Rename Campaign</h2>
+      <label>New name <input id="renameInput" type="text" maxlength="80" /></label>
+      <div class="xr-modal-actions">
+        <button id="cancelRenameBtn" type="button">Cancel</button>
+        <button id="confirmRenameBtn" type="button">Save</button>
+      </div>
+      <div id="renameStatus" class="mono muted" style="margin-top:0.5rem;"></div>
+    </div>
+  </div>
+
+  <div id="deleteCampaignModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop"></div>
+    <div class="xr-modal-card">
+      <h2>Delete Campaign</h2>
+      <p id="deleteCampaignMsg"></p>
+      <div class="xr-modal-actions">
+        <button id="cancelDeleteCampaignBtn" type="button">Cancel</button>
+        <button id="confirmDeleteCampaignBtn" type="button" style="background:var(--color-danger,#c0392b);color:#fff;border:none;padding:0.4rem 1rem;border-radius:4px;cursor:pointer;">Delete</button>
+      </div>
+      <div id="deleteStatus" class="mono muted" style="margin-top:0.5rem;"></div>
+    </div>
+  </div>
+
   <script>
     const sb = window.supabaseClient;
 
@@ -87,7 +113,10 @@
         const role = m.role === 'gm' ? 'GM' : 'Player';
         const system = (m.campaigns?.system || 'xrrpg').toLowerCase();
         const viewHref = system === 'webrunning' ? `/webrunning-2.0/webrunning-campaign.html?id=${m.campaign_id}` : `/xrrpg-2.0/xrrpg-campaign.html?id=${m.campaign_id}`;
-        return `<tr><td><strong>${m.campaigns?.name || 'Unnamed Campaign'}</strong></td><td>${system}</td><td>${role}</td><td><a class="action-btn" href="${viewHref}">View</a></td></tr>`;
+        const gmBtns = m.role === 'gm' ? `
+          <button class="action-btn" type="button" onclick="openRename('${m.campaign_id}')">Rename</button>
+          <button class="action-btn" type="button" style="color:var(--color-danger,#c0392b)" onclick="openDelete('${m.campaign_id}')">Delete</button>` : '';
+        return `<tr><td><strong>${m.campaigns?.name || 'Unnamed Campaign'}</strong></td><td>${system}</td><td>${role}</td><td style="display:flex;gap:0.4rem;flex-wrap:wrap;"><a class="action-btn" href="${viewHref}">View</a>${gmBtns}</td></tr>`;
       }).join('')}</tbody></table>`;
     }
 
@@ -120,6 +149,68 @@
 
       document.getElementById("newCampaignName").value = "";
       status.textContent = `Campaign "${insertedCampaign.name}" created.`;
+      await loadCampaigns();
+    };
+
+    let pendingRenameId = null;
+    let pendingDeleteId = null;
+
+    function openRename(id) {
+      const m = memberships.find(x => x.campaign_id === id);
+      pendingRenameId = id;
+      document.getElementById("renameInput").value = m?.campaigns?.name || '';
+      document.getElementById("renameStatus").textContent = '';
+      document.getElementById("renameModal").classList.remove("hidden");
+    }
+
+    function openDelete(id) {
+      const m = memberships.find(x => x.campaign_id === id);
+      pendingDeleteId = id;
+      document.getElementById("deleteCampaignMsg").textContent = `Delete "${m?.campaigns?.name || 'this campaign'}"? This cannot be undone.`;
+      document.getElementById("deleteStatus").textContent = '';
+      document.getElementById("deleteCampaignModal").classList.remove("hidden");
+    }
+
+    document.getElementById("cancelRenameBtn").onclick = () => {
+      document.getElementById("renameModal").classList.add("hidden");
+      pendingRenameId = null;
+    };
+    document.getElementById("renameModal").querySelector(".xr-modal-backdrop").onclick = () => {
+      document.getElementById("renameModal").classList.add("hidden");
+      pendingRenameId = null;
+    };
+    document.getElementById("confirmRenameBtn").onclick = async () => {
+      const newName = document.getElementById("renameInput").value.trim();
+      const status = document.getElementById("renameStatus");
+      if (!newName) { status.textContent = "Enter a name."; return; }
+      const { error } = await sb.from("campaigns").update({ name: newName })
+        .eq("id", pendingRenameId)
+        .eq("gm_user_id", currentUser.id);
+      if (error) { status.textContent = `Failed: ${error.message}`; return; }
+      document.getElementById("renameModal").classList.add("hidden");
+      pendingRenameId = null;
+      await loadCampaigns();
+    };
+
+    document.getElementById("cancelDeleteCampaignBtn").onclick = () => {
+      document.getElementById("deleteCampaignModal").classList.add("hidden");
+      pendingDeleteId = null;
+    };
+    document.getElementById("deleteCampaignModal").querySelector(".xr-modal-backdrop").onclick = () => {
+      document.getElementById("deleteCampaignModal").classList.add("hidden");
+      pendingDeleteId = null;
+    };
+    document.getElementById("confirmDeleteCampaignBtn").onclick = async () => {
+      const status = document.getElementById("deleteStatus");
+      status.textContent = "Deleting…";
+      await sb.from("campaign_character_assignments").delete().eq("campaign_id", pendingDeleteId);
+      await sb.from("campaign_members").delete().eq("campaign_id", pendingDeleteId);
+      const { error } = await sb.from("campaigns").delete()
+        .eq("id", pendingDeleteId)
+        .eq("gm_user_id", currentUser.id);
+      if (error) { status.textContent = `Failed: ${error.message}`; return; }
+      document.getElementById("deleteCampaignModal").classList.add("hidden");
+      pendingDeleteId = null;
       await loadCampaigns();
     };
 

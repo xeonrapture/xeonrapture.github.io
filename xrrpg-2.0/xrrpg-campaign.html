@@ -71,6 +71,14 @@
       <div id="inviteStatus" class="mono muted wr-mt-0-5"></div>
     </section>
 
+    <section id="gmManageSection" class="card wr-mt-1 hidden">
+      <h2>Campaign Settings</h2>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button type="button" onclick="document.getElementById('renameModal').classList.remove('hidden')">Rename Campaign</button>
+        <button type="button" style="color:var(--color-danger,#c0392b)" onclick="document.getElementById('deleteCampaignModal').classList.remove('hidden');document.getElementById('deleteCampaignMsg').textContent='Delete this campaign? This cannot be undone.';">Delete Campaign</button>
+      </div>
+    </section>
+
     <section id="playerSection" class="card wr-mt-1 hidden">
       <h2>Your Character for this Campaign</h2>
       <label>Select your XRRPG character
@@ -90,6 +98,32 @@
       <div id="characterGrid" class="campaign-character-grid">Loading characters…</div>
     </section>
   </main>
+
+  <div id="renameModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop" onclick="document.getElementById('renameModal').classList.add('hidden')"></div>
+    <div class="xr-modal-card">
+      <h2>Rename Campaign</h2>
+      <label>New name <input id="renameInput" type="text" maxlength="80" /></label>
+      <div class="xr-modal-actions">
+        <button type="button" onclick="document.getElementById('renameModal').classList.add('hidden')">Cancel</button>
+        <button id="confirmRenameBtn" type="button">Save</button>
+      </div>
+      <div id="renameStatus" class="mono muted" style="margin-top:0.5rem;"></div>
+    </div>
+  </div>
+
+  <div id="deleteCampaignModal" class="xr-modal hidden">
+    <div class="xr-modal-backdrop" onclick="document.getElementById('deleteCampaignModal').classList.add('hidden')"></div>
+    <div class="xr-modal-card">
+      <h2>Delete Campaign</h2>
+      <p id="deleteCampaignMsg"></p>
+      <div class="xr-modal-actions">
+        <button type="button" onclick="document.getElementById('deleteCampaignModal').classList.add('hidden')">Cancel</button>
+        <button id="confirmDeleteCampaignBtn" type="button" style="background:var(--color-danger,#c0392b);color:#fff;border:none;padding:0.4rem 1rem;border-radius:4px;cursor:pointer;">Delete</button>
+      </div>
+      <div id="deleteStatus" class="mono muted" style="margin-top:0.5rem;"></div>
+    </div>
+  </div>
 
   <script>
     const sb = window.supabaseClient;
@@ -116,10 +150,10 @@
       progression.forEach(p => {
         if (!highest[p.class] || p.tier > highest[p.class]) highest[p.class] = p.tier;
       });
-      return Object.entries(highest).map(([cls, tier]) => `${cls} T${tier}`).join(', ');
-    }
-
-    //`${(baseStats.species + " ") ?? ""}` + 
+      const classPart = Object.entries(highest).map(([cls, tier]) => `${cls} T${tier}`).join(', ');
+      const species = baseStats?.species;
+      return species ? `${species} ${classPart}` : classPart;
+    } + 
 
     function masteryDieForLevel(level) {
       if (level >= 9) return 'd12';
@@ -166,6 +200,7 @@
       const isPlayer = myRole === 'player';
 
       document.getElementById("gmSection").classList.toggle("hidden", !isGm);
+      document.getElementById("gmManageSection").classList.toggle("hidden", !isGm);
       document.getElementById("playerSection").classList.toggle("hidden", !isPlayer);
 
       if (isGm) await loadFriendOptions();
@@ -225,12 +260,17 @@
 
       grid.innerHTML = assignments.map(a => {
         const char = charById[a.xrrpg_character_id];
-        if (!char) return '';
+        const playerName = userById[a.user_id] || 'Unknown player';
+        if (!char) {
+          return `<div class="char-card">
+            <div class="char-card-name muted">Character assigned</div>
+            <div class="char-stat-line" style="margin-top:0.2rem;">Player: ${playerName}</div>
+          </div>`;
+        }
         const isOwn = a.user_id === currentUser.id;
         const link = `/xrrpg-2.0/xrrpg-character.html?id=${char.id}&from_campaign=${campaignId}${!isOwn ? '&readonly=1' : ''}`;
         const classSummary = classProgressionSummary(char.class_progression, char.base_stats);
         const stats = statBlurb(char.base_stats || {});
-        const playerName = userById[a.user_id] || 'Unknown player';
         return `<div class="char-card">
           <a class="char-card-name" href="${link}">${char.name || 'Unnamed Character'}</a>
           <div class="char-class-line">${classSummary}</div>
@@ -342,6 +382,29 @@
       const char = playerCharacters.find(c => c.id === selectedCharId);
       status.textContent = `Selected ${char?.name || "your character"} for this campaign.`;
       await loadCharacters();
+    };
+
+    document.getElementById("confirmRenameBtn").onclick = async () => {
+      const newName = document.getElementById("renameInput").value.trim();
+      const status = document.getElementById("renameStatus");
+      if (!newName) { status.textContent = "Enter a name."; return; }
+      const { error } = await sb.from("campaigns").update({ name: newName })
+        .eq("id", campaignId).eq("gm_user_id", currentUser.id);
+      if (error) { status.textContent = `Failed: ${error.message}`; return; }
+      document.getElementById("campaignTitle").textContent = newName;
+      document.title = `${newName} — XRRPG Campaign`;
+      document.getElementById("renameModal").classList.add("hidden");
+    };
+
+    document.getElementById("confirmDeleteCampaignBtn").onclick = async () => {
+      const status = document.getElementById("deleteStatus");
+      status.textContent = "Deleting…";
+      await sb.from("campaign_character_assignments").delete().eq("campaign_id", campaignId);
+      await sb.from("campaign_members").delete().eq("campaign_id", campaignId);
+      const { error } = await sb.from("campaigns").delete()
+        .eq("id", campaignId).eq("gm_user_id", currentUser.id);
+      if (error) { status.textContent = `Failed: ${error.message}`; return; }
+      window.location.href = "/xrrpg-2.0/xrrpg-campaigns.html";
     };
 
     loadPage();
