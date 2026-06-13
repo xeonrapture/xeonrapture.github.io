@@ -85,7 +85,7 @@
             <option value="">-- Select friend --</option>
           </select>
         </label>
-        <button id="invitePlayerBtn" type="button">Send Invite</button>
+        <button id="invitePlayerBtn" type="button" style="margin: 5px">Send Invite</button>
         <div id="inviteStatus" class="mono muted wr-mt-0-5"></div>
       </section>
 
@@ -155,6 +155,7 @@
 
       let currentUser = null;
       let myRole = null;
+      let campaignGmId = null;
       let playerCharacters = [];
       let friends = [];
 
@@ -213,6 +214,7 @@
 
         document.title = `${campaign.name} — Webrunning Campaign`;
         document.getElementById("campaignTitle").textContent = campaign.name;
+        campaignGmId = campaign.gm_user_id;
         myRole = membership?.role || null;
         const isGm = myRole === "gm";
         const isPlayer = myRole === "player";
@@ -242,7 +244,26 @@
           return;
         }
 
-        const ids = (members || []).map((m) => m.user_id);
+        let memberList = members || [];
+
+        if (memberList.length <= 1) {
+          const fallback = [];
+          if (campaignGmId) fallback.push({ user_id: campaignGmId, role: "gm" });
+          const { data: assigns } = await sb
+            .from("campaign_character_assignments")
+            .select("user_id")
+            .eq("campaign_id", campaignId);
+          const seen = new Set(fallback.map((m) => m.user_id));
+          (assigns || []).forEach((a) => {
+            if (!seen.has(a.user_id)) {
+              fallback.push({ user_id: a.user_id, role: "player" });
+              seen.add(a.user_id);
+            }
+          });
+          if (fallback.length > memberList.length) memberList = fallback;
+        }
+
+        const ids = memberList.map((m) => m.user_id);
         const { data: profiles } = ids.length
           ? await sb
               .from("profile_directory")
@@ -254,7 +275,7 @@
         );
 
         memberListEl.innerHTML =
-          (members || [])
+          memberList
             .map(
               (m) =>
                 `<div>• <strong>${byId[m.user_id] || m.user_id}</strong> — ${m.role === "gm" ? "GM" : "Player"}</div>`,
