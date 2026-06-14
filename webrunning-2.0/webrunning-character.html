@@ -6786,31 +6786,73 @@
 
     // ── UI Preferences: drag-to-reorder + two-col toggle ───────────────────
 
+    function enterTwoCol(savedCol1, savedCol2) {
+      const sheet = document.querySelector("main.sheet");
+      const col1 = document.createElement("div");
+      const col2 = document.createElement("div");
+      col1.className = "sheet-col"; col1.id = "sheetCol1";
+      col2.className = "sheet-col"; col2.id = "sheetCol2";
+      const sections = Array.from(sheet.querySelectorAll(":scope > section.card.collapsible"));
+      if (savedCol1?.length || savedCol2?.length) {
+        const allIds = new Set(sections.map(s => s.id));
+        (savedCol1 || []).forEach(id => { const s = document.getElementById(id); if (s && allIds.has(id)) col1.appendChild(s); });
+        (savedCol2 || []).forEach(id => { const s = document.getElementById(id); if (s && allIds.has(id)) col2.appendChild(s); });
+        sections.forEach(s => { if (!col1.contains(s) && !col2.contains(s)) col1.appendChild(s); });
+      } else {
+        const half = Math.ceil(sections.length / 2);
+        sections.forEach((s, i) => (i < half ? col1 : col2).appendChild(s));
+      }
+      sheet.appendChild(col1);
+      sheet.appendChild(col2);
+    }
+
+    function exitTwoCol() {
+      const sheet = document.querySelector("main.sheet");
+      ["sheetCol1", "sheetCol2"].forEach(colId => {
+        const col = document.getElementById(colId);
+        if (!col) return;
+        Array.from(col.querySelectorAll(":scope > section")).forEach(s => sheet.appendChild(s));
+        col.remove();
+      });
+    }
+
     function buildUiPreferences() {
       const sheet = document.querySelector("main.sheet");
+      if (sheet.classList.contains("two-col")) {
+        const col1 = document.getElementById("sheetCol1");
+        const col2 = document.getElementById("sheetCol2");
+        return {
+          twoColMode: true,
+          col1Sections: col1 ? Array.from(col1.querySelectorAll(":scope > section[id]")).map(s => s.id) : [],
+          col2Sections: col2 ? Array.from(col2.querySelectorAll(":scope > section[id]")).map(s => s.id) : [],
+        };
+      }
       const sectionOrder = Array.from(
         sheet.querySelectorAll(":scope > section[id]")
       ).map(s => s.id);
-      return { sectionOrder, twoColMode: sheet.classList.contains("two-col") };
+      return { sectionOrder, twoColMode: false };
     }
 
     function applyUiPreferences(prefs) {
       const sheet = document.querySelector("main.sheet");
       const btn = document.getElementById("twoColToggle");
-      if (prefs?.twoColMode) sheet.classList.add("two-col");
+      if (prefs?.twoColMode) {
+        sheet.classList.add("two-col");
+        enterTwoCol(prefs.col1Sections, prefs.col2Sections);
+      } else if (Array.isArray(prefs?.sectionOrder)) {
+        const seen = new Set();
+        prefs.sectionOrder.forEach(id => {
+          if (seen.has(id)) return;
+          seen.add(id);
+          const el = document.getElementById(id);
+          if (el && el.parentElement === sheet) sheet.appendChild(el);
+        });
+      }
       if (btn) {
         const isTwo = sheet.classList.contains("two-col");
         btn.title = isTwo ? "Switch to single column" : "Switch to two columns";
         btn.textContent = isTwo ? "⊟ 1-col" : "⊞ 2-col";
       }
-      if (!Array.isArray(prefs?.sectionOrder)) return;
-      const seen = new Set();
-      prefs.sectionOrder.forEach(id => {
-        if (seen.has(id)) return;
-        seen.add(id);
-        const el = document.getElementById(id);
-        if (el && el.parentElement === sheet) sheet.appendChild(el);
-      });
     }
 
     async function saveUiPreferences() {
@@ -6829,7 +6871,7 @@
       let dragSrc = null, lastTgt = null, startX = 0, startY = 0, dragActive = false;
 
       function applyHandles() {
-        sheet.querySelectorAll(":scope > section.card.collapsible").forEach(s => {
+        sheet.querySelectorAll("section.card.collapsible").forEach(s => {
           const header = s.querySelector(":scope > .collapsible-header");
           if (!header || header.querySelector(".drag-handle")) return;
           const handle = document.createElement("span");
@@ -6840,7 +6882,7 @@
         });
       }
       applyHandles();
-      new MutationObserver(applyHandles).observe(sheet, { childList: true });
+      new MutationObserver(applyHandles).observe(sheet, { childList: true, subtree: true });
 
       function clearIndicators() {
         sheet.querySelectorAll(".drag-over-top, .drag-over-bottom").forEach(el => {
@@ -6860,9 +6902,9 @@
         const el = document.elementFromPoint(e.clientX, e.clientY);
         dragSrc.style.pointerEvents = "";
         let tgt = el?.closest("section.card.collapsible");
-        if (!tgt || tgt === dragSrc || tgt.parentElement !== sheet) {
+        if (!tgt || tgt === dragSrc) {
           let minD = Infinity;
-          sheet.querySelectorAll(":scope > section.card.collapsible").forEach(s => {
+          sheet.querySelectorAll("section.card.collapsible").forEach(s => {
             if (s === dragSrc) return;
             const r = s.getBoundingClientRect();
             const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right);
@@ -6873,8 +6915,16 @@
         }
         if (lastTgt && lastTgt !== tgt) clearIndicators();
         if (!tgt || tgt === dragSrc) return;
-        const sections = Array.from(sheet.querySelectorAll(":scope > section.card.collapsible"));
-        const before = sections.indexOf(dragSrc) > sections.indexOf(tgt);
+        const srcContainer = dragSrc.parentElement;
+        const tgtContainer = tgt.parentElement;
+        let before;
+        if (srcContainer === tgtContainer) {
+          const siblings = Array.from(tgtContainer.querySelectorAll(":scope > section.card.collapsible"));
+          before = siblings.indexOf(dragSrc) > siblings.indexOf(tgt);
+        } else {
+          const rect = tgt.getBoundingClientRect();
+          before = e.clientY < rect.top + rect.height / 2;
+        }
         tgt.classList.remove("drag-over-top", "drag-over-bottom");
         tgt.classList.add(before ? "drag-over-top" : "drag-over-bottom");
         lastTgt = tgt;
@@ -6885,7 +6935,7 @@
           const tgt = sheet.querySelector(".drag-over-top, .drag-over-bottom");
           if (tgt && tgt !== dragSrc && dragSrc) {
             const before = tgt.classList.contains("drag-over-top");
-            sheet.insertBefore(dragSrc, before ? tgt : tgt.nextSibling);
+            tgt.parentElement.insertBefore(dragSrc, before ? tgt : tgt.nextSibling);
             saveUiPreferences();
           }
         }
@@ -6918,10 +6968,17 @@
       const btn = document.getElementById("twoColToggle");
       if (!sheet || !btn) return;
       btn.addEventListener("click", () => {
-        sheet.classList.toggle("two-col");
         const isTwo = sheet.classList.contains("two-col");
-        btn.title = isTwo ? "Switch to single column" : "Switch to two columns";
-        btn.textContent = isTwo ? "⊟ 1-col" : "⊞ 2-col";
+        if (isTwo) {
+          exitTwoCol();
+          sheet.classList.remove("two-col");
+        } else {
+          sheet.classList.add("two-col");
+          enterTwoCol();
+        }
+        const nowTwo = sheet.classList.contains("two-col");
+        btn.title = nowTwo ? "Switch to single column" : "Switch to two columns";
+        btn.textContent = nowTwo ? "⊟ 1-col" : "⊞ 2-col";
         saveUiPreferences();
       });
     }
