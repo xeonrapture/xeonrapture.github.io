@@ -1819,7 +1819,7 @@ label textarea {
   border: 1px solid var(--border, #333);
   border-radius: 12px;
   padding: 0.75rem;
-  background: rgba(141, 184, 255, 0.85);
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2246,6 +2246,9 @@ select,
   .tools-scope .grid .card {
     padding: 0.75rem;
   }
+  #twoColToggle { display: none; }
+  .sheet.two-col { grid-template-columns: 1fr; }
+  .sheet-col { display: contents; }
 }
 
 
@@ -3192,3 +3195,4 @@ select,
 .sheet.two-col > section:not(.collapsible),
 .sheet.two-col > #characterSection { grid-column: 1 / -1; }
 .sheet-col { display: flex; flex-direction: column; gap: 1.75rem; }
+.sheet.two-col .sheet-col .gear-actions { grid-template-columns: 1fr; }
