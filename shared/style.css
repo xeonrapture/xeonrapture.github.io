@@ -3187,7 +3187,8 @@ select,
 .card.collapsible.drag-over-bottom { border-bottom: 3px solid var(--accent); }
 
 /* ── Two-column sheet layout ────────────────────────────────────────────── */
-.sheet.two-col { grid-template-columns: 1fr 1fr; align-items: start; }
-.sheet.two-col > header { grid-column: 1 / -1; }
-.sheet.two-col > section:not(.collapsible) { grid-column: 1 / -1; }
-.sheet.two-col > #characterSection { grid-column: 1 / -1; }
+.sheet.two-col { display: block; columns: 2; column-gap: 1.75rem; }
+.sheet.two-col > * { break-inside: avoid; margin-bottom: 1.75rem; }
+.sheet.two-col > header,
+.sheet.two-col > section:not(.collapsible),
+.sheet.two-col > #characterSection { column-span: all; }
