@@ -14,9 +14,9 @@ window.XRRPG_CLASS_DEFS = {
       name: "Burst Strength",
       tiers: [
         "Naturally very strong and fast.",
-        "As strong and fast as the strongest of the species. Can withstand own strength. Deal base 3 dmg on Success.",
-        "Far stronger and faster than the strongest and fastest of the species. Deal base 3 dmg on Success.",
-        "Can move many times own weight, devastating blows. Barely visible movement. Deal base 4 dmg on Success."
+        "As strong and fast as the strongest of the species. Can withstand own strength. Deal base +1 dmg on Success.",
+        "Far stronger and faster than the strongest and fastest of the species. Deal base +2 dmg on Success.",
+        "Can move many times own weight, devastating blows. Barely visible movement. Deal base +3 dmg on Success."
       ]
     },
     advancedPowers: [
@@ -31,9 +31,9 @@ window.XRRPG_CLASS_DEFS = {
       {
         name: "Heat Control",
         tiers: [
-          "Temps up to 600°F don't affect you. 2nd degree burn touch (3 dmg). Heat aura 10 ft (2 dmg, 10 min).",
-          "Temps up to 3000°F. 3rd degree burn touch (4 dmg). 1st degree burn aura 10 ft (3 dmg, 10 min).",
-          "Temps up to 10,000°F. 4th degree burn touch (5 dmg). 2nd degree burn aura 10 ft (4 dmg, 10 min)."
+          "Temps up to 600°F don't affect you. 2nd degree burn touch (+2 dmg). Heat aura 10 ft (base dmg, 10 min).",
+          "Temps up to 3000°F. 3rd degree burn touch (+3 dmg). 1st degree burn aura 10 ft (+1 dmg, 10 min).",
+          "Temps up to 10,000°F. 4th degree burn touch (+4 dmg). 2nd degree burn aura 10 ft (+2 dmg, 10 min)."
         ]
       },
       {
@@ -55,9 +55,9 @@ window.XRRPG_CLASS_DEFS = {
       {
         name: "Explosions",
         tiers: [
-          "Explosions from body up to 10 ft radius, touch or self-centered (4 dmg on Success).",
-          "Explosions up to 25 ft radius. Throw explosions up to 30 ft away.",
-          "70 ft radius explosions. Throw up to 50 ft. Focused blast 10 ft cone: 6 dmg, double to structures."
+          "Explosions from body up to 10 ft radius, touch or self-centered (+2 dmg on Success).",
+          "Explosions up to 25 ft radius. Throw explosions up to 30 ft away (+3 dmg on Success).",
+          "70 ft radius explosions. Throw up to 50 ft (+4 dmg on Success). Focused blast 10 ft cone: +5 dmg, double to structures."
         ]
       }
     ],
@@ -88,16 +88,16 @@ window.XRRPG_CLASS_DEFS = {
         name: "Heavening",
         tiers: [
           "2x own weight → 5 seconds.",
-          "5x own weight → 5 sec. 2x own weight → 1 min. Touch someone → 2x their weight ~10 sec.",
+          "5x own weight → 5 sec. 2x own weight → 1 min. Touch someone → 2x their weight ~10 sec (can hurt them).",
           "20x own weight → 5 sec. 5x own weight → 1 min. 2x own weight → unlimited. Touch → 5x weight ~10 sec. AOE 10 ft radius 2x weight ~10 sec."
         ]
       },
       {
         name: "Cold Control",
         tiers: [
-          "Temps down to freezing don't affect you. Touch attack 2 dmg + Frozen (+1d MD on next Action against them). Cold aura freezing temp 10 ft (1 dmg, 10 min).",
-          "Temps down to -200°F. Touch 3 dmg + Advanced Frozen (+2d MD). Cold aura -100°F 10 ft (2 dmg + Frozen, 10 min).",
-          "Temps down to 1 K. Touch 3 dmg + Extreme Frozen (+3d MD). Cold aura -200°F 10 ft (2 dmg + Advanced Frozen, 10 min)."
+          "Temps down to freezing don't affect you. Touch attack 2 dmg + Frozen (+1d MD on next Action against them). Cold aura freezing temp 10 ft (base dmg -1, 10 min).",
+          "Temps down to -200°F. Touch +1 dmg + Advanced Frozen (+2d MD). Cold aura -100°F 10 ft (base dmg + Frozen, 10 min).",
+          "Temps down to 1 K. Touch +2 dmg + Extreme Frozen (+3d MD). Cold aura -200°F 10 ft (base dmg + Advanced Frozen, 10 min)."
         ]
       },
       {
@@ -167,17 +167,17 @@ window.XRRPG_CLASS_DEFS = {
       {
         name: "Turn into Animals",
         tiers: [
-          "Normal beasts, normal size. Can swim. Attacks up to 3 dmg on Success.",
-          "Exotic beasts, smaller or larger (fox to hippo). Can fly. Attacks up to 4 dmg on Success.",
-          "Xenic beasts, huge beasts. Scale from ant to small wyvern size. Attacks up to 5 dmg on Success."
+          "Normal beasts, normal size. Can swim. Attack from dangerous animals get up to +1 dmg on Success.",
+          "Exotic beasts, smaller or larger (fox to hippo). Can fly. Attack from dangerous animals get up to +2 dmg on Success.",
+          "Xenic beasts, huge beasts. Scale from ant to small wyvern size. Attack from dangerous animals get up to +3 dmg on Success."
         ]
       },
       {
         name: "Life Force Aura",
         tiers: [
-          "(Passive) Heal living beings around you passively, stamina regeneration. Shallow Rests heal 75% HP in Injuries. +2 Stamina Exhaustion Limit for self and allies.",
-          "(Passive) Wick exhaustion, accelerate natural healing. Deep Rests heal 1 Critical Injury. +4 Stamina Exhaustion Limit.",
-          "(Passive) People exhaust slowly, don't need food/water, greatly accelerated healing. Shallow Rests heal all non-Critical Injuries. Deep Rests heal all Critical Injuries. +6 Stamina Exhaustion Limit."
+          "(Passive) Heal living beings around you passively, stamina regeneration. Shallow Rests heal 75% HP in Injuries. You gain +4 Max Stamina and may give your Stamina to your teammates whenever you'd like.",
+          "(Passive) Wick exhaustion, accelerate natural healing. Deep Rests heal 1 Critical Injury. +7 Max Stamina. May spend 5 Stamina to give all participants +1 MD on a Group Action.",
+          "(Passive) People exhaust slowly, don't need food/water, greatly accelerated healing. Shallow Rests heal all non-Critical Injuries. Deep Rests heal all Critical Injuries. +10 Max Stamina. May spend 5 Stamina to give all participants +2 MD on a Group Action."
         ]
       },
       {
@@ -200,8 +200,8 @@ window.XRRPG_CLASS_DEFS = {
         name: "Atmosphere",
         tiers: [
           "30 ft bubble of breathable atmosphere. Non-breathable gas bubble 15 ft radius. Hold breath 10 min.",
-          "100 ft atmosphere radius. 30 ft non-breathable gas. Poisonous gas 15 ft (2 dmg). Hold breath 1 hr.",
-          "5,000 ft atmosphere range. 50 ft non-breathable gas. 30 ft poisonous gas. 15 ft explosive gas (4 dmg) or acidic gas (3 dmg). Bubbles can be thrown 50 ft. No need to breathe."
+          "100 ft atmosphere radius. 30 ft non-breathable gas. Poisonous gas 15 ft (base dmg). Hold breath 1 hr.",
+          "5,000 ft atmosphere range. 50 ft non-breathable gas. 30 ft poisonous gas. 15 ft explosive gas (+2 dmg) or acidic gas (+1 dmg, lasts 15 minutes). Bubbles can be thrown 50 ft. No need to breathe."
         ]
       }
     ],
@@ -231,9 +231,9 @@ window.XRRPG_CLASS_DEFS = {
       {
         name: "Telepathy",
         tiers: [
-          "Send simple ideas, words, basic images; recipient can send the same back. Psychic attack 2 dmg on Success.",
-          "Send complex strings of ideas, words, images. Group chat up to ~10 people. Psychic attack 3 dmg on Success.",
-          "Send pure ideas very quickly. Force into someone's mind for information. Group chat up to 100 people. Psychic attack 4 dmg on Success."
+          "Send simple ideas, words, basic images; recipient can send the same back. Psychic attack base dmg on Success.",
+          "Send complex strings of ideas, words, images. Group chat up to ~10 people. Psychic attack +1 dmg on Success.",
+          "Send pure ideas very quickly. Force into someone's mind for information. Group chat up to 100 people. Psychic attack +2 dmg on Success."
         ]
       },
       {
@@ -255,9 +255,9 @@ window.XRRPG_CLASS_DEFS = {
       {
         name: "Pointy Sharp Xeon",
         tiers: [
-          "Black xeon blades up to 2 in. Can't cut armor or xenic force fields (3 dmg). Can cut weak xenic tethers. Blocked completely by onyx.",
-          "Blades up to 6 in, slice most armor and xenic force fields (4 dmg). Can damage other weapons. Cut stronger tethers. Can throw blades.",
-          "Blades up to 6 ft. Cut almost anything atom-thin (5 dmg). Cut all tethers (even industrial). Still blocked by onyx and other obsidian."
+          "Black xeon blades up to 2 in. Can't cut armor or xenic force fields (+1 dmg). Can cut weak xenic tethers. Blocked completely by onyx.",
+          "Blades up to 6 in, slice most armor and xenic force fields (+2 dmg). Can damage other weapons. Cut stronger tethers. Can throw blades.",
+          "Blades up to 6 ft. Cut almost anything atom-thin (+3 dmg). Cut all tethers (even industrial). Still blocked by onyx and other obsidian."
         ]
       },
       {
@@ -271,8 +271,8 @@ window.XRRPG_CLASS_DEFS = {
       {
         name: "Onyx Shielding",
         tiers: [
-          "Hard black xeon shield, max 1 ft radius. Ignore Minor Injuries from physical sources. Lasts 10 min. Also form shield on fists/feet (3 dmg on Success).",
-          "Shield up to 3 ft radius. Ignore Severe Injuries from physical sources. Lasts 10 min. Can throw shields (3 dmg).",
+          "Hard black xeon shield, max 1 ft radius. Ignore Minor Injuries from physical sources. Lasts 10 min. Also form shield on fists/feet (+1 dmg on Success).",
+          "Shield up to 3 ft radius. Ignore Severe Injuries from physical sources. Lasts 10 min. Can throw shields (+1 dmg).",
           "Full box/polyhedral shield up to 6 ft radius. Ignore Critical Injuries (breaks on Critical). Create onyx platforms that last up to 10 sec."
         ]
       }
@@ -334,7 +334,7 @@ window.XRRPG_CLASS_DEFS = {
     chromaRequired: null,
     levels: {
       1: {
-        auto: ["Dark Flame: A dark, xenic attack dealing 2 dmg on Success.", "Seal Spirit: Attempt to seal or end a possession.", "Communicate with Spirits: See xenic plane and speak to spirits (10 min). Plus dark god ability."],
+        auto: ["Dark Flame: A dark, xenic attack dealing base dmg on Success.", "Seal Spirit: Attempt to seal or end a possession.", "Communicate with Spirits: See xenic plane and speak to spirits (10 min). Plus dark god ability."],
         choices: [{ type: "pick_one", id: "deity", label: "Choose your dark god or entity", options: ["Mot", "Qzoth", "Txazuk", "Uulith-btha", "Xotl", "Zvithwa", "Nythyn", "G'nolog", "Kthal", "Nomonon", "Zythix", "Demons (general)", "Red Dragon", "Blue Dragon", "Green Dragon", "Gray Dragon"] }]
       },
       2: { auto: ["Menonic Smite: Dark energy strike +2d MD, +2 dmg to spirits.", "Hamper Enemy: Next Action against target +2d MD.", "Vampirism: On a successful attack, steal HP from target and heal yourself."], choices: [] },
@@ -424,10 +424,10 @@ window.XRRPG_CLASS_DEFS = {
         "Charm: Target charmed, treats you like close friend (breaks if attacked).",
         "Charm: Target charmed, treats you like close friend (breaks if attacked)."
       ]},
-      { id: "anger", label: "Anger", ability: "Rage: 3/4/5 dmg attack, 3x/day.", descriptions: [
-        "Rage: 3 dmg attack, 3×/day.",
-        "Rage: 4 dmg attack, 3×/day.",
-        "Rage: 5 dmg attack, 3×/day."
+      { id: "anger", label: "Anger", ability: "Rage: +1/+2/+3 dmg attack, 3x/day.", descriptions: [
+        "Rage: +1 dmg attack, 3×/day.",
+        "Rage: +2 dmg attack, 3×/day.",
+        "Rage: +3 dmg attack, 3×/day."
       ]},
       { id: "grief", label: "Grief", ability: "Numbness: Target deals -1/-2/-3 dmg for 10 min.", descriptions: [
         "Numbness: Target deals -1 dmg for 10 min.",
@@ -500,7 +500,7 @@ window.XRRPG_CLASS_DEFS = {
     },
     resources: [
       { id: "devil_form", label: "Devil Form (merge with devil, +2d MD, 10 min)", maxPerDay: 3, minLevel: 3 },
-      { id: "rage", label: "Rage Attack (Anger — 3/4/5 dmg)", maxPerDay: 3, requiresEmotion: "Anger" },
+      { id: "rage", label: "Rage Attack (Anger — +1/+2/+3 dmg)", maxPerDay: 3, requiresEmotion: "Anger" },
       { id: "steal_vitality", label: "Steal Vitality (Envy/Greed — steal HP)", maxPerDay: 3, requiresEmotion: "Envy, Greed" },
       { id: "spirit_shield_critical", label: "Spirit Shield: ignore Critical Injury", maxPerDay: 3, minLevel: 3, requiresPower: "Spirit Shield" },
       { id: "soothe_soul_critical", label: "Soothe Soul: heal Critical Injury", maxPerDay: 3, minLevel: 3, requiresPower: "Soothe Soul" },
@@ -515,40 +515,40 @@ window.XRRPG_CLASS_DEFS = {
     maxLevel: 6,
     elementPool: [
       { id: "stone", name: "Stone", tier: "I", focus: "++defense", levelAbilities: {
-        1: "You can turn your skin to stone, giving you a plus to defense (ignore Minor Injuries from physical sources)\nCan turn an object to stone or grab a block of stone out of a surface and throw it, dealing damage (2 dmg on success)",
+        1: "You can turn your skin to stone, giving you a plus to defense (ignore Minor Injuries from physical sources)\nCan turn an object to stone or grab a block of stone out of a surface and throw it, dealing damage (base dmg on success)",
         2: "Can touch an ally to cover them with stone armor for up to a minute, protecting them (they ignore Minor Injuries)",
         3: "You can now become stone, becoming even harder to damage (you ignore Minor Injuries)! You may still move around in this state."
       }},
       { id: "metal", name: "Metal", tier: "I", focus: "+defense, +attack", levelAbilities: {
-        1: "Now able to transmute you skin into metal; get a small bonus to defense (ignore the -1 debuff from Minor Injuries)\nCan morph body into metal blades and spines to deal damage (3 dmg on success up to 3/day)",
-        2: "Can create metal weapons and tools from the environment (3 dmg on success)",
-        3: "The weapons and tools you make are sharper and even more effective, and can be larger than before (4 dmg on success)"
+        1: "Now able to transmute you skin into metal; get a small bonus to defense (ignore the -1 debuff from Minor Injuries)\nCan morph body into metal blades and spines to deal damage (+1 dmg on success up to 3/day)",
+        2: "Can create metal weapons and tools from the environment (+1 dmg on success)",
+        3: "The weapons and tools you make are sharper and even more effective, and can be larger than before (+2 dmg on success)"
       }},
       { id: "plant", name: "Plant", tier: "I", focus: "++effect", levelAbilities: {
-        1: "You get plant ranged attacks as you grow whipping and shooting plants from your skin, they can do several things if the enemy is hit by your attack:\n- slowing attack (next Action Difficulty against them is lowered by one tier)\n- bleeding attack (next three Attacks against them do +1 dmg)\n- binding attack (wraps up the enemy)",
+        1: "You get plant ranged attacks as you grow whipping and shooting plants from your skin, they can do several things if the enemy is hit by your attack:\n- slowing attack (next Action Difficulty against them is lowered by one tier)\n- bleeding attack (next three Attacks against them do base dmg)\n- binding attack (wraps up the enemy)",
         2: "Can bind every enemy up to 20 feet from you as vines grow from your feet\nCan poison one target as you fire a poison dart or whip them with a poison vine (Actions against them get a +1d Mastery Die for up to a minute, effect can't stack)\nCan make climbing vines from a surface you touch that can extend up to 50 ft for a turn or 300ft if you spend 5 minutes",
         3: "Turn into plants (a tree, vines, flowers, grass, etc.) and move around in vine mode\nCan merge with plants and travel along any connected plant\nExtremely intense single-target binds as you cover them in tree roots or vines"
       }},
       { id: "flesh", name: "Flesh", tier: "I", focus: "+defense, +attack", levelAbilities: {
-        1: "Can morph your body and give yourself attack claws and long teeth for a bite (3 dmg on success up to 3/day)\nYou can also give yourself scales for defense (ignore the -1 debuff from Minor Injuries)\nVision up to 1,000 ft",
-        2: "More intense attack claws and bite (3 dmg on success)\nGreat vision (darkvision up to 60 ft, regular vision up to 2,500 ft)\nSpeed legs (deer or rabbit) and jumps (30 ft jumps and quick dashes)\nSwimming speed and climbing speed up",
-        3: "Even more intense attack claws and bite (4 dmg on success)\nTransform (1 hour duration):\n- Give yourself wings and feathers and you can fly\n- Give yourself gills and scales and you can swim super fast\n- Give yourself digging claws and you can sense through the ground up to 60 ft"
+        1: "Can morph your body and give yourself attack claws and long teeth for a bite (+1 dmg on success up to 3/day)\nYou can also give yourself scales for defense (ignore the -1 debuff from Minor Injuries)\nVision up to 1,000 ft",
+        2: "More intense attack claws and bite (+1 dmg on success)\nGreat vision (darkvision up to 60 ft, regular vision up to 2,500 ft)\nSpeed legs (deer or rabbit) and jumps (30 ft jumps and quick dashes)\nSwimming speed and climbing speed up",
+        3: "Even more intense attack claws and bite (+2 dmg on success)\nTransform (1 hour duration):\n- Give yourself wings and feathers and you can fly\n- Give yourself gills and scales and you can swim super fast\n- Give yourself digging claws and you can sense through the ground up to 60 ft"
       }},
       { id: "water", name: "Water", tier: "II", focus: "+++defense", levelAbilities: {
         2: "Massive defense bonus as you turn partially to water (Ignores the -1 they get from their first Severe Injury)\nShoot ice spikes that can freeze enemies in place",
-        3: "You're extremely quick and hard to hit (Can't take Minor Injuries)\nDo a smother attack as you partially turn into water and cover an enemy (can do up to 2 dmg per turn upon Success, must keep Succeeding to keep this effect up)\nCan become completely water, you're immaterial, can move through cracks, make things wet, etc. (3/day, can't attack, take damage, cast spells, or do abilities in this form but you can do the smother attack, lasts up to 1 hr)"
+        3: "You're extremely quick and hard to hit (Can't take Minor Injuries)\nDo a smother attack as you partially turn into water and cover an enemy (can do up to base dmg per turn upon Success, must keep Succeeding to keep this effect up)\nCan become completely water, you're immaterial, can move through cracks, make things wet, etc. (3/day, can't attack, take damage, cast spells, or do abilities in this form but you can do the smother attack, lasts up to 1 hr)"
       }},
       { id: "light", name: "Light", tier: "II", focus: "++effect, ++attack", levelAbilities: {
-        2: "You can create a massive flash of light, blinding your enemies (can last up to a minute, Action Difficulty goes down by one tier for any Action done against this enemy)\nYou can bend light within a 30 ft range of you, giving you extreme vision around corners and stuff\nYou can go almost invisible, goes away when you attack (makes it extremely hard to hit you)\nCan shoot laser beams, can go around corners (30 ft, does 3 dmg on Success)",
-        3: "You may do a light warp (warp up to 60ft from you at will)\nYou turn into light, you're immaterial, can move through cracks, fly, etc. (3/day, can't attack, take damage, cast spells, or do abilities in this form, lasts up to 1 hr)\nMove extremely fast as you turn partially to light\nMassive laser you can only do 3 times a day (5 dmg on Success)"
+        2: "You can create a massive flash of light, blinding your enemies (can last up to a minute, Action Difficulty goes down by one tier for any Action done against this enemy)\nYou can bend light within a 30 ft range of you, giving you extreme vision around corners and stuff\nYou can go almost invisible, goes away when you attack (makes it extremely hard to hit you)\nCan shoot laser beams, can go around corners (30 ft, does +1 dmg on Success)",
+        3: "You may do a light warp (warp up to 60ft from you at will)\nYou turn into light, you're immaterial, can move through cracks, fly, etc. (3/day, can't attack, take damage, cast spells, or do abilities in this form, lasts up to 1 hr)\nMove extremely fast as you turn partially to light\nMassive laser you can only do 3 times a day (+3 dmg on Success)"
       }},
       { id: "air", name: "Air", tier: "II", focus: "++defense, ++effect", levelAbilities: {
-        2: "You can do big air pushes up to 30 ft from you (10 ft width, does no damage)\nYour speed goes up quite a bit\nCrazy jumps (up to 50 ft) and lunges (up to 50 ft)\nBig air blast that does quite a bit of damage but you can only do 3 times a day (5 ft width and 30 ft range cone, does 2 dmg on Success)\nCan throw ranged air blasts (30 ft, does 2 dmg on success, one target)",
-        3: "You become almost impossible to hit as you can turn partially to air to dodge (ignore up to 3 Severe Injuries per day)\nYou can become air, you're immaterial, can move through cracks, pick small things up, etc. (3/day, can't attack, take damage, cast spells, or do abilities in this form, lasts up to 1 hr)\nCan now push up to 60 ft away from you\nYou can do an aoe blast centered on you that goes 30 ft (3 dmg on success)"
+        2: "You can do big air pushes up to 30 ft from you (10 ft width, does no damage)\nYour speed goes up quite a bit\nCrazy jumps (up to 50 ft) and lunges (up to 50 ft)\nBig air blast that does quite a bit of damage but you can only do 3 times a day (5 ft width and 30 ft range cone, does base dmg on Success)\nCan throw ranged air blasts (30 ft, does base dmg on success, one target)",
+        3: "You become almost impossible to hit as you can turn partially to air to dodge (ignore up to 3 Severe Injuries per day)\nYou can become air, you're immaterial, can move through cracks, pick small things up, etc. (3/day, can't attack, take damage, cast spells, or do abilities in this form, lasts up to 1 hr)\nCan now push up to 60 ft away from you\nYou can do an aoe blast centered on you that goes 30 ft (+1 dmg on success)"
       }},
       { id: "fire", name: "Fire", tier: "II", focus: "+++attack", levelAbilities: {
-        2: "Up-close attack blasts in a 10-ft cone (3 dmg on Success)\nThrow fire in a ranged attack, can go up to 30 ft away from you (4 dmg on Success)",
-        3: "Become fire, you're immaterial, can move through cracks, set things on fire, etc. (3/day, can't attack, take damage, cast spells, or do abilities in this form, lasts up to 1 hr)\nIf you engulf someone while you're made of fire you can do up to 3 dmg per turn upon Success, must keep Succeeding to keep this effect up\nDo a single-target touch damage attack that does a massive amount of damage 3 times a day (6 dmg on Success)\nFire AOE in a 30 ft range centered on you 3 of times a day (5 dmg on Success)"
+        2: "Up-close attack blasts in a 10-ft cone (+1 dmg on Success)\nThrow fire in a ranged attack, can go up to 30 ft away from you (+2 dmg on Success)",
+        3: "Become fire, you're immaterial, can move through cracks, set things on fire, etc. (3/day, can't attack, take damage, cast spells, or do abilities in this form, lasts up to 1 hr)\nIf you engulf someone while you're made of fire you can do up to +1 dmg per turn upon Success, must keep Succeeding to keep this effect up\nDo a single-target touch damage attack that does a massive amount of damage 3 times a day (+4 dmg on Success)\nFire AOE in a 30 ft range centered on you 3 of times a day (+3 dmg on Success)"
       }}
     ],
     levels: {
@@ -575,17 +575,17 @@ window.XRRPG_CLASS_DEFS = {
     chromaRequired: null,
     maxLevel: 3,
     potionPool: [
-      { id: "basic_damage", name: "Basic Damage", minLevel: 1, unlimited: true, description: "Deals 2 dmg to one target." },
+      { id: "basic_damage", name: "Basic Damage", minLevel: 1, unlimited: true, description: "Deals base dmg to one target." },
       { id: "basic_buff", name: "Basic Buff", minLevel: 1, unlimited: true, description: "Gives target +1d MD on next Action." },
       { id: "healing_i", name: "Healing I", minLevel: 1, brewedPerDay: 3, description: "Heal 3 HP's worth of Injuries (no Critical)." },
       { id: "buff_i", name: "Buff I", minLevel: 1, brewedPerDay: 3, description: "Target's next 3 Actions: +1d MD." },
       { id: "weak_i", name: "Weak I", minLevel: 1, brewedPerDay: 3, description: "Next 3 Actions against target: +1d MD." },
       { id: "corrupt_i", name: "Corrupt I", minLevel: 2, brewedPerDay: 3, description: "Must be ingested. Horrible nightmares tonight; reduced awareness next day." },
       { id: "healing_ii", name: "Healing II", minLevel: 2, brewedPerDay: 2, description: "Heal 5 HP's worth of Injuries (no Critical)." },
-      { id: "fire_i", name: "Fire I", minLevel: 2, brewedPerDay: 3, description: "10 ft radius explosion, 3 dmg on Success." },
+      { id: "fire_i", name: "Fire I", minLevel: 2, brewedPerDay: 3, description: "10 ft radius explosion, +1 dmg on Success." },
       { id: "buff_ii", name: "Buff II", minLevel: 3, brewedPerDay: 2, description: "Target's next 3 Actions: +2d MD." },
       { id: "weak_ii", name: "Weak II", minLevel: 3, brewedPerDay: 2, description: "Next 3 Actions against target: +2d MD." },
-      { id: "fire_ii", name: "Fire II", minLevel: 3, brewedPerDay: 2, description: "15 ft radius explosion, 4 dmg on Success." }
+      { id: "fire_ii", name: "Fire II", minLevel: 3, brewedPerDay: 2, description: "15 ft radius explosion, +2 dmg on Success." }
     ],
     levels: {
       1: {
@@ -621,19 +621,19 @@ window.XRRPG_CLASS_DEFS = {
       { id: "weak_i_used", label: "Weak I (+1d MD vs target for next 3 Actions)", maxPerDay: 3 },
       { id: "corrupt_i_used", label: "Corrupt I (ingested — horrible nightmares, reduced awareness)", maxPerDay: 3, minLevel: 2 },
       { id: "healing_ii_used", label: "Healing II (5 HP, no Critical)", maxPerDay: 2, minLevel: 2 },
-      { id: "fire_i_used", label: "Fire I (10 ft AOE, 3 dmg on Success)", maxPerDay: 3, minLevel: 2 },
+      { id: "fire_i_used", label: "Fire I (10 ft AOE, +1 dmg on Success)", maxPerDay: 3, minLevel: 2 },
       { id: "buff_ii_used", label: "Buff II (+2d MD on next 3 Actions)", maxPerDay: 2, minLevel: 3 },
       { id: "weak_ii_used", label: "Weak II (+2d MD vs target for next 3 Actions)", maxPerDay: 2, minLevel: 3 },
-      { id: "fire_ii_used", label: "Fire II (15 ft AOE, 4 dmg on Success)", maxPerDay: 2, minLevel: 3 }
+      { id: "fire_ii_used", label: "Fire II (15 ft AOE, +2 dmg on Success)", maxPerDay: 2, minLevel: 3 }
     ],
     twoPotionMixes: [
       { potions: "Healing + Buff", strengthI: { minLevel: 1, name: "Buff Heal I", effect: "Heals 2 HP's worth of Injuries and gives +1d Mastery Die on next Action (10 ft radius)." }, strengthII: { minLevel: 2, name: "Buff Heal II", effect: "Heals 3 HP's worth of Injuries (not Critical) and gives +2d Mastery Dice on next Action (10 ft radius)." } },
       { potions: "Buff + Weak", strengthI: { minLevel: 1, name: "Tentacles", effect: "You get up to 10 ft tentacles, up to 10 tentacles, can stick to any surface, are strong (1 hr)." }, strengthII: { minLevel: 3, name: "Wings", effect: "You get wings, can fly (1 hr)." } },
-      { potions: "Healing + Corrupt", strengthI: { minLevel: 2, name: "Poison I", effect: "Deals 2 dmg to target. If ingested gives Poisoned Critical Injury and does 3 dmg for 3 turns." }, strengthII: { minLevel: 2, name: "Corrupted Strength", effect: "Gives target Poisoned Severe Injury but they get +3d Mastery Dice on next 3 Actions." } },
+      { potions: "Healing + Corrupt", strengthI: { minLevel: 2, name: "Poison I", effect: "Deals base dmg to target. If ingested gives Poisoned Critical Injury and does +1 dmg for 3 turns." }, strengthII: { minLevel: 2, name: "Corrupted Strength", effect: "Gives target Poisoned Severe Injury but they get +3d Mastery Dice on next 3 Actions." } },
       { potions: "Fire + Healing", strengthI: { minLevel: 2, name: "Barkskin", effect: "Ignore next 3 HP's worth of Injuries (no Critical), heal 2 HP." }, strengthII: { minLevel: 2, name: "Stoneskin", effect: "Ignore next 5 HP's worth of Injuries, can ignore Critical Injuries (dmg spilled over 5 HP is also ignored)." } },
       { potions: "Corrupt + Weak", strengthI: { minLevel: 2, name: "Deep Weak I", effect: "Gives +1d Mastery Die to all Actions done against everyone in range (15 ft radius)." }, strengthII: { minLevel: 3, name: "Deep Weak II", effect: "Gives +2d Mastery Die to all Actions done against everyone in range (15 ft radius)." } },
       { potions: "Fire + Buff", strengthI: { minLevel: 2, name: "Holy Fire I", effect: "+1 dmg to attacks (1 hr)." }, strengthII: { minLevel: 3, name: "Holy Fire II", effect: "+2 dmg to attacks (1 hr)." } },
-      { potions: "Fire + Corrupt", strengthI: { minLevel: 2, name: "Concentrated Fire", effect: "15 ft explosion, does 6 dmg on Success." }, strengthII: { minLevel: 3, name: "Sticky Fire", effect: "25 ft radius explosion, 3 dmg for 3 turns to everything in radius as it coats the ground and hangs in the air." } }
+      { potions: "Fire + Corrupt", strengthI: { minLevel: 2, name: "Concentrated Fire", effect: "15 ft explosion, does +4 dmg on Success." }, strengthII: { minLevel: 3, name: "Sticky Fire", effect: "25 ft radius explosion, +1 dmg for 3 turns to everything in radius as it coats the ground and hangs in the air." } }
     ],
     threePotionMixes: [
       { potions: "Fire + Healing + Buff", strengthI: { minLevel: 2, name: "Enlarge I", effect: "You 150% the size of an ally (or yourself). End and Vig Actions get +1d Mastery Dice, deal +1 extra damage. Lasts up to a minute." }, strengthII: { minLevel: 2, name: "Enlarge II", effect: "You double the size of an ally (or yourself). End and Vig Actions get +2d Mastery Dice, deal +3 extra damage. Lasts up to a minute." } },
@@ -641,11 +641,11 @@ window.XRRPG_CLASS_DEFS = {
       { potions: "Healing + Buff + Corrupt", strengthI: { minLevel: 2, name: "Charm", effect: "Target is charmed. They will go along with things you say and treat you like a close friend. If attacked by you or your allies this ends immediately." }, strengthII: { minLevel: 2, name: "Love/Hate Potion", effect: "See the Tier III Infect Emotions Mystic spell. This effect is the same." } },
       { potions: "Healing + Weak + Corrupt", strengthI: { minLevel: 2, name: "Invisibility", effect: "The target is invisible for up to an hour, dissipates when they attack or do any ability that costs stamina." }, strengthII: { minLevel: 2, name: "Ethereality", effect: "Become ethereal, you're immaterial, can move through cracks and through substances up to 5 ft thick (can't attack, take damage, cast spells, or do abilities, lasts up to 10 min)." } },
       { potions: "Fire + Buff + Weak", strengthI: { minLevel: 2, name: "Prettify", effect: "Makes the target hotter for up to an hour." }, strengthII: { minLevel: 3, name: "Forgetting", effect: "The target forgets a small thing or memory of your choosing, it returns after an hour." } },
-      { potions: "Buff + Weak + Corrupt", strengthI: { minLevel: 2, name: "Poison II", effect: "Deals 3 dmg to target. If ingested gives Poisoned Critical Injury and does 9 dmg for five turns." }, strengthII: { minLevel: 3, name: "Chaos", effect: "Roll on the Enchanter Chaos Table (roll a d20 and whatever you get on the Minor and Major Chaos Table happens)." } },
+      { potions: "Buff + Weak + Corrupt", strengthI: { minLevel: 2, name: "Poison II", effect: "Deals +1 dmg to target. If ingested gives Poisoned Critical Injury and does +7 dmg for five turns." }, strengthII: { minLevel: 3, name: "Chaos", effect: "Roll on the Enchanter Chaos Table (roll a d20 and whatever you get on the Minor and Major Chaos Table happens)." } },
       { potions: "Buff + Healing + Weak", strengthI: { minLevel: 1, name: "Speak and Comprehend Languages", effect: "For the next 10 min the target can comprehend and speak any language (certain ancient or secret languages have protections against this)." }, strengthII: { minLevel: 2, name: "Rejuvenate", effect: "The target doesn't have to breathe for up to an hour and gains half their Stamina Max immediately." } },
-      { potions: "Fire + Buff + Corrupt", strengthI: { minLevel: 2, name: "Structure Bomb", effect: "Does 3 dmg on Success but does double damage to structures (50 ft radius)." }, strengthII: { minLevel: 3, name: "Cluster Bomb", effect: "Does 5 dmg on Success, flows around corners (50 ft radius)." } },
+      { potions: "Fire + Buff + Corrupt", strengthI: { minLevel: 2, name: "Structure Bomb", effect: "Does +1 dmg on Success but does double damage to structures (50 ft radius)." }, strengthII: { minLevel: 3, name: "Cluster Bomb", effect: "Does +3 dmg on Success, flows around corners (50 ft radius)." } },
       { potions: "Fire + Healing + Weak", strengthI: { minLevel: 2, name: "Soothe Emotions", effect: "You can make this potion a mist to soothe the emotions of anything within a 30 ft square." }, strengthII: { minLevel: 2, name: "Sleep", effect: "You can make this potion a mist to make anything within a 30 ft square fall asleep." } },
-      { potions: "Fire + Healing + Corrupt", strengthI: { minLevel: 2, name: "Illusion", effect: "Can create an illusion up to 50 ft square." }, strengthII: { minLevel: 2, name: "Animate Object", effect: "You animate an object up to 10 ft × 10 ft × 10 ft. This object follows your orders and if it's large can deal up to 4 dmg on a Success." } }
+      { potions: "Fire + Healing + Corrupt", strengthI: { minLevel: 2, name: "Illusion", effect: "Can create an illusion up to 50 ft square." }, strengthII: { minLevel: 2, name: "Animate Object", effect: "You animate an object up to 10 ft × 10 ft × 10 ft. This object follows your orders and if it's large can deal up to +2 dmg on a Success." } }
     ]
   },
 
@@ -656,7 +656,7 @@ window.XRRPG_CLASS_DEFS = {
     maxLevel: 4,
     baseRange: { 1: 20, 2: 30, 3: 50, 4: 50 },
     spellPool: [
-      { id: "terrifying_melody", name: "Terrifying Melody", tier: 1, range: "r x 2", description: "Reveal horrifying vision to enemy: 2 dmg on Success (psychic)." },
+      { id: "terrifying_melody", name: "Terrifying Melody", tier: 1, range: "r x 2", description: "Reveal horrifying vision to enemy: base dmg on Success (psychic)." },
       { id: "song_of_health", name: "Song of Health", tier: 1, range: "r", description: "Heal people you choose in range (can heal Minor Injuries)." },
       { id: "song_of_acuity", name: "Song of Acuity", tier: 1, range: "r / 2", concentration: true, description: "Everyone in range: +2d MD for sense checks for 10 min." },
       { id: "song_of_breath", name: "Song of Breath", tier: 1, range: "r x 2", concentration: true, description: "Create atmosphere everywhere in range centered on you." },
@@ -710,35 +710,35 @@ window.XRRPG_CLASS_DEFS = {
     baseRange: { 1: 20, 2: 30, 3: 50, 4: 50 },
     spellPool: [
       // Red Spells
-      { id: "heat_ray", name: "Heat Ray", tier: 1, color: "Red", range: "r x 2", description: "3 dmg on Success. Can't use red spells next turn." },
-      { id: "scorching_bomb", name: "Scorching Bomb", tier: 1, color: "Red", range: "r", aoe: true, description: "AOE 2 dmg on Success. Can upcast to Tier II: 3 dmg, can't use red next turn." },
+      { id: "heat_ray", name: "Heat Ray", tier: 1, color: "Red", range: "r x 2", description: "+1 dmg on Success. Can't use red spells next turn." },
+      { id: "scorching_bomb", name: "Scorching Bomb", tier: 1, color: "Red", range: "r", aoe: true, description: "AOE base dmg on Success. Can upcast to Tier II: +1 dmg, can't use red next turn." },
       { id: "lighten_target", name: "Lighten Target", tier: 1, color: "Red", range: "r", concentration: true, description: "Nullify fall dmg, double throw distance, half weight of object." },
       { id: "sense_up", name: "Sense Up", tier: 1, color: "Green", range: "r / 2", concentration: true, description: "Amplify all senses of a target (or nullify with consent). At Tier II can nullify unwilling." },
       { id: "healing_physic", name: "Healing", tier: 1, color: "Green", range: "r", description: "Can heal Minor Injuries." },
       { id: "send_thoughts", name: "Send Thoughts", tier: 1, color: "Gray", range: "r", description: "Send thoughts to others; they can send a little back." },
       { id: "xeon_sensing", name: "Xeon Sensing", tier: 1, color: "Gray", range: "r x 2", concentration: true, description: "See or reveal xenic spirits and other xeon sources including tech and magic items." },
-      { id: "cold_ray", name: "Cold Ray", tier: 1, color: "Blue", range: "r x 2", description: "2 dmg + Frozen debuff (+1d MD on next Action against them)." },
-      { id: "freezing_bomb", name: "Freezing Bomb", tier: 1, color: "Blue", range: "r", aoe: true, description: "AOE 2 dmg. Upcast: 2 dmg + Frozen (+1d MD)." },
+      { id: "cold_ray", name: "Cold Ray", tier: 1, color: "Blue", range: "r x 2", description: "base dmg + Frozen debuff (+1d MD on next Action against them)." },
+      { id: "freezing_bomb", name: "Freezing Bomb", tier: 1, color: "Blue", range: "r", aoe: true, description: "AOE base dmg. Upcast: base dmg + Frozen (+1d MD)." },
       { id: "grippy_target", name: "Grippy Target", tier: 1, color: "Blue", range: "r", concentration: true, description: "On ally: climb proficiently. On small object: stick to surfaces." },
-      { id: "scorch_ray", name: "Scorch Ray", tier: 2, color: "Red", range: "r x 2", description: "4 dmg on Success. Can't use red spells next turn." },
-      { id: "percussive_bomb", name: "Percussive Bomb", tier: 2, color: "Red", range: "r x 2", aoe: true, description: "2 dmg in 15 ft radius. Enemies pushed to edge of radius." },
+      { id: "scorch_ray", name: "Scorch Ray", tier: 2, color: "Red", range: "r x 2", description: "+2 dmg on Success. Can't use red spells next turn." },
+      { id: "percussive_bomb", name: "Percussive Bomb", tier: 2, color: "Red", range: "r x 2", aoe: true, description: "base dmg in 15 ft radius. Enemies pushed to edge of radius." },
       { id: "high_jump", name: "High Jump", tier: 2, color: "Red", range: "0", concentration: true, description: "Jump up to 30 ft. Lasts 1 hr." },
       { id: "slippery_target", name: "Slippery Target", tier: 2, color: "Red", range: "r", concentration: true, description: "Target can't move well; +1d MD on Actions against them while active." },
       { id: "lighten_group", name: "Lighten Group", tier: 2, color: "Red", range: "r", concentration: true, aoe: true, description: "Nullify fall dmg, double throw distance, half weight of group." },
-      { id: "freeze_ray", name: "Freeze Ray", tier: 2, color: "Blue", range: "r x 2", description: "2 dmg + Advanced Frozen (+2d MD on next Action against them)." },
+      { id: "freeze_ray", name: "Freeze Ray", tier: 2, color: "Blue", range: "r x 2", description: "base dmg + Advanced Frozen (+2d MD on next Action against them)." },
       { id: "force_field", name: "Force Field", tier: 2, color: "Blue", range: "r / 2", concentration: true, aoe: true, description: "Ignore Minor Injuries from xenic attacks (breaks on Severe)." },
-      { id: "leaden_foe", name: "Leaden Foe", tier: 2, color: "Blue", range: "r", concentration: true, description: "Triple fall dmg, lock target in place, 2 dmg/turn on Success." },
+      { id: "leaden_foe", name: "Leaden Foe", tier: 2, color: "Blue", range: "r", concentration: true, description: "Triple fall dmg, lock target in place, base dmg/turn on Success." },
       { id: "electromag_seeing", name: "Electromagnetic Seeing", tier: 2, color: "Green", range: "r / 2", concentration: true, description: "See full electromagnetic spectrum (heat signatures, X-rays, radio waves)." },
       { id: "atmosphere_physic", name: "Atmosphere", tier: 2, color: "Green", range: "r", concentration: true, aoe: true, description: "Create breathable atmosphere in range." },
       { id: "create_darkness", name: "Create Darkness", tier: 2, color: "Gray", range: "r", concentration: true, aoe: true, description: "No one can see in range unless they have heat vision or xeon sensing." },
       { id: "binding", name: "Binding", tier: 2, color: "Gray", range: "r", concentration: true, description: "Xenic tethers: up to 400 lbs, 5 tethers, 5 min. Manipulate length/direction." },
       { id: "onyx_shielding_physic", name: "Onyx Shielding", tier: 2, color: "Gray", range: "r / 2", concentration: true, aoe: true, description: "Defense vs onyx/obsidian/physical. Flat surface only. Ignore Minor from physical." },
-      { id: "flash_heat_trigger", name: "Flash Heat Trigger", tier: 3, color: "Red", range: "r", concentration: true, aoe: true, description: "Heat blast in triggering rune. Spec conditions or manual (r×2). Lasts 1 day. 3 dmg, can't use red next turn." },
-      { id: "heat_wall", name: "Heat Wall", tier: 3, color: "Red", range: "r", concentration: true, aoe: true, description: "40 ft wall (can bend). Heat damage 10 ft radius on one side (3 dmg, can't use red next turn)." },
+      { id: "flash_heat_trigger", name: "Flash Heat Trigger", tier: 3, color: "Red", range: "r", concentration: true, aoe: true, description: "Heat blast in triggering rune. Spec conditions or manual (r×2). Lasts 1 day. +1 dmg, can't use red next turn." },
+      { id: "heat_wall", name: "Heat Wall", tier: 3, color: "Red", range: "r", concentration: true, aoe: true, description: "40 ft wall (can bend). Heat damage 10 ft radius on one side (+1 dmg, can't use red next turn)." },
       { id: "force_wave_physic", name: "Force Wave", tier: 3, color: "Red", range: "r", aoe: true, description: "Move everything in a 30 ft cube in one direction." },
       { id: "slippery_group", name: "Slippery Group", tier: 3, color: "Red", range: "r", concentration: true, aoe: true, description: "Enemies stuck/slippery; +1d MD on Actions against them." },
-      { id: "flash_cold_trigger", name: "Flash Cold Trigger", tier: 3, color: "Blue", range: "r", concentration: true, aoe: true, description: "Cold blast in triggering rune. 2 dmg + Advanced Frozen (+2d MD on next two Actions against them). Lasts 1 day." },
-      { id: "cold_wall", name: "Cold Wall", tier: 3, color: "Blue", range: "r", concentration: true, aoe: true, description: "40 ft wall (can bend). Frozen debuff (+1d MD) and 2 dmg on one side." },
+      { id: "flash_cold_trigger", name: "Flash Cold Trigger", tier: 3, color: "Blue", range: "r", concentration: true, aoe: true, description: "Cold blast in triggering rune. base dmg + Advanced Frozen (+2d MD on next two Actions against them). Lasts 1 day." },
+      { id: "cold_wall", name: "Cold Wall", tier: 3, color: "Blue", range: "r", concentration: true, aoe: true, description: "40 ft wall (can bend). Frozen debuff (+1d MD) and base dmg on one side." },
       { id: "grippy_group", name: "Grippy Group", tier: 3, color: "Blue", range: "r", concentration: true, aoe: true, description: "Enemies stuck to ground, can't move; +1d MD on Actions against them." },
       { id: "life_force", name: "Life Force", tier: 3, color: "Green", range: "r / 2", concentration: true, aoe: true, description: "Allies: +1d MD continuously. Stamina each round." },
       { id: "shade", name: "Shade", tier: 3, color: "Gray", range: "0", concentration: true, description: "Make someone a stealthy shade (invisible, move silently)." },
@@ -781,29 +781,29 @@ window.XRRPG_CLASS_DEFS = {
     baseRange: { 1: 20, 2: 30, 3: 50, 4: 50 },
     spellPool: [
       // Red
-      { id: "heat_ray_pos", name: "Heat Ray", tier: 1, color: "Red", range: "r x 2", description: "3 dmg on Success. Can't use red spells next turn." },
-      { id: "scorching_bomb_pos", name: "Scorching Bomb", tier: 1, color: "Red", aoe: true, range: "r", description: "AOE 2 dmg on Success. Can cast at Tier II for 3 dmg (can't use red next turn)." },
-      { id: "flash_heat_trigger_pos", name: "Flash Heat Trigger", tier: 3, color: "Red", concentration: true, aoe: true, range: "r", description: "Heat blast in triggering rune. Manual trigger range r x 2. Lasts 1 day. 3 dmg (can't use red next turn)." },
-      { id: "heat_wall_pos", name: "Heat Wall", tier: 3, color: "Red", concentration: true, aoe: true, range: "r", description: "40 ft wall (can bend); one side exudes heat and damage in 10 ft radius. 3 dmg (can't use red next turn)." },
-      { id: "percussive_bomb_pos", name: "Percussive Bomb", tier: 2, color: "Red", aoe: true, range: "r x 2", description: "2 dmg in 15 ft radius; enemies pushed to edge of radius." },
+      { id: "heat_ray_pos", name: "Heat Ray", tier: 1, color: "Red", range: "r x 2", description: "+1 dmg on Success. Can't use red spells next turn." },
+      { id: "scorching_bomb_pos", name: "Scorching Bomb", tier: 1, color: "Red", aoe: true, range: "r", description: "AOE base dmg on Success. Can cast at Tier II for +1 dmg (can't use red next turn)." },
+      { id: "flash_heat_trigger_pos", name: "Flash Heat Trigger", tier: 3, color: "Red", concentration: true, aoe: true, range: "r", description: "Heat blast in triggering rune. Manual trigger range r x 2. Lasts 1 day. +1 dmg (can't use red next turn)." },
+      { id: "heat_wall_pos", name: "Heat Wall", tier: 3, color: "Red", concentration: true, aoe: true, range: "r", description: "40 ft wall (can bend); one side exudes heat and damage in 10 ft radius. +1 dmg (can't use red next turn)." },
+      { id: "percussive_bomb_pos", name: "Percussive Bomb", tier: 2, color: "Red", aoe: true, range: "r x 2", description: "base dmg in 15 ft radius; enemies pushed to edge of radius." },
       // Blue
-      { id: "cold_ray_pos", name: "Cold Ray", tier: 1, color: "Blue", range: "r x 2", description: "2 dmg + Frozen (+1d MD on next Action against them)." },
-      { id: "freezing_bomb_pos", name: "Freezing Bomb", tier: 1, color: "Blue", aoe: true, range: "r", description: "AOE 2 dmg. Can cast at Tier II: 2 dmg + Frozen (+1d MD)." },
-      { id: "flash_cold_trigger_pos", name: "Flash Cold Trigger", tier: 3, color: "Blue", concentration: true, aoe: true, range: "r", description: "Cold blast in triggering rune. Lasts 1 day. 2 dmg + Advanced Frozen (+2d MD on next two Actions against them)." },
-      { id: "cold_wall_pos", name: "Cold Wall", tier: 3, color: "Blue", concentration: true, aoe: true, range: "r", description: "40 ft wall (can bend); cold damage and Frozen (+1d MD) on one side. 2 dmg." },
+      { id: "cold_ray_pos", name: "Cold Ray", tier: 1, color: "Blue", range: "r x 2", description: "base dmg + Frozen (+1d MD on next Action against them)." },
+      { id: "freezing_bomb_pos", name: "Freezing Bomb", tier: 1, color: "Blue", aoe: true, range: "r", description: "AOE base dmg. Can cast at Tier II: base dmg + Frozen (+1d MD)." },
+      { id: "flash_cold_trigger_pos", name: "Flash Cold Trigger", tier: 3, color: "Blue", concentration: true, aoe: true, range: "r", description: "Cold blast in triggering rune. Lasts 1 day. base dmg + Advanced Frozen (+2d MD on next two Actions against them)." },
+      { id: "cold_wall_pos", name: "Cold Wall", tier: 3, color: "Blue", concentration: true, aoe: true, range: "r", description: "40 ft wall (can bend); cold damage and Frozen (+1d MD) on one side. base dmg." },
       // Gray
       { id: "create_darkness_pos", name: "Create Darkness", tier: 2, color: "Gray", concentration: true, aoe: true, range: "r", description: "No one can see in range unless they have heat vision or xeon sensing." },
       { id: "shade_pos", name: "Shade", tier: 3, color: "Gray", concentration: true, range: "0", description: "Make someone a stealthy shade (invisible, move silently)." },
       { id: "xeon_sensing_pos", name: "Xeon Sensing", tier: 1, color: "Gray", concentration: true, range: "r x 2", description: "See xenic spirits and other sources of xeon, including tech and magic items. Lasts 10 min." },
       // Dark
-      { id: "wither_flesh", name: "Wither Flesh", tier: 1, color: "Dark", range: "r", description: "Spirits suck life force from a creature, weakening them (3 dmg on Success)." },
+      { id: "wither_flesh", name: "Wither Flesh", tier: 1, color: "Dark", range: "r", description: "Spirits suck life force from a creature, weakening them (+1 dmg on Success)." },
       { id: "corporealize_spirit", name: "Corporealize Spirit", tier: 1, color: "Dark", concentration: true, range: "r / 2", description: "Give a spirit physical form; they can speak and interact with the world. Give simple commands. Lasts up to 1 hr." },
       { id: "take_spirit_appearance", name: "Take Spirit Appearance", tier: 2, color: "Dark", range: "0", description: "Take on the appearance of one of your servant spirits for up to 2 hours." },
-      { id: "haunting_figures", name: "Haunting Figures", tier: 2, color: "Dark", concentration: true, range: "r", description: "Spirits torment a target; 2 dmg per 10 sec on Success. Lasts up to 5 min (target can keep trying to escape)." },
-      { id: "necrotic_beam", name: "Necrotic Beam", tier: 3, color: "Dark", aoe: true, range: "r", description: "Beam of necrotic energy hits everyone on a line in 60 ft range (5 dmg on Success)." },
+      { id: "haunting_figures", name: "Haunting Figures", tier: 2, color: "Dark", concentration: true, range: "r", description: "Spirits torment a target; base dmg per 10 sec on Success. Lasts up to 5 min (target can keep trying to escape)." },
+      { id: "necrotic_beam", name: "Necrotic Beam", tier: 3, color: "Dark", aoe: true, range: "r", description: "Beam of necrotic energy hits everyone on a line in 60 ft range (+3 dmg on Success)." },
       { id: "raise_hoard", name: "Raise Hoard", tier: 2, color: "Dark", concentration: true, range: "r / 2", description: "Raise a hoard of undead spirits. As a whole has health of one strong servant. Can't do damage but can restrain, block spaces, break doors/walls." },
       { id: "physical_thrall", name: "Physical Thrall", tier: 3, color: "Dark", concentration: true, range: "r / 2", description: "A spirit attempts to inhabit a mortal's body. Take over for ~1 min. Every time hurt they can try to escape." },
-      { id: "raise_dead_i", name: "Raise Dead/Create Construct", tier: 1, color: "Dark", concentration: true, range: "r / 2", description: "Servant HP: 3. A spirit inhabits a deceased creature/person or animates non-living matter. Base 2 dmg on Success. (3/day)" },
+      { id: "raise_dead_i", name: "Raise Dead/Create Construct", tier: 1, color: "Dark", concentration: true, range: "r / 2", description: "Servant HP: 3. A spirit inhabits a deceased creature/person or animates non-living matter. Base base dmg on Success. (3/day)" },
       { id: "raise_dead_ii", name: "Raise Dead/Create Construct II", tier: 2, color: "Dark", concentration: true, range: "r / 2", description: "Servant HP: 5. The servant is Special, imbued with one Lvl 1 Adept Basic and Advanced power. (3/day)" },
       { id: "raise_dead_iii", name: "Raise Dead/Create Construct III (Elite)", tier: 3, color: "Dark", concentration: true, range: "r / 2", description: "Servant HP: 7. The servant is Elite, imbued with one Lvl 2 Adept Basic and Advanced power. Extremely strong and hard to take down. (2/day)" }
     ],
@@ -845,7 +845,7 @@ window.XRRPG_CLASS_DEFS = {
       { id: "mending", name: "Mending", tier: 1, roll: 2, range: "15 ft", substance: "Dioptase (dark green gem)", description: "Mend a non-magical, non-xenic object (2 ft square max). Can mend larger objects with multiple uses." },
       { id: "charm_enc", name: "Charm", tier: 1, roll: 3, range: "15 ft", substance: "Rose Quartz (light pink with white streaks)", concentration: true, description: "[Concentration] +2d MD bonus to interpersonal Actions for up to 10 min." },
       { id: "little_heal_enc", name: "Little Heal", tier: 1, roll: 4, range: "30 ft", substance: "Amber (golden orange gem)", description: "Heal up to 3 HP's worth of Injuries distributed among any amount of targets." },
-      { id: "electric_zap", name: "Electric Zap", tier: 1, roll: 5, range: "30 ft", substance: "Barite (light blue or yellow gem)", description: "Zap a target, deals 3 dmg on Success." },
+      { id: "electric_zap", name: "Electric Zap", tier: 1, roll: 5, range: "30 ft", substance: "Barite (light blue or yellow gem)", description: "Zap a target, deals +1 dmg on Success." },
       { id: "comprehend_languages", name: "Comprehend and Speak Languages", tier: 1, roll: 6, range: "—", substance: "Tincalconite (white solid gem or powder)", concentration: true, description: "[Concentration] For the next 10 min you can comprehend and speak any language (certain ancient or secret languages have protections against this)." },
       { id: "clone_image", name: "Clone Image", tier: 1, roll: 7, range: "50 ft", substance: "Gypsum (soft clear gem)", concentration: true, description: "[Concentration] Create an illusory version of yourself you can command to do whatever you like. It can interact with the world physically but can't deal damage or use your xenic abilities." },
       { id: "breath_of_chaos", name: "Breath of Chaos", tier: 1, roll: 8, range: "—", substance: "Kairidium (rainbow in light, black in darkness)", description: "Roll a d8, cast that Tier I Enchanter spell for free (1/turn). You must cast that spell even if disruptive. Roll 8 = pick any Tier I spell for free; every consecutive 8 you roll also lets you pick a free spell." },
@@ -862,7 +862,7 @@ window.XRRPG_CLASS_DEFS = {
       { id: "xenic_portal", name: "Xenic Plane Portal", tier: 3, roll: 1, range: "15 ft", substance: "Malachite (bright green and dark green gem)", description: "Create a portal into or out of the xenic plane." },
       { id: "swap_places", name: "Swap Places", tier: 3, roll: 2, range: "100 ft (unwilling) / 10 miles (willing)", substance: "Black Rutile (clear gem with black streaks)", description: "Swap places with a person or creature, or swap two creatures. Willing targets: no Action needed (still costs Stamina), range up to 10 miles if you know both targets. Unwilling targets: must see them and do an Action Roll." },
       { id: "stasis_lock", name: "Stasis Lock", tier: 3, roll: 3, range: "50 ft", substance: "Wolframite (blue metal)", concentration: true, description: "[Concentration] Lock a person or thing to a fixed point in space for up to 10 minutes." },
-      { id: "animate_object", name: "Animate Object", tier: 3, roll: 4, range: "15 ft", substance: "Topaz (clear crystal, many colors)", concentration: true, description: "[Concentration] Animate an object up to 10×10×10 ft. Follows your orders; large objects can deal up to 4 dmg on Success." },
+      { id: "animate_object", name: "Animate Object", tier: 3, roll: 4, range: "15 ft", substance: "Topaz (clear crystal, many colors)", concentration: true, description: "[Concentration] Animate an object up to 10×10×10 ft. Follows your orders; large objects can deal up to +2 dmg on Success." },
       { id: "tiny_pocket_hut", name: "Tiny Pocket Hut", tier: 3, roll: 5, range: "30 ft", substance: "Pomjite (purple and gray gem)", description: "Create a large rift in the xenic plane: 20×20×20 ft Pocket Dimension with the same rules as Pocket Dimension." },
       { id: "enbiggen", name: "Enbiggen", tier: 3, roll: 6, range: "15 ft", substance: "Fluorite (green and purple gem)", concentration: true, description: "[Concentration] Double the size of an ally or yourself: weight ×8, End and Vig get +2d MD, deal +3 extra damage. Lasts up to 1 minute." },
       { id: "ensmallen", name: "Ensmallen", tier: 3, roll: 7, range: "15 ft", substance: "Fluorite (green and purple gem)", concentration: true, description: "[Concentration] Half the size of an ally or yourself: weight ÷8, Int gets +2d MD, speed +50 ft. Lasts up to 1 minute." },
@@ -870,7 +870,7 @@ window.XRRPG_CLASS_DEFS = {
     ],
     chaosTableMinor: [
       { roll: 1,  name: "Self-Petrify",  range: "—",     effect: "Paralyzes you for a turn (cannot take Actions)." },
-      { roll: 2,  name: "Rot",           range: "50 ft",  effect: "Rot flesh; cloud of smell 15 ft radius does 1 dmg to target and everyone around for 3 rounds." },
+      { roll: 2,  name: "Rot",           range: "50 ft",  effect: "Rot flesh; cloud of smell 15 ft radius does -1 dmg to target and everyone around for 3 rounds." },
       { roll: 3,  name: "Future Sight",  range: "—",     effect: "You see something that will happen in the future." },
       { roll: 4,  name: "Eyes to See",   range: "—",     effect: "See the whole electromagnetic spectrum and into the xenic plane for 1d10 min." },
       { roll: 5,  name: "Faraway Voice", range: "—",     effect: "Send a short message to anyone you've met or seen in person, anywhere." },
@@ -885,9 +885,9 @@ window.XRRPG_CLASS_DEFS = {
       { roll: 12, name: "Mass Heal",      range: "50 ft",   effect: "Heal up to 20 HP's worth of Injuries distributed among anybody within range." },
       { roll: 13, name: "Wings to Fly",   range: "—",      effect: "You can fly for 10 min." },
       { roll: 14, name: "Confuse",        range: "100 ft",  effect: "An enemy is forced to attempt to attack an ally this round." },
-      { roll: 15, name: "Explode",        range: "50 ft",   effect: "Explosion around an enemy: 5 dmg in a 30 ft radius." },
+      { roll: 15, name: "Explode",        range: "50 ft",   effect: "Explosion around an enemy: +3 dmg in a 30 ft radius." },
       { roll: 16, name: "Reverse Time",   range: "50 ft",   effect: "Reverse one thing that anyone has done in the past 10 minutes." },
-      { roll: 17, name: "Electric Shock", range: "30 ft",   effect: "Shock the enemy with electricity, 7 dmg." },
+      { roll: 17, name: "Electric Shock", range: "30 ft",   effect: "Shock the enemy with electricity, +5 dmg." },
       { roll: 18, name: "Cleanse Spirit", range: "—",      effect: "Cleanse all your Spirit Decay, or that of an ally if you don't have any." },
       { roll: 19, name: "Energize",       range: "—",      effect: "You or any ally may immediately do an Action using +3d MD for no Stamina." },
       { roll: 20, name: "Channel Chaos",  range: "—",      effect: "You may immediately do an ability of any other class." }
@@ -927,30 +927,30 @@ window.XRRPG_CLASS_DEFS = {
     ],
     techniquePool: [
       // Tier I
-      { id: "combust",       name: "Combust",         tier: 1, element: "Fire",  requirements: "5 ft cube air or gas around target",  description: "Target in range combusts, deals 3 dmg on Success. The air used has to be around the target." },
+      { id: "combust",       name: "Combust",         tier: 1, element: "Fire",  requirements: "5 ft cube air or gas around target",  description: "Target in range combusts, deals +1 dmg on Success. The air used has to be around the target." },
       { id: "boulder",       name: "Boulder",          tier: 1, element: "Stone", requirements: "6 ft cube stone or earth",             description: "Shape a boulder into any shape or push a 6 ft square of stone or earth around in range. Can push a target." },
       { id: "phytoheal",     name: "Phytoheal",        tier: 1, element: "Plant", requirements: "1 lb of biomass",                      description: "Shape biomass into a plant that can heal Minor Injuries." },
       { id: "water_lash",    name: "Water Lash",       tier: 1, element: "Water", requirements: "3 ft cube water",                      description: "Use water to push or pull a target in any direction except up, or just move the water itself." },
       { id: "flash_el",      name: "Flash",            tier: 1, element: "Light", requirements: "No xenic darkness",                    description: "Blind targets in a 25° cone; next Action against them gets +1d MD." },
-      { id: "chromespear",   name: "Chromespear",      tier: 1, element: "Metal", requirements: "1 ft cube of metal",                   description: "Use metal to deal 3 dmg to one target. Can throw a spear of metal or have the metal appear from the terrain. Can pin target on Success." },
+      { id: "chromespear",   name: "Chromespear",      tier: 1, element: "Metal", requirements: "1 ft cube of metal",                   description: "Use metal to deal +1 dmg to one target. Can throw a spear of metal or have the metal appear from the terrain. Can pin target on Success." },
       { id: "chitinous_armor", name: "Chitinous Armor", tier: 1, element: "Flesh", requirements: "Biological target",                  description: "Target grows chitinous, scaly, or leathery armor; can ignore physical Minor or Severe Injuries for up to 30 seconds." },
       { id: "wind_tunnel",   name: "Wind Tunnel",      tier: 1, element: "Air",   requirements: "10 ft cube air or gas",               description: "Push or pull a target in range in any direction, or just move the air itself." },
       // Tier II
-      { id: "flamewave",     name: "Flamewave",        tier: 2, element: "Fire",  requirements: "20 ft cube air or gas",               description: "A wave of fire sweeps through a 20 ft cube, deals 3 dmg on Success." },
+      { id: "flamewave",     name: "Flamewave",        tier: 2, element: "Fire",  requirements: "20 ft cube air or gas",               description: "A wave of fire sweeps through a 20 ft cube, deals +1 dmg on Success." },
       { id: "stonewall",     name: "Stonewall",        tier: 2, element: "Stone", requirements: "20 ft cube stone or earth",            description: "Shape stone or earth into a wall or any other shape, or push a 20 ft cube's worth around in range. Can push targets around." },
       { id: "constrict",     name: "Constrict",        tier: 2, element: "Plant", requirements: "5 lbs of biomass",                    description: "Shape biomass into vines or another plant type that constricts one humanoid target. Spend multiple Actions to constrict a larger target." },
       { id: "wave",          name: "Wave",             tier: 2, element: "Water", requirements: "15 ft cube water",                    description: "Use water to push or pull targets in a 30 ft area in any direction except up, or just move the water itself." },
       { id: "lightshift",    name: "Lightshift",       tier: 2, element: "Light", requirements: "No xenic darkness",                   description: "Use light in a 30 ft square to create an illusion of the same size. Can also suck all light from that area to create deep darkness." },
-      { id: "shardbomb",     name: "Shardbomb",        tier: 2, element: "Metal", requirements: "5 ft cube of metal",                  description: "Use metal to throw spears or create a sharp flower of metal dealing 3 dmg in a 15 ft radius. Can pin targets on Success." },
-      { id: "pestilence",    name: "Pestilence",       tier: 2, element: "Flesh", requirements: "Biological targets",                  description: "All targets in up to a 30 ft sphere are attacked by a powerful disease or poison: they take 2 dmg and Actions against them get +1d MD." },
+      { id: "shardbomb",     name: "Shardbomb",        tier: 2, element: "Metal", requirements: "5 ft cube of metal",                  description: "Use metal to throw spears or create a sharp flower of metal dealing +1 dmg in a 15 ft radius. Can pin targets on Success." },
+      { id: "pestilence",    name: "Pestilence",       tier: 2, element: "Flesh", requirements: "Biological targets",                  description: "All targets in up to a 30 ft sphere are attacked by a powerful disease or poison: they take base dmg and Actions against them get +1d MD." },
       { id: "gust",          name: "Gust",             tier: 2, element: "Air",   requirements: "30 ft cube air or gas",               description: "Push or pull all targets in a 30 ft cube in any direction, or just move the air itself." },
       // Tier III
-      { id: "fireball_el",   name: "Fireball",         tier: 3, element: "Fire",  requirements: "20 ft radius sphere air or gas",      description: "Massive fireball, deals 3 dmg on Success." },
+      { id: "fireball_el",   name: "Fireball",         tier: 3, element: "Fire",  requirements: "20 ft radius sphere air or gas",      description: "Massive fireball, deals +1 dmg on Success." },
       { id: "stoneshape",    name: "Stoneshape",       tier: 3, element: "Stone", requirements: "100 ft cube stone or earth",           description: "Shape stone or earth into a wall or any other shape, or push a 100 ft cube's worth around in range. Can push targets around." },
       { id: "create_plant",  name: "Create Plant",     tier: 3, element: "Plant", requirements: "Over 100 lbs of biomass (max 500 lbs)", description: "Use biomass to create and control whatever plants you want. Can be used for multiple Actions to create and shape bigger plants." },
       { id: "waterbomb",     name: "Waterbomb",        tier: 3, element: "Water", requirements: "30 ft radius sphere water",            description: "Use water to push or pull targets in a 50 ft radius area in any direction except up, or just move the water itself." },
-      { id: "starbeam",      name: "Starbeam",         tier: 3, element: "Light", requirements: "No xenic darkness",                   description: "Do a laser beam that deals 4 dmg to all targets in a line." },
-      { id: "magnetize",     name: "Magnetize",        tier: 3, element: "Metal", requirements: "25 ft cube of metal",                 description: "Move metal and metal objects in range however you'd like. Deals up to 5 dmg on Success with a large amount of metal." },
+      { id: "starbeam",      name: "Starbeam",         tier: 3, element: "Light", requirements: "No xenic darkness",                   description: "Do a laser beam that deals +2 dmg to all targets in a line." },
+      { id: "magnetize",     name: "Magnetize",        tier: 3, element: "Metal", requirements: "25 ft cube of metal",                 description: "Move metal and metal objects in range however you'd like. Deals up to +3 dmg on Success with a large amount of metal." },
       { id: "flesh_puppet",  name: "Flesh Puppet",     tier: 3, element: "Flesh", requirements: "Biological target",                   description: "Attempt to take control of a target's body. Difficult Action; if Successful lasts up to 10 min. Does not control the target's mind." },
       { id: "supercell",     name: "Supercell",        tier: 3, element: "Air",   requirements: "50 ft radius sphere air or gas",      description: "Move all targets in a 50 ft radius sphere in any direction, or just move the air itself." }
     ],
@@ -1054,12 +1054,12 @@ window.XRRPG_CLASS_DEFS = {
           ],
           2: [
             { name: "Wither", latch: false, effect: "Saps enemy defenses: next Action against them gets +2d MD." },
-            { name: "Empower", latch: true, effect: "Attaches to ally: +1d MD on Attack Actions and +2 damage for up to 3 turns." },
+            { name: "Empower", latch: true, effect: "Attaches to ally: +1d MD on Attack Actions and +2 dmg for up to 3 turns." },
             { name: "Incite", latch: true, effect: "Forces enemy to attack a chosen target for next 3 turns (breakable on Failed roll)." },
             { name: "Frighten", latch: false, effect: "Enemy can't move closer to chosen person/thing and can't attack them (breakable)." }
           ],
           3: [
-            { name: "Torture", latch: true, effect: "Target can't move, deal damage, do actions, or speak; all attacks against them are easier; 2 dmg at end of each turn for 3 turns (breakable)." },
+            { name: "Torture", latch: true, effect: "Target can't move, deal damage, do actions, or speak; all attacks against them are easier; base dmg at end of each turn for 3 turns (breakable)." },
             { name: "Waking Nightmare", latch: true, effect: "Enemy gets -2 to all damage dealt for up to 3 turns." },
             { name: "Pain Transfer", latch: true, effect: "All damage and healing taken by you is dealt as damage to enemy for 3 turns." }
           ]
@@ -1166,7 +1166,7 @@ window.XRRPG_CLASS_DEFS = {
     maxLevel: 3,
     chromaRequired: null,
     effectPool: [
-      { id: "cold_fist", name: "Cold Fist", description: "Inflict Frozen debuff (2 dmg on Success, +1d/+2d/+3d MD on next Action against them)." },
+      { id: "cold_fist", name: "Cold Fist", description: "Inflict Frozen debuff (base dmg on Success, +1d/+2d/+3d MD on next Action against them)." },
       { id: "heat_fist", name: "Heat Fist", description: "+1/+2/+3 dmg but must cool down next turn." },
       { id: "inertial_dampening", name: "Inertial Dampening", description: "Attempt to stop enemy attack or movement (reaction Action Roll). Range 15/30/50 ft." },
       { id: "tethering_whip", name: "Tethering Whip", description: "Xeon binding whip from gauntlet. Attaches 25/50/100 ft away; pull yourself to target or target to you." },
@@ -1209,20 +1209,20 @@ window.XRRPG_CLASS_DEFS = {
     maxLevel: 3,
     chromaRequired: null,
     droneEffectPool: [
-      { id: "beam", name: "Beam", tier: 1, description: "Can fire an ice ray that inflicts the Frozen debuff (does 2 dmg and grants +1d Mastery Die on next Action against them). Fire beam deals 3 damage but it has to cool down next turn." },
+      { id: "beam", name: "Beam", tier: 1, description: "Can fire an ice ray that inflicts the Frozen debuff (does base dmg and grants +1d Mastery Die on next Action against them). Fire beam deals +1 dmg but it has to cool down next turn." },
       { id: "shielding", name: "Shielding", tier: 1, description: "Can hover around a person and give them a bonus to defense against beam damage (target ignores Minor Injuries from xenic sources, but the shield breaks if it takes Severe or higher)." },
       { id: "hacking", name: "Hacking", tier: 1, description: "Can do a check for it to hack into things remotely; it can also look things up on the web. Hacking can't be used to disrupt weapons or other combat machinery." },
       { id: "recon", name: "Recon", tier: 1, description: "The Recon Drone has a drone connection range of 500 ft and you can see through its eyes and hear through its ears." },
       { id: "healing_drone", name: "Healing", tier: 1, trackUses: 5, trackLabel: "Healing uses (per day)", description: "Can heal up to 2 HP's worth of Injuries up to 5 times a day (one target). Can also heal other drones and repair them if they've been destroyed (but if they've been disintegrated then tough luck)." },
-      { id: "advanced_beam", name: "Advanced Beam", tier: 2, description: "Ice ray inflicts Advanced Frozen debuff (grants +2d Mastery Die on next Action against them). Fire beam deals +2 damage but it has to cool down next turn." },
-      { id: "animal_mech", name: "Animal Mech", tier: 2, description: "This mech drone is in the shape of a small animal. This animal can do up to 2 damage on a Success during combat, but it has all the abilities of the animal otherwise. May be used to scout." },
+      { id: "advanced_beam", name: "Advanced Beam", tier: 2, description: "Ice ray inflicts Advanced Frozen debuff (grants +2d Mastery Die on next Action against them). Fire beam deals +2 dmg but it has to cool down next turn." },
+      { id: "animal_mech", name: "Animal Mech", tier: 2, description: "This mech drone is in the shape of a small animal. This animal can do base dmg on a Success during combat, but it has all the abilities of the animal otherwise. May be used to scout." },
       { id: "atmosphere_drone", name: "Atmosphere", tier: 2, description: "Creates a 30 ft radius bubble of atmosphere." },
       { id: "onyx_drone", name: "Onyx", tier: 2, description: "Can hover around a person and give them a defense bonus against physical damage (target ignores Minor Injuries from physical sources). It can also create floating black platforms (up to 2 at a time)." },
       { id: "advanced_recon", name: "Advanced Recon", tier: 2, description: "The Advanced Recon Drone has extremely advanced auditory and visual sensors. It can also go semi-invisible, making it extremely stealthy, and can sense sources of xeon." },
       { id: "projector", name: "Projector", tier: 2, description: "Can create holographic projections up to a 20 ft square." },
       { id: "xeon_binding_drone", name: "Xeon Binding", tier: 3, description: "Can bind two things together with a white glowing tether. This tether can last up to 5 minutes, and the drone can have up to 3 tethers going at a time. The tethers can hold up to 1000 lbs, and the drone can manipulate the direction and length of these tethers (max 30 ft). It can also attempt to move another person but it's not quite as effective at that." },
       { id: "inertial_dampening_drone", name: "Inertial Dampening", tier: 3, description: "This drone can shoot a blue beam at a person to either stop them moving (no charge) or hamper the person's attacks and defense for the next turn (has to charge for 1 turn, +2d Mastery Dice on Actions against this target)." },
-      { id: "weight_control_drone", name: "Weight Control", tier: 3, description: "Can shoot an orb of blue or red xeon at a person:<br>- Blue makes them go up to 2x their weight, which stops them in their tracks for the turn and damages them 2 on a Success<br>- Red makes them extra light, which makes them easier to push around" },
+      { id: "weight_control_drone", name: "Weight Control", tier: 3, description: "Can shoot an orb of blue or red xeon at a person:<br>- Blue makes them go up to 2x their weight, which stops them in their tracks for the turn and base dmg on a Success<br>- Red makes them extra light, which makes them easier to push around" },
       { id: "advanced_healing", name: "Advanced Healing", tier: 3, trackUses: 5, trackLabel: "Adv. Healing uses (per day)", description: "Can heal up to 5 HP's worth of Injuries up to 5 times a day (any amount of targets, can't heal Critical Injuries)." },
       { id: "diamond", name: "Diamond", tier: 3, description: "When hit by beam attacks (blue or red) it amplifies them, multiplying the amount damage they do by 1.5. Has to cooldown for a turn after use." },
       { id: "force_wave_drone", name: "Force Wave", tier: 3, description: "Can create force waves in up to a 30 ft cube in any direction. These force waves can throw up to 500 lbs of weight (if the weight is spread out), and anyone caught in it must attempt to resist the effect." },
@@ -1255,15 +1255,15 @@ window.XRRPG_CLASS_DEFS = {
       { id: "blue_shield",        name: "Blue Shield",           tier: 1, description: "Blocks xenic damage (can be destroyed by sustained fire). Does not block sight. Ignore Minor Injuries from xenic sources; Severe Injuries break it." },
       { id: "onyx_shield",        name: "Onyx Shield",           tier: 1, description: "Shield itself has to to be a flat surface, no curves! Blocks physical, onyx, and obsidian dmg. Ignore Minor Injuries from physical sources, Severe Injuries break it Surface can hold up to 2000 lbs of weight. Does not block sight!" },
       { id: "healing_zone",       name: "Healing Zone",          tier: 1, description: "Heals a Minor Injury for everyone in range every round it's active." },
-      { id: "damage_zone",        name: "Damage Zone",           tier: 1, description: "Deals 1 damage to everyone in range every round it's active." },
+      { id: "damage_zone",        name: "Damage Zone",           tier: 1, description: "Deals -1 dmg to everyone in range every round it's active." },
       { id: "force_wall",         name: "Force Wall",            tier: 2, description: "Creates a wall or chamber of invisible force in range. Takes strength to overcome." },
-      { id: "cold_heat_wall",     name: "Cold/Heat Wall",        tier: 2, description: "Creates a wall in range. Deals 2 dmg to anyone who passes through it." },
+      { id: "cold_heat_wall",     name: "Cold/Heat Wall",        tier: 2, description: "Creates a wall in range. Deals base dmg to anyone who passes through it." },
       { id: "projection_emitter", name: "Projection Emitter",    tier: 2, description: "Projects a realistic illusion; others may attempt to discern that it's not real." },
       { id: "buff_zone",          name: "Buff Zone",             tier: 2, description: "Empowers everyone in range: +1d Mastery Die to all Actions." },
       { id: "debuff_zone",        name: "Debuff Zone",           tier: 2, description: "Debuffs everyone in range: +1d Mastery Die on all Actions done against targets in range." },
       { id: "atmosphere_zone",    name: "Atmosphere Zone",       tier: 2, description: "Generates breathable atmosphere in range." },
       { id: "adv_onyx_shield",    name: "Advanced Onyx Shield",  tier: 3, description: "Can now make full boxes of onyx to contain or protect, rules are same as Onyx Shield above except you ignore up to Severe Injuries from physical sources, breaks on Critical Injuries." },
-      { id: "adv_blue_shield",    name: "Advanced Blue Shield",  tier: 3, description: "	More intense xenic shield. Ignore up to Severe Injuries from physical sources, breaks on Critical Injuries." },
+      { id: "adv_blue_shield",    name: "Advanced Blue Shield",  tier: 3, description: "More intense xenic shield. Ignore up to Severe Injuries from physical sources, breaks on Critical Injuries." },
       { id: "adv_healing_zone",   name: "Advanced Healing Zone", tier: 3, description: "Heals everyone in range up to 2 HP's worth of Injuries per turn it's active." },
       { id: "adv_buff_zone",      name: "Advanced Buff Zone",    tier: 3, description: "Empowers everyone in range: +2d Mastery Dice to all Actions." },
       { id: "adv_debuff_zone",    name: "Advanced Debuff Zone",  tier: 3, description: "Debuffs everyone in range: +2d Mastery Dice on all Actions done against targets in range." }
@@ -1294,23 +1294,23 @@ window.XRRPG_CLASS_DEFS = {
     chromaRequired: null,
     bombNote: "Explosives can be thrown by hand (20 ft) or launched from a cannon. Effects don't flow around corners unless stated. Basic Damage and Basic Heal bombs are unlimited and don't count toward the daily limit. Higher-tier bombs include all lower-tier bomb capabilities.",
     bombPool: [
-      { id: "basic_damage",    name: "Basic Damage",      tier: 1, unlimited: true,  description: "Deals 1 damage on Success." },
+      { id: "basic_damage",    name: "Basic Damage",      tier: 1, unlimited: true,  description: "Deals -1 dmg on Success." },
       { id: "basic_heal",      name: "Basic Heal",        tier: 1, unlimited: true,  description: "Heals 1 HP worth of Injuries to everyone in range." },
-      { id: "heat",            name: "Heat",              tier: 1, description: "Deals 3 damage on Success. Cannon can't throw Heat Bombs next turn." },
-      { id: "cold",            name: "Cold",              tier: 1, description: "Inflicts Frozen debuff (+1d Mastery Die on next Action against them). Deals 2 dmg on Success." },
+      { id: "heat",            name: "Heat",              tier: 1, description: "Deals +1 dmg on Success. Cannon can't throw Heat Bombs next turn." },
+      { id: "cold",            name: "Cold",              tier: 1, description: "Inflicts Frozen debuff (+1d Mastery Die on next Action against them). Deals base dmg on Success." },
       { id: "obsidian",        name: "Obsidian",          tier: 1, description: "Throws out small black daggers that do physical damage." },
       { id: "healing",         name: "Healing",           tier: 1, description: "Heals up to 3 HP's worth of Injuries to everyone in range." },
       { id: "sticky",          name: "Sticky",            tier: 1, description: "Everyone caught in the blast has half movement for the next round." },
       { id: "force",           name: "Force",             tier: 2, description: "	Doesn't do damage, but forces everything up to 500 lbs within its range away from the center of the blast to the rim of it. If any object caught in the blast hits anything it will take damage." },
       { id: "atmosphere",      name: "Atmosphere",        tier: 2, description: "Creates atmosphere in its area for the next 30 minutes." },
       { id: "darkness",        name: "Darkness",          tier: 2, description: "Creates impenetrable darkness within range. Sound and xeon sensors still work." },
-      { id: "adv_heat",        name: "Advanced Heat",     tier: 2, description: "Deals 4 damage on Success. Cannon can't throw Heat Bombs next turn." },
-      { id: "adv_cold",        name: "Advanced Cold",     tier: 2, description: "Inflicts Advanced Frozen debuff (+2d Mastery Die on next Action against them). Deals 2 dmg on Success." },
+      { id: "adv_heat",        name: "Advanced Heat",     tier: 2, description: "Deals +2 dmg on Success. Cannon can't throw Heat Bombs next turn." },
+      { id: "adv_cold",        name: "Advanced Cold",     tier: 2, description: "Inflicts Advanced Frozen debuff (+2d Mastery Die on next Action against them). Deals base dmg on Success." },
       { id: "stamina",         name: "Stamina",           tier: 2, description: "Gives everyone in range +1d Mastery Die for their next Action." },
-      { id: "cluster",         name: "Cluster Explosion", tier: 3, description: "Does 5 damage on Success. Flows around corners." },
+      { id: "cluster",         name: "Cluster Explosion", tier: 3, description: "Does +3 dmg on Success. Flows around corners." },
       { id: "adv_obsidian",    name: "Advanced Obsidian", tier: 3, description: "Obsidian shards shred the defenses of anyone inside." },
-      { id: "tentacle",        name: "Tentacle",          tier: 3, description: "Pick three targets within double your AOE range. 5 ft-wide beams of energy arc from the bomb and hits the targets and everyone in between the target and the bomb. Does 4 dmg to everything hit." },
-      { id: "structure",       name: "Structure",         tier: 3, description: "Does 3 dmg on Success but does double damage to structures." },
+      { id: "tentacle",        name: "Tentacle",          tier: 3, description: "Pick three targets within double your AOE range. 5 ft-wide beams of energy arc from the bomb and hits the targets and everyone in between the target and the bomb. Does +2 dmg to everything hit." },
+      { id: "structure",       name: "Structure",         tier: 3, description: "Does +1 dmg on Success but does double damage to structures." },
       { id: "adv_stamina",     name: "Advanced Stamina",  tier: 3, description: "Gives everyone in range +2d Mastery Dice for their next Action." },
       { id: "slippery",        name: "Slippery",          tier: 3, description: "Decreases friction for everything in range. Targets have half movement and +1d Mastery Die on all Actions done against them for the next 10 seconds." }
     ],
@@ -1349,12 +1349,12 @@ window.XRRPG_CLASS_DEFS = {
     gunPool: [
       { id: "healing_gun", name: "Healing Gun", tier: 1, trackUses: 5, trackLabel: "Healing shots (per day)", description: "Heals 2 HP's worth of Injuries up to 5 times a day (one target)." },
       { id: "freeze_gun", name: "Cold Gun", tier: 1, description: "Inflicts Frozen (grants +1d Mastery Die on next Action against them). Gun does -1 dmg than usual (can't go below 0)." },
-      { id: "heat_gun", name: "Heat Gun", tier: 1, description: "Deals +1 damage but it has to cool down next turn." },
+      { id: "heat_gun", name: "Heat Gun", tier: 1, description: "Deals +1 dmg but it has to cool down next turn." },
       { id: "onyx_gun", name: "Onyx Gun", tier: 1, description: "Normal percussive gun, does physical damage." },
       { id: "grapple_gun", name: "Grapple Gun", tier: 1, description: "Can use to either move yourself to any place within 30 ft of you or attempt to attach to an enemy and move them to you, 30 ft range." },
       { id: "hacking_gun", name: "Hacking Gun", tier: 1, description: "Shoots a small device that hooks into the target's computer, enabling hacking." },
       { id: "advanced_cold_gun", name: "Advanced Cold Gun", tier: 2, description: "Inflicts Advanced Frozen debuff (grants +2d Mastery Die on next Action against them). Gun does -1 dmg than usual on its own." },
-      { id: "advanced_heat_gun", name: "Advanced Heat Gun", tier: 2, description: "Deals +2 damage but it has to cool down next turn." },
+      { id: "advanced_heat_gun", name: "Advanced Heat Gun", tier: 2, description: "Deals +2 dmg but it has to cool down next turn." },
       { id: "obsidian_gun", name: "Advanced Obsidian Gun", tier: 2, description: "Obsidian gun deals an extra +1 dmg when the target only has physical or xenic defenses (but is completely blocked by onyx shielding)." },
       { id: "stamina_gun", name: "Stamina Gun", tier: 2, description: "The target gets to subtract one from their Stamina Used Total." },
       { id: "recon_gun", name: "Recon Gun", tier: 2, description: "Gun shoots tiny cameras, mics, or xeon sensors that stick to the target. These are easily destroyed, but blend into their environments. Can also shoot trackers." },
@@ -1388,7 +1388,7 @@ window.XRRPG_CLASS_DEFS = {
     maxLevel: 3,
     chromaRequired: null,
     swordPowers: [
-      { id: "cold_heat", name: "Cold / Heat", tier: 1, description: "Cold: 2 dmg + Frozen (+1d MD on next Action against target). Heat: +1 dmg but heat power has to cool down next turn." },
+      { id: "cold_heat", name: "Cold / Heat", tier: 1, description: "Cold: base dmg + Frozen (+1d MD on next Action against target). Heat: +1 dmg but heat power has to cool down next turn." },
       { id: "weight_control_sword", name: "Weight Control", tier: 1, description: "Control your weight and sword weight (1/4× to 2×)." },
       { id: "force", name: "Force", tier: 2, description: "Force target in any direction up to 15 ft." },
       { id: "obsidian", name: "Obsidian", tier: 2, description: "+1 dmg vs targets with only physical or xenic defenses (completely blocked by onyx shielding)." },
@@ -1397,15 +1397,15 @@ window.XRRPG_CLASS_DEFS = {
     ],
     levels: {
       1: {
-        auto: ["Tier I sword powers available (Cold/Heat, Weight Control).", "Normal attack: 3 dmg. Powerful attack: 5 dmg. Powerful attack range: beam up to 15 ft (single target).", "3 Powerful Attacks per day. Missed powerful attack is saved (not spent).", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
+        auto: ["Tier I sword powers available (Cold/Heat, Weight Control).", "Normal attack: +1 dmg. Powerful attack: +3 dmg. Powerful attack range: beam up to 15 ft (single target).", "3 Powerful Attacks per day. Missed powerful attack is saved (not spent).", "Character Level ÷ 3 (min 1) bonus MD on non-combat tech checks (no stamina)."],
         choices: []
       },
       2: {
-        auto: ["Tier II sword powers available (Force, Obsidian).", "Normal attack: 4 dmg. Powerful attack: 6 dmg. Powerful attack: now does AOE 90° arc (10 ft)."],
+        auto: ["Tier II sword powers available (Force, Obsidian).", "Normal attack: +2 dmg. Powerful attack: +4 dmg. Powerful attack: now does AOE 90° arc (10 ft)."],
         choices: []
       },
       3: {
-        auto: ["Tier III sword powers available (Second Wind, Reflect).", "Normal attack: 5 dmg. Powerful attack: 7 dmg. Powerful attack beam range: 30 ft through all targets in a line."],
+        auto: ["Tier III sword powers available (Second Wind, Reflect).", "Normal attack: +3 dmg. Powerful attack: +5 dmg. Powerful attack beam range: 30 ft through all targets in a line."],
         choices: []
       }
     },
