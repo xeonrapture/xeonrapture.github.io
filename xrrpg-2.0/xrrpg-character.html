@@ -6435,11 +6435,13 @@
           return;
         }
 
-        // Ctrl+Alt+- / Ctrl+Alt++: collapse/expand all
+        // Ctrl+Alt+- / Ctrl+Alt++: collapse/expand all (character card excluded)
         if (key === "-") {
           event.preventDefault();
           document
-            .querySelectorAll("[data-collapsible]:not(.collapsed)")
+            .querySelectorAll(
+              "[data-collapsible]:not(.collapsed):not(#characterSection)",
+            )
             .forEach((s) => {
               s.classList.add("collapsed");
               updateCollapsibleButton(s);
@@ -6449,7 +6451,9 @@
         if (key === "+" || key === "=") {
           event.preventDefault();
           document
-            .querySelectorAll("[data-collapsible].collapsed")
+            .querySelectorAll(
+              "[data-collapsible].collapsed:not(#characterSection)",
+            )
             .forEach((s) => {
               s.classList.remove("collapsed");
               updateCollapsibleButton(s);
@@ -6594,7 +6598,11 @@
       }
 
       function buildUiPreferences() {
+        // 1-col order (sectionOrder) and 2-col layout (col1Sections/col2Sections) are
+        // stored side by side so switching modes never overwrites the other mode's
+        // saved arrangement.
         const sheet = document.querySelector("main.sheet");
+        const prev = character?.ui_preferences || {};
         if (sheet.classList.contains("two-col")) {
           const col1 = document.getElementById("sheetCol1");
           const col2 = document.getElementById("sheetCol2");
@@ -6602,12 +6610,30 @@
             twoColMode: true,
             col1Sections: col1 ? Array.from(col1.querySelectorAll(":scope > section[id]")).map(s => s.id) : [],
             col2Sections: col2 ? Array.from(col2.querySelectorAll(":scope > section[id]")).map(s => s.id) : [],
+            sectionOrder: Array.isArray(prev.sectionOrder) ? prev.sectionOrder : [],
           };
         }
         const sectionOrder = Array.from(
           sheet.querySelectorAll(":scope > section[id]:not(#characterSection)")
         ).map(s => s.id);
-        return { sectionOrder, twoColMode: false };
+        return {
+          sectionOrder,
+          twoColMode: false,
+          col1Sections: Array.isArray(prev.col1Sections) ? prev.col1Sections : [],
+          col2Sections: Array.isArray(prev.col2Sections) ? prev.col2Sections : [],
+        };
+      }
+
+      function reorderSingleColumn(sectionOrder) {
+        const sheet = document.querySelector("main.sheet");
+        if (!Array.isArray(sectionOrder)) return;
+        const seen = new Set();
+        sectionOrder.forEach(id => {
+          if (seen.has(id)) return;
+          seen.add(id);
+          const el = document.getElementById(id);
+          if (el && el.parentElement === sheet) sheet.appendChild(el);
+        });
       }
 
       function applyUiPreferences(prefs) {
@@ -6616,14 +6642,8 @@
         if (prefs?.twoColMode) {
           sheet.classList.add("two-col");
           enterTwoCol(prefs.col1Sections, prefs.col2Sections);
-        } else if (Array.isArray(prefs?.sectionOrder)) {
-          const seen = new Set();
-          prefs.sectionOrder.forEach(id => {
-            if (seen.has(id)) return;
-            seen.add(id);
-            const el = document.getElementById(id);
-            if (el && el.parentElement === sheet) sheet.appendChild(el);
-          });
+        } else {
+          reorderSingleColumn(prefs?.sectionOrder);
         }
         if (btn) {
           const isTwo = sheet.classList.contains("two-col");
@@ -6637,12 +6657,17 @@
 
       async function saveUiPreferences() {
         if (!canEdit || !characterId || !currentUser) return;
+        const prefs = buildUiPreferences();
         const { error } = await sb
           .from("xrrpg_characters")
-          .update({ ui_preferences: buildUiPreferences() })
+          .update({ ui_preferences: prefs })
           .eq("id", characterId)
           .eq("user_id", currentUser.id);
-        if (error) console.error("Failed to save UI prefs:", error);
+        if (error) {
+          console.error("Failed to save UI prefs:", error);
+          return;
+        }
+        if (character) character.ui_preferences = prefs;
       }
 
       function initSectionDrag() {
@@ -6751,12 +6776,14 @@
         if (!sheet || !btn) return;
         btn.addEventListener("click", () => {
           const isTwo = sheet.classList.contains("two-col");
+          const prefs = character?.ui_preferences || {};
           if (isTwo) {
             exitTwoCol();
             sheet.classList.remove("two-col");
+            reorderSingleColumn(prefs.sectionOrder);
           } else {
             sheet.classList.add("two-col");
-            enterTwoCol();
+            enterTwoCol(prefs.col1Sections, prefs.col2Sections);
           }
           const nowTwo = sheet.classList.contains("two-col");
           btn.title = nowTwo ? "Switch to single column" : "Switch to two columns";
