@@ -96,6 +96,25 @@
                 /></label>
               </div>
             </div>
+            <div class="xrrpg-core-stats-card">
+              <h3>Movement Speed</h3>
+              <div class="xrrpg-stat-line xrrpg-stat-line--compact">
+                <label title="Always equal to 30 + Intuition + (2 x Vigor)."
+                  >Movement Speed
+                  <input id="movementSpeedInput" type="number" readonly
+                /></label>
+              </div>
+            </div>
+            <div class="xrrpg-core-stats-card">
+              <h3>Abilities Per Action</h3>
+              <div class="xrrpg-stat-line xrrpg-stat-line--compact">
+                <label
+                  title="1 at levels 0-3, 2 at levels 4-6, 3 at levels 7-9."
+                  >Abilities Per Action
+                  <input id="abilitiesPerActionInput" type="number" readonly
+                /></label>
+              </div>
+            </div>
           </div>
           <div class="xrrpg-core-stats-card xrrpg-core-stats-card--full">
             <h3>Basic Stats</h3>
@@ -1379,6 +1398,13 @@
             Number(document.getElementById("staminaMaxInput").value) || 0,
           stamina_total:
             Number(document.getElementById("staminaTotalInput").value) || 0,
+          movement_speed: movementSpeedFor(
+            Number(document.getElementById("intuitionInput").value) || 0,
+            Number(document.getElementById("vigorInput").value) || 0,
+          ),
+          abilities_per_action: abilitiesPerActionForLevel(
+            Number(document.getElementById("levelInput").value) || 0,
+          ),
           powerful_item_limit:
             Number(document.getElementById("powerfulItemLimitInput").value) ||
             0,
@@ -1510,6 +1536,32 @@
       function staminaMaxForLevel(level, intuition, wit) {
         const base = levelRule(level).stamina_base;
         return base + Number(intuition || 0) + Number(wit || 0);
+      }
+
+      function movementSpeedFor(intuition, vigor) {
+        return 30 + Number(intuition || 0) + 2 * Number(vigor || 0);
+      }
+
+      function abilitiesPerActionForLevel(level) {
+        const lvl = Number(level || 0);
+        if (lvl >= 7) return 3;
+        if (lvl >= 4) return 2;
+        return 1;
+      }
+
+      function updateDerivedCoreStats() {
+        const vigor = Number(document.getElementById("vigorInput")?.value) || 0;
+        const intuition =
+          Number(document.getElementById("intuitionInput")?.value) || 0;
+        const level = Number(document.getElementById("levelInput")?.value) || 0;
+        const movementInput = document.getElementById("movementSpeedInput");
+        const abilitiesInput = document.getElementById(
+          "abilitiesPerActionInput",
+        );
+        if (movementInput)
+          movementInput.value = movementSpeedFor(intuition, vigor);
+        if (abilitiesInput)
+          abilitiesInput.value = abilitiesPerActionForLevel(level);
       }
 
       function isAdeptClass(cls) {
@@ -5249,6 +5301,7 @@
         document.getElementById("staminaMaxInput").value =
           s.stamina_max ??
           10 + (s.intuition || 0) + (s.wit || 0);
+        updateDerivedCoreStats();
         document.getElementById("powerfulItemLimitInput").value =
           s.powerful_item_limit || 0;
         document.getElementById("powerfulItemMaxInput").value =
@@ -5596,6 +5649,8 @@
               ),
               powerful_item_limit: rule.powerful_item_limit,
               powerful_item_max: rule.powerful_item_max,
+              movement_speed: movementSpeedFor(before.intuition, before.vigor),
+              abilities_per_action: abilitiesPerActionForLevel(level),
             };
 
             // Apply basic stat upgrade (capped at 5)
@@ -5610,6 +5665,12 @@
                   base_stats.wit,
                 );
                 base_stats.stamina_total = base_stats.stamina_max;
+              }
+              if (stat === "intuition" || stat === "vigor") {
+                base_stats.movement_speed = movementSpeedFor(
+                  base_stats.intuition,
+                  base_stats.vigor,
+                );
               }
             }
 
@@ -5661,6 +5722,8 @@
               stamina_total: before.stamina_total,
               powerful_item_limit: before.powerful_item_limit,
               powerful_item_max: before.powerful_item_max,
+              movement_speed: before.movement_speed,
+              abilities_per_action: before.abilities_per_action,
             };
             if (rule.stat_points > 0 && choiceValues.stat_upgrade) {
               undoStatsBefore[choiceValues.stat_upgrade] =
@@ -5688,6 +5751,14 @@
               `Mastery: ${base_stats.mastery_die}`,
               `Stamina: ${base_stats.stamina_max}`,
             ];
+            if (base_stats.abilities_per_action !== before.abilities_per_action)
+              changeParts.push(
+                `Abilities/Action: ${before.abilities_per_action}→${base_stats.abilities_per_action}`,
+              );
+            if (base_stats.movement_speed !== before.movement_speed)
+              changeParts.push(
+                `Movement: ${before.movement_speed}→${base_stats.movement_speed}`,
+              );
             if (rule.powerful_item_limit !== before.powerful_item_limit)
               changeParts.push(
                 `Item Slots: ${before.powerful_item_limit}→${base_stats.powerful_item_limit}`,
@@ -6475,6 +6546,12 @@
                 el.style.height = el.scrollHeight + "px";
               });
             }
+          });
+          ["vigorInput", "intuitionInput", "levelInput"].forEach((id) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener("input", updateDerivedCoreStats);
+            el.addEventListener("change", updateDerivedCoreStats);
           });
         } catch (error) {
           pushStatus(error.message, { tone: "error" });
